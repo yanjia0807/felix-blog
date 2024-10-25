@@ -10,26 +10,34 @@ import {
 import { VStack } from "./ui/vstack";
 import { HStack } from "./ui/hstack";
 import { Text } from "./ui/text";
-
+import { init, Geolocation, stop } from "react-native-amap-geolocation";
 import { Platform } from "react-native";
 
 const LocationSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
   const [location, setLocation] = useState<any>(null);
   const [places, setPlaces] = useState<any>([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
-  
-  const getLocation = async () => {
-    
-  };
+  const iosKey = process.env.EXPO_PUBLIC_AMAP_IOS_KEY as string;
+  const getLocation = async () => {};
 
-  const reverseGeocodeLocation = async () => {
-   
-  };
+  const reverseGeocodeLocation = async () => {};
 
   useEffect(() => {
-    
+    init({
+      ios: iosKey,
+      android: "",
+    });
+
+    Geolocation.getCurrentPosition(
+      (position: any) => {
+        console.log(position);
+      },
+      (error: any) => {
+        console.error(error);
+      }
+    );
   }, []);
-  
+
   const handleRegionChange = (region: any) => {
     console.log(region);
   };
@@ -46,7 +54,6 @@ const LocationSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
           <HStack>
             <Text>我的位置</Text>
           </HStack>
-          
         </VStack>
       </BottomSheetView>
     </BottomSheetModal>
