@@ -1,1 +1,1 @@
-## expo and strapi's blog for ios and android
+# expo and strapi's blog for ios and android
