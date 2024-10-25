@@ -1,0 +1,6 @@
+{
+    "editor.formatOnPaste": true,
+    "tailwindCSS.experimental.classRegex": [
+      ["tva\\((([^()]*|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+    ]
+}
