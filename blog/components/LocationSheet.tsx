@@ -1,17 +1,11 @@
 import React, { forwardRef, useEffect, useState } from "react";
-import {
-  BottomSheetModal,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import {
   BottomSheetBackdrop,
   BottomSheetDragIndicator,
 } from "./ui/bottomsheet";
 import { VStack } from "./ui/vstack";
 import { HStack } from "./ui/hstack";
-import { Text } from "./ui/text";
-import { init, Geolocation, stop } from "react-native-amap-geolocation";
-import { Platform } from "react-native";
 
 const LocationSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
   const [location, setLocation] = useState<any>(null);
@@ -22,21 +16,7 @@ const LocationSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
 
   const reverseGeocodeLocation = async () => {};
 
-  useEffect(() => {
-    init({
-      ios: iosKey,
-      android: "",
-    });
-
-    Geolocation.getCurrentPosition(
-      (position: any) => {
-        console.log(position);
-      },
-      (error: any) => {
-        console.error(error);
-      }
-    );
-  }, []);
+  useEffect(() => {}, []);
 
   const handleRegionChange = (region: any) => {
     console.log(region);
@@ -51,9 +31,7 @@ const LocationSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
     >
       <BottomSheetView className="flex-1">
         <VStack className="flex-1 items-center p-4" space="2xl">
-          <HStack>
-            <Text>我的位置</Text>
-          </HStack>
+          <HStack></HStack>
         </VStack>
       </BottomSheetView>
     </BottomSheetModal>
