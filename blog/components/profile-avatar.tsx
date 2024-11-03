@@ -6,10 +6,17 @@ import {
   AvatarImage,
   AvatarBadge,
 } from "./ui/avatar";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./auth-context";
 import { baseURL } from "@/api/config";
 import { Icon } from "./ui/icon";
-import { User } from "lucide-react-native";
+import { LogIn, User } from "lucide-react-native";
+import {
+  ButtonGroup,
+  Button,
+  ButtonText,
+  ButtonSpinner,
+  ButtonIcon,
+} from "./ui/button";
 
 export const ProfileAvatar = () => {
   const { user } = useAuth();
@@ -25,11 +32,11 @@ export const ProfileAvatar = () => {
           />
         </Avatar>
       ) : (
-        <Avatar size="sm" className="mx-2">
-          <Avatar size="sm" className="text-info-400">
-            <Icon as={User} size="sm" className="text-info-400" />
-          </Avatar>
-        </Avatar>
+        <ButtonGroup space="sm" className="mx-2">
+          <Button size="sm" variant="link">
+            <ButtonText>未登录</ButtonText>
+          </Button>
+        </ButtonGroup>
       )}
     </>
   );

@@ -33,7 +33,6 @@ export const fetchPosts = async () => {
     },
   });
   const res = await axios.get(`${baseURL}/api/posts?${query}`);
-  console.log(res);
   return res.data.data;
 };
 

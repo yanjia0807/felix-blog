@@ -1,10 +1,14 @@
 import React, { useState } from "react";
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import {
+  CameraView as ExpoCameraView,
+  CameraType,
+  useCameraPermissions,
+} from "expo-camera";
 import { Box } from "./ui/box";
 import { Button, ButtonText } from "./ui/button";
 import { Text } from "@/components/ui/text";
 
-const CameraVIew = () => {
+const CameraView = () => {
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -16,9 +20,7 @@ const CameraVIew = () => {
   if (!permission.granted) {
     return (
       <Box className="flex-1 justify-center items-center">
-        <Text className="p-2">
-          我们需要权限来显示相机
-        </Text>
+        <Text className="p-2">我们需要权限来显示相机</Text>
         <Button onPress={requestPermission}>
           <ButtonText>授权访问相机</ButtonText>
         </Button>
@@ -32,15 +34,15 @@ const CameraVIew = () => {
 
   return (
     <Box className="flex-1">
-      <CameraView className="flex-1" facing={facing}>
+      <ExpoCameraView className="flex-1" facing={facing}>
         <Box className="flex-1 flex-row bg-background-400 items-end">
           <Button variant="solid" onPress={toggleCameraFacing}>
             <ButtonText>反转相机</ButtonText>
           </Button>
         </Box>
-      </CameraView>
+      </ExpoCameraView>
     </Box>
   );
 };
 
-export default CameraVIew;
+export default CameraView;

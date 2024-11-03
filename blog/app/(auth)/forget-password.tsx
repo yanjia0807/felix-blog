@@ -13,9 +13,9 @@ import { VStack } from "@/components/ui/vstack";
 import { Button, ButtonText } from "@/components/ui/button";
 import { HStack } from "@/components/ui/hstack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import InfoToast from "@/components/InfoToast";
+import InfoToast from "@/components/alert-toast";
 import { useToast } from "@/components/ui/toast";
-import { useAuth } from "@/components/AuthContext";
+import { useAuth } from "@/components/auth-context";
 import { AlertCircleIcon } from "lucide-react-native";
 import { Spinner } from "@/components/ui/spinner";
 

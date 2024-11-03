@@ -3,17 +3,7 @@ import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={({ route }) => {
-        console.log(route);
-
-        return {
-          tabBarStyle: {
-            display: route.name === "example" ? "none" : "flex",
-          },
-        };
-      }}
-    >
+    <Tabs initialRouteName="post">
       <Tabs.Screen
         name="index"
         options={{
@@ -24,20 +14,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="blog"
+        name="post"
         options={{
           title: "发现",
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="map" color={color} />
           ),
-          headerShown: false,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "我的",
-          headerShown: false,
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="cog" color={color} />
           ),

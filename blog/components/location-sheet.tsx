@@ -18,9 +18,7 @@ const LocationSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
 
   useEffect(() => {}, []);
 
-  const handleRegionChange = (region: any) => {
-    console.log(region);
-  };
+  const handleRegionChange = (region: any) => {};
 
   return (
     <BottomSheetModal

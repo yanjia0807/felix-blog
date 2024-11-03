@@ -68,7 +68,6 @@ const RecordingSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
   const [sound, setSound] = useState<any>();
 
   const onRecordingStatusUpdate = (status: RecordingStatus) => {
-    console.log(status);
     if (status.canRecord) {
       setDurationMillis(status.durationMillis);
       setMeterings((prev: any) => [...prev, status.metering]);
