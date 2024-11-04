@@ -23,7 +23,16 @@ const PostHome = () => {
   const renderItem = ({ item }: any) => {
     return (
       <Card className="p-5 rounded-lg mb-6">
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: "/posts/[documentId]",
+              params: {
+                documentId: item.documentId,
+              },
+            });
+          }}
+        >
           <VStack space="md">
             <HStack className="justify-between items-center">
               <HStack className="items-center" space="sm">
@@ -101,14 +110,14 @@ const PostHome = () => {
 
   return (
     <>
+      <Stack.Screen
+        options={{
+          title: "记录",
+          headerShown: true,
+          headerRight: () => <ProfileAvatar />,
+        }}
+      />
       <VStack className="flex-1 p-4" space="md">
-        <Stack.Screen
-          options={{
-            title: "记录",
-            headerShown: true,
-            headerRight: () => <ProfileAvatar />,
-          }}
-        />
         <FlashList
           data={posts}
           renderItem={({ item }) => renderItem({ item })}
@@ -120,7 +129,7 @@ const PostHome = () => {
           size="md"
           placement="bottom right"
           onPress={() => {
-            router.push("/post-create");
+            router.push("/posts/create");
           }}
         >
           <FabIcon as={AddIcon} />

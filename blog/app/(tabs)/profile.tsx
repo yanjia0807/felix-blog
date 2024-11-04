@@ -26,7 +26,6 @@ const PostListView = () => {
   const { data: posts, error, isLoading, isSuccess } = useFetchPosts();
 
   const renderItem = ({ item }: any) => {
-    console.log(item);
     return (
       <Card className="rounded-lg my-2">
         <Text className="text-sm font-normal mb-2 text-typography-700">

@@ -4,8 +4,7 @@
   "info": {
     "singularName": "profile",
     "pluralName": "profiles",
-    "displayName": "Profile",
-    "description": ""
+    "displayName": "Profile"
   },
   "options": {
     "draftAndPublish": false
@@ -15,6 +14,9 @@
     "birthday": {
       "type": "date"
     },
+    "nickname": {
+      "type": "string"
+    },
     "gender": {
       "type": "enumeration",
       "enum": [
@@ -22,28 +24,21 @@
         "female"
       ]
     },
-    "avatar": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
     "bio": {
       "type": "string"
+    },
+    "avatar": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
     },
     "user": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "profile"
-    },
-    "posts": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::post.post",
-      "mappedBy": "author"
     }
   }
 }

@@ -443,7 +443,10 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
   };
   attributes: {
     address: Schema.Attribute.String;
-    author: Schema.Attribute.Relation<'manyToOne', 'api::profile.profile'>;
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     blocks: Schema.Attribute.DynamicZone<['shared.attachment']>;
     content: Schema.Attribute.Text;
     cover: Schema.Attribute.Media<'images'>;
@@ -468,7 +471,6 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
 export interface ApiProfileProfile extends Struct.CollectionTypeSchema {
   collectionName: 'profiles';
   info: {
-    description: '';
     displayName: 'Profile';
     pluralName: 'profiles';
     singularName: 'profile';
@@ -490,7 +492,7 @@ export interface ApiProfileProfile extends Struct.CollectionTypeSchema {
       'api::profile.profile'
     > &
       Schema.Attribute.Private;
-    posts: Schema.Attribute.Relation<'oneToMany', 'api::post.post'>;
+    nickname: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1005,6 +1007,7 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    posts: Schema.Attribute.Relation<'oneToMany', 'api::post.post'>;
     profile: Schema.Attribute.Relation<'oneToOne', 'api::profile.profile'>;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;

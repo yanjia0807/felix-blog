@@ -19,8 +19,6 @@ const PostThumbnail = ({ item }: any) => {
       thumbnail: item.formats.thumbnail,
     }));
 
-  console.log("thumbnails", files);
-
   return (
     <>
       {files?.length > 0 && (

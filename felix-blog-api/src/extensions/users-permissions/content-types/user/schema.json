@@ -65,6 +65,12 @@
       "inversedBy": "users",
       "configurable": false
     },
+    "posts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::post.post",
+      "mappedBy": "author"
+    },
     "profile": {
       "type": "relation",
       "relation": "oneToOne",
