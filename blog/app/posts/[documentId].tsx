@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import React from "react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useFetchPost } from "@/api/post";
@@ -17,6 +17,12 @@ import { baseURL } from "@/api";
 import moment from "moment";
 import { HStack } from "@/components/ui/hstack";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { BookMarked, BookMarkedIcon, Share2 } from "lucide-react-native";
+import { Icon } from "@/components/ui/icon";
+import { Center } from "@/components/ui/center";
+import CommentInfo from "@/components/comment-info";
+import HeartInfo from "@/components/heart-info";
+import AuthorInfo from "@/components/author-info";
 
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
@@ -67,13 +73,12 @@ const PostDetail = () => {
       small: item.formats.small,
     }));
 
-  const title = post?.title;
+  const cover = files && files[0];
+
   const content = post?.content;
   const author = post?.author;
   const publishedAt =
     post && moment(post.publishedAt).format("YYYY-MM-DD h:mm:ss");
-
-  console.log(files);
 
   return (
     <>
@@ -100,27 +105,59 @@ const PostDetail = () => {
       {isSuccess && (
         <Card className="flex-1 p-4">
           <VStack space="md">
-            <Heading size="2xl">{title}</Heading>
+            {cover ? (
+              <Box className="w-full h-48">
+                <Image
+                  source={{
+                    uri: `${baseURL}/${cover.small.url}`,
+                  }}
+                  alt={cover.alternativeText}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 12,
+                  }}
+                />
+                <TouchableOpacity className="absolute right-16 -bottom-4 w-8 h-8 bg-secondary-500 rounded-full justify-center items-center drop-shadow-xl">
+                  <Icon
+                    size="md"
+                    className="text-secondary-0"
+                    as={BookMarked}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity className="absolute right-4 -bottom-4 w-8 h-8 bg-secondary-500 rounded-full justify-center items-center drop-shadow-xl">
+                  <Icon size="md" className="text-secondary-0" as={Share2} />
+                </TouchableOpacity>
+              </Box>
+            ) : (
+              <HStack className="justify-end items-center" space="md">
+                <TouchableOpacity className="w-8 h-8 bg-secondary-500 rounded-full justify-center items-center drop-shadow-xl">
+                  <Icon
+                    size="md"
+                    className="text-secondary-0"
+                    as={BookMarked}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity className="w-8 h-8 bg-secondary-500 rounded-full justify-center items-center drop-shadow-xl">
+                  <Icon size="md" className="text-secondary-0" as={Share2} />
+                </TouchableOpacity>
+              </HStack>
+            )}
+
             <HStack space="md">
               <Text size="sm"> {publishedAt}</Text>
             </HStack>
-            <HStack className="items-center" space="sm">
-              <Avatar size="sm">
-                <AvatarImage
-                  source={{
-                    uri: `${baseURL}/${author?.profile?.avatar.formats.thumbnail.url}`,
-                  }}
-                />
-              </Avatar>
-              <VStack>
-                <Text size="sm" bold={true}>
-                  {author?.profile?.nickname}
-                </Text>
-              </VStack>
+            <HStack className="justify-between items-center">
+              <AuthorInfo author={author} />
+              <HStack space="lg" className="flex-row items-center">
+                <HeartInfo />
+                <CommentInfo />
+              </HStack>
             </HStack>
-            {files?.length > 0 && (
+
+            {files?.length > 1 && (
               <FlashList
-                data={files}
+                data={files.slice(1)}
                 keyExtractor={(item: any) => item.id}
                 horizontal={true}
                 renderItem={renderItem}

@@ -7,8 +7,8 @@ import {
 import { VStack } from "./ui/vstack";
 import { HStack } from "./ui/hstack";
 
-const LocationSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
-  const [location, setLocation] = useState<any>(null);
+const LocationSheet = forwardRef(({ setLocation }: any, ref: any) => {
+  const [currentLocation, setCurrentLocation] = useState<any>(null);
   const [places, setPlaces] = useState<any>([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const iosKey = process.env.EXPO_PUBLIC_AMAP_IOS_KEY as string;

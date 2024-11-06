@@ -13,11 +13,7 @@ export const fetchPosts = async () => {
         author: {
           populate: {
             profile: {
-              populate: {
-                avatar: {
-                  fields: ["formats", "name", "alternativeText"],
-                },
-              },
+              populate: ["avatar"],
             },
           },
         },

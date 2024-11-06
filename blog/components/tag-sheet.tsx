@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useState } from "react";
 import {
   BottomSheetModal,
+  BottomSheetTextInput,
   BottomSheetView,
   TouchableOpacity,
 } from "@gorhom/bottom-sheet";
@@ -8,14 +9,10 @@ import {
   BottomSheetBackdrop,
   BottomSheetDragIndicator,
 } from "./ui/bottomsheet";
-import { VStack } from "./ui/vstack";
 import { Text } from "./ui/text";
+import { Heading } from "./ui/heading";
+import { BottomSheetFlashList } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, InputField } from "./ui/input";
-import { FlashList } from "@shopify/flash-list";
-import { Button, ButtonText } from "./ui/button";
-import { H1 } from "@expo/html-elements";
-import { HStack } from "./ui/hstack";
 
 const tagsData = [
   { id: 1, slug: "travel", name: "旅行" },
@@ -37,10 +34,10 @@ const tagsData = [
   { id: 17, slug: "psychology", name: "心理学" },
 ];
 
-const TagSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
+const TagSheet = forwardRef(({ setTags }: any, ref: any) => {
   useEffect(() => {}, []);
-  const insets = useSafeAreaInsets();
   const [selectedTags, setSelectedTags] = useState<any>([]);
+  const insets = useSafeAreaInsets();
 
   const toggleTag = (tag: any) => {
     setSelectedTags((prev: any) =>
@@ -51,7 +48,7 @@ const TagSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
   const renderItem = ({ item }: any) => {
     return (
       <TouchableOpacity
-        className="w-full justify-start border-b-[0.5px] border-secondary-50 py-2"
+        className="w-full justify-start border-secondary-50 py-2"
         onPress={() => toggleTag(item.id)}
       >
         <Text className="w-full">{item.name}</Text>
@@ -61,33 +58,25 @@ const TagSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
 
   return (
     <BottomSheetModal
-      snapPoints={["100%"]}
+      snapPoints={["50%"]}
       backdropComponent={BottomSheetBackdrop}
       handleComponent={BottomSheetDragIndicator}
+      keyboardBehavior="fillParent"
       ref={ref}
+      style={{ marginTop: insets.top, marginBottom: insets.bottom }}
     >
-      <BottomSheetView
-        className="flex-1 px-4"
-        style={{ marginTop: insets.top, marginBottom: insets.bottom }}
-      >
-        <H1>标签</H1>
-        <Input
-          variant="rounded"
-          size="md"
-          isDisabled={false}
-          isInvalid={false}
-          isReadOnly={false}
-          className="my-8"
-        >
-          <InputField placeholder="搜索标签..." />
-        </Input>
-        <FlashList
+      <BottomSheetView className="flex-1 px-4">
+        <Heading size="lg">标签</Heading>
+        <BottomSheetTextInput
+          placeholder="搜索标签..."
+          className="p-2 m-2 border rounded-2xl border-info-200"
+        />
+        <BottomSheetFlashList
           data={tagsData}
           renderItem={renderItem}
           keyExtractor={(item: any) => item.id.toString()}
-          estimatedItemSize={100}
+          estimatedItemSize={35}
           showsVerticalScrollIndicator={false}
-          className="flex-1"
         />
       </BottomSheetView>
     </BottomSheetModal>

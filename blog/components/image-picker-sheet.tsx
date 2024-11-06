@@ -1,6 +1,5 @@
-import { KeyboardAvoidingView, Platform } from "react-native";
-import React, { useContext, useState } from "react";
-import { CameraIcon, ImageIcon, CircleXIcon, MicIcon } from "lucide-react-native";
+import React, { useState } from "react";
+import { CameraIcon, ImageIcon, CircleXIcon } from "lucide-react-native";
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -11,19 +10,41 @@ import {
   ActionsheetIcon,
   ActionsheetItemText,
 } from "./ui/actionsheet";
-import { BottomSheet } from "./ui/bottomsheet";
+import { useCameraPermissions } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
+import _ from "lodash";
+import CameraView from "./camera-view";
 
-const MeidaPickerSheet = ({
-  isOpen,
-  onClose,
-  onPressImage,
-  onPressCamera,
-  onPressRecording,
-}: any) => {
+const ImagePickerSheet = ({ isOpen, onClose, setImages }: any) => {
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [cameraIsOpen, setCameraIsOpen] = useState(false);
+
+  const onPressImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsMultipleSelection: true,
+      selectionLimit: 9,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setImages((pre: any) => _.unionBy(pre, result.assets, "assetId"));
+    }
+    onClose();
+  };
+
+  const onPressCamera = async () => {
+    if (cameraPermission && !cameraPermission.granted) {
+      const result = await requestCameraPermission();
+      if (result.granted) {
+        setCameraIsOpen(true);
+      }
+    }
+    onClose();
+  };
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <>
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <ActionsheetBackdrop />
         <ActionsheetContent>
@@ -41,12 +62,6 @@ const MeidaPickerSheet = ({
             <ActionsheetIcon className="stroke-background-700" as={ImageIcon} />
             <ActionsheetItemText>从相册选择</ActionsheetItemText>
           </ActionsheetItem>
-          <BottomSheet>
-            <ActionsheetItem onPress={onPressRecording}>
-              <ActionsheetIcon className="stroke-background-700" as={MicIcon} />
-              <ActionsheetItemText>录音</ActionsheetItemText>
-            </ActionsheetItem>
-          </BottomSheet>
           <ActionsheetItem onPress={onClose}>
             <ActionsheetIcon
               className="stroke-background-400"
@@ -56,8 +71,9 @@ const MeidaPickerSheet = ({
           </ActionsheetItem>
         </ActionsheetContent>
       </Actionsheet>
-    </KeyboardAvoidingView>
+      {cameraIsOpen && <CameraView />}
+    </>
   );
 };
 
-export default MeidaPickerSheet;
+export default ImagePickerSheet;

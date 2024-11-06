@@ -64,7 +64,7 @@ const SignUp = () => {
       )}
 
       <VStack
-        className="w-full flex-1 justify-between p-4"
+        className="flex-1 justify-between p-4"
         style={{ paddingBottom: insets.bottom }}
       >
         <VStack className="flex-1" space="lg">

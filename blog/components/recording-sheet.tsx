@@ -1,6 +1,13 @@
-import { StyleSheet } from "react-native";
-import React, { forwardRef, useEffect, useState } from "react";
-import BottomSheet, {
+import { StyleSheet, TouchableOpacity } from "react-native";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  BottomSheetFooter,
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
@@ -10,67 +17,62 @@ import {
 } from "./ui/bottomsheet";
 import { VStack } from "./ui/vstack";
 import { Audio } from "expo-av";
-import { Button, ButtonIcon, ButtonText } from "./ui/button";
-import { RecordingStatus } from "expo-av/build/Audio";
-import { Text } from "./ui/text";
+import { Recording, RecordingStatus } from "expo-av/build/Audio";
 import Animated, {
   useSharedValue,
-  useDerivedValue,
   useAnimatedStyle,
-  interpolate,
-  Extrapolation,
-  BounceInDown,
-  FadeIn,
+  SlideInRight,
+  ZoomIn,
+  withTiming,
+  ReduceMotion,
 } from "react-native-reanimated";
-import {
-  CirclePauseIcon,
-  CirclePlayIcon,
-  CircleX,
-  MicIcon,
-  MicOffIcon,
-} from "lucide-react-native";
+import { Mic, MicOff, Pause, Play, RotateCcw } from "lucide-react-native";
 import { HStack } from "./ui/hstack";
+import { Heading } from "./ui/heading";
+import { Box } from "./ui/box";
+import { BottomSheetDefaultFooterProps } from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheetFooter/types";
+import { Button, ButtonText } from "./ui/button";
 
-const AudioWave = ({ metering }: any) => {
-  const height = useSharedValue<number>(0);
+const RecordingSheet = forwardRef(({ setRecording }: any, ref: any) => {
+  const [currentRecording, setCurrentRecording] = useState<Recording | null>();
+  const [recordingStatus, setRecordingStatus] =
+    useState<RecordingStatus | null>();
+  const [audioPermission, requestAudioPermission] = Audio.usePermissions();
+  const [sound, setSound] = useState<any>();
+  const width = useSharedValue(10);
+  const [temp, setTemp] = useState([0]);
+  const tempRef = useRef({ temp: [0] });
 
-  useDerivedValue(() => {
-    height.value = metering;
-  });
+  const customEasing = (value: number) => {
+    "worklet";
+    return value;
+  };
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const value = interpolate(
-      height.value,
-      [-160, 0],
-      [0, 32],
-      Extrapolation.CLAMP
-    );
+  const style = useAnimatedStyle(() => {
     return {
-      height: value,
+      width: withTiming(
+        width.value,
+        {
+          duration: 100,
+          easing: customEasing,
+          reduceMotion: ReduceMotion.Never,
+        },
+        () => {}
+      ),
     };
   });
 
-  return (
-    <Animated.View
-      entering={BounceInDown}
-      className="w-1 h-9 rounded-md bg-indicator-info"
-      style={[animatedStyle]}
-    />
-  );
-};
-
-const RecordingSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
-  const [recording, setRecording] = useState<any>();
-  const [recordingStatus, setRecordingStatus] = useState<any>();
-  const [audioPermission, requestAudioPermission] = Audio.usePermissions();
-  const [durationMillis, setDurationMillis] = useState<any>();
-  const [meterings, setMeterings] = useState<any>([]);
-  const [sound, setSound] = useState<any>();
-
   const onRecordingStatusUpdate = (status: RecordingStatus) => {
-    if (status.canRecord) {
-      setDurationMillis(status.durationMillis);
-      setMeterings((prev: any) => [...prev, status.metering]);
+    console.log(status);
+    if (status.isRecording) {
+      const temp1 = [
+        ...tempRef?.current.temp,
+        (status.metering || 0 + 70) * 1.2,
+      ];
+      tempRef.current.temp = temp1;
+      setTemp(temp1);
+      setRecordingStatus(status);
+      width.value = width.value + 10 + 5;
     }
   };
 
@@ -93,46 +95,74 @@ const RecordingSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
         await requestAudioPermission();
       }
 
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
+      if (!currentRecording) {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+        });
 
-      const { recording, status } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY,
-        onRecordingStatusUpdate
-      );
-      setDurationMillis(0);
-      setMeterings([]);
-      setRecording(recording);
-      setRecordingStatus(status);
-      console.log("Recording started", status);
+        const { recording, status } = await Audio.Recording.createAsync(
+          Audio.RecordingOptionsPresets.HIGH_QUALITY,
+          onRecordingStatusUpdate,
+          0.1
+        );
+
+        setRecordingStatus(status);
+        setCurrentRecording(recording);
+        console.log("Recording started", status);
+      } else {
+        currentRecording.startAsync();
+      }
     } catch (err) {
       console.error("Failed to start recording", err);
     }
   }
 
+  async function pauseRecording() {
+    try {
+      if (currentRecording) {
+        const recordingStatus = await currentRecording.getStatusAsync();
+        if (recordingStatus.isRecording) {
+          const status = await currentRecording.pauseAsync();
+          setRecordingStatus(status);
+          console.log("Recording paused", status);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to pause recording", err);
+    }
+  }
+
   async function stopRecording() {
     console.log("Stopping recording..");
-    const status = await recording.stopAndUnloadAsync();
+    const status = await currentRecording?.stopAndUnloadAsync();
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
     });
     setRecordingStatus(status);
 
-    const uri = recording.getURI();
+    const uri = currentRecording?.getURI();
     console.log("Recording stopped and stored at", uri);
   }
 
   async function resetRecording() {
-    setDurationMillis(0);
-    setMeterings([]);
-    setRecording(null);
-    setRecordingStatus(null);
+    console.log(recordingStatus);
+    if (!recordingStatus?.isRecording) {
+      setCurrentRecording(null);
+      setRecordingStatus(null);
+      tempRef.current = { temp: [0] };
+      setTemp([0]);
+      const status = await currentRecording?.stopAndUnloadAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+      });
+
+      console.log("Recording reseted", status);
+    }
   }
 
   async function playRecording() {
-    const uri = recording?.getURI();
+    const uri = currentRecording?.getURI();
     if (uri) {
       const { sound } = await Audio.Sound.createAsync({ uri });
       setSound(sound);
@@ -140,6 +170,25 @@ const RecordingSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
       await sound.playAsync();
     }
   }
+
+  const renderFooter = useCallback(
+    (props: BottomSheetDefaultFooterProps) => (
+      <BottomSheetFooter {...props} bottomInset={24}>
+        <HStack className="flex-1 justify-around items-center">
+          <Button isDisabled={!recordingStatus?.isDoneRecording}>
+            <ButtonText>确定</ButtonText>
+          </Button>
+          <Button
+            isDisabled={recordingStatus?.isRecording}
+            onPress={resetRecording}
+          >
+            <ButtonText>重置</ButtonText>
+          </Button>
+        </HStack>
+      </BottomSheetFooter>
+    ),
+    []
+  );
 
   useEffect(() => {
     return sound
@@ -152,60 +201,88 @@ const RecordingSheet = forwardRef(({ onSuccessed }: any, ref: any) => {
 
   return (
     <BottomSheetModal
+      index={0}
       snapPoints={["50%"]}
       backdropComponent={BottomSheetBackdrop}
       handleComponent={BottomSheetDragIndicator}
       ref={ref}
+      footerComponent={renderFooter}
     >
       <BottomSheetView className="flex-1">
-        <VStack className="flex-1 items-center p-4" space="2xl">
-          <HStack className="justify-start items-center" space="md">
-            {!recordingStatus?.isRecording ? (
-              <Button size="md" action="primary" onPress={startRecording}>
-                <ButtonIcon as={MicOffIcon} />
-                <ButtonText>停止中</ButtonText>
-              </Button>
-            ) : (
-              <Button size="md" action="positive" onPress={stopRecording}>
-                <ButtonIcon as={MicIcon} />
-                <ButtonText>录音中</ButtonText>
-              </Button>
-            )}
-            <Animated.View className="flex-1 flex-row h-10 bg-background-50 rounded-3xl justify-start items-center overflow-hidden">
-              <Animated.View entering={FadeIn} style={[styles.waveContent]}>
-                {meterings.map((wave: any, index: number) => (
-                  <AudioWave key={index} metering={wave} />
-                ))}
+        <VStack className="flex-1 p-4">
+          <VStack className="justify-start items-center" space="md">
+            <Heading size="lg">
+              {formatTime(recordingStatus?.durationMillis)}
+            </Heading>
+            <Animated.View
+              style={{
+                backgroundColor: "bg-red-400",
+                height: "40%",
+                display: "flex",
+                flexDirection: "row-reverse",
+                alignItems: "center",
+              }}
+            >
+              <Animated.View
+                entering={SlideInRight}
+                style={[
+                  {
+                    display: "flex",
+                    flexDirection: "row",
+                    paddingHorizontal: 16,
+                    overflow: "hidden",
+                    backgroundColor: "white",
+                    gap: 10,
+                    alignItems: "center",
+                  },
+                  style,
+                ]}
+              >
+                {temp.map((t, index) => {
+                  return (
+                    <Animated.View
+                      key={index}
+                      entering={ZoomIn}
+                      style={{
+                        height: t > 10 ? t : 10,
+                        width: 5,
+                        borderRadius: 200,
+                        backgroundColor: "black",
+                      }}
+                    />
+                  );
+                })}
               </Animated.View>
             </Animated.View>
-            <Text size="sm">{formatTime(durationMillis)}</Text>
-          </HStack>
-          <HStack className="justify-end" space="md">
-            <Button
-              action="secondary"
-              size="sm"
-              onPress={playRecording}
-              disabled={recordingStatus?.isRecording || !recording}
-            >
-              <ButtonIcon as={CirclePlayIcon} size="md" />
-            </Button>
-            <Button
-              action="secondary"
-              size="sm"
-              onPress={() => {}}
-              disabled={recordingStatus?.isRecording || !recording}
-            >
-              <ButtonIcon as={CirclePauseIcon} size="md" />
-            </Button>
-            <Button
-              size="sm"
-              action="negative"
-              onPress={resetRecording}
-              disabled={recordingStatus?.isRecording || !recording}
-            >
-              <ButtonIcon as={CircleX} size="md" />
-            </Button>
-          </HStack>
+            <HStack className="items-center" space="xl">
+              <TouchableOpacity
+                className="justify-center items-center w-12 h-12 rounded-full bg-red-500"
+                onPress={playRecording}
+              >
+                <Play size={16} color="white" />
+              </TouchableOpacity>
+              <Box className="w-28 h-28 justify-center items-center">
+                <TouchableOpacity
+                  className="justify-center items-center w-20 h-20 rounded-full bg-red-500"
+                  onPress={startRecording}
+                >
+                  <Mic size={32} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="absolute bottom-0 right-0 justify-center items-center w-12 h-12 rounded-full bg-gray-500"
+                  onPress={pauseRecording}
+                >
+                  <Pause size={16} color="white" />
+                </TouchableOpacity>
+              </Box>
+              <TouchableOpacity
+                className="justify-center items-center w-12 h-12 rounded-full bg-red-500"
+                onPress={stopRecording}
+              >
+                <RotateCcw size={16} color="white" />
+              </TouchableOpacity>
+            </HStack>
+          </VStack>
         </VStack>
       </BottomSheetView>
     </BottomSheetModal>

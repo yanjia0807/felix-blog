@@ -13,14 +13,83 @@ import { Spinner } from "@/components/ui/spinner";
 import colors from "tailwindcss/colors";
 import { useToast } from "@/components/ui/toast";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Ellipsis, Heart, MessageCircle } from "lucide-react-native";
+import {
+  BookMarked,
+  Ellipsis,
+  MapPin,
+  Share2,
+  ShareIcon,
+} from "lucide-react-native";
 import { TouchableOpacity } from "react-native";
 import PostThumbnail from "@/components/post-thumbnail";
+import HeartInfo from "@/components/heart-info";
+import CommentInfo from "@/components/comment-info";
+import AuthorInfo from "@/components/author-info";
+import {
+  Popover,
+  PopoverBackdrop,
+  PopoverContent,
+  PopoverArrow,
+  PopoverBody,
+} from "@/components/ui/popover";
+import {
+  ButtonGroup,
+  Button,
+  ButtonText,
+  ButtonSpinner,
+  ButtonIcon,
+} from "@/components/ui/button";
+import { Divider } from "@/components/ui/divider";
+
+const MenuPopover = (props: any) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const handleOpen = () => {
+    setIsOpen(true);
+  };
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
+  return (
+    <Popover
+      isOpen={isOpen}
+      onClose={handleClose}
+      onOpen={handleOpen}
+      {...props}
+      trigger={(triggerProps: any) => {
+        return (
+          <TouchableOpacity {...triggerProps}>
+            <Icon as={Ellipsis} />
+          </TouchableOpacity>
+        );
+      }}
+    >
+      <PopoverBackdrop />
+      <PopoverContent className="px-2 py-1">
+        <PopoverBody className="" contentContainerClassName="">
+          <Button size="xs" variant="link">
+            <ButtonIcon as={BookMarked} />
+            <ButtonText> 收藏</ButtonText>
+          </Button>
+          <Divider />
+          <Button size="xs" variant="link">
+            <ButtonIcon as={Share2} />
+            <ButtonText> 分享</ButtonText>
+          </Button>
+        </PopoverBody>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const PostHome = () => {
   const { data: posts, error, isError, isLoading } = useFetchPosts();
   const toast = useToast();
+
   const renderItem = ({ item }: any) => {
+    const author = item.author;
+
     return (
       <Card className="p-5 rounded-lg mb-6">
         <TouchableOpacity
@@ -35,37 +104,22 @@ const PostHome = () => {
         >
           <VStack space="md">
             <HStack className="justify-between items-center">
-              <HStack className="items-center" space="sm">
-                <Avatar size="sm">
-                  <AvatarImage
-                    source={require("@/assets/images/profile/image.png")}
-                  />
-                </Avatar>
-                <VStack>
-                  <Text size="xs" bold={true}>
-                    颜0807
-                  </Text>
-                  <Text size="xs">30分钟之前</Text>
-                </VStack>
+              <AuthorInfo author={author} />
+              <MenuPopover />
+            </HStack>
+            <HStack className="justify-between items-center">
+              <Text size="xs">30分钟之前</Text>
+              <HStack space="xs" className="items-center">
+                <Icon as={MapPin} size="xs" />
+                <Text size="xs">重庆市，渝北区</Text>
               </HStack>
-              <Icon as={Ellipsis} />
             </HStack>
             <Text numberOfLines={3}>{item.content}</Text>
             <PostThumbnail item={item} />
             <HStack className="justify-between items-center">
               <HStack space="lg" className="flex-row items-center">
-                <TouchableOpacity>
-                  <HStack space="xs" className="items-center">
-                    <Icon as={Heart} color={colors.red[500]} />
-                    <Text size="xs">321</Text>
-                  </HStack>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <HStack space="xs" className="items-center">
-                    <Icon as={MessageCircle} />
-                    <Text size="xs">23</Text>
-                  </HStack>
-                </TouchableOpacity>
+                <HeartInfo />
+                <CommentInfo />
               </HStack>
               <HStack className="items-center">
                 {Array(5)
