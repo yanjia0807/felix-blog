@@ -8,6 +8,7 @@ import {
   MapPinIcon,
   Mic,
   TagIcon,
+  Volume2,
 } from "lucide-react-native";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
@@ -27,6 +28,7 @@ import {
   ButtonIcon,
   ButtonText,
 } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import ImagePickerSheet from "@/components/image-picker-sheet";
 import RecordingSheet from "@/components/recording-sheet";
 import { Divider } from "@/components/ui/divider";
@@ -38,14 +40,18 @@ import TagSheet from "@/components/tag-sheet";
 import { Grid, GridItem } from "@/components/ui/grid";
 import {
   KeyboardAwareScrollView,
-  KeyboardToolbar,
+  KeyboardStickyView,
 } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { VStack } from "@/components/ui/vstack";
+import { Recording } from "expo-av/build/Audio";
 
 const PostCreate = () => {
   const [images, setImages] = useState<any>([]);
-  const [recording, setRecording] = useState<any>();
+  const [recordings, setRecordings] = useState<Recording[]>([]);
   const [location, setLocation] = useState<any>();
   const [tags, setTags] = useState<any>([]);
+  const insets = useSafeAreaInsets();
 
   const [initialIndex, setInitialIndex] = useState<number>(0);
   const [imageSheetIsOpen, setImageSheetIsOpen] = useState(false);
@@ -72,7 +78,7 @@ const PostCreate = () => {
         }}
         setImages={setImages}
       />
-      <RecordingSheet ref={recordingSheetRef} setRecording={setRecording} />
+      <RecordingSheet ref={recordingSheetRef} setRecordings={setRecordings} />
       <LocationSheet ref={locationSheetRef} setLocation={setLocation} />
       <TagSheet ref={tagSheetRef} setTags={setTags} />
 
@@ -111,80 +117,100 @@ const PostCreate = () => {
           ),
         }}
       />
-      <KeyboardAwareScrollView
-        bottomOffset={62}
-        contentContainerStyle={{ flex: 1, padding: 16 }}
-      >
-        <FormControl size="md" className="h-52">
-          <Textarea size="md" className="flex-1 border-0">
-            <TextareaInput placeholder="你此时的感想..." />
-          </Textarea>
-          <FormControlHelper className="justify-end">
-            <FormControlHelperText>至少需要输入6个字符</FormControlHelperText>
-          </FormControlHelper>
-          <FormControlError>
-            <FormControlErrorIcon as={AlertCircleIcon} />
-            <FormControlErrorText>至少需要输入6个字符</FormControlErrorText>
-          </FormControlError>
-
-          <Divider className="my-2 bg-background-200" />
-        </FormControl>
-        <Grid
-          className="gap-4"
-          _extra={{
-            className: "grid-cols-12",
-          }}
+      <>
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flex: 1, padding: 16 }}
         >
-          {images.map((image: any, index: number) => (
-            <GridItem
-              key={image.assetId}
-              _extra={{
-                className: "col-span-4",
-              }}
+          <FormControl size="md" className="h-52">
+            <Textarea className="flex-1 border-0">
+              <TextareaInput placeholder="你此时的感想..." />
+            </Textarea>
+            <FormControlHelper className="justify-end">
+              <FormControlHelperText>至少需要输入6个字符</FormControlHelperText>
+            </FormControlHelper>
+            <FormControlError>
+              <FormControlErrorIcon as={AlertCircleIcon} />
+              <FormControlErrorText>至少需要输入6个字符</FormControlErrorText>
+            </FormControlError>
+          </FormControl>
+          <Divider className="my-2 bg-background-200" />
+          <HStack space="sm" className="my-2">
+            <HStack
+              className="my-2 p-2 bg-green-700/[.6] rounded-2xl items-center w-32 shadow-sm"
+              space="sm"
             >
-              <TouchableOpacity
-                onPress={() => handleOpenGallery(index)}
+              <Icon as={Volume2} size="md" />
+              <Text size="sm">90:12</Text>
+            </HStack>
+            <HStack
+              className="my-2 p-2 bg-green-700/[.6] rounded-2xl items-center w-20 shadow-sm"
+              space="sm"
+            >
+              <Icon as={Volume2} size="md" />
+              <Text size="sm">1:12</Text>
+            </HStack>
+            <HStack
+              className="my-2 p-2 bg-green-700/[.6] rounded-2xl items-center w-25 shadow-sm"
+              space="sm"
+            >
+              <Icon as={Volume2} size="md" />
+              <Text size="sm">23:12</Text>
+            </HStack>
+          </HStack>
+
+          <Grid
+            className="gap-3 my-2"
+            _extra={{
+              className: "grid-cols-12",
+            }}
+          >
+            {images.map((image: any, index: number) => (
+              <GridItem
                 key={image.assetId}
+                _extra={{
+                  className: "col-span-3",
+                }}
               >
-                <Image
-                  alt={image.fileName}
-                  style={{
-                    aspectRatio: 1,
-                    borderRadius: 12,
-                  }}
-                  source={{
-                    uri: image.uri,
-                  }}
-                />
                 <TouchableOpacity
-                  className="absolute right-0 top-0 m-1"
-                  onPress={() => handleRemoveImage(image.assetId)}
+                  onPress={() => handleOpenGallery(index)}
+                  key={image.assetId}
+                  className="shadow-sm"
                 >
-                  <Icon as={CircleX} size="sm" className=" text-white " />
+                  <Image
+                    alt={image.fileName}
+                    style={{
+                      aspectRatio: 1,
+                      borderRadius: 12,
+                    }}
+                    source={{
+                      uri: image.uri,
+                    }}
+                  />
+                  <TouchableOpacity
+                    className="absolute right-0 top-0 m-1"
+                    onPress={() => handleRemoveImage(image.assetId)}
+                  >
+                    <Icon as={CircleX} size="sm" className=" text-white " />
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </TouchableOpacity>
-            </GridItem>
-          ))}
-        </Grid>
-      </KeyboardAwareScrollView>
-      <KeyboardToolbar
-        showArrows={false}
-        doneText=""
-        content={
-          <HStack space="md">
-            <ButtonGroup space="xs">
-              <Button
-                size="sm"
-                variant="link"
-                onPress={() => setImageSheetIsOpen(true)}
-              >
+              </GridItem>
+            ))}
+          </Grid>
+
+          {/* {recordings.map((item: Recording) => {
+            
+          })} */}
+        </KeyboardAwareScrollView>
+        <KeyboardStickyView offset={{ closed: -insets.bottom, opened: 0 }}>
+          <HStack space="md" className="w-full bg-background-200 px-4">
+            <ButtonGroup space="sm">
+              <Button variant="link" onPress={() => setImageSheetIsOpen(true)}>
                 <ButtonIcon as={ImageIcon} />
                 <ButtonText>图片</ButtonText>
               </Button>
             </ButtonGroup>
-            <ButtonGroup space="xs">
+            <ButtonGroup space="sm">
               <Button
-                size="sm"
                 variant="link"
                 onPress={() => {
                   Keyboard.dismiss();
@@ -195,9 +221,8 @@ const PostCreate = () => {
                 <ButtonText>录音</ButtonText>
               </Button>
             </ButtonGroup>
-            <ButtonGroup space="xs">
+            <ButtonGroup space="sm">
               <Button
-                size="sm"
                 variant="link"
                 onPress={() => {
                   Keyboard.dismiss();
@@ -208,9 +233,8 @@ const PostCreate = () => {
                 <ButtonText>位置</ButtonText>
               </Button>
             </ButtonGroup>
-            <ButtonGroup space="xs">
+            <ButtonGroup space="sm">
               <Button
-                size="sm"
                 variant="link"
                 onPress={() => {
                   Keyboard.dismiss();
@@ -222,8 +246,8 @@ const PostCreate = () => {
               </Button>
             </ButtonGroup>
           </HStack>
-        }
-      />
+        </KeyboardStickyView>
+      </>
     </>
   );
 };
