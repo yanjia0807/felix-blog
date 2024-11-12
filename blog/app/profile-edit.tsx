@@ -1,9 +1,9 @@
-import React from "react";
-import _ from "lodash";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { Avatar, AvatarImage, AvatarBadge } from "@/components/ui/avatar";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Center } from "@/components/ui/center";
+import React from 'react';
+import _ from 'lodash';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Center } from '@/components/ui/center';
 import {
   FormControl,
   FormControlError,
@@ -11,9 +11,9 @@ import {
   FormControlErrorText,
   FormControlLabel,
   FormControlLabelText,
-} from "@/components/ui/form-control";
-import { Icon } from "@/components/ui/icon";
-import { Input, InputField } from "@/components/ui/input";
+} from '@/components/ui/form-control';
+import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
 import {
   Select,
   SelectTrigger,
@@ -25,44 +25,39 @@ import {
   SelectDragIndicatorWrapper,
   SelectDragIndicator,
   SelectItem,
-} from "@/components/ui/select";
-import { VStack } from "@/components/ui/vstack";
-import {
-  CameraIcon,
-  ChevronDownIcon,
-  AlertCircle,
-  AlertCircleIcon,
-} from "lucide-react-native";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { genderEnum } from "@/constants/enum";
-import { DatePicker } from "@/components/date-picker";
-import { Box } from "@/components/ui/box";
-import { Stack, router } from "expo-router";
+} from '@/components/ui/select';
+import { VStack } from '@/components/ui/vstack';
+import { CameraIcon, ChevronDownIcon, AlertCircle, AlertCircleIcon } from 'lucide-react-native';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { genderEnum } from '@/constants/enum';
+import { DatePicker } from '@/components/date-picker';
+import { Box } from '@/components/ui/box';
+import { Stack, router } from 'expo-router';
 
 type userSchemaDetails = z.infer<typeof userSchema>;
 
 const userSchema = z.object({
   username: z
     .string({
-      required_error: "用户名是必填项",
+      required_error: '用户名是必填项',
     })
-    .min(3, "用户名长度需在3到16个字符之间")
-    .max(16, "用户名长度需在3到16个字符之间"),
-  gender: z.enum(_.map(genderEnum, "value"), {
-    required_error: "性别是必填项",
-    invalid_type_error: "性别格式不正确",
+    .min(3, '用户名长度需在3到16个字符之间')
+    .max(16, '用户名长度需在3到16个字符之间'),
+  gender: z.enum(_.map(genderEnum, 'value'), {
+    required_error: '性别是必填项',
+    invalid_type_error: '性别格式不正确',
   }),
   birthday: z.date({
-    required_error: "出生日期是必填项",
-    invalid_type_error: "出生日期格式不正确",
+    required_error: '出生日期是必填项',
+    invalid_type_error: '出生日期格式不正确',
   }),
   phoneNumber: z
     .string({
-      required_error: "电话号码是必填项",
+      required_error: '电话号码是必填项',
     })
-    .regex(/^1[3-9]\d{9}$/, "电话号码格式不正确"),
+    .regex(/^1[3-9]\d{9}$/, '电话号码格式不正确'),
 });
 
 const ProfileEdit = () => {
@@ -83,7 +78,7 @@ const ProfileEdit = () => {
     <>
       <Stack.Screen
         options={{
-          title: "编辑资料",
+          title: '编辑资料',
           headerShown: true,
           headerLeft: () => (
             <Button
@@ -91,8 +86,7 @@ const ProfileEdit = () => {
               variant="link"
               onPress={() => {
                 router.dismiss();
-              }}
-            >
+              }}>
               <ButtonText>返回</ButtonText>
             </Button>
           ),
@@ -107,16 +101,13 @@ const ProfileEdit = () => {
         contentContainerStyle={{
           paddingHorizontal: 32,
         }}
-        bottomOffset={30}
-      >
+        bottomOffset={30}>
         <VStack className="flex-1" space="lg">
           <Box className="h-52">
-            <Center className="w-full absolute top-16">
+            <Center className="absolute top-16 w-full">
               <Avatar size="2xl">
-                <AvatarImage
-                  source={require("@/assets/images/profile/image.png")}
-                />
-                <AvatarBadge className="justify-center items-center bg-background-500">
+                <AvatarImage source={require('@/assets/images/profile/image.png')} />
+                <AvatarBadge className="items-center justify-center bg-background-500">
                   <Icon as={CameraIcon} />
                 </AvatarBadge>
               </Avatar>
@@ -131,8 +122,7 @@ const ProfileEdit = () => {
                 <InputField
                   inputMode="email"
                   autoCapitalize="none"
-                  value="yanjiafelix@gmail.com"
-                ></InputField>
+                  value="yanjiafelix@gmail.com"></InputField>
               </Input>
               <FormControlError>
                 <FormControlErrorText></FormControlErrorText>
@@ -157,9 +147,7 @@ const ProfileEdit = () => {
                   </Input>
                   <FormControlError>
                     <FormControlErrorIcon as={AlertCircleIcon} />
-                    <FormControlErrorText>
-                      {errors?.username?.message}
-                    </FormControlErrorText>
+                    <FormControlErrorText>{errors?.username?.message}</FormControlErrorText>
                   </FormControlError>
                 </FormControl>
               )}
@@ -191,9 +179,7 @@ const ProfileEdit = () => {
                   </Select>
                   <FormControlError>
                     <FormControlErrorIcon as={AlertCircle} size="lg" />
-                    <FormControlErrorText>
-                      {errors?.gender?.message}
-                    </FormControlErrorText>
+                    <FormControlErrorText>{errors?.gender?.message}</FormControlErrorText>
                   </FormControlError>
                 </FormControl>
               )}
@@ -206,16 +192,10 @@ const ProfileEdit = () => {
                   <FormControlLabel>
                     <FormControlLabelText>出生日期</FormControlLabelText>
                   </FormControlLabel>
-                  <DatePicker
-                    value={value}
-                    onChange={onChange}
-                    variant="rounded"
-                  ></DatePicker>
+                  <DatePicker value={value} onChange={onChange} variant="rounded"></DatePicker>
                   <FormControlError>
                     <FormControlErrorIcon as={AlertCircle} size="lg" />
-                    <FormControlErrorText>
-                      {errors?.birthday?.message}
-                    </FormControlErrorText>
+                    <FormControlErrorText>{errors?.birthday?.message}</FormControlErrorText>
                   </FormControlError>
                 </FormControl>
               )}
@@ -239,9 +219,7 @@ const ProfileEdit = () => {
                   </Input>
                   <FormControlError>
                     <FormControlErrorIcon as={AlertCircleIcon} />
-                    <FormControlErrorText>
-                      {errors?.phoneNumber?.message}
-                    </FormControlErrorText>
+                    <FormControlErrorText>{errors?.phoneNumber?.message}</FormControlErrorText>
                   </FormControlError>
                 </FormControl>
               )}
@@ -251,8 +229,7 @@ const ProfileEdit = () => {
               size="lg"
               onPress={() => {
                 handleSubmit(onSubmit)();
-              }}
-            >
+              }}>
               <ButtonText>保存</ButtonText>
             </Button>
           </VStack>

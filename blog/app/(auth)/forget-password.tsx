@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   FormControl,
   FormControlError,
@@ -6,26 +6,25 @@ import {
   FormControlErrorText,
   FormControlHelper,
   FormControlHelperText,
-} from "@/components/ui/form-control";
-import { Controller, useForm } from "react-hook-form";
-import { Input, InputField } from "@/components/ui/input";
-import { VStack } from "@/components/ui/vstack";
-import { Button, ButtonText } from "@/components/ui/button";
-import { HStack } from "@/components/ui/hstack";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import InfoToast from "@/components/alert-toast";
-import { useToast } from "@/components/ui/toast";
-import { useAuth } from "@/components/auth-context";
-import { AlertCircleIcon } from "lucide-react-native";
-import { Spinner } from "@/components/ui/spinner";
+} from '@/components/ui/form-control';
+import { Controller, useForm } from 'react-hook-form';
+import { Input, InputField } from '@/components/ui/input';
+import { VStack } from '@/components/ui/vstack';
+import { Button, ButtonText } from '@/components/ui/button';
+import { HStack } from '@/components/ui/hstack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import InfoToast from '@/components/alert-toast';
+import { useToast } from '@/components/ui/toast';
+import { useAuth } from '@/components/auth-context';
+import { AlertCircleIcon } from 'lucide-react-native';
+import { Spinner } from '@/components/ui/spinner';
 
 const ForgetPassword = () => {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { forgetPasswordMutation } = useAuth();
 
-  const { reset, error, mutate, isSuccess, isError, isPending } =
-    forgetPasswordMutation;
+  const { reset, error, mutate, isSuccess, isError, isPending } = forgetPasswordMutation;
 
   const {
     control,
@@ -33,7 +32,7 @@ const ForgetPassword = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      email: "",
+      email: '',
     },
   });
 
@@ -41,18 +40,14 @@ const ForgetPassword = () => {
     mutate(data, {
       onSuccess: () => {
         toast.show({
-          placement: "top",
-          render: () => (
-            <InfoToast description="发送重置密码邮件成功" action="success" />
-          ),
+          placement: 'top',
+          render: () => <InfoToast description="发送重置密码邮件成功" action="success" />,
         });
       },
       onError: (error: any) => {
         toast.show({
-          placement: "top",
-          render: () => (
-            <InfoToast description="发送重置密码邮件失败" action="error" />
-          ),
+          placement: 'top',
+          render: () => <InfoToast description="发送重置密码邮件失败" action="error" />,
         });
       },
     });
@@ -60,23 +55,19 @@ const ForgetPassword = () => {
 
   return (
     <>
-      {isPending && (
-        <Spinner className="absolute top-0 right-0 bottom-0 left-0 z-50"></Spinner>
-      )}
+      {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       <VStack
         className="w-full flex-1 justify-between p-4"
-        style={{ paddingBottom: insets.bottom }}
-      >
+        style={{ paddingBottom: insets.bottom }}>
         <VStack className="flex-1" space="lg">
           <Controller
             control={control}
             name="email"
             rules={{
-              required: "邮箱地址是必填项",
+              required: '邮箱地址是必填项',
               pattern: {
-                value:
-                  /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/i,
-                message: "邮箱地址格式不正确",
+                value: /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/i,
+                message: '邮箱地址格式不正确',
               },
             }}
             render={({ field: { onChange, onBlur, value } }: any) => (
@@ -96,18 +87,12 @@ const ForgetPassword = () => {
                 </FormControlHelper>
                 <FormControlError>
                   <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>
-                    {errors?.email?.message}
-                  </FormControlErrorText>
+                  <FormControlErrorText>{errors?.email?.message}</FormControlErrorText>
                 </FormControlError>
               </FormControl>
             )}
           />
-          <Button
-            className="rounded-3xl"
-            size="lg"
-            onPress={handleSubmit(onSubmit)}
-          >
+          <Button className="rounded-3xl" size="lg" onPress={handleSubmit(onSubmit)}>
             <ButtonText>发送邮件</ButtonText>
           </Button>
           <Button className="" size="lg" variant="link">

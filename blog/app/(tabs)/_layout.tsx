@@ -7,28 +7,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "主页",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="home" color={color} />
-          ),
+          title: '主页',
+          tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
         }}
       />
       <Tabs.Screen
         name="post"
         options={{
-          title: "发现",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="map" color={color} />
-          ),
+          title: '发现',
+          tabBarIcon: ({ color }) => <FontAwesome size={28} name="map" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "我的",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="cog" color={color} />
-          ),
+          title: '我的',
+          tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
         }}
       />
     </Tabs>

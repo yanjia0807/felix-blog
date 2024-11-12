@@ -1,10 +1,10 @@
-export const genderEnum = [
+export const genderEnum: any = [
   {
-    label: "男",
-    value: "male",
+    label: '男',
+    value: 'male',
   },
   {
-    label: "女",
-    value: "female",
+    label: '女',
+    value: 'female',
   },
 ];

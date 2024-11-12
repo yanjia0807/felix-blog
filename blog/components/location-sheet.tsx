@@ -1,11 +1,8 @@
-import React, { forwardRef, useEffect, useState } from "react";
-import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import {
-  BottomSheetBackdrop,
-  BottomSheetDragIndicator,
-} from "./ui/bottomsheet";
-import { VStack } from "./ui/vstack";
-import { HStack } from "./ui/hstack";
+import React, { forwardRef, useEffect, useState } from 'react';
+import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet';
+import { VStack } from './ui/vstack';
+import { HStack } from './ui/hstack';
 
 const LocationSheet = forwardRef(({ setLocation }: any, ref: any) => {
   const [currentLocation, setCurrentLocation] = useState<any>(null);
@@ -22,11 +19,10 @@ const LocationSheet = forwardRef(({ setLocation }: any, ref: any) => {
 
   return (
     <BottomSheetModal
-      snapPoints={["50%"]}
+      snapPoints={['50%']}
       backdropComponent={BottomSheetBackdrop}
       handleComponent={BottomSheetDragIndicator}
-      ref={ref}
-    >
+      ref={ref}>
       <BottomSheetView className="flex-1">
         <VStack className="flex-1 items-center p-4" space="2xl">
           <HStack></HStack>

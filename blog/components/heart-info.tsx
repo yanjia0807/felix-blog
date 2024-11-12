@@ -1,10 +1,10 @@
-import { TouchableOpacity } from "react-native";
-import React from "react";
-import { HStack } from "./ui/hstack";
-import colors from "tailwindcss/colors";
-import { Icon } from "./ui/icon";
-import { Text } from "./ui/text";
-import { Heart } from "lucide-react-native";
+import { TouchableOpacity } from 'react-native';
+import React from 'react';
+import { HStack } from './ui/hstack';
+import colors from 'tailwindcss/colors';
+import { Icon } from './ui/icon';
+import { Text } from './ui/text';
+import { Heart } from 'lucide-react-native';
 
 const HeartInfo = () => {
   return (

@@ -1,90 +1,121 @@
-import { TouchableOpacity, View } from "react-native";
-import React from "react";
-import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useFetchPost } from "@/api/post";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import AlertToast from "@/components/alert-toast";
-import { useToast } from "@/components/ui/toast";
-import { VStack } from "@/components/ui/vstack";
-import { Heading } from "@/components/ui/heading";
-import { Card } from "@/components/ui/card";
-import { FlashList } from "@shopify/flash-list";
-import { Image } from "expo-image";
-import { Box } from "@/components/ui/box";
-import { baseURL } from "@/api";
-import moment from "moment";
-import { HStack } from "@/components/ui/hstack";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { BookMarked, BookMarkedIcon, Share2 } from "lucide-react-native";
-import { Icon } from "@/components/ui/icon";
-import { Center } from "@/components/ui/center";
-import CommentInfo from "@/components/comment-info";
-import HeartInfo from "@/components/heart-info";
-import AuthorInfo from "@/components/author-info";
+import { TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useFetchPost } from '@/api/post';
+import { Text } from '@/components/ui/text';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import AlertToast from '@/components/alert-toast';
+import { useToast } from '@/components/ui/toast';
+import { VStack } from '@/components/ui/vstack';
+import { Heading } from '@/components/ui/heading';
+import { Card } from '@/components/ui/card';
+import { FlashList } from '@shopify/flash-list';
+import { Image } from 'expo-image';
+import { Box } from '@/components/ui/box';
+import { baseURL } from '@/api';
+import moment from 'moment';
+import { HStack } from '@/components/ui/hstack';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { BookMarked, BookMarkedIcon, Share2 } from 'lucide-react-native';
+import { Icon } from '@/components/ui/icon';
+import { Center } from '@/components/ui/center';
+import CommentInfo from '@/components/comment-info';
+import HeartInfo from '@/components/heart-info';
+import AuthorInfo from '@/components/author-info';
+import TagBtn from '@/components/tag-btn';
+import GalleryPreview from 'react-native-gallery-preview';
+import { Pressable } from '@/components/ui/pressable';
+import RecordingBtn from '@/components/recording-btn';
 
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
   const toast = useToast();
+  const [initialIndex, setInitialIndex] = useState<number>(0);
+  const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
 
-  const {
-    isPending,
-    isError,
-    isSuccess,
-    data: post,
-    error,
-  } = useFetchPost(documentId as string);
+  const { isPending, isError, isSuccess, data: post, error } = useFetchPost(documentId as string);
 
   if (isError) {
     toast.show({
-      id: "1",
+      id: '1',
       duration: 3000,
-      placement: "top",
-      render: ({ id }) => (
-        <AlertToast id={id} description={error.message} action="error" />
-      ),
+      placement: 'top',
+      render: ({ id }) => <AlertToast id={id} description={error.message} action="error" />,
     });
   }
 
-  const renderItem = ({ item }: any) => {
+  const handleOpenGallery = async (index: number) => {
+    console.log(index);
+    setInitialIndex(index);
+    setGalleryPreviewIsOpen(true);
+  };
+
+  const renderItem = ({ item, index }: any) => {
     return (
-      <Box className="m-1 w-48 h-48">
+      <Pressable className="m-1 h-48 w-48" onPress={() => handleOpenGallery(index)}>
         <Image
           source={{
             uri: `${baseURL}/${item.small.url}`,
           }}
           alt={item.alternativeText}
           style={{
-            width: "100%",
-            height: "100%",
+            width: '100%',
+            height: '100%',
             borderRadius: 12,
           }}
         />
-      </Box>
+      </Pressable>
     );
   };
 
-  const files = post?.blocks
-    ?.find((item: any) => item["__component"] === "shared.attachment")
-    ?.files.map((item: any) => ({
+  const files = post?.blocks?.find(
+    (item: any) => item['__component'] === 'shared.attachment',
+  )?.files;
+
+  const images = files
+    ?.filter((item: any) => item.mime.startsWith('image/'))
+    .map((item: any) => ({
       id: item.id,
       documentId: item.documentId,
       small: item.formats.small,
     }));
 
-  const cover = files && files[0];
+  const cover = images && images[0];
+
+  const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
 
   const content = post?.content;
   const author = post?.author;
-  const publishedAt =
-    post && moment(post.publishedAt).format("YYYY-MM-DD h:mm:ss");
+  const publishedAt = post && moment(post.publishedAt).format('YYYY-MM-DD h:mm:ss');
+  const tags = post?.tags;
 
   return (
     <>
+      {recordings?.length > 0 && (
+        <HStack space="sm" className="my-2 flex-wrap">
+          {recordings.map(({ recording, durationMillis }: any) => {
+            return (
+              <RecordingBtn
+                key={recording.getURI()}
+                uri={recording.getURI()}
+                durationMillis={durationMillis}
+              />
+            );
+          })}
+        </HStack>
+      )}
+      {images?.length > 1 && (
+        <GalleryPreview
+          images={images || []}
+          initialIndex={initialIndex}
+          isVisible={galleryPreviewIsOpen}
+          onRequestClose={() => setGalleryPreviewIsOpen(false)}
+        />
+      )}
       <Stack.Screen
         options={{
-          title: "",
+          title: '',
           headerShown: true,
           headerLeft: () => (
             <Button
@@ -92,53 +123,42 @@ const PostDetail = () => {
               variant="link"
               onPress={() => {
                 router.dismiss();
-              }}
-            >
+              }}>
               <ButtonText>返回</ButtonText>
             </Button>
           ),
         }}
       />
-      {isPending && (
-        <Spinner className="absolute top-0 right-0 bottom-0 left-0 z-50"></Spinner>
-      )}
+      {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       {isSuccess && (
         <Card className="flex-1 p-4">
           <VStack space="md">
             {cover ? (
-              <Box className="w-full h-48">
+              <Box className="h-48 w-full">
                 <Image
                   source={{
                     uri: `${baseURL}/${cover.small.url}`,
                   }}
                   alt={cover.alternativeText}
                   style={{
-                    width: "100%",
-                    height: "100%",
+                    width: '100%',
+                    height: '100%',
                     borderRadius: 12,
                   }}
                 />
-                <TouchableOpacity className="absolute right-16 -bottom-4 w-8 h-8 bg-secondary-500 rounded-full justify-center items-center drop-shadow-xl">
-                  <Icon
-                    size="md"
-                    className="text-secondary-0"
-                    as={BookMarked}
-                  />
+                <TouchableOpacity className="absolute -bottom-4 right-16 h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
+                  <Icon size="md" className="text-secondary-0" as={BookMarked} />
                 </TouchableOpacity>
-                <TouchableOpacity className="absolute right-4 -bottom-4 w-8 h-8 bg-secondary-500 rounded-full justify-center items-center drop-shadow-xl">
+                <TouchableOpacity className="absolute -bottom-4 right-4 h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
                   <Icon size="md" className="text-secondary-0" as={Share2} />
                 </TouchableOpacity>
               </Box>
             ) : (
-              <HStack className="justify-end items-center" space="md">
-                <TouchableOpacity className="w-8 h-8 bg-secondary-500 rounded-full justify-center items-center drop-shadow-xl">
-                  <Icon
-                    size="md"
-                    className="text-secondary-0"
-                    as={BookMarked}
-                  />
+              <HStack className="items-center justify-end" space="md">
+                <TouchableOpacity className="h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
+                  <Icon size="md" className="text-secondary-0" as={BookMarked} />
                 </TouchableOpacity>
-                <TouchableOpacity className="w-8 h-8 bg-secondary-500 rounded-full justify-center items-center drop-shadow-xl">
+                <TouchableOpacity className="h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
                   <Icon size="md" className="text-secondary-0" as={Share2} />
                 </TouchableOpacity>
               </HStack>
@@ -147,17 +167,24 @@ const PostDetail = () => {
             <HStack space="md">
               <Text size="sm"> {publishedAt}</Text>
             </HStack>
-            <HStack className="justify-between items-center">
+            <HStack className="items-center justify-between">
               <AuthorInfo author={author} />
               <HStack space="lg" className="flex-row items-center">
                 <HeartInfo />
                 <CommentInfo />
               </HStack>
             </HStack>
+            {tags.length > 0 && (
+              <HStack space="sm" className="flex-wrap">
+                {tags.map((item: any) => (
+                  <TagBtn key={item.id} tag={item} />
+                ))}
+              </HStack>
+            )}
 
-            {files?.length > 1 && (
+            {images?.length > 1 && (
               <FlashList
-                data={files.slice(1)}
+                data={images.slice(1)}
                 keyExtractor={(item: any) => item.id}
                 horizontal={true}
                 renderItem={renderItem}

@@ -1,4 +1,4 @@
-import { publicClient, client } from "./config";
+import { publicClient, client } from './config';
 
 export const loginUser = async (credentials: any) => {
   const response = await publicClient.post(`/auth/local`, {
@@ -29,11 +29,7 @@ export const sendResetPasswordEmail = async ({ email }: any) => {
   return response.data;
 };
 
-export const resetPassword = async ({
-  code,
-  password,
-  passwordConfirmation,
-}: any) => {
+export const resetPassword = async ({ code, password, passwordConfirmation }: any) => {
   const response = await publicClient.post(`/auth/reset-password`, {
     code,
     password,

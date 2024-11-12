@@ -1,82 +1,153 @@
-import React, { forwardRef, useEffect, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useState } from 'react';
+import { FlatList } from 'react-native';
 import {
-  BottomSheetModal,
   BottomSheetTextInput,
-  BottomSheetView,
-  TouchableOpacity,
-} from "@gorhom/bottom-sheet";
-import {
   BottomSheetBackdrop,
-  BottomSheetDragIndicator,
-} from "./ui/bottomsheet";
-import { Text } from "./ui/text";
-import { Heading } from "./ui/heading";
-import { BottomSheetFlashList } from "@gorhom/bottom-sheet";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+  BottomSheetFooter,
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetFlatList,
+} from '@gorhom/bottom-sheet';
+import { Text } from './ui/text';
+import { Heading } from './ui/heading';
+import { BottomSheetFlashList } from '@gorhom/bottom-sheet';
+import { useFetchTags } from '@/api/tag';
+import { Button, ButtonIcon, ButtonText } from './ui/button';
+import { X } from 'lucide-react-native';
+import _ from 'lodash';
+import { Divider } from './ui/divider';
+import { HStack } from './ui/hstack';
+import { Pressable } from './ui/pressable';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import TagBtn from './tag-btn';
+import { Controller, useForm } from 'react-hook-form';
 
-const tagsData = [
-  { id: 1, slug: "travel", name: "旅行" },
-  { id: 2, slug: "food", name: "美食" },
-  { id: 3, slug: "fitness", name: "健身" },
-  { id: 4, slug: "photography", name: "摄影" },
-  { id: 5, slug: "fashion", name: "时尚" },
-  { id: 6, slug: "technology", name: "科技" },
-  { id: 7, slug: "movies", name: "电影" },
-  { id: 8, slug: "music", name: "音乐" },
-  { id: 9, slug: "reading", name: "读书" },
-  { id: 10, slug: "art", name: "艺术" },
-  { id: 11, slug: "pets", name: "宠物" },
-  { id: 12, slug: "gaming", name: "游戏" },
-  { id: 13, slug: "home", name: "家居" },
-  { id: 14, slug: "history", name: "历史" },
-  { id: 15, slug: "culture", name: "文化" },
-  { id: 16, slug: "entrepreneurship", name: "创业" },
-  { id: 17, slug: "psychology", name: "心理学" },
-];
-
-const TagSheet = forwardRef(({ setTags }: any, ref: any) => {
-  useEffect(() => {}, []);
+const TagSheet = forwardRef(({ value, onChange }: any, ref: any) => {
   const [selectedTags, setSelectedTags] = useState<any>([]);
-  const insets = useSafeAreaInsets();
 
-  const toggleTag = (tag: any) => {
-    setSelectedTags((prev: any) =>
-      prev.includes(tag) ? prev.filter((t: any) => t !== tag) : [...prev, tag]
-    );
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    reset,
+    getValues,
+  } = useForm({});
+
+  const { data: tags, error, isError, isLoading, refetch } = useFetchTags(getValues());
+  const [snapPoints, setSnapPoints] = useState(['50%']);
+  const { bottom: bottomSafeArea } = useSafeAreaInsets();
+
+  const onSubmit = (data: any) => {
+    console.log('onSubmit', data);
+    refetch(data);
+  };
+
+  const debouncedSubmit = React.useMemo(
+    () => _.debounce(handleSubmit(onSubmit), 1000),
+    [handleSubmit, onSubmit],
+  );
+
+  const addTag = (tag: any) => {
+    setSelectedTags((prev: any) => [...prev, tag]);
+  };
+
+  const removeTag = (tag: any) => {
+    setSelectedTags((prev: any) => _.reject(prev, ['id', tag.id]));
+  };
+
+  const cancel = () => {
+    setSelectedTags([...value]);
+    ref.current?.dismiss();
+  };
+
+  const commitTag = () => {
+    onChange({ selectedTags });
+    ref.current?.dismiss();
   };
 
   const renderItem = ({ item }: any) => {
     return (
-      <TouchableOpacity
+      <Pressable
+        disabled={_.some(selectedTags, ['id', item.id])}
         className="w-full justify-start border-secondary-50 py-2"
-        onPress={() => toggleTag(item.id)}
-      >
+        onPress={() => addTag(item)}>
         <Text className="w-full">{item.name}</Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        {...props}
+        pressBehavior="none"
+      />
+    ),
+    [],
+  );
+
+  const renderFooter = useCallback(
+    (props: any) => (
+      <BottomSheetFooter {...props} bottomInset={bottomSafeArea}>
+        <HStack className="flex-1 items-center justify-around">
+          <Button onPress={() => cancel()}>
+            <ButtonText>取消</ButtonText>
+          </Button>
+          <Button onPress={() => commitTag()} action="primary" variant="solid">
+            <ButtonText>确定</ButtonText>
+          </Button>
+        </HStack>
+      </BottomSheetFooter>
+    ),
+    [onChange, selectedTags],
+  );
+
+  useEffect(() => {
+    setSelectedTags([...value]);
+  }, [value]);
+
   return (
     <BottomSheetModal
-      snapPoints={["50%"]}
-      backdropComponent={BottomSheetBackdrop}
-      handleComponent={BottomSheetDragIndicator}
+      snapPoints={snapPoints}
+      backdropComponent={renderBackdrop}
+      enableDynamicSizing={false}
+      footerComponent={(props) => renderFooter({ ...props })}
       keyboardBehavior="fillParent"
-      ref={ref}
-      style={{ marginTop: insets.top, marginBottom: insets.bottom }}
-    >
+      ref={ref}>
       <BottomSheetView className="flex-1 px-4">
-        <Heading size="lg">标签</Heading>
-        <BottomSheetTextInput
-          placeholder="搜索标签..."
-          className="p-2 m-2 border rounded-2xl border-info-200"
-        />
+        <HStack className="items-center justify-between">
+          <Heading size="xl">标签</Heading>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <BottomSheetTextInput
+                placeholder="搜索标签..."
+                className="w-1/2 rounded-2xl border border-info-200 p-2"
+                value={value}
+                onChangeText={(e) => {
+                  onChange(e);
+                  debouncedSubmit();
+                }}
+              />
+            )}
+          />
+        </HStack>
+        <Divider className="my-2" />
+        <HStack className="flex-wrap">
+          {selectedTags.map((item: any) => (
+            <TagBtn key={item.id} tag={item} removeTag={removeTag} />
+          ))}
+        </HStack>
         <BottomSheetFlashList
-          data={tagsData}
+          data={tags}
           renderItem={renderItem}
           keyExtractor={(item: any) => item.id.toString()}
           estimatedItemSize={35}
           showsVerticalScrollIndicator={false}
+          extraData={{ selectedTags }}
         />
       </BottomSheetView>
     </BottomSheetModal>

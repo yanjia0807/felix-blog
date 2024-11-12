@@ -1,14 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useMutation } from "@tanstack/react-query";
-import {
-  loginUser,
-  registerUser,
-  sendEmailConfirmation,
-  sendResetPasswordEmail,
-} from "@/api/auth";
-import { setClientAuth } from "@/api";
-import { fetchMe } from "@/api";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMutation } from '@tanstack/react-query';
+import { loginUser, registerUser, sendEmailConfirmation, sendResetPasswordEmail } from '@/api/auth';
+import { setClientAuth } from '@/api';
+import { fetchMe } from '@/api';
 
 const AuthContext = createContext<any>(undefined);
 
@@ -18,7 +13,7 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     const loadAuthData = async () => {
-      const accessToken = await AsyncStorage.getItem("accessToken");
+      const accessToken = await AsyncStorage.getItem('accessToken');
       if (accessToken) {
         setAccessToken(accessToken);
         setClientAuth(accessToken);
@@ -31,7 +26,7 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   const logout = async () => {
-    await AsyncStorage.removeItem("accessToken");
+    await AsyncStorage.removeItem('accessToken');
     setUser(null);
     setAccessToken(null);
     setClientAuth(null);
@@ -40,7 +35,7 @@ export const AuthProvider = ({ children }: any) => {
   const loginMutation = useMutation({
     mutationFn: (data: any) => loginUser(data),
     onSuccess: async (data) => {
-      await AsyncStorage.setItem("accessToken", data.jwt);
+      await AsyncStorage.setItem('accessToken', data.jwt);
       setUser(data.user);
       setAccessToken(data.jwt);
       setClientAuth(data.jwt);
@@ -51,7 +46,7 @@ export const AuthProvider = ({ children }: any) => {
   const registerMutation = useMutation({
     mutationFn: (data: any) => registerUser(data),
     onSuccess: async (data) => {
-      await AsyncStorage.setItem("accessToken", data.jwt);
+      await AsyncStorage.setItem('accessToken', data.jwt);
       setUser(data.user);
       setAccessToken(data.jwt);
       setClientAuth(data.jwt);
@@ -96,8 +91,7 @@ export const AuthProvider = ({ children }: any) => {
         resetPasswordMutation,
         sendEmailConfirmationMutation,
         logout,
-      }}
-    >
+      }}>
       {children}
     </AuthContext.Provider>
   );

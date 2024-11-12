@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { HStack } from "@/components/ui/hstack";
-import { EditIcon } from "@/components/ui/icon";
-import { Text } from "@/components/ui/text";
-import { VStack } from "@/components/ui/vstack";
-import { Card } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
-import { Box } from "@/components/ui/box";
-import { Heading } from "@/components/ui/heading";
-import { Calendar, MapPin, MessageCircle, ScanFace } from "lucide-react-native";
-import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Divider } from "@/components/ui/divider";
-import { router, Stack } from "expo-router";
-import { Icon } from "@/components/ui/icon";
-import SegmentedControl from "@react-native-segmented-control/segmented-control";
-import { FlashList, MasonryFlashList } from "@shopify/flash-list";
-import { Image } from "expo-image";
-import { Dimensions } from "react-native";
-import { baseURL, useFetchPosts } from "@/api";
+import React, { useEffect, useState } from 'react';
+import { HStack } from '@/components/ui/hstack';
+import { EditIcon } from '@/components/ui/icon';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { Card } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
+import { Box } from '@/components/ui/box';
+import { Heading } from '@/components/ui/heading';
+import { Calendar, MapPin, MessageCircle, ScanFace } from 'lucide-react-native';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Divider } from '@/components/ui/divider';
+import { router, Stack } from 'expo-router';
+import { Icon } from '@/components/ui/icon';
+import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import { FlashList, MasonryFlashList } from '@shopify/flash-list';
+import { Image } from 'expo-image';
+import { Dimensions } from 'react-native';
+import { baseURL, useFetchPosts } from '@/api';
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 const numColumns = 2;
 
 const PostListView = () => {
@@ -27,10 +27,8 @@ const PostListView = () => {
 
   const renderItem = ({ item }: any) => {
     return (
-      <Card className="rounded-lg my-2">
-        <Text className="text-sm font-normal mb-2 text-typography-700">
-          {item.publishedAt}
-        </Text>
+      <Card className="my-2 rounded-lg">
+        <Text className="mb-2 text-sm font-normal text-typography-700">{item.publishedAt}</Text>
         <VStack className="mb-6">
           <Heading size="md" className="mb-4">
             {item.title}
@@ -63,14 +61,12 @@ const PhotoListView = () => {
   const fetchPhotos = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `https://picsum.photos/v2/list?page=${page}&limit=15`
-      );
+      const response = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=15`);
       const data = await response.json();
       setPhotos((prevPhotos: any) => [...prevPhotos, ...data]);
       setPage((prevPage) => prevPage + 1);
     } catch (error) {
-      console.error("Error fetching photos:", error);
+      console.error('Error fetching photos:', error);
     } finally {
       setLoading(false);
     }
@@ -97,10 +93,10 @@ const PhotoListView = () => {
   };
 
   return (
-    <Box className="flex-1 mr-1/4">
+    <Box className="mr-1/4 flex-1">
       <MasonryFlashList
         data={photos}
-        getItemType={() => "image"}
+        getItemType={() => 'image'}
         renderItem={renderItem}
         numColumns={numColumns}
         ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}
@@ -120,15 +116,15 @@ const Profile = () => {
     <>
       <Stack.Screen
         options={{
-          title: "我的",
+          title: '我的',
         }}
       />
-      <VStack className="p-8 flex-1" space="xl">
-        <HStack className="justify-between items-center">
+      <VStack className="flex-1 p-8" space="xl">
+        <HStack className="items-center justify-between">
           <Avatar size="lg">
             <AvatarImage
               alt="Profile Image"
-              source={require("@/assets/images/profile/WechatIMG113.jpeg")}
+              source={require('@/assets/images/profile/WechatIMG113.jpeg')}
             />
           </Avatar>
           <HStack className="items-center" space="lg">
@@ -139,9 +135,8 @@ const Profile = () => {
               size="sm"
               className="rounded-3xl px-6"
               onPress={() => {
-                router.push("/profile-edit");
-              }}
-            >
+                router.push('/profile-edit');
+              }}>
               <ButtonText>编辑</ButtonText>
               <ButtonIcon as={EditIcon} />
             </Button>
@@ -189,11 +184,9 @@ const Profile = () => {
         </HStack>
         <Divider />
         <SegmentedControl
-          values={["我的帖子", "照片墙"]}
+          values={['我的帖子', '照片墙']}
           selectedIndex={selectedIndex}
-          onChange={(event) =>
-            setSelectedIndex(event.nativeEvent.selectedSegmentIndex)
-          }
+          onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
         />
         {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
       </VStack>

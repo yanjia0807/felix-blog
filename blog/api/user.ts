@@ -1,5 +1,5 @@
-import { client } from "./config";
-import qs from "qs";
+import { client } from './config';
+import qs from 'qs';
 
 export const fetchMe = async () => {
   const res = await client.get(`/users/me`);
@@ -8,7 +8,7 @@ export const fetchMe = async () => {
     {
       populate: {
         avatar: {
-          fields: ["formats", "name", "alternativeText"],
+          fields: ['formats', 'name', 'alternativeText'],
         },
       },
       filters: {
@@ -21,7 +21,7 @@ export const fetchMe = async () => {
     },
     {
       encodeValuesOnly: true,
-    }
+    },
   );
   const res1 = await client.get(`/profiles?${query}`);
 

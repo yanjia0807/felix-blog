@@ -1,22 +1,11 @@
-import { View, Text } from "react-native";
-import React from "react";
-import {
-  Avatar,
-  AvatarFallbackText,
-  AvatarImage,
-  AvatarBadge,
-} from "./ui/avatar";
-import { useAuth } from "./auth-context";
-import { baseURL } from "@/api/config";
-import { Icon } from "./ui/icon";
-import { LogIn, User } from "lucide-react-native";
-import {
-  ButtonGroup,
-  Button,
-  ButtonText,
-  ButtonSpinner,
-  ButtonIcon,
-} from "./ui/button";
+import { View, Text } from 'react-native';
+import React from 'react';
+import { Avatar, AvatarFallbackText, AvatarImage, AvatarBadge } from './ui/avatar';
+import { useAuth } from './auth-context';
+import { baseURL } from '@/api/config';
+import { Icon } from './ui/icon';
+import { LogIn, User } from 'lucide-react-native';
+import { ButtonGroup, Button, ButtonText, ButtonSpinner, ButtonIcon } from './ui/button';
 
 export const ProfileAvatar = () => {
   const { user } = useAuth();

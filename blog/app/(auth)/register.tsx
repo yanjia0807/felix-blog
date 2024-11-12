@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   FormControl,
   FormControlError,
@@ -8,23 +8,22 @@ import {
   FormControlHelperText,
   FormControlLabel,
   FormControlLabelText,
-} from "@/components/ui/form-control";
-import { Input, InputField } from "@/components/ui/input";
-import { VStack } from "@/components/ui/vstack";
-import { Button, ButtonText } from "@/components/ui/button";
-import { HStack } from "@/components/ui/hstack";
-import { useAuth } from "@/components/auth-context";
-import { Controller, useForm } from "react-hook-form";
-import { AlertCircleIcon } from "lucide-react-native";
-import { Spinner } from "@/components/ui/spinner";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useToast } from "@/components/ui/toast";
-import InfoToast from "@/components/alert-toast";
+} from '@/components/ui/form-control';
+import { Input, InputField } from '@/components/ui/input';
+import { VStack } from '@/components/ui/vstack';
+import { Button, ButtonText } from '@/components/ui/button';
+import { HStack } from '@/components/ui/hstack';
+import { useAuth } from '@/components/auth-context';
+import { Controller, useForm } from 'react-hook-form';
+import { AlertCircleIcon } from 'lucide-react-native';
+import { Spinner } from '@/components/ui/spinner';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useToast } from '@/components/ui/toast';
+import InfoToast from '@/components/alert-toast';
 
 const SignUp = () => {
   const { registerMutation } = useAuth();
-  const { reset, error, mutate, isSuccess, isError, isPending } =
-    registerMutation;
+  const { reset, error, mutate, isSuccess, isError, isPending } = registerMutation;
   const insets = useSafeAreaInsets();
   const toast = useToast();
 
@@ -34,9 +33,9 @@ const SignUp = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      username: "",
-      email: "",
-      password: "",
+      username: '',
+      email: '',
+      password: '',
     },
   });
 
@@ -44,13 +43,13 @@ const SignUp = () => {
     mutate(data, {
       onSuccess: () => {
         toast.show({
-          placement: "top",
+          placement: 'top',
           render: () => <InfoToast description="注册成功" action="success" />,
         });
       },
       onError: (error: any) => {
         toast.show({
-          placement: "top",
+          placement: 'top',
           render: () => <InfoToast description="注册失败" action="error" />,
         });
       },
@@ -59,25 +58,17 @@ const SignUp = () => {
 
   return (
     <>
-      {isPending && (
-        <Spinner className="absolute top-0 right-0 bottom-0 left-0 z-50"></Spinner>
-      )}
+      {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
 
-      <VStack
-        className="flex-1 justify-between p-4"
-        style={{ paddingBottom: insets.bottom }}
-      >
+      <VStack className="flex-1 justify-between p-4" style={{ paddingBottom: insets.bottom }}>
         <VStack className="flex-1" space="lg">
           <Controller
             control={control}
             name="username"
             rules={{
-              required: "用户名是必填项",
+              required: '用户名是必填项',
               validate: (value: any) => {
-                return (
-                  (value.length >= 3 && value.length <= 16) ||
-                  "用户名长度需在3到16个字符之间"
-                );
+                return (value.length >= 3 && value.length <= 16) || '用户名长度需在3到16个字符之间';
               },
             }}
             render={({ field: { onChange, onBlur, value } }: any) => (
@@ -96,15 +87,11 @@ const SignUp = () => {
                   />
                 </Input>
                 <FormControlHelper className="justify-end">
-                  <FormControlHelperText>
-                    用户名长度需在3到16个字符之间
-                  </FormControlHelperText>
+                  <FormControlHelperText>用户名长度需在3到16个字符之间</FormControlHelperText>
                 </FormControlHelper>
                 <FormControlError>
                   <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>
-                    {errors?.username?.message}
-                  </FormControlErrorText>
+                  <FormControlErrorText>{errors?.username?.message}</FormControlErrorText>
                 </FormControlError>
               </FormControl>
             )}
@@ -114,11 +101,10 @@ const SignUp = () => {
             control={control}
             name="email"
             rules={{
-              required: "邮箱地址是必填项",
+              required: '邮箱地址是必填项',
               pattern: {
-                value:
-                  /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/i,
-                message: "邮箱地址格式不正确",
+                value: /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/i,
+                message: '邮箱地址格式不正确',
               },
             }}
             render={({ field: { onChange, onBlur, value } }: any) => (
@@ -141,9 +127,7 @@ const SignUp = () => {
                 </FormControlHelper>
                 <FormControlError>
                   <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>
-                    {errors?.email?.message}
-                  </FormControlErrorText>
+                  <FormControlErrorText>{errors?.email?.message}</FormControlErrorText>
                 </FormControlError>
               </FormControl>
             )}
@@ -153,8 +137,8 @@ const SignUp = () => {
             control={control}
             name="password"
             rules={{
-              required: "密码是必填项",
-              minLength: { value: 8, message: "密码长度至少为8位" },
+              required: '密码是必填项',
+              minLength: { value: 8, message: '密码长度至少为8位' },
             }}
             render={({ field: { onChange, onBlur, value } }) => (
               <FormControl isInvalid={!!errors.password} size="lg">
@@ -171,24 +155,16 @@ const SignUp = () => {
                   />
                 </Input>
                 <FormControlHelper className="justify-end">
-                  <FormControlHelperText>
-                    密码长度至少为8个字符
-                  </FormControlHelperText>
+                  <FormControlHelperText>密码长度至少为8个字符</FormControlHelperText>
                 </FormControlHelper>
                 <FormControlError>
                   <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>
-                    {errors?.password?.message}
-                  </FormControlErrorText>
+                  <FormControlErrorText>{errors?.password?.message}</FormControlErrorText>
                 </FormControlError>
               </FormControl>
             )}
           />
-          <Button
-            className="rounded-3xl"
-            size="lg"
-            onPress={handleSubmit(onSubmit)}
-          >
+          <Button className="rounded-3xl" size="lg" onPress={handleSubmit(onSubmit)}>
             <ButtonText>注册</ButtonText>
           </Button>
           <Button className="" size="lg" variant="link">

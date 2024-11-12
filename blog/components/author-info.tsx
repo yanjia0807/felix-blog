@@ -1,9 +1,9 @@
-import React from "react";
-import { HStack } from "./ui/hstack";
-import { Text } from "./ui/text";
-import { baseURL } from "@/api";
-import { Avatar, AvatarImage } from "./ui/avatar";
-import { VStack } from "./ui/vstack";
+import React from 'react';
+import { HStack } from './ui/hstack';
+import { Text } from './ui/text';
+import { baseURL } from '@/api';
+import { Avatar, AvatarImage } from './ui/avatar';
+import { VStack } from './ui/vstack';
 
 const AuthorInfo = ({ author }: any) => {
   return (

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   FormControl,
   FormControlError,
@@ -8,17 +8,17 @@ import {
   FormControlHelperText,
   FormControlLabel,
   FormControlLabelText,
-} from "@/components/ui/form-control";
-import { Input, InputField } from "@/components/ui/input";
-import { VStack } from "@/components/ui/vstack";
-import { Button, ButtonText } from "@/components/ui/button";
-import { HStack } from "@/components/ui/hstack";
-import { useAuth } from "@/components/auth-context";
-import { Controller, useForm } from "react-hook-form";
-import { AlertCircleIcon } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useToast } from "@/components/ui/toast";
-import InfoToast from "@/components/alert-toast";
+} from '@/components/ui/form-control';
+import { Input, InputField } from '@/components/ui/input';
+import { VStack } from '@/components/ui/vstack';
+import { Button, ButtonText } from '@/components/ui/button';
+import { HStack } from '@/components/ui/hstack';
+import { useAuth } from '@/components/auth-context';
+import { Controller, useForm } from 'react-hook-form';
+import { AlertCircleIcon } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useToast } from '@/components/ui/toast';
+import InfoToast from '@/components/alert-toast';
 
 const SignIn = () => {
   const { loginMutation } = useAuth();
@@ -32,8 +32,8 @@ const SignIn = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      identifier: "",
-      password: "",
+      identifier: '',
+      password: '',
     },
   });
 
@@ -41,13 +41,13 @@ const SignIn = () => {
     mutate(data, {
       onSuccess: () => {
         toast.show({
-          placement: "top",
+          placement: 'top',
           render: () => <InfoToast description="登录成功" action="success" />,
         });
       },
       onError: (error: any) => {
         toast.show({
-          placement: "top",
+          placement: 'top',
           render: () => <InfoToast description="登录失败" action="error" />,
         });
       },
@@ -55,15 +55,12 @@ const SignIn = () => {
   };
 
   return (
-    <VStack
-      className="w-full flex-1 justify-between p-4"
-      style={{ paddingBottom: insets.bottom }}
-    >
+    <VStack className="w-full flex-1 justify-between p-4" style={{ paddingBottom: insets.bottom }}>
       <VStack className="flex-1" space="lg">
         <Controller
           control={control}
           name="identifier"
-          rules={{ required: "用户名/邮箱地址是必填项" }}
+          rules={{ required: '用户名/邮箱地址是必填项' }}
           render={({ field: { onChange, onBlur, value } }: any) => (
             <FormControl isInvalid={!!errors.identifier} size="lg">
               <FormControlLabel>
@@ -84,9 +81,7 @@ const SignIn = () => {
               </FormControlHelper>
               <FormControlError>
                 <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>
-                  {errors?.identifier?.message}
-                </FormControlErrorText>
+                <FormControlErrorText>{errors?.identifier?.message}</FormControlErrorText>
               </FormControlError>
             </FormControl>
           )}
@@ -95,8 +90,8 @@ const SignIn = () => {
           control={control}
           name="password"
           rules={{
-            required: "密码是必填项",
-            minLength: { value: 8, message: "密码长度至少为8个字符" },
+            required: '密码是必填项',
+            minLength: { value: 8, message: '密码长度至少为8个字符' },
           }}
           render={({ field: { onChange, onBlur, value } }) => (
             <FormControl isInvalid={!!errors.password} size="lg">
@@ -113,24 +108,16 @@ const SignIn = () => {
                 />
               </Input>
               <FormControlHelper className="justify-end">
-                <FormControlHelperText>
-                  密码长度至少为8个字符
-                </FormControlHelperText>
+                <FormControlHelperText>密码长度至少为8个字符</FormControlHelperText>
               </FormControlHelper>
               <FormControlError>
                 <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>
-                  {errors?.password?.message}
-                </FormControlErrorText>
+                <FormControlErrorText>{errors?.password?.message}</FormControlErrorText>
               </FormControlError>
             </FormControl>
           )}
         />
-        <Button
-          className="rounded-3xl"
-          size="lg"
-          onPress={handleSubmit(onSubmit)}
-        >
+        <Button className="rounded-3xl" size="lg" onPress={handleSubmit(onSubmit)}>
           <ButtonText>登录</ButtonText>
         </Button>
         <Button className="" size="lg" variant="link">
