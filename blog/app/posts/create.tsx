@@ -32,12 +32,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z, ZodType } from 'zod';
 import { Spinner } from '@/components/ui/spinner';
 import colors from 'tailwindcss/colors';
-import { useToast } from '@/components/ui/toast';
-import InfoToast from '@/components/alert-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import TagBtn from '@/components/tag-btn';
 import { upload } from '@/api/file';
 import { PostData, useCreatePostMutation } from '@/api/post';
+import useAlertToast from '@/components/use-alert-toast';
 
 export type PostFormData = {
   title?: string;
@@ -52,7 +51,7 @@ const PostCreate = () => {
   const insets = useSafeAreaInsets();
   const { isSuccess, isError, isPending, mutate } = useCreatePostMutation();
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const toast = useAlertToast();
 
   const PostSchema: ZodType<PostFormData> = z.object({
     content: z.string({
@@ -78,7 +77,7 @@ const PostCreate = () => {
   const onSubmit = async (formData: PostFormData) => {
     const files = [
       ...images?.map((item: any) => item.uri),
-      ...recordings?.map((item: any) => item.recording._uri),
+      ...recordings?.map((item: any) => item._uri),
     ];
 
     const fileIds: string[] = files.length > 0 ? await upload(files) : await Promise.resolve([]);
@@ -104,13 +103,11 @@ const PostCreate = () => {
     mutate(postData, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['posts'] });
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="保存成功" action="success" />,
-        });
+        toast.success('保存成功');
         router.dismiss();
       },
       onError(error, variables, context) {
+        toast.error(error.message);
         console.error(error);
       },
     });
@@ -124,13 +121,12 @@ const PostCreate = () => {
     setImages((pre: any) => _.filter(pre, (item) => item.assetId !== assetId));
   };
 
-  const handleAddRecording = ({ recording, durationMillis }: any) => {
-    setRecordings((pre: any) => [...pre, { recording, durationMillis }]);
+  const handleAddRecording = (recording: any) => {
+    setRecordings((pre: any) => [...pre, recording]);
   };
 
   const handleRemoveRecording = async (uri: string) => {
-    console.log(recordings);
-    setRecordings((pre: any) => _.filter(pre, (item) => item.recording._uri !== uri));
+    setRecordings((pre: any) => _.filter(pre, (item) => item._uri !== uri));
   };
 
   const handleAddTags = ({ selectedTags }: any) => {
@@ -145,7 +141,6 @@ const PostCreate = () => {
     setInitialIndex(index);
     setGalleryPreviewIsOpen(true);
   };
-
   return (
     <>
       <ImagePickerSheet
@@ -232,15 +227,14 @@ const PostCreate = () => {
               ))}
             </HStack>
           )}
-
+         
           {recordings.length > 0 && (
             <HStack space="sm" className="my-2 flex-wrap">
-              {recordings.map(({ recording, durationMillis }: any) => {
+              {recordings.map((recording: any) => {
                 return (
                   <RecordingBtn
                     key={recording.getURI()}
                     uri={recording.getURI()}
-                    durationMillis={durationMillis}
                     onRemove={handleRemoveRecording}
                   />
                 );

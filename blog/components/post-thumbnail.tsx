@@ -54,7 +54,7 @@ const PostThumbnail = ({ item }: any) => {
                         <BlurView className="flex-1" intensity={40} tint="default">
                           <Image
                             source={{
-                              uri: `${baseURL}${item.thumbnail.url}`,
+                              uri: `${baseURL}${item.thumbnail?.url}`,
                             }}
                             alt={item.alternativeText}
                             style={{

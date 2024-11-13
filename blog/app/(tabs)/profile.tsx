@@ -17,7 +17,7 @@ import SegmentedControl from '@react-native-segmented-control/segmented-control'
 import { FlashList, MasonryFlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { Dimensions } from 'react-native';
-import { baseURL, useFetchPosts } from '@/api';
+import { useFetchPosts } from '@/api';
 
 const { width } = Dimensions.get('window');
 const numColumns = 2;

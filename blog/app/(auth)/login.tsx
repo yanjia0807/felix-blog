@@ -17,15 +17,13 @@ import { useAuth } from '@/components/auth-context';
 import { Controller, useForm } from 'react-hook-form';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useToast } from '@/components/ui/toast';
-import InfoToast from '@/components/alert-toast';
+import useAlertToast from '@/components/use-alert-toast';
 
 const SignIn = () => {
   const { loginMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError } = loginMutation;
   const insets = useSafeAreaInsets();
-  const toast = useToast();
-
+  const toast = useAlertToast();
   const {
     control,
     handleSubmit,
@@ -39,17 +37,10 @@ const SignIn = () => {
 
   const onSubmit = (data: any) => {
     mutate(data, {
-      onSuccess: () => {
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="登录成功" action="success" />,
-        });
-      },
+      onSuccess: () => toast.success('登录成功'),
       onError: (error: any) => {
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="登录失败" action="error" />,
-        });
+        toast.error('登录失败');
+        console.error(error);
       },
     });
   };

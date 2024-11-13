@@ -1,14 +1,11 @@
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useFetchPost } from '@/api/post';
 import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import AlertToast from '@/components/alert-toast';
-import { useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
-import { Heading } from '@/components/ui/heading';
 import { Card } from '@/components/ui/card';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
@@ -16,10 +13,8 @@ import { Box } from '@/components/ui/box';
 import { baseURL } from '@/api';
 import moment from 'moment';
 import { HStack } from '@/components/ui/hstack';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { BookMarked, BookMarkedIcon, Share2 } from 'lucide-react-native';
+import { BookMarked, Share2 } from 'lucide-react-native';
 import { Icon } from '@/components/ui/icon';
-import { Center } from '@/components/ui/center';
 import CommentInfo from '@/components/comment-info';
 import HeartInfo from '@/components/heart-info';
 import AuthorInfo from '@/components/author-info';
@@ -27,26 +22,20 @@ import TagBtn from '@/components/tag-btn';
 import GalleryPreview from 'react-native-gallery-preview';
 import { Pressable } from '@/components/ui/pressable';
 import RecordingBtn from '@/components/recording-btn';
+import useAlertToast from '@/components/use-alert-toast';
 
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
-  const toast = useToast();
+  const toast = useAlertToast();
   const [initialIndex, setInitialIndex] = useState<number>(0);
   const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
-
   const { isPending, isError, isSuccess, data: post, error } = useFetchPost(documentId as string);
 
   if (isError) {
-    toast.show({
-      id: '1',
-      duration: 3000,
-      placement: 'top',
-      render: ({ id }) => <AlertToast id={id} description={error.message} action="error" />,
-    });
+    toast.error(error.message);
   }
 
   const handleOpenGallery = async (index: number) => {
-    console.log(index);
     setInitialIndex(index);
     setGalleryPreviewIsOpen(true);
   };
@@ -80,11 +69,9 @@ const PostDetail = () => {
       documentId: item.documentId,
       small: item.formats.small,
     }));
-
   const cover = images && images[0];
 
   const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
-
   const content = post?.content;
   const author = post?.author;
   const publishedAt = post && moment(post.publishedAt).format('YYYY-MM-DD h:mm:ss');
@@ -92,19 +79,6 @@ const PostDetail = () => {
 
   return (
     <>
-      {recordings?.length > 0 && (
-        <HStack space="sm" className="my-2 flex-wrap">
-          {recordings.map(({ recording, durationMillis }: any) => {
-            return (
-              <RecordingBtn
-                key={recording.getURI()}
-                uri={recording.getURI()}
-                durationMillis={durationMillis}
-              />
-            );
-          })}
-        </HStack>
-      )}
       {images?.length > 1 && (
         <GalleryPreview
           images={images || []}
@@ -181,7 +155,13 @@ const PostDetail = () => {
                 ))}
               </HStack>
             )}
-
+            {recordings?.length > 0 && (
+              <HStack space="sm" className="my-2 flex-wrap">
+                {recordings.map((recording: any) => {
+                  return <RecordingBtn key={recording.id} uri={`${baseURL}/${recording.url}`} />;
+                })}
+              </HStack>
+            )}
             {images?.length > 1 && (
               <FlashList
                 data={images.slice(1)}

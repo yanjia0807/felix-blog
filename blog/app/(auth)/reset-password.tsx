@@ -13,18 +13,16 @@ import { useLocalSearchParams } from 'expo-router';
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 import { Button, ButtonText } from '@/components/ui/button';
-import { HStack } from '@/components/ui/hstack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/components/auth-context';
 import { Controller, useForm } from 'react-hook-form';
-import { useToast } from '@/components/ui/toast';
-import InfoToast from '@/components/alert-toast';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Spinner } from '@/components/ui/spinner';
+import useAlertToast from '@/components/use-alert-toast';
 
 const ResetPassword = () => {
   const insets = useSafeAreaInsets();
-  const toast = useToast();
+  const toast = useAlertToast();
   const { resetPasswordMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = resetPasswordMutation;
   const { code } = useLocalSearchParams();
@@ -47,17 +45,10 @@ const ResetPassword = () => {
       code,
     };
     mutate(data, {
-      onSuccess: () => {
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="设置密码成功" action="success" />,
-        });
-      },
+      onSuccess: () => toast.success('设置密码成功'),
       onError: (error: any) => {
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="设置密码失败" action="error" />,
-        });
+        toast.error(`设置密码失败`);
+        console.error(error);
       },
     });
   };

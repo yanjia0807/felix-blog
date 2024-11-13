@@ -11,19 +11,16 @@ import { Controller, useForm } from 'react-hook-form';
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 import { Button, ButtonText } from '@/components/ui/button';
-import { HStack } from '@/components/ui/hstack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import InfoToast from '@/components/alert-toast';
-import { useToast } from '@/components/ui/toast';
 import { useAuth } from '@/components/auth-context';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Spinner } from '@/components/ui/spinner';
+import useAlertToast from '@/components/use-alert-toast';
 
 const ForgetPassword = () => {
   const insets = useSafeAreaInsets();
-  const toast = useToast();
+  const toast = useAlertToast();
   const { forgetPasswordMutation } = useAuth();
-
   const { reset, error, mutate, isSuccess, isError, isPending } = forgetPasswordMutation;
 
   const {
@@ -38,17 +35,10 @@ const ForgetPassword = () => {
 
   const onSubmit = (data: any) => {
     mutate(data, {
-      onSuccess: () => {
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="发送重置密码邮件成功" action="success" />,
-        });
-      },
+      onSuccess: () => toast.success('发送重置密码邮件成功'),
       onError: (error: any) => {
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="发送重置密码邮件失败" action="error" />,
-        });
+        toast.error(`发送重置密码邮件失败`);
+        console.error(error);
       },
     });
   };

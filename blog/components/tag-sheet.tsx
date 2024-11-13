@@ -1,5 +1,4 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
-import { FlatList } from 'react-native';
 import {
   BottomSheetTextInput,
   BottomSheetBackdrop,
@@ -12,8 +11,7 @@ import { Text } from './ui/text';
 import { Heading } from './ui/heading';
 import { BottomSheetFlashList } from '@gorhom/bottom-sheet';
 import { useFetchTags } from '@/api/tag';
-import { Button, ButtonIcon, ButtonText } from './ui/button';
-import { X } from 'lucide-react-native';
+import { Button, ButtonText } from './ui/button';
 import _ from 'lodash';
 import { Divider } from './ui/divider';
 import { HStack } from './ui/hstack';
@@ -22,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TagBtn from './tag-btn';
 import { Controller, useForm } from 'react-hook-form';
 
-const TagSheet = forwardRef(({ value, onChange }: any, ref: any) => {
+const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);
 
   const {
@@ -34,13 +32,16 @@ const TagSheet = forwardRef(({ value, onChange }: any, ref: any) => {
   } = useForm({});
 
   const { data: tags, error, isError, isLoading, refetch } = useFetchTags(getValues());
-  const [snapPoints, setSnapPoints] = useState(['50%']);
   const { bottom: bottomSafeArea } = useSafeAreaInsets();
+  const snapPoints = ['50%'];
 
-  const onSubmit = (data: any) => {
-    console.log('onSubmit', data);
-    refetch(data);
-  };
+  const onSubmit = useCallback(
+    (data: any) => {
+      console.log('onSubmit', data);
+      refetch(data);
+    },
+    [refetch],
+  );
 
   const debouncedSubmit = React.useMemo(
     () => _.debounce(handleSubmit(onSubmit), 1000),
@@ -55,15 +56,15 @@ const TagSheet = forwardRef(({ value, onChange }: any, ref: any) => {
     setSelectedTags((prev: any) => _.reject(prev, ['id', tag.id]));
   };
 
-  const cancel = () => {
+  const cancel = useCallback(() => {
     setSelectedTags([...value]);
     ref.current?.dismiss();
-  };
+  }, [ref, value]);
 
-  const commitTag = () => {
+  const commitTag = useCallback(() => {
     onChange({ selectedTags });
     ref.current?.dismiss();
-  };
+  }, [onChange, ref, selectedTags]);
 
   const renderItem = ({ item }: any) => {
     return (
@@ -101,7 +102,7 @@ const TagSheet = forwardRef(({ value, onChange }: any, ref: any) => {
         </HStack>
       </BottomSheetFooter>
     ),
-    [onChange, selectedTags],
+    [bottomSafeArea, cancel, commitTag],
   );
 
   useEffect(() => {
@@ -117,25 +118,24 @@ const TagSheet = forwardRef(({ value, onChange }: any, ref: any) => {
       keyboardBehavior="fillParent"
       ref={ref}>
       <BottomSheetView className="flex-1 px-4">
-        <HStack className="items-center justify-between">
-          <Heading size="xl">标签</Heading>
-          <Controller
-            name="name"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <BottomSheetTextInput
-                placeholder="搜索标签..."
-                className="w-1/2 rounded-2xl border border-info-200 p-2"
-                value={value}
-                onChangeText={(e) => {
-                  onChange(e);
-                  debouncedSubmit();
-                }}
-              />
-            )}
-          />
-        </HStack>
-        <Divider className="my-2" />
+        <Heading size="xl" className="mb-4">
+          标签
+        </Heading>
+        <Controller
+          name="name"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <BottomSheetTextInput
+              placeholder="搜索标签..."
+              className="mb-4 w-full rounded-2xl border border-info-200 p-2"
+              value={value}
+              onChangeText={(e) => {
+                onChange(e);
+                debouncedSubmit();
+              }}
+            />
+          )}
+        />
         <HStack className="flex-wrap">
           {selectedTags.map((item: any) => (
             <TagBtn key={item.id} tag={item} removeTag={removeTag} />

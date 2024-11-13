@@ -50,16 +50,16 @@ const AnimatedRing = ({ metering }: any) => {
   );
 };
 
-const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
+const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref: any) {
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
-  const [snapPoints, setSnapPoints] = useState<any>(['50%']);
   const { bottom: bottomSafeArea } = useSafeAreaInsets();
   const metering = useSharedValue<number>(0);
   const [durationMillis, setDurationMillis] = useState<number>(0);
+  const snapPoints = ['50%'];
 
-  const stopRecording = async () => {
+  const stopRecording = useCallback(async () => {
     try {
       if (recording) {
         console.log('stopping...');
@@ -78,9 +78,9 @@ const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
     } catch (error) {
       console.error('failed to stop', error);
     }
-  };
+  }, [recording]);
 
-  const pauseRecording = async () => {
+  const pauseRecording = useCallback(async () => {
     try {
       if (recording) {
         console.log('pausing...');
@@ -95,9 +95,9 @@ const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
     } catch (err) {
       console.error('failed to pause', err);
     }
-  };
+  }, [recording]);
 
-  const resumeRecording = async () => {
+  const resumeRecording = useCallback(async () => {
     if (recording) {
       try {
         console.log('resuming...');
@@ -112,9 +112,9 @@ const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
         console.error('failed to resume', err);
       }
     }
-  };
+  }, [recording]);
 
-  const resetRecording = async () => {
+  const resetRecording = useCallback(async () => {
     console.log('reset...');
     if (recordingStatus && !recordingStatus.isDoneRecording) {
       await stopRecording();
@@ -123,25 +123,28 @@ const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
     setRecordingStatus(null);
     setDurationMillis(0);
     metering.value = 0;
-  };
+  }, [metering, recordingStatus, stopRecording]);
 
-  const commitRecording = async () => {
-    onChange({ recording, durationMillis });
+  const commitRecording = useCallback(async () => {
+    onChange(recording);
     ref.current?.close();
-  };
+  }, [onChange, recording, ref]);
 
-  const onRecordingStatusUpdate = (status: RecordingStatus) => {
-    // console.log("update...", status);
-    if (status.isRecording) {
-      metering.value = status.metering || -160;
-    }
+  const onRecordingStatusUpdate = useCallback(
+    (status: RecordingStatus) => {
+      // console.log("update...", status);
+      if (status.isRecording) {
+        metering.value = status.metering || -160;
+      }
 
-    if (status.isDoneRecording !== true) {
-      setDurationMillis(status.durationMillis);
-    }
-  };
+      if (status.isDoneRecording !== true) {
+        setDurationMillis(status.durationMillis);
+      }
+    },
+    [metering],
+  );
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     console.log('starting...');
     try {
       await resetRecording();
@@ -164,9 +167,9 @@ const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
     } catch (error) {
       console.error('failed to start', error);
     }
-  };
+  }, [onRecordingStatusUpdate, resetRecording]);
 
-  const doRecording = async () => {
+  const doRecording = useCallback(async () => {
     if (audioPermission && audioPermission.status !== 'granted') {
       console.log('Requesting audio permission..');
       await requestAudioPermission();
@@ -175,13 +178,21 @@ const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
     if (!recordingStatus?.canRecord) {
       startRecording();
     } else {
-      if (!recordingStatus.isRecording) {
+      if (!recordingStatus?.isRecording) {
         resumeRecording();
       } else {
         stopRecording();
       }
     }
-  };
+  }, [
+    audioPermission,
+    recordingStatus?.canRecord,
+    recordingStatus?.isRecording,
+    requestAudioPermission,
+    resumeRecording,
+    startRecording,
+    stopRecording,
+  ]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -234,7 +245,15 @@ const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
         </BottomSheetFooter>
       );
     },
-    [recordingStatus, recording],
+    [
+      bottomSafeArea,
+      doRecording,
+      recordingStatus,
+      metering,
+      pauseRecording,
+      resetRecording,
+      commitRecording,
+    ],
   );
 
   return (
@@ -244,11 +263,12 @@ const RecordingSheet = forwardRef(({ onChange }: any, ref: any) => {
       enableDynamicSizing={false}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}
-      onDismiss={() => {
-        resetRecording();
-      }}>
-      <BottomSheetView className="items-center justify-center p-4">
-        <Heading size="4xl" className="my-8">
+      onDismiss={resetRecording}>
+      <BottomSheetView className="justify-center p-4">
+        <Heading size="xl" className="mb-4">
+          录音
+        </Heading>
+        <Heading size="4xl" className="self-center">
           {moment.utc(durationMillis).format('mm:ss')}
         </Heading>
       </BottomSheetView>

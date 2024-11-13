@@ -4,9 +4,11 @@ import { router, Stack } from 'expo-router';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/components/auth-context';
 import { ProfileAvatar } from '@/components/profile-avatar';
+import useAlertToast from '@/components/use-alert-toast';
 
 const Home = () => {
   const { user, logout } = useAuth();
+  const toast = useAlertToast();
   return (
     <VStack className="flex-1 p-4" space="md">
       <Stack.Screen
@@ -45,6 +47,12 @@ const Home = () => {
           router.navigate('/reset-password');
         }}>
         <ButtonText>设置密码</ButtonText>
+      </Button>
+      <Button
+        onPress={() => {
+          toast.success("Hey! You can't create a duplicate toast");
+        }}>
+        <ButtonText>提示</ButtonText>
       </Button>
     </VStack>
   );

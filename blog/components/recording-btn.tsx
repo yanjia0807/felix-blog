@@ -4,8 +4,9 @@ import { CircleX, Volume2 } from 'lucide-react-native';
 import { ButtonGroup, Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import moment from 'moment';
 
-const SoundBtn = ({ uri, durationMillis, onRemove }: any) => {
+const SoundBtn = ({ uri, onRemove }: any) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [durationMillis, setDurationMillis] = useState(0);
   const soundObj = useRef<any>({ sound: null, isPlaying: false });
 
   const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
@@ -18,29 +19,15 @@ const SoundBtn = ({ uri, durationMillis, onRemove }: any) => {
 
   const playSound = async () => {
     console.log(soundObj.current);
-    if (!soundObj.current.sound) {
-      console.log('loading sound');
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-      });
-      const { sound } = await Audio.Sound.createAsync(
-        { uri },
-        { shouldPlay: true },
-        onPlaybackStatusUpdate,
-      );
-      console.log('loaded sound');
-      soundObj.current.sound = sound;
+    if (!soundObj.current.isPlaying) {
+      console.log('playing sound');
+      await soundObj.current.sound.setPositionAsync(0);
+      await soundObj.current.sound.playAsync();
+      console.log('played sound');
     } else {
-      if (!soundObj.current.isPlaying) {
-        console.log('playing sound');
-        await soundObj.current.sound.setPositionAsync(0);
-        await soundObj.current.sound.playAsync();
-        console.log('played sound');
-      } else {
-        console.log('stoping sound');
-        await soundObj.current.sound.stopAsync();
-        console.log('stoped sound');
-      }
+      console.log('stoping sound');
+      await soundObj.current.sound.stopAsync();
+      console.log('stoped sound');
     }
   };
 
@@ -49,13 +36,28 @@ const SoundBtn = ({ uri, durationMillis, onRemove }: any) => {
   };
 
   useEffect(() => {
+    const loadSound = async () => {
+      console.log('loading sound');
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+      });
+      const { sound, status } = await Audio.Sound.createAsync(
+        { uri },
+        { shouldPlay: false },
+        onPlaybackStatusUpdate,
+      );
+      setDurationMillis(status.durationMillis);
+      soundObj.current.sound = sound;
+    };
+    loadSound();
+
     return soundObj.current.sound
       ? () => {
           console.log('unloading Sound');
           soundObj.current.sound.unloadAsync();
         }
       : undefined;
-  }, [soundObj]);
+  }, []);
 
   return (
     <ButtonGroup space="xs" isAttached={true} className="m-1">

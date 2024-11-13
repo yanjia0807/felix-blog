@@ -12,20 +12,18 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 import { Button, ButtonText } from '@/components/ui/button';
-import { HStack } from '@/components/ui/hstack';
 import { useAuth } from '@/components/auth-context';
 import { Controller, useForm } from 'react-hook-form';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Spinner } from '@/components/ui/spinner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useToast } from '@/components/ui/toast';
-import InfoToast from '@/components/alert-toast';
+import useAlertToast from '@/components/use-alert-toast';
 
 const SignUp = () => {
   const { registerMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = registerMutation;
   const insets = useSafeAreaInsets();
-  const toast = useToast();
+  const toast = useAlertToast();
 
   const {
     control,
@@ -41,17 +39,10 @@ const SignUp = () => {
 
   const onSubmit = (data: any) => {
     mutate(data, {
-      onSuccess: () => {
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="注册成功" action="success" />,
-        });
-      },
+      onSuccess: () => toast.success('注册成功'),
       onError: (error: any) => {
-        toast.show({
-          placement: 'top',
-          render: () => <InfoToast description="注册失败" action="error" />,
-        });
+        toast.error(`注册失败`);
+        console.error(error);
       },
     });
   };

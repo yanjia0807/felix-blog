@@ -11,22 +11,15 @@ import { VStack } from '@/components/ui/vstack';
 import { ProfileAvatar } from '@/components/profile-avatar';
 import { Spinner } from '@/components/ui/spinner';
 import colors from 'tailwindcss/colors';
-import { useToast } from '@/components/ui/toast';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { BookMarked, Ellipsis, MapPin, Share2, ShareIcon } from 'lucide-react-native';
+import { BookMarked, Ellipsis, MapPin, Share2 } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import PostThumbnail from '@/components/post-thumbnail';
 import HeartInfo from '@/components/heart-info';
 import CommentInfo from '@/components/comment-info';
 import AuthorInfo from '@/components/author-info';
-import {
-  Popover,
-  PopoverBackdrop,
-  PopoverContent,
-  PopoverArrow,
-  PopoverBody,
-} from '@/components/ui/popover';
-import { ButtonGroup, Button, ButtonText, ButtonSpinner, ButtonIcon } from '@/components/ui/button';
+import { Popover, PopoverBackdrop, PopoverContent, PopoverBody } from '@/components/ui/popover';
+import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 
 const MenuPopover = (props: any) => {
@@ -72,7 +65,6 @@ const MenuPopover = (props: any) => {
 
 const PostHome = () => {
   const { data: posts, error, isError, isLoading } = useFetchPosts();
-  const toast = useToast();
 
   const renderItem = ({ item }: any) => {
     const author = item.author;
