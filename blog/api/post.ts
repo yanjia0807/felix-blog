@@ -1,11 +1,11 @@
 import axios from 'axios';
 import qs from 'qs';
 import { baseURL } from './config';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type PostData = any;
 
-export const fetchPosts = async () => {
+export const fetchPosts = async ({ pageParam: { pagination } }: any) => {
   const query = qs.stringify(
     {
       populate: {
@@ -30,13 +30,15 @@ export const fetchPosts = async () => {
           },
         },
       },
+      order: 'id:desc',
+      pagination,
     },
     {
       encodeValuesOnly: true,
     },
   );
   const res = await axios.get(`${baseURL}/api/posts?${query}`);
-  return res.data.data;
+  return res.data;
 };
 
 export const fetchPostByDocumentId = async ({ queryKey }: any) => {
@@ -98,8 +100,29 @@ export const useFetchPost = (documentId: string) => {
 };
 
 export const useFetchPosts = () => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['posts'],
     queryFn: fetchPosts,
+    initialPageParam: {
+      pagination: {
+        start: 0,
+        limit: 1,
+      },
+    },
+    getNextPageParam: (lastPage) => {
+      const {
+        meta: {
+          pagination: { limit, start, total },
+        },
+      } = lastPage;
+
+      if (start + limit >= total) {
+        return null;
+      }
+
+      return {
+        pagination: { limit, start: start + limit },
+      };
+    },
   });
 };

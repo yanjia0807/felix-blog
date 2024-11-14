@@ -8,6 +8,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '主页',
+          headerShown: false,
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
         }}
       />

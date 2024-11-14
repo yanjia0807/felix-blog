@@ -13,7 +13,7 @@ import { Spinner } from '@/components/ui/spinner';
 import colors from 'tailwindcss/colors';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { BookMarked, Ellipsis, MapPin, Share2 } from 'lucide-react-native';
-import { TouchableOpacity } from 'react-native';
+import { RefreshControl, TouchableOpacity } from 'react-native';
 import PostThumbnail from '@/components/post-thumbnail';
 import HeartInfo from '@/components/heart-info';
 import CommentInfo from '@/components/comment-info';
@@ -21,6 +21,8 @@ import AuthorInfo from '@/components/author-info';
 import { Popover, PopoverBackdrop, PopoverContent, PopoverBody } from '@/components/ui/popover';
 import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
+import useAlertToast from '@/components/use-alert-toast';
+import _ from 'lodash';
 
 const MenuPopover = (props: any) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -64,7 +66,22 @@ const MenuPopover = (props: any) => {
 };
 
 const PostHome = () => {
-  const { data: posts, error, isError, isLoading } = useFetchPosts();
+  const toast = useAlertToast();
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+    refetch,
+  } = useFetchPosts();
+  const posts: any = _.reduce(
+    data?.pages,
+    (result: any, item: any) => [...result, ...item.data],
+    [],
+  );
 
   const renderItem = ({ item }: any) => {
     const author = item.author;
@@ -125,7 +142,7 @@ const PostHome = () => {
     );
   };
 
-  if (isLoading) {
+  if (status === 'pending') {
     return (
       <Spinner
         size="small"
@@ -135,8 +152,8 @@ const PostHome = () => {
     );
   }
 
-  if (isError) {
-    return <></>;
+  if (status === 'error') {
+    toast.error('获取数据异常');
   }
 
   return (
@@ -155,6 +172,22 @@ const PostHome = () => {
           estimatedItemSize={200}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          refreshControl={
+            <RefreshControl
+              colors={['#9Bd35A', '#689F38']}
+              refreshing={isFetching}
+              onRefresh={() => {
+                if (!isFetching) {
+                  refetch();
+                }
+              }}
+            />
+          }
         />
         <Fab
           size="md"

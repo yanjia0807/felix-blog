@@ -5,56 +5,193 @@ import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/components/auth-context';
 import { ProfileAvatar } from '@/components/profile-avatar';
 import useAlertToast from '@/components/use-alert-toast';
+import { HStack } from '@/components/ui/hstack';
+import { Heading } from '@/components/ui/heading';
+import { Text } from '@/components/ui/text';
+import { Avatar, AvatarBadge, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
+import { ImageBackground, SafeAreaView, useWindowDimensions } from 'react-native';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { ArrowRightIcon, SearchIcon } from 'lucide-react-native';
+import { FlashList } from '@shopify/flash-list';
+import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
+import { Link, LinkText } from '@/components/ui/link';
+import { Image } from '@/components/ui/image';
+import { Icon } from '@/components/ui/icon';
+
+const tags = [
+  { id: 1, name: '生活' },
+  { id: 2, name: '旅行' },
+  { id: 3, name: '美食' },
+  { id: 4, name: '科技' },
+  { id: 5, name: '健康' },
+  { id: 6, name: '运动' },
+  { id: 7, name: '摄影' },
+  { id: 8, name: '阅读' },
+  { id: 9, name: '学习' },
+  { id: 10, name: '创业' },
+  { id: 11, name: '情感' },
+  { id: 12, name: '艺术' },
+  { id: 13, name: '音乐' },
+  { id: 14, name: '电影' },
+  { id: 15, name: '自我成长' },
+];
+
+const posts = [
+  {
+    id: 101,
+    title: '探索重庆的美食之旅',
+    content:
+      '重庆，这座火辣的城市不仅有美丽的风景，还有丰富的美食文化。今天我们深入探访了当地的火锅美食基地，尝试了各种口味的火锅底料，让人回味无穷。',
+    cover: 'https://unsplash.it/640/425',
+    author: {
+      id: 1,
+      name: '李小明',
+      avatar: 'https://example.com/avatars/liming.jpg',
+    },
+    publishedAt: '2024-11-01T10:00:00Z',
+    likes: 120,
+    unlikes: 5,
+    comments: 2,
+  },
+  {
+    id: 102,
+    title: '科技改变生活',
+    content:
+      '现代科技发展迅速，从智能家居到AI助手，每个细节都让我们的生活变得更加便利与智能化。未来的生活将会有更多的惊喜等待我们去探索。',
+    cover: 'https://unsplash.it/640/425',
+    author: {
+      id: 2,
+      name: '王科技',
+      avatar: 'https://example.com/avatars/wangkeji.jpg',
+    },
+    publishedAt: '2024-11-05T14:30:00Z',
+    likes: 250,
+    unlikes: 10,
+    comments: 2,
+  },
+  {
+    id: 103,
+    title: '健康生活的小秘诀',
+    content:
+      '健康生活不仅仅是饮食和锻炼，它还包括保持良好的心态。每天早上一个简单的冥想，晚上一个放松的热水澡，都能带来健康的身心状态。',
+    cover: 'https://unsplash.it/640/425',
+    author: {
+      id: 3,
+      name: '健康达人',
+      avatar: 'https://example.com/avatars/jiankangdaren.jpg',
+    },
+    publishedAt: '2024-11-10T08:45:00Z',
+    likes: 300,
+    unlikes: 3,
+    comments: 2,
+  },
+];
 
 const Home = () => {
   const { user, logout } = useAuth();
   const toast = useAlertToast();
-  return (
-    <VStack className="flex-1 p-4" space="md">
-      <Stack.Screen
-        options={{
-          title: '记录',
-          headerShown: true,
-          headerRight: () => <ProfileAvatar />,
+  const dimension = useWindowDimensions();
+
+  const renderTagItem = ({ item }: any) => {
+    return (
+      <Box className="m-2 rounded-lg bg-secondary-200 p-1 px-3">
+        <Text>{item.name}</Text>
+      </Box>
+    );
+  };
+
+  const renderPostItem = ({ item }: any) => {
+    return (
+      <ImageBackground
+        source={{
+          uri: item.cover,
         }}
-      />
-      <Button
-        onPress={() => {
-          router.navigate('/login');
-        }}>
-        <ButtonText>登录</ButtonText>
-      </Button>
-      <Button
-        onPress={() => {
-          router.navigate('/register');
-        }}>
-        <ButtonText>注册</ButtonText>
-      </Button>
-      <Button
-        onPress={() => {
-          logout();
-        }}>
-        <ButtonText>登出</ButtonText>
-      </Button>
-      <Button
-        onPress={() => {
-          router.navigate('/forget-password');
-        }}>
-        <ButtonText>忘记密码</ButtonText>
-      </Button>
-      <Button
-        onPress={() => {
-          router.navigate('/reset-password');
-        }}>
-        <ButtonText>设置密码</ButtonText>
-      </Button>
-      <Button
-        onPress={() => {
-          toast.success("Hey! You can't create a duplicate toast");
-        }}>
-        <ButtonText>提示</ButtonText>
-      </Button>
-    </VStack>
+        style={{
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          elevation: 5,
+        }}
+        imageStyle={{
+          borderRadius: 16,
+        }}
+        className="m-4 h-52 w-80">
+        <HStack className="absolute bottom-0 w-full rounded-bl-[16] rounded-br-[16] bg-white p-4">
+          <Text className="mb-2 text-sm font-normal text-typography-700">May 15, 2023</Text>
+          <Heading size="md" className="mb-4"></Heading>
+          <Link href="https://gluestack.io/" isExternal>
+            <HStack className="items-center">
+              <LinkText size="sm" className="font-semibold text-info-600 no-underline">
+                Read Blog
+              </LinkText>
+              <Icon as={ArrowRightIcon} size="sm" className="ml-0.5 mt-0.5 text-info-600" />
+            </HStack>
+          </Link>
+        </HStack>
+      </ImageBackground>
+    );
+  };
+
+  return (
+    <SafeAreaView className="flex-1">
+      <VStack className="flex-1 p-4">
+        <HStack className="mb-8 items-center justify-between">
+          <VStack>
+            <Heading size="2xl">欢迎回来</Heading>
+            <Text>2024年11月14日 周四</Text>
+          </VStack>
+          <Avatar>
+            <AvatarFallbackText>Jane Doe</AvatarFallbackText>
+            <AvatarImage
+              source={{
+                uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
+              }}
+            />
+            <AvatarBadge />
+          </Avatar>
+        </HStack>
+        <HStack className="my-6 items-center justify-center">
+          <Input className="w-5/6 p-2" size="lg" variant="rounded">
+            <InputField className="" />
+            <InputSlot className="pl-3">
+              <InputIcon as={SearchIcon} />
+            </InputSlot>
+          </Input>
+        </HStack>
+        <HStack className="items-center" space="md">
+          <Box className="flex-1">
+            <FlashList
+              data={tags}
+              renderItem={renderTagItem}
+              estimatedItemSize={42}
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+            />
+          </Box>
+          <Box>
+            <Link href="https://gluestack.io/" isExternal>
+              <HStack className="items-center">
+                <LinkText size="sm" className="font-semibold text-info-600 no-underline">
+                  全部
+                </LinkText>
+              </HStack>
+            </Link>
+          </Box>
+        </HStack>
+        <FlashList
+          data={posts}
+          estimatedItemSize={260}
+          renderItem={renderPostItem}
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+        />
+      </VStack>
+    </SafeAreaView>
   );
 };
 
