@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FormControl,
   FormControlError,
@@ -12,34 +12,70 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 import { Button, ButtonText } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
+
 import { useAuth } from '@/components/auth-context';
 import { Controller, useForm } from 'react-hook-form';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Spinner } from '@/components/ui/spinner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useAlertToast from '@/components/use-alert-toast';
+import { router, Stack } from 'expo-router';
+import { Link, LinkText } from '@/components/ui/link';
+import { Box } from '@/components/ui/box';
+import { HStack } from '@/components/ui/hstack';
+import TermsOfServiceDialog from '@/components/terms-of-service-dialog';
+import PrivacyPolicyDialog from '@/components/privacy-policy-dialog';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+
+type RegisterSchemaDetails = z.infer<typeof registerSchema>;
+
+const registerSchema = z.object({
+  username: z
+    .string({
+      required_error: '用户名是必填项',
+    })
+    .min(3, '用户名长度需在3到16个字符之间')
+    .max(16, '用户名长度需在3到16个字符之间'),
+  email: z
+    .string({
+      required_error: '邮箱地址是必填项',
+    })
+    .regex(
+      /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/i,
+      '邮箱地址格式不正确',
+    ),
+  password: z
+    .string({
+      required_error: '密码是必填项',
+    })
+    .min(6, '密码长度至少为6位'),
+});
 
 const SignUp = () => {
   const { registerMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = registerMutation;
   const insets = useSafeAreaInsets();
   const toast = useAlertToast();
+  const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
+  const [isPrivacyDialogOpen, setIsPrivacyDialogOpen] = useState(false);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    defaultValues: {
-      username: '',
-      email: '',
-      password: '',
-    },
+  } = useForm<RegisterSchemaDetails>({
+    resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = (data: any) => {
     mutate(data, {
-      onSuccess: () => toast.success('注册成功'),
+      onSuccess: () => {
+        toast.success('注册成功,请登录');
+        router.push('/login');
+      },
       onError: (error: any) => {
         toast.error(`注册失败`);
         console.error(error);
@@ -47,21 +83,38 @@ const SignUp = () => {
     });
   };
 
+  const renderHeaderLeft = () => {
+    return (
+      <Text size="xl" bold={true}>
+        用户注册
+      </Text>
+    );
+  };
+
   return (
     <>
+      <Stack.Screen
+        options={{
+          title: '',
+          headerLeft: renderHeaderLeft,
+        }}
+      />
       {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
-
-      <VStack className="flex-1 justify-between p-4" style={{ paddingBottom: insets.bottom }}>
+      <TermsOfServiceDialog
+        isOpen={isTermsDialogOpen}
+        onClose={() => setIsTermsDialogOpen(false)}
+      />
+      <PrivacyPolicyDialog
+        isOpen={isPrivacyDialogOpen}
+        onClose={() => setIsPrivacyDialogOpen(false)}
+      />
+      <VStack
+        className="flex-1 items-center justify-between p-4"
+        style={{ paddingBottom: insets.bottom }}>
         <VStack className="flex-1" space="lg">
           <Controller
             control={control}
             name="username"
-            rules={{
-              required: '用户名是必填项',
-              validate: (value: any) => {
-                return (value.length >= 3 && value.length <= 16) || '用户名长度需在3到16个字符之间';
-              },
-            }}
             render={({ field: { onChange, onBlur, value } }: any) => (
               <FormControl isInvalid={!!errors.username} size="lg">
                 <FormControlLabel>
@@ -87,17 +140,9 @@ const SignUp = () => {
               </FormControl>
             )}
           />
-
           <Controller
             control={control}
             name="email"
-            rules={{
-              required: '邮箱地址是必填项',
-              pattern: {
-                value: /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/i,
-                message: '邮箱地址格式不正确',
-              },
-            }}
             render={({ field: { onChange, onBlur, value } }: any) => (
               <FormControl isInvalid={!!errors.email} size="lg">
                 <FormControlLabel>
@@ -123,14 +168,9 @@ const SignUp = () => {
               </FormControl>
             )}
           />
-
           <Controller
             control={control}
             name="password"
-            rules={{
-              required: '密码是必填项',
-              minLength: { value: 8, message: '密码长度至少为8位' },
-            }}
             render={({ field: { onChange, onBlur, value } }) => (
               <FormControl isInvalid={!!errors.password} size="lg">
                 <FormControlLabel>
@@ -146,7 +186,7 @@ const SignUp = () => {
                   />
                 </Input>
                 <FormControlHelper className="justify-end">
-                  <FormControlHelperText>密码长度至少为8个字符</FormControlHelperText>
+                  <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
                 </FormControlHelper>
                 <FormControlError>
                   <FormControlErrorIcon as={AlertCircleIcon} />
@@ -155,12 +195,46 @@ const SignUp = () => {
               </FormControl>
             )}
           />
+          <HStack className="my-6 flex-wrap items-center justify-center">
+            <Text size="sm">
+              <Text size="sm" bold={true}>
+                同意服务条款：
+              </Text>
+              在点击“注册”按钮前，请阅读并同意我们的
+              <Link onPress={() => setIsTermsDialogOpen(true)} className="m-0 p-0">
+                <LinkText size="sm" underline={false}>
+                  服务条款
+                </LinkText>
+              </Link>
+              和
+              <Link onPress={() => setIsPrivacyDialogOpen(true)}>
+                <LinkText size="sm" underline={false}>
+                  隐私政策
+                </LinkText>
+              </Link>
+            </Text>
+          </HStack>
           <Button className="rounded-3xl" size="lg" onPress={handleSubmit(onSubmit)}>
             <ButtonText>注册</ButtonText>
           </Button>
-          <Button className="" size="lg" variant="link">
+          <Button
+            className=""
+            size="lg"
+            variant="link"
+            onPress={() => {
+              router.dismiss();
+            }}>
             <ButtonText>取消</ButtonText>
           </Button>
+          <HStack space="sm" className="items-center justify-center">
+            <Text size="sm">已有账号？</Text>
+            <Link
+              onPress={() => {
+                router.push('/login');
+              }}>
+              <LinkText size="sm">登录</LinkText>
+            </Link>
+          </HStack>
         </VStack>
       </VStack>
     </>

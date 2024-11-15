@@ -6,13 +6,19 @@ import { baseURL } from '@/api/config';
 import { Icon } from './ui/icon';
 import { LogIn, User } from 'lucide-react-native';
 import { ButtonGroup, Button, ButtonText, ButtonSpinner, ButtonIcon } from './ui/button';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { Pressable } from './ui/pressable';
+import { useRouter } from 'expo-router';
 
-export const ProfileAvatar = () => {
+const ProfileAvatarStyles = tva({});
+
+export const ProfileAvatar = ({ className, ...props }: any) => {
   const { user } = useAuth();
+  const router = useRouter();
   return (
     <>
       {user ? (
-        <Avatar size="sm" className="mx-2">
+        <Avatar size="sm" className={ProfileAvatarStyles({ className })}>
           <AvatarFallbackText>{user.username}</AvatarFallbackText>
           <AvatarImage
             source={{
@@ -21,11 +27,13 @@ export const ProfileAvatar = () => {
           />
         </Avatar>
       ) : (
-        <ButtonGroup space="sm" className="mx-2">
-          <Button size="sm" variant="link">
-            <ButtonText>未登录</ButtonText>
-          </Button>
-        </ButtonGroup>
+        <Pressable
+          onPress={() => {
+            router.navigate('/register');
+          }}
+          className={ProfileAvatarStyles({ className })}>
+          <Icon as={User} />
+        </Pressable>
       )}
     </>
   );

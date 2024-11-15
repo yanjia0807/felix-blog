@@ -1,6 +1,5 @@
 import React from 'react';
-import { Button, ButtonText } from '@/components/ui/button';
-import { router, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/components/auth-context';
 import { ProfileAvatar } from '@/components/profile-avatar';
@@ -8,15 +7,12 @@ import useAlertToast from '@/components/use-alert-toast';
 import { HStack } from '@/components/ui/hstack';
 import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
-import { Avatar, AvatarBadge, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { ImageBackground, SafeAreaView, useWindowDimensions } from 'react-native';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { ArrowRightIcon, SearchIcon } from 'lucide-react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Box } from '@/components/ui/box';
-import { Card } from '@/components/ui/card';
 import { Link, LinkText } from '@/components/ui/link';
-import { Image } from '@/components/ui/image';
 import { Icon } from '@/components/ui/icon';
 
 const tags = [
@@ -137,24 +133,25 @@ const Home = () => {
     );
   };
 
+  const renderSearchIcon = (props: any) => {
+    return <Icon as={SearchIcon} size="md" className="m-2" />;
+  };
+
+  const renderAvatarIcon = (props: any) => {
+    return <ProfileAvatar className="m-2" />;
+  };
+
   return (
     <SafeAreaView className="flex-1">
+      <Stack.Screen
+        options={{
+          title: '记录',
+          headerShown: true,
+          headerRight: renderSearchIcon,
+          headerLeft: renderAvatarIcon,
+        }}
+      />
       <VStack className="flex-1 p-4">
-        <HStack className="mb-8 items-center justify-between">
-          <VStack>
-            <Heading size="2xl">欢迎回来</Heading>
-            <Text>2024年11月14日 周四</Text>
-          </VStack>
-          <Avatar>
-            <AvatarFallbackText>Jane Doe</AvatarFallbackText>
-            <AvatarImage
-              source={{
-                uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-              }}
-            />
-            <AvatarBadge />
-          </Avatar>
-        </HStack>
         <HStack className="my-6 items-center justify-center">
           <Input className="w-5/6 p-2" size="lg" variant="rounded">
             <InputField className="" />

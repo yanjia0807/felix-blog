@@ -1,13 +1,13 @@
+import { OverlayProvider } from '@gluestack-ui/overlay';
+import { ToastProvider } from '@gluestack-ui/toast';
 import { Stack } from 'expo-router';
 
-export default function Layout() {
+export default function Layout(props: any) {
   return (
-    <Stack>
-      <Stack.Screen name="login" options={{ title: '登录' }} />
-      <Stack.Screen name="register" options={{ title: '注册' }} />
-      <Stack.Screen name="forget-password" options={{ title: '忘记密码' }} />
-      <Stack.Screen name="reset-password" options={{ title: '设置密码' }} />
-      <Stack.Screen name="email-confirmation" options={{ title: '验证成功' }} />
-    </Stack>
+    <OverlayProvider>
+      <ToastProvider>
+        <Stack>{props.children}</Stack>
+      </ToastProvider>
+    </OverlayProvider>
   );
 }

@@ -1,4 +1,3 @@
-import { View } from 'react-native';
 import React from 'react';
 import { HStack } from './ui/hstack';
 import { Box } from './ui/box';

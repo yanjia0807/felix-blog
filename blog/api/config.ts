@@ -8,22 +8,24 @@ const config = {
     'Content-Type': 'application/json',
   },
 };
-export const client = axios.create(config);
-export const publicClient = axios.create(config);
+ const client = axios.create(config);
 
-export function setClientAuth(accessToken: string | null) {
-  client.interceptors.request.use(
-    (config: any) => {
-      if (accessToken) {
-        config.headers.Authorization = 'Bearer ' + accessToken;
-      } else {
-        delete config.headers.Authorization;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    },
-  );
-  return client;
-}
+ function setClientAuthHeader(accessToken: string | null) {
+   client.interceptors.request.use(
+     (config: any) => {
+       if (accessToken) {
+         config.headers.Authorization = 'Bearer ' + accessToken;
+       } else {
+         delete config.headers.Authorization;
+       }
+       return config;
+     },
+     (error) => {
+       return Promise.reject(error);
+     },
+   );
+   return client;
+ }
+
+ export { client, setClientAuthHeader };
+ export { axios };

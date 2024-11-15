@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation } from '@tanstack/react-query';
 import { loginUser, registerUser, sendEmailConfirmation, sendResetPasswordEmail } from '@/api/auth';
-import { setClientAuth } from '@/api';
+import { setClientAuthHeader } from '@/api';
 import { fetchMe } from '@/api';
 
 const AuthContext = createContext<any>(undefined);
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }: any) => {
       const accessToken = await AsyncStorage.getItem('accessToken');
       if (accessToken) {
         setAccessToken(accessToken);
-        setClientAuth(accessToken);
+        setClientAuthHeader(accessToken);
         const user = await fetchMe();
         setUser(user);
       }
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: any) => {
     await AsyncStorage.removeItem('accessToken');
     setUser(null);
     setAccessToken(null);
-    setClientAuth(null);
+    setClientAuthHeader(null);
   };
 
   const loginMutation = useMutation({
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: any) => {
       await AsyncStorage.setItem('accessToken', data.jwt);
       setUser(data.user);
       setAccessToken(data.jwt);
-      setClientAuth(data.jwt);
+      setClientAuthHeader(data.jwt);
     },
     onError: (error) => console.error(error),
   });
@@ -46,10 +46,7 @@ export const AuthProvider = ({ children }: any) => {
   const registerMutation = useMutation({
     mutationFn: (data: any) => registerUser(data),
     onSuccess: async (data) => {
-      await AsyncStorage.setItem('accessToken', data.jwt);
       setUser(data.user);
-      setAccessToken(data.jwt);
-      setClientAuth(data.jwt);
     },
     onError: (error) => {
       console.error(error);
