@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/form-control';
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 
 import { useAuth } from '@/components/auth-context';
@@ -29,6 +29,7 @@ import PrivacyPolicyDialog from '@/components/privacy-policy-dialog';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import colors from 'tailwindcss/colors';
 
 type RegisterSchemaDetails = z.infer<typeof registerSchema>;
 
@@ -73,12 +74,17 @@ const SignUp = () => {
   const onSubmit = (data: any) => {
     mutate(data, {
       onSuccess: () => {
-        toast.success('注册成功,请登录');
+        toast.success({
+          title: '注册成功',
+          description: '我们已向您的邮箱发送了一封验证邮件，请点击验证',
+        });
         router.push('/login');
       },
       onError: (error: any) => {
-        toast.error(`注册失败`);
-        console.error(error);
+        toast.error({
+          title: '注册失败',
+          description: error.message,
+        });
       },
     });
   };
@@ -99,7 +105,6 @@ const SignUp = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       <TermsOfServiceDialog
         isOpen={isTermsDialogOpen}
         onClose={() => setIsTermsDialogOpen(false)}
@@ -214,8 +219,13 @@ const SignUp = () => {
               </Link>
             </Text>
           </HStack>
-          <Button className="rounded-3xl" size="lg" onPress={handleSubmit(onSubmit)}>
+          <Button
+            className="rounded-3xl"
+            size="lg"
+            onPress={handleSubmit(onSubmit)}
+            disabled={isPending}>
             <ButtonText>注册</ButtonText>
+            {isPending && <ButtonSpinner />}
           </Button>
           <Button
             className=""

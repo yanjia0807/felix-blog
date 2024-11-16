@@ -142,6 +142,10 @@ const PostHome = () => {
     );
   };
 
+  const renderHeaderLeft = (props: any) => {
+    return <ProfileAvatar className="mx-4" />;
+  };
+
   if (status === 'pending') {
     return (
       <Spinner
@@ -162,7 +166,7 @@ const PostHome = () => {
         options={{
           title: '记录',
           headerShown: true,
-          headerRight: () => <ProfileAvatar />,
+          headerLeft: renderHeaderLeft,
         }}
       />
       <VStack className="flex-1 p-4" space="md">

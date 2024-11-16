@@ -1,5 +1,3 @@
-import axios from 'axios';
-import qs from 'qs';
 import { baseURL } from './config';
 import * as FileSystem from 'expo-file-system';
 

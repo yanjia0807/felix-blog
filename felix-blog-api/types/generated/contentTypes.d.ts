@@ -471,6 +471,7 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
 export interface ApiProfileProfile extends Struct.CollectionTypeSchema {
   collectionName: 'profiles';
   info: {
+    description: '';
     displayName: 'Profile';
     pluralName: 'profiles';
     singularName: 'profile';
@@ -492,7 +493,7 @@ export interface ApiProfileProfile extends Struct.CollectionTypeSchema {
       'api::profile.profile'
     > &
       Schema.Attribute.Private;
-    nickname: Schema.Attribute.String;
+    phoneNumber: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

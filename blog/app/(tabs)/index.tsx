@@ -103,16 +103,6 @@ const Home = () => {
         source={{
           uri: item.cover,
         }}
-        style={{
-          shadowColor: '#000',
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}
         imageStyle={{
           borderRadius: 16,
         }}
@@ -133,12 +123,12 @@ const Home = () => {
     );
   };
 
-  const renderSearchIcon = (props: any) => {
-    return <Icon as={SearchIcon} size="md" className="m-2" />;
+  const renderHeaderLeft = (props: any) => {
+    return <ProfileAvatar className="mx-4" />;
   };
 
-  const renderAvatarIcon = (props: any) => {
-    return <ProfileAvatar className="m-2" />;
+  const renderHeaderRight = (props: any) => {
+    return <Icon as={SearchIcon} size="md" className="mx-4" />;
   };
 
   return (
@@ -147,19 +137,11 @@ const Home = () => {
         options={{
           title: '记录',
           headerShown: true,
-          headerRight: renderSearchIcon,
-          headerLeft: renderAvatarIcon,
+          headerRight: renderHeaderRight,
+          headerLeft: renderHeaderLeft,
         }}
       />
       <VStack className="flex-1 p-4">
-        <HStack className="my-6 items-center justify-center">
-          <Input className="w-5/6 p-2" size="lg" variant="rounded">
-            <InputField className="" />
-            <InputSlot className="pl-3">
-              <InputIcon as={SearchIcon} />
-            </InputSlot>
-          </Input>
-        </HStack>
         <HStack className="items-center" space="md">
           <Box className="flex-1">
             <FlashList

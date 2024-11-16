@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/form-control';
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { HStack } from '@/components/ui/hstack';
 import { useAuth } from '@/components/auth-context';
@@ -22,6 +22,7 @@ import useAlertToast from '@/components/use-alert-toast';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack } from 'expo-router';
+import { Link, LinkText } from '@/components/ui/link';
 
 type LoginSchemaDetails = z.infer<typeof loginSchema>;
 
@@ -38,7 +39,7 @@ const loginSchema = z.object({
 
 const SignIn = () => {
   const { loginMutation } = useAuth();
-  const { reset, error, mutate, isSuccess, isError } = loginMutation;
+  const { reset, error, mutate, isSuccess, isError, isPending } = loginMutation;
   const insets = useSafeAreaInsets();
   const toast = useAlertToast();
   const {
@@ -52,12 +53,17 @@ const SignIn = () => {
   const onSubmit = (data: any) => {
     mutate(data, {
       onSuccess: () => {
-        toast.success('欢迎回来');
-        router.dismiss();
+        toast.success({
+          title: '登录成功',
+          description: '欢迎回来',
+        });
+        router.dismissAll();
       },
       onError: (error: any) => {
-        toast.error('登录失败');
-        console.error(error.message);
+        toast.error({
+          title: '登录失败',
+          description: error.message,
+        });
       },
     });
   };
@@ -137,12 +143,31 @@ const SignIn = () => {
               </FormControl>
             )}
           />
-          <Button className="rounded-3xl" size="lg" onPress={handleSubmit(onSubmit)}>
+          <Button
+            className="rounded-3xl"
+            size="lg"
+            onPress={handleSubmit(onSubmit)}
+            disabled={isPending}>
             <ButtonText>登录</ButtonText>
+            {isPending && <ButtonSpinner />}
           </Button>
-          <Button className="" size="lg" variant="link">
+          <Button
+            className=""
+            size="lg"
+            variant="link"
+            onPress={() => {
+              router.dismiss();
+            }}>
             <ButtonText>取消</ButtonText>
           </Button>
+          <HStack space="sm" className="items-center justify-center">
+            <Link
+              onPress={() => {
+                router.push('/register');
+              }}>
+              <LinkText size="sm">注册新用户</LinkText>
+            </Link>
+          </HStack>
         </VStack>
         <HStack space="lg" reversed={true}></HStack>
       </VStack>

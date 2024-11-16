@@ -1,6 +1,5 @@
-import axios from 'axios';
+import { apiAxios } from './config';
 import qs from 'qs';
-import { baseURL } from './config';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type PostData = any;
@@ -37,8 +36,8 @@ export const fetchPosts = async ({ pageParam: { pagination } }: any) => {
       encodeValuesOnly: true,
     },
   );
-  const res = await axios.get(`${baseURL}/api/posts?${query}`);
-  return res.data;
+  const res = await apiAxios.get(`/posts?${query}`);
+  return res;
 };
 
 export const fetchPostByDocumentId = async ({ queryKey }: any) => {
@@ -70,21 +69,21 @@ export const fetchPostByDocumentId = async ({ queryKey }: any) => {
       encodeValuesOnly: true,
     },
   );
-  const res = await axios.get(`${baseURL}/api/posts/${documentId}?${query}`);
-  console.log(JSON.stringify(res.data.data));
-  return res.data.data;
+  const res = await apiAxios.get(`/posts/${documentId}?${query}`);
+  console.log(JSON.stringify(res.data));
+  return res.data;
 };
 
 export const createPost = async (postData: PostData) => {
   console.log(postData);
-  const res = await axios.post(`${baseURL}/api/posts`, {
+  const res = await apiAxios.post(`/posts`, {
     data: postData,
   });
 
-  return res.data.data;
+  return res.data;
 };
 
-export const useCreatePostMutation = () => {
+export const useCreatePost = () => {
   return useMutation({
     mutationFn: (postData: PostData) => {
       return createPost(postData);
@@ -109,7 +108,7 @@ export const useFetchPosts = () => {
         limit: 1,
       },
     },
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: any) => {
       const {
         meta: {
           pagination: { limit, start, total },

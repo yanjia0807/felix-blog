@@ -1,24 +1,26 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { loginUser, registerUser, sendEmailConfirmation, sendResetPasswordEmail } from '@/api/auth';
-import { setClientAuthHeader } from '@/api';
-import { fetchMe } from '@/api';
+import { setAuthHeader, useFetchUser } from '@/api';
+import useAlertToast from './use-alert-toast';
 
 const AuthContext = createContext<any>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
-  const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [tokenExists, setTokenExists] = useState<boolean>(false);
+  const toast = useAlertToast();
+  const { data: userData, error, isFetching, status } = useFetchUser(tokenExists);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const loadAuthData = async () => {
       const accessToken = await AsyncStorage.getItem('accessToken');
+      setTokenExists(!!accessToken);
+      console.log('accessToken', accessToken);
       if (accessToken) {
-        setAccessToken(accessToken);
-        setClientAuthHeader(accessToken);
-        const user = await fetchMe();
-        setUser(user);
+        setAuthHeader(accessToken);
       }
     };
 
@@ -26,30 +28,31 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   const logout = async () => {
+    console.log('logout');
     await AsyncStorage.removeItem('accessToken');
-    setUser(null);
-    setAccessToken(null);
-    setClientAuthHeader(null);
+    queryClient.removeQueries({ queryKey: ['user'] });
+    setAuthHeader(null);
   };
 
   const loginMutation = useMutation({
     mutationFn: (data: any) => loginUser(data),
-    onSuccess: async (data) => {
+    onSuccess: async (data: any) => {
       await AsyncStorage.setItem('accessToken', data.jwt);
-      setUser(data.user);
-      setAccessToken(data.jwt);
-      setClientAuthHeader(data.jwt);
+      setAuthHeader(data.jwt);
+      setTokenExists(true);
     },
-    onError: (error) => console.error(error),
+    onError: (error: Error) => {
+      throw error;
+    },
   });
 
   const registerMutation = useMutation({
     mutationFn: (data: any) => registerUser(data),
-    onSuccess: async (data) => {
-      setUser(data.user);
+    onSuccess: async (data: any) => {
+      console.log('data', data);
     },
     onError: (error) => {
-      console.error(error);
+      console.error('error', error);
     },
   });
 
@@ -80,8 +83,7 @@ export const AuthProvider = ({ children }: any) => {
   return (
     <AuthContext.Provider
       value={{
-        user,
-        accessToken,
+        user: userData,
         loginMutation,
         registerMutation,
         forgetPasswordMutation,

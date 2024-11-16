@@ -2,13 +2,15 @@ import React from 'react';
 import _ from 'lodash';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { Center } from '@/components/ui/center';
 import {
   FormControl,
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
+  FormControlHelper,
+  FormControlHelperText,
   FormControlLabel,
   FormControlLabelText,
 } from '@/components/ui/form-control';
@@ -35,73 +37,187 @@ import { genderEnum } from '@/constants/enum';
 import { DatePicker } from '@/components/date-picker';
 import { Box } from '@/components/ui/box';
 import { Stack, router } from 'expo-router';
-
-type userSchemaDetails = z.infer<typeof userSchema>;
-
-const userSchema = z.object({
-  username: z
-    .string({
-      required_error: '用户名是必填项',
-    })
-    .min(3, '用户名长度需在3到16个字符之间')
-    .max(16, '用户名长度需在3到16个字符之间'),
-  gender: z.enum(_.map(genderEnum, 'value'), {
-    required_error: '性别是必填项',
-    invalid_type_error: '性别格式不正确',
-  }),
-  birthday: z.date({
-    required_error: '出生日期是必填项',
-    invalid_type_error: '出生日期格式不正确',
-  }),
-  phoneNumber: z
-    .string({
-      required_error: '电话号码是必填项',
-    })
-    .regex(/^1[3-9]\d{9}$/, '电话号码格式不正确'),
-});
+import { useAuth } from '@/components/auth-context';
+import { useUpdateUser } from '@/api';
+import { useQueryClient } from '@tanstack/react-query';
+import useAlertToast from '@/components/use-alert-toast';
+import { Textarea, TextareaInput } from '@/components/ui/textarea';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ProfileEdit = () => {
+  const { user }: any = useAuth();
+  const queryClient = useQueryClient();
+  const toast = useAlertToast();
+  const insets = useSafeAreaInsets();
+  const profile = { ...user.profile };
+
+  type ProfileSchemaDetails = z.infer<typeof profileSchema>;
+
+  const profileSchema = z.object({
+    bio: z.string(),
+    gender: z.string({
+      required_error: '性别是必填项',
+    }),
+    birthday: z.date({
+      required_error: '出生日期是必填项',
+      invalid_type_error: '出生日期格式不正确',
+    }),
+    phoneNumber: z
+      .string({
+        required_error: '电话号码是必填项',
+      })
+      .regex(/^1[3-9]\d{9}$/, '电话号码格式不正确'),
+  });
+
   const {
     control,
     formState: { errors },
     handleSubmit,
     reset,
-  } = useForm<userSchemaDetails>({
-    resolver: zodResolver(userSchema),
+  } = useForm<ProfileSchemaDetails>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      bio: profile.bio,
+      gender: profile.gender,
+      birthday: profile.birthday ? new Date(profile.birthday) : new Date(),
+      phoneNumber: profile.phoneNumber,
+    },
   });
 
-  const onSubmit = (_data: userSchemaDetails) => {
-    // reset();
+  const { isSuccess, isError, isPending, mutate } = useUpdateUser();
+
+  const renderBio = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl size="lg" isInvalid={!!errors.bio}>
+      <FormControlLabel>
+        <FormControlLabelText>我的签名</FormControlLabelText>
+      </FormControlLabel>
+      <Textarea className="flex-1 border-0 border-b">
+        <TextareaInput
+          placeholder="签名...."
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+          className="h-14"
+        />
+      </Textarea>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.bio?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const renderGender = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.gender} size="lg">
+      <FormControlLabel>
+        <FormControlLabelText>性别</FormControlLabelText>
+      </FormControlLabel>
+      <Select
+        onValueChange={onChange}
+        selectedValue={value}
+        initialLabel={genderEnum.find((item: any) => item.value === value)?.label}>
+        <SelectTrigger variant="rounded">
+          <SelectInput className="flex-1" />
+          <SelectIcon className="mr-3" as={ChevronDownIcon} />
+        </SelectTrigger>
+        <SelectPortal>
+          <SelectBackdrop />
+          <SelectContent>
+            <SelectDragIndicatorWrapper>
+              <SelectDragIndicator />
+            </SelectDragIndicatorWrapper>
+            {genderEnum.map(({ label, value }: any) => (
+              <SelectItem key={value} label={label} value={value} />
+            ))}
+          </SelectContent>
+        </SelectPortal>
+      </Select>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircle} size="lg" />
+        <FormControlErrorText>{errors?.gender?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const renderBirthday = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.birthday} size="lg">
+      <FormControlLabel>
+        <FormControlLabelText>出生日期</FormControlLabelText>
+      </FormControlLabel>
+      <DatePicker value={value} onChange={onChange} variant="rounded"></DatePicker>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircle} />
+        <FormControlErrorText>{errors?.birthday?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const renderPhonNumber = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.phoneNumber} size="lg">
+      <FormControlLabel>
+        <FormControlLabelText>手机号码</FormControlLabelText>
+      </FormControlLabel>
+      <Input variant="rounded">
+        <InputField
+          type="text"
+          value={value}
+          inputMode="tel"
+          onChangeText={onChange}
+          onBlur={onBlur}
+        />
+      </Input>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircle} />
+        <FormControlErrorText>{errors?.phoneNumber?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const onSubmit = (data: ProfileSchemaDetails) => {
+    mutate(
+      {
+        documentId: profile.documentId,
+        profile: profile.documentId ? data : { ...data, user: user.documentId },
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+          toast.success({ title: '操作完成', description: '您的资料已更新' });
+          router.navigate('/profile');
+        },
+        onError(error, variables, context) {
+          toast.error(error.message);
+        },
+      },
+    );
   };
 
+  const renderHeaderLeft = () => (
+    <Button
+      size="sm"
+      variant="link"
+      onPress={() => {
+        router.back();
+      }}>
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
+
   return (
-    <>
+    <Box style={{ paddingBottom: insets.bottom }}>
       <Stack.Screen
         options={{
           title: '编辑资料',
           headerShown: true,
-          headerLeft: () => (
-            <Button
-              size="sm"
-              variant="link"
-              onPress={() => {
-                router.dismiss();
-              }}>
-              <ButtonText>返回</ButtonText>
-            </Button>
-          ),
-          headerRight: () => (
-            <Button action="primary" size="sm" variant="link">
-              <ButtonText>保存</ButtonText>
-            </Button>
-          ),
+          headerLeft: renderHeaderLeft,
         }}
       />
       <KeyboardAwareScrollView
         contentContainerStyle={{
           paddingHorizontal: 32,
         }}
-        bottomOffset={30}>
+        bottomOffset={30}
+        showsVerticalScrollIndicator={false}>
         <VStack className="flex-1" space="lg">
           <Box className="h-52">
             <Center className="absolute top-16 w-full">
@@ -119,123 +235,29 @@ const ProfileEdit = () => {
                 <FormControlLabelText>邮箱地址</FormControlLabelText>
               </FormControlLabel>
               <Input variant="underlined">
-                <InputField
-                  inputMode="email"
-                  autoCapitalize="none"
-                  value="yanjiafelix@gmail.com"></InputField>
+                <InputField inputMode="email" autoCapitalize="none" value={user.email} />
               </Input>
-              <FormControlError>
-                <FormControlErrorText></FormControlErrorText>
-              </FormControlError>
             </FormControl>
-            <Controller
-              control={control}
-              name="username"
-              render={({ field: { onChange, onBlur, value } }: any) => (
-                <FormControl isInvalid={!!errors.username} size="lg">
-                  <FormControlLabel>
-                    <FormControlLabelText>用户名</FormControlLabelText>
-                  </FormControlLabel>
-                  <Input variant="rounded" className="mb-2">
-                    <InputField
-                      inputMode="text"
-                      autoCapitalize="none"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                    />
-                  </Input>
-                  <FormControlError>
-                    <FormControlErrorIcon as={AlertCircleIcon} />
-                    <FormControlErrorText>{errors?.username?.message}</FormControlErrorText>
-                  </FormControlError>
-                </FormControl>
-              )}
-            />
-            <Controller
-              name="gender"
-              control={control}
-              render={({ field: { onChange, onBlur, value } }: any) => (
-                <FormControl isInvalid={!!errors.gender} size="lg">
-                  <FormControlLabel>
-                    <FormControlLabelText>性别</FormControlLabelText>
-                  </FormControlLabel>
-                  <Select onValueChange={onChange} selectedValue={value}>
-                    <SelectTrigger variant="rounded">
-                      <SelectInput className="flex-1"></SelectInput>
-                      <SelectIcon className="mr-3" as={ChevronDownIcon} />
-                    </SelectTrigger>
-                    <SelectPortal>
-                      <SelectBackdrop />
-                      <SelectContent>
-                        <SelectDragIndicatorWrapper>
-                          <SelectDragIndicator />
-                        </SelectDragIndicatorWrapper>
-                        {genderEnum.map(({ label, value }: any) => (
-                          <SelectItem key={value} label={label} value={value} />
-                        ))}
-                      </SelectContent>
-                    </SelectPortal>
-                  </Select>
-                  <FormControlError>
-                    <FormControlErrorIcon as={AlertCircle} size="lg" />
-                    <FormControlErrorText>{errors?.gender?.message}</FormControlErrorText>
-                  </FormControlError>
-                </FormControl>
-              )}
-            />
-            <Controller
-              name="birthday"
-              control={control}
-              render={({ field: { onChange, onBlur, value } }: any) => (
-                <FormControl isInvalid={!!errors.birthday} size="lg">
-                  <FormControlLabel>
-                    <FormControlLabelText>出生日期</FormControlLabelText>
-                  </FormControlLabel>
-                  <DatePicker value={value} onChange={onChange} variant="rounded"></DatePicker>
-                  <FormControlError>
-                    <FormControlErrorIcon as={AlertCircle} size="lg" />
-                    <FormControlErrorText>{errors?.birthday?.message}</FormControlErrorText>
-                  </FormControlError>
-                </FormControl>
-              )}
-            />
-            <Controller
-              name="phoneNumber"
-              control={control}
-              render={({ field: { onChange, onBlur, value } }: any) => (
-                <FormControl isInvalid={!!errors.phoneNumber} size="lg">
-                  <FormControlLabel>
-                    <FormControlLabelText>手机号码</FormControlLabelText>
-                  </FormControlLabel>
-                  <Input variant="rounded">
-                    <InputField
-                      type="text"
-                      value={value}
-                      inputMode="tel"
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                    />
-                  </Input>
-                  <FormControlError>
-                    <FormControlErrorIcon as={AlertCircleIcon} />
-                    <FormControlErrorText>{errors?.phoneNumber?.message}</FormControlErrorText>
-                  </FormControlError>
-                </FormControl>
-              )}
-            />
-            <Button
-              action="primary"
-              size="lg"
-              onPress={() => {
-                handleSubmit(onSubmit)();
-              }}>
+            <FormControl size="lg" isDisabled={true}>
+              <FormControlLabel>
+                <FormControlLabelText>用户名</FormControlLabelText>
+              </FormControlLabel>
+              <Input variant="underlined" className="mb-2">
+                <InputField inputMode="text" autoCapitalize="none" value={user.username} />
+              </Input>
+            </FormControl>
+            <Controller name="bio" control={control} render={renderBio} />
+            <Controller name="gender" control={control} render={renderGender} />
+            <Controller name="birthday" control={control} render={renderBirthday} />
+            <Controller name="phoneNumber" control={control} render={renderPhonNumber} />
+            <Button action="primary" size="lg" onPress={handleSubmit(onSubmit)}>
               <ButtonText>保存</ButtonText>
+              {isPending && <ButtonSpinner />}
             </Button>
           </VStack>
         </VStack>
       </KeyboardAwareScrollView>
-    </>
+    </Box>
   );
 };
 

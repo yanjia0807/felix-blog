@@ -6,12 +6,21 @@ import moment from 'moment';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet';
 
-export const DatePicker: React.FC = ({ placeholder, onChange, value, variant }: any) => {
+type MyComponentProps = {
+  value: any;
+  onChange: (value: any) => void;
+  variant: string;
+};
+
+export const DatePicker: React.FC<MyComponentProps> = ({
+  placeholder,
+  onChange,
+  value,
+  variant,
+}: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [date, setDate] = useState<Date | undefined>(value);
-  const [displayDate, setDisplayDate] = useState<string | undefined>(
-    moment(date).format('YYYY-MM-DD'),
-  );
+  const [displayDate, setDisplayDate] = useState<string | undefined>();
 
   const openBottomSheet = () => {
     bottomSheetRef.current?.present();

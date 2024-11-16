@@ -4,7 +4,8 @@
   "info": {
     "singularName": "profile",
     "pluralName": "profiles",
-    "displayName": "Profile"
+    "displayName": "Profile",
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -14,7 +15,7 @@
     "birthday": {
       "type": "date"
     },
-    "nickname": {
+    "phoneNumber": {
       "type": "string"
     },
     "gender": {
@@ -28,11 +29,12 @@
       "type": "string"
     },
     "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "user": {
       "type": "relation",

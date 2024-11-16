@@ -50,6 +50,12 @@ const Feature = () => {
       </Button>
       <Button
         onPress={() => {
+          router.navigate('/email-confirmation');
+        }}>
+        <ButtonText>验证成功</ButtonText>
+      </Button>
+      <Button
+        onPress={() => {
           toast.success("Hey! You can't create a duplicate toast");
         }}>
         <ButtonText>提示</ButtonText>

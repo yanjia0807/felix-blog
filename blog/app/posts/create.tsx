@@ -35,7 +35,7 @@ import colors from 'tailwindcss/colors';
 import { useQueryClient } from '@tanstack/react-query';
 import TagBtn from '@/components/tag-btn';
 import { upload } from '@/api/file';
-import { PostData, useCreatePostMutation } from '@/api/post';
+import { PostData, useCreatePost } from '@/api/post';
 import useAlertToast from '@/components/use-alert-toast';
 
 export type PostFormData = {
@@ -49,7 +49,7 @@ const PostCreate = () => {
   const [location, setLocation] = useState<any>();
   const [tags, setTags] = useState<any>([]);
   const insets = useSafeAreaInsets();
-  const { isSuccess, isError, isPending, mutate } = useCreatePostMutation();
+  const { isSuccess, isError, isPending, mutate } = useCreatePost();
   const queryClient = useQueryClient();
   const toast = useAlertToast();
 
@@ -141,6 +141,29 @@ const PostCreate = () => {
     setInitialIndex(index);
     setGalleryPreviewIsOpen(true);
   };
+
+  const renderHeaderLeft = () => (
+    <Button
+      size="sm"
+      action="secondary"
+      variant="link"
+      onPress={() => {
+        router.dismiss();
+      }}>
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
+
+  const renderHeaderRight = () => (
+    <HStack space="sm">
+      <Button size="sm" action="secondary" variant="link">
+        <ButtonText>[存草稿]</ButtonText>
+      </Button>
+      <Button action="primary" size="sm" variant="link" onPress={handleSubmit(onSubmit)}>
+        <ButtonText>发布</ButtonText>
+      </Button>
+    </HStack>
+  );
   return (
     <>
       <ImagePickerSheet
@@ -163,27 +186,8 @@ const PostCreate = () => {
         options={{
           title: '记录',
           headerShown: true,
-          headerLeft: () => (
-            <Button
-              size="sm"
-              action="secondary"
-              variant="link"
-              onPress={() => {
-                router.dismiss();
-              }}>
-              <ButtonText>返回</ButtonText>
-            </Button>
-          ),
-          headerRight: () => (
-            <HStack space="sm">
-              <Button size="sm" action="secondary" variant="link">
-                <ButtonText>[存草稿]</ButtonText>
-              </Button>
-              <Button action="primary" size="sm" variant="link" onPress={handleSubmit(onSubmit)}>
-                <ButtonText>发布</ButtonText>
-              </Button>
-            </HStack>
-          ),
+          headerLeft: renderHeaderLeft,
+          headerRight: renderHeaderRight,
         }}
       />
       <>
@@ -227,7 +231,7 @@ const PostCreate = () => {
               ))}
             </HStack>
           )}
-         
+
           {recordings.length > 0 && (
             <HStack space="sm" className="my-2 flex-wrap">
               {recordings.map((recording: any) => {

@@ -1,43 +1,19 @@
 import React, { memo } from 'react';
 import { Toast, ToastDescription, ToastTitle, useToast } from './ui/toast';
-import { CircleAlert, CircleCheckBig, Info } from 'lucide-react-native';
 import { Pressable } from 'react-native';
 import { HStack } from './ui/hstack';
 import { CloseIcon, Icon } from './ui/icon';
 import { VStack } from './ui/vstack';
 import _ from 'lodash';
 
-const AlertToast = memo(function AlertToast({ toast, id, action, description }: any) {
-  let IconComponent = null;
-  switch (action) {
-    case 'info':
-      IconComponent = Info;
-      break;
-    case 'success':
-      IconComponent = CircleCheckBig;
-      break;
-    case 'error':
-      IconComponent = CircleAlert;
-      break;
-    default:
-      IconComponent = Info;
-      break;
-  }
-
-  const titles: any = {
-    info: '提示!',
-    success: '成功!',
-    error: '出错了!',
-  };
-
+const AlertToast = memo(function AlertToast({ toast, id, action, title, description }: any) {
   const nativeID = id || _.random().toString();
 
   return (
     <Toast action={action} nativeID={nativeID} className="min-w-[200] max-w-[300] shadow-hard-2">
       <VStack space="sm">
         <HStack className="items-center" space="sm">
-          <Icon as={IconComponent} />
-          <ToastTitle>{titles[action]}</ToastTitle>
+          <ToastTitle>{title}</ToastTitle>
         </HStack>
         <ToastDescription size="sm">{description}</ToastDescription>
       </VStack>
@@ -55,28 +31,38 @@ const AlertToast = memo(function AlertToast({ toast, id, action, description }: 
 const useAlertToast = (props?: any) => {
   const toast = useToast();
 
-  const success = (description: string) => {
+  const success = ({ title = '操作成功', description }: any) => {
     toast.show({
       placement: 'top',
       render: ({ id }: any) => (
-        <AlertToast toast={toast} id={id} description={description} action="success" />
+        <AlertToast
+          toast={toast}
+          id={id}
+          title={title}
+          description={description}
+          action="success"
+        />
       ),
       ...props,
     });
   };
 
-  const info = (description: string) => {
+  const info = ({ title = '操作提示', description }: any) => {
     toast.show({
       placement: 'top',
-      render: ({ id }: any) => <AlertToast id={id} description={description} action="info" />,
+      render: ({ id }: any) => (
+        <AlertToast id={id} title={title} description={description} action="info" />
+      ),
       ...props,
     });
   };
 
-  const error = (description: string) => {
+  const error = ({ title = '操作失败', description }: any) => {
     toast.show({
       placement: 'top',
-      render: ({ id }: any) => <AlertToast id={id} description={description} action="error" />,
+      render: ({ id }: any) => (
+        <AlertToast id={id} title={title} description={description} action="error" />
+      ),
       ...props,
     });
   };
