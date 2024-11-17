@@ -1,7 +1,6 @@
 import { apiAxios } from './config';
 import qs from 'qs';
-import { baseURL } from './config';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 export const fetchTags = async ({ queryKey }: any) => {
   const [_key, { name }] = queryKey;
@@ -15,9 +14,8 @@ export const fetchTags = async ({ queryKey }: any) => {
         },
       )
     : '';
-  console.log(`${baseURL}/api/tags?${query}`);
-  const res = await apiAxios.get(`${baseURL}/api/tags?${query}`);
-  return res.data.data;
+  const res = await apiAxios.get(`/tags?${query}`);
+  return res.data;
 };
 
 export const useFetchTags = ({ name }: any) => {

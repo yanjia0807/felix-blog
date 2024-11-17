@@ -4,11 +4,11 @@ import { router, Stack } from 'expo-router';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/components/auth-context';
 import { ProfileAvatar } from '@/components/profile-avatar';
-import useAlertToast from '@/components/use-alert-toast';
+import useCustomToast from '@/components/use-custom-toast';
 
 const Feature = () => {
   const { user, logout } = useAuth();
-  const toast = useAlertToast();
+  const toast = useCustomToast();
   return (
     <VStack className="flex-1 p-4" space="md">
       <Stack.Screen

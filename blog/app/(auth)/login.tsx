@@ -18,7 +18,7 @@ import { useAuth } from '@/components/auth-context';
 import { Controller, useForm } from 'react-hook-form';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useAlertToast from '@/components/use-alert-toast';
+import useCustomToast from '@/components/use-custom-toast';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack } from 'expo-router';
@@ -41,7 +41,7 @@ const SignIn = () => {
   const { loginMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = loginMutation;
   const insets = useSafeAreaInsets();
-  const toast = useAlertToast();
+  const toast = useCustomToast();
   const {
     control,
     handleSubmit,
@@ -76,6 +76,55 @@ const SignIn = () => {
     );
   };
 
+  const renderIdentifier = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.identifier} size="lg">
+      <FormControlLabel>
+        <FormControlLabelText>用户名/邮箱地址</FormControlLabelText>
+      </FormControlLabel>
+      <Input className="my-1" variant="rounded">
+        <InputField
+          placeholder="请输入用户名或邮箱地址"
+          inputMode="text"
+          autoCapitalize="none"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+        />
+      </Input>
+      <FormControlHelper className="justify-end">
+        <FormControlHelperText></FormControlHelperText>
+      </FormControlHelper>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.identifier?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const renderPassword = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.password} size="lg">
+      <FormControlLabel>
+        <FormControlLabelText>密码</FormControlLabelText>
+      </FormControlLabel>
+      <Input variant="rounded">
+        <InputField
+          type="password"
+          placeholder="请输入密码"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+        />
+      </Input>
+      <FormControlHelper className="justify-end">
+        <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
+      </FormControlHelper>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.password?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
   return (
     <>
       <Stack.Screen
@@ -88,61 +137,8 @@ const SignIn = () => {
         className="w-full flex-1 justify-between p-4"
         style={{ paddingBottom: insets.bottom }}>
         <VStack className="flex-1" space="lg">
-          <Controller
-            control={control}
-            name="identifier"
-            render={({ field: { onChange, onBlur, value } }: any) => (
-              <FormControl isInvalid={!!errors.identifier} size="lg">
-                <FormControlLabel>
-                  <FormControlLabelText>用户名/邮箱地址</FormControlLabelText>
-                </FormControlLabel>
-                <Input className="my-1" variant="rounded">
-                  <InputField
-                    placeholder="请输入用户名或邮箱地址"
-                    inputMode="text"
-                    autoCapitalize="none"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                </Input>
-                <FormControlHelper className="justify-end">
-                  <FormControlHelperText></FormControlHelperText>
-                </FormControlHelper>
-                <FormControlError>
-                  <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>{errors?.identifier?.message}</FormControlErrorText>
-                </FormControlError>
-              </FormControl>
-            )}
-          />
-          <Controller
-            control={control}
-            name="password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <FormControl isInvalid={!!errors.password} size="lg">
-                <FormControlLabel>
-                  <FormControlLabelText>密码</FormControlLabelText>
-                </FormControlLabel>
-                <Input variant="rounded">
-                  <InputField
-                    type="password"
-                    placeholder="请输入密码"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                </Input>
-                <FormControlHelper className="justify-end">
-                  <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
-                </FormControlHelper>
-                <FormControlError>
-                  <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>{errors?.password?.message}</FormControlErrorText>
-                </FormControlError>
-              </FormControl>
-            )}
-          />
+          <Controller control={control} name="identifier" render={renderIdentifier} />
+          <Controller control={control} name="password" render={renderPassword} />
           <Button
             className="rounded-3xl"
             size="lg"

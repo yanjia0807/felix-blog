@@ -21,7 +21,7 @@ import AuthorInfo from '@/components/author-info';
 import { Popover, PopoverBackdrop, PopoverContent, PopoverBody } from '@/components/ui/popover';
 import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
-import useAlertToast from '@/components/use-alert-toast';
+import useCustomToast from '@/components/use-custom-toast';
 import _ from 'lodash';
 
 const MenuPopover = (props: any) => {
@@ -66,7 +66,7 @@ const MenuPopover = (props: any) => {
 };
 
 const PostHome = () => {
-  const toast = useAlertToast();
+  const toast = useCustomToast();
   const {
     data,
     error,

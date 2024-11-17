@@ -1,29 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { HStack } from '@/components/ui/hstack';
-import { EditIcon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { Card } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { Box } from '@/components/ui/box';
 import { Heading } from '@/components/ui/heading';
-import { Calendar, MapPin, MessageCircle, ScanFace } from 'lucide-react-native';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Divider } from '@/components/ui/divider';
-import { router, Stack } from 'expo-router';
-import { Icon } from '@/components/ui/icon';
+import { Stack } from 'expo-router';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { FlashList, MasonryFlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { Dimensions } from 'react-native';
 import { useFetchPosts } from '@/api';
+import UserInfoHeader from '@/components/user-info-header';
 
 const { width } = Dimensions.get('window');
 const numColumns = 2;
 
 const PostListView = () => {
-  const { data: posts, error, isLoading, isSuccess } = useFetchPosts();
+  const { data: posts, error, isLoading, isSuccess }: any = useFetchPosts();
 
   const renderItem = ({ item }: any) => {
     return (
@@ -119,48 +115,8 @@ const Profile = () => {
           title: '我的',
         }}
       />
-      <VStack className="flex-1 p-8" space="xl">
-        <HStack className="items-center justify-between">
-          <Avatar size="lg">
-            <AvatarImage
-              alt="Profile Image"
-              source={require('@/assets/images/profile/WechatIMG113.jpeg')}
-            />
-          </Avatar>
-          <HStack className="items-center" space="lg">
-            <Button size="sm" className="rounded-full p-2.5" variant="outline">
-              <ButtonIcon as={MessageCircle} />
-            </Button>
-            <Button
-              size="sm"
-              className="rounded-3xl px-6"
-              onPress={() => {
-                router.push('/profile-edit');
-              }}>
-              <ButtonText>编辑</ButtonText>
-              <ButtonIcon as={EditIcon} />
-            </Button>
-          </HStack>
-        </HStack>
-        <VStack space="md">
-          <Text size="3xl" bold={true}>
-            颜0807
-          </Text>
-          <HStack space="md" className="items-center">
-            <HStack className="items-center" space="xs">
-              <Icon size="xs" as={Calendar} />
-              <Text size="xs">1984-08-07</Text>
-            </HStack>
-            <HStack className="items-center" space="xs">
-              <Icon size="xs" as={ScanFace} />
-              <Text size="xs">男</Text>
-            </HStack>
-            <HStack className="items-center" space="xs">
-              <Icon size="xs" as={MapPin} />
-              <Text size="xs">重庆｜南岸区</Text>
-            </HStack>
-          </HStack>
-        </VStack>
+      <VStack className="flex-1 p-6" space="xl">
+        <UserInfoHeader />
         <Divider />
         <HStack space="md" className="justify-around">
           <VStack className="items-center justify-center">

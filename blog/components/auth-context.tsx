@@ -1,16 +1,22 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { loginUser, registerUser, sendEmailConfirmation, sendResetPasswordEmail } from '@/api/auth';
+import {
+  loginUser,
+  registerUser,
+  resetPassword,
+  sendEmailConfirmation,
+  sendResetPasswordEmail,
+} from '@/api/auth';
 import { setAuthHeader, useFetchUser } from '@/api';
-import useAlertToast from './use-alert-toast';
+import useCustomToast from './use-custom-toast';
 
 const AuthContext = createContext<any>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<any>(null);
   const [tokenExists, setTokenExists] = useState<boolean>(false);
-  const toast = useAlertToast();
+  const toast = useCustomToast();
   const { data: userData, error, isFetching, status } = useFetchUser(tokenExists);
   const queryClient = useQueryClient();
 
@@ -65,10 +71,12 @@ export const AuthProvider = ({ children }: any) => {
   });
 
   const resetPasswordMutation = useMutation({
-    mutationFn: (data: any) => sendResetPasswordEmail(data),
-    onSuccess: async (data) => {},
+    mutationFn: (data: any) => resetPassword(data),
+    onSuccess: async (data) => {
+      console.log('resetPasswordMutation', data);
+    },
     onError: (error) => {
-      console.error(error);
+      console.error('resetPasswordMutation', error);
     },
   });
 

@@ -22,11 +22,11 @@ import TagBtn from '@/components/tag-btn';
 import GalleryPreview from 'react-native-gallery-preview';
 import { Pressable } from '@/components/ui/pressable';
 import RecordingBtn from '@/components/recording-btn';
-import useAlertToast from '@/components/use-alert-toast';
+import useCustomToast from '@/components/use-custom-toast';
 
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
-  const toast = useAlertToast();
+  const toast = useCustomToast();
   const [initialIndex, setInitialIndex] = useState<number>(0);
   const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
   const { isPending, isError, isSuccess, data: post, error } = useFetchPost(documentId as string);

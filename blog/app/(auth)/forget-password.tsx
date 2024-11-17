@@ -15,11 +15,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/components/auth-context';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Spinner } from '@/components/ui/spinner';
-import useAlertToast from '@/components/use-alert-toast';
+import useCustomToast from '@/components/use-custom-toast';
 
 const ForgetPassword = () => {
   const insets = useSafeAreaInsets();
-  const toast = useAlertToast();
+  const toast = useCustomToast();
   const { forgetPasswordMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = forgetPasswordMutation;
 

@@ -19,7 +19,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Spinner } from '@/components/ui/spinner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useAlertToast from '@/components/use-alert-toast';
+import useCustomToast from '@/components/use-custom-toast';
 import { router, Stack } from 'expo-router';
 import { Link, LinkText } from '@/components/ui/link';
 import { Box } from '@/components/ui/box';
@@ -59,7 +59,7 @@ const SignUp = () => {
   const { registerMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = registerMutation;
   const insets = useSafeAreaInsets();
-  const toast = useAlertToast();
+  const toast = useCustomToast();
   const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
   const [isPrivacyDialogOpen, setIsPrivacyDialogOpen] = useState(false);
 
@@ -97,6 +97,80 @@ const SignUp = () => {
     );
   };
 
+  const renderUsername = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.username} size="lg">
+      <FormControlLabel>
+        <FormControlLabelText>用户名</FormControlLabelText>
+      </FormControlLabel>
+      <Input variant="rounded">
+        <InputField
+          placeholder="请输入用户名"
+          inputMode="text"
+          autoCapitalize="none"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+        />
+      </Input>
+      <FormControlHelper className="justify-end">
+        <FormControlHelperText>用户名长度需在3到16个字符之间</FormControlHelperText>
+      </FormControlHelper>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.username?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const renderEmail = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.email} size="lg">
+      <FormControlLabel>
+        <FormControlLabelText>邮箱地址</FormControlLabelText>
+      </FormControlLabel>
+      <Input variant="rounded">
+        <InputField
+          placeholder="请输入邮箱地址"
+          inputMode="email"
+          autoCapitalize="none"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+        />
+      </Input>
+      <FormControlHelper className="justify-end">
+        <FormControlHelperText></FormControlHelperText>
+      </FormControlHelper>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.email?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const renderPassword = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.password} size="lg">
+      <FormControlLabel>
+        <FormControlLabelText>密码</FormControlLabelText>
+      </FormControlLabel>
+      <Input variant="rounded">
+        <InputField
+          type="password"
+          placeholder="请输入密码"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+        />
+      </Input>
+      <FormControlHelper className="justify-end">
+        <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
+      </FormControlHelper>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.password?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
   return (
     <>
       <Stack.Screen
@@ -117,89 +191,9 @@ const SignUp = () => {
         className="flex-1 items-center justify-between p-4"
         style={{ paddingBottom: insets.bottom }}>
         <VStack className="flex-1" space="lg">
-          <Controller
-            control={control}
-            name="username"
-            render={({ field: { onChange, onBlur, value } }: any) => (
-              <FormControl isInvalid={!!errors.username} size="lg">
-                <FormControlLabel>
-                  <FormControlLabelText>用户名</FormControlLabelText>
-                </FormControlLabel>
-                <Input variant="rounded">
-                  <InputField
-                    placeholder="请输入用户名"
-                    inputMode="text"
-                    autoCapitalize="none"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                </Input>
-                <FormControlHelper className="justify-end">
-                  <FormControlHelperText>用户名长度需在3到16个字符之间</FormControlHelperText>
-                </FormControlHelper>
-                <FormControlError>
-                  <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>{errors?.username?.message}</FormControlErrorText>
-                </FormControlError>
-              </FormControl>
-            )}
-          />
-          <Controller
-            control={control}
-            name="email"
-            render={({ field: { onChange, onBlur, value } }: any) => (
-              <FormControl isInvalid={!!errors.email} size="lg">
-                <FormControlLabel>
-                  <FormControlLabelText>邮箱地址</FormControlLabelText>
-                </FormControlLabel>
-                <Input variant="rounded">
-                  <InputField
-                    placeholder="请输入邮箱地址"
-                    inputMode="email"
-                    autoCapitalize="none"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                </Input>
-                <FormControlHelper className="justify-end">
-                  <FormControlHelperText></FormControlHelperText>
-                </FormControlHelper>
-                <FormControlError>
-                  <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>{errors?.email?.message}</FormControlErrorText>
-                </FormControlError>
-              </FormControl>
-            )}
-          />
-          <Controller
-            control={control}
-            name="password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <FormControl isInvalid={!!errors.password} size="lg">
-                <FormControlLabel>
-                  <FormControlLabelText>密码</FormControlLabelText>
-                </FormControlLabel>
-                <Input variant="rounded">
-                  <InputField
-                    type="password"
-                    placeholder="请输入密码"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                </Input>
-                <FormControlHelper className="justify-end">
-                  <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
-                </FormControlHelper>
-                <FormControlError>
-                  <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>{errors?.password?.message}</FormControlErrorText>
-                </FormControlError>
-              </FormControl>
-            )}
-          />
+          <Controller control={control} name="username" render={renderUsername} />
+          <Controller control={control} name="email" render={renderEmail} />
+          <Controller control={control} name="password" render={renderPassword} />
           <HStack className="my-6 flex-wrap items-center justify-center">
             <Text size="sm">
               <Text size="sm" bold={true}>

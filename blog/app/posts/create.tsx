@@ -12,6 +12,8 @@ import {
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
+  FormControlLabel,
+  FormControlLabelText,
 } from '@/components/ui/form-control';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -36,11 +38,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import TagBtn from '@/components/tag-btn';
 import { upload } from '@/api/file';
 import { PostData, useCreatePost } from '@/api/post';
-import useAlertToast from '@/components/use-alert-toast';
+import useCustomToast from '@/components/use-custom-toast';
+import { Input, InputField } from '@/components/ui/input';
 
-export type PostFormData = {
-  title?: string;
-  content: string;
+type PostFormData = {
+  title: string;
+  content?: string;
 };
 
 const PostCreate = () => {
@@ -51,12 +54,17 @@ const PostCreate = () => {
   const insets = useSafeAreaInsets();
   const { isSuccess, isError, isPending, mutate } = useCreatePost();
   const queryClient = useQueryClient();
-  const toast = useAlertToast();
-
+  const toast = useCustomToast();
+  const maxCharCount = 5000;
+  const [charCount, setCharCount] = useState(0);
   const PostSchema: ZodType<PostFormData> = z.object({
-    content: z.string({
-      required_error: '内容是必填项',
-    }),
+    title: z
+      .string({
+        required_error: '标题是必填项',
+      })
+      .min(6, '标题不能少于6个字符')
+      .max(50, '标题不能多余501个字符'),
+    content: z.string().max(maxCharCount, `内容最多不能超过${maxCharCount}个字符`).optional(),
   });
 
   const {
@@ -164,6 +172,50 @@ const PostCreate = () => {
       </Button>
     </HStack>
   );
+
+  const renderTitle = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.title} size="md">
+      <Input variant="underlined" className="border-0 border-b p-2">
+        <InputField
+          placeholder="请输入标题"
+          inputMode="text"
+          autoCapitalize="none"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+        />
+      </Input>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.title?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const renderContent = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl size="md" className="h-32" isInvalid={!!errors.content}>
+      <Textarea className="flex-1 border-0">
+        <TextareaInput
+          placeholder="你此时的感想..."
+          inputMode="text"
+          autoCapitalize="none"
+          onBlur={onBlur}
+          onChangeText={(props) => {
+            setCharCount(props?.length);
+            onChange(props);
+          }}
+          value={value}
+        />
+      </Textarea>
+      <FormControlHelper className="justify-end">
+        <FormControlHelperText>{`${charCount}/${maxCharCount}`}</FormControlHelperText>
+      </FormControlHelper>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.content?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
   return (
     <>
       <ImagePickerSheet
@@ -199,29 +251,8 @@ const PostCreate = () => {
               color={colors.gray[500]}
             />
           )}
-          <Controller
-            control={control}
-            name="content"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <FormControl size="md" className="h-52" isInvalid={!!errors.content}>
-                <Textarea className="flex-1 border-0">
-                  <TextareaInput
-                    placeholder="你此时的感想..."
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                </Textarea>
-                <FormControlHelper className="justify-end">
-                  <FormControlHelperText></FormControlHelperText>
-                </FormControlHelper>
-                <FormControlError>
-                  <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>{errors?.content?.message}</FormControlErrorText>
-                </FormControlError>
-              </FormControl>
-            )}
-          />
+          <Controller control={control} name="title" render={renderTitle} />
+          <Controller control={control} name="content" render={renderContent} />
           <Divider className="my-2 bg-background-200" />
 
           {tags.length > 0 && (

@@ -7,22 +7,22 @@ import { User } from 'lucide-react-native';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Pressable } from './ui/pressable';
 import { useRouter } from 'expo-router';
+import { Box } from './ui/box';
 
 const ProfileAvatarStyles = tva({});
 
 export const ProfileAvatar = ({ className, ...props }: any) => {
   const { user } = useAuth();
   const router = useRouter();
-  console.log('user', user);
 
   return (
-    <>
+    <Box className={ProfileAvatarStyles({ className })}>
       {user ? (
         <Pressable
           onPress={() => {
-            router.navigate('/profile');
+            router.navigate('/setting');
           }}>
-          <Avatar size="sm" className={ProfileAvatarStyles({ className })}>
+          <Avatar size="sm">
             <AvatarFallbackText>{user.username}</AvatarFallbackText>
             <AvatarImage
               source={{
@@ -35,11 +35,10 @@ export const ProfileAvatar = ({ className, ...props }: any) => {
         <Pressable
           onPress={() => {
             router.navigate('/register');
-          }}
-          className={ProfileAvatarStyles({ className })}>
+          }}>
           <Icon as={User} />
         </Pressable>
       )}
-    </>
+    </Box>
   );
 };

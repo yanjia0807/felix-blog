@@ -9,8 +9,6 @@ import {
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
-  FormControlHelper,
-  FormControlHelperText,
   FormControlLabel,
   FormControlLabelText,
 } from '@/components/ui/form-control';
@@ -40,14 +38,14 @@ import { Stack, router } from 'expo-router';
 import { useAuth } from '@/components/auth-context';
 import { useUpdateUser } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
-import useAlertToast from '@/components/use-alert-toast';
+import useCustomToast from '@/components/use-custom-toast';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ProfileEdit = () => {
   const { user }: any = useAuth();
   const queryClient = useQueryClient();
-  const toast = useAlertToast();
+  const toast = useCustomToast();
   const insets = useSafeAreaInsets();
   const profile = { ...user.profile };
 
