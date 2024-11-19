@@ -16,7 +16,7 @@ import { HStack } from '@/components/ui/hstack';
 import { BookMarked, Share2 } from 'lucide-react-native';
 import { Icon } from '@/components/ui/icon';
 import CommentInfo from '@/components/comment-info';
-import HeartInfo from '@/components/heart-info';
+import HeartInfo from '@/components/likes-info';
 import AuthorInfo from '@/components/author-info';
 import TagBtn from '@/components/tag-btn';
 import GalleryPreview from 'react-native-gallery-preview';

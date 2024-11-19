@@ -15,7 +15,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { BookMarked, Ellipsis, MapPin, Share2 } from 'lucide-react-native';
 import { RefreshControl, TouchableOpacity } from 'react-native';
 import PostThumbnail from '@/components/post-thumbnail';
-import HeartInfo from '@/components/heart-info';
+import LikesInfo from '@/components/likes-info';
 import CommentInfo from '@/components/comment-info';
 import AuthorInfo from '@/components/author-info';
 import { Popover, PopoverBackdrop, PopoverContent, PopoverBody } from '@/components/ui/popover';
@@ -85,6 +85,7 @@ const PostHome = () => {
 
   const renderItem = ({ item }: any) => {
     const author = item.author;
+    const likes = item.likedByUsers.count;
 
     return (
       <Card className="mb-6 rounded-lg p-5">
@@ -113,7 +114,7 @@ const PostHome = () => {
             <PostThumbnail item={item} />
             <HStack className="items-center justify-between">
               <HStack space="lg" className="flex-row items-center">
-                <HeartInfo />
+                <LikesInfo count={likes} />
                 <CommentInfo />
               </HStack>
               <HStack className="items-center">

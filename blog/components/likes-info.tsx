@@ -6,15 +6,22 @@ import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 import { Heart } from 'lucide-react-native';
 
-const HeartInfo = () => {
+const LikesInfo = ({ count }: any) => {
+  const toggleLike = () => {
+    console.log(count);
+  };
+
   return (
-    <TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => {
+        toggleLike();
+      }}>
       <HStack space="xs" className="items-center">
         <Icon as={Heart} color={colors.red[500]} />
-        <Text size="xs">321</Text>
+        <Text size="xs">{count}</Text>
       </HStack>
     </TouchableOpacity>
   );
 };
 
-export default HeartInfo;
+export default LikesInfo;

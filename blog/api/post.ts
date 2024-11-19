@@ -3,6 +3,7 @@ import qs from 'qs';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type PostData = any;
+export type PostLikeData = any;
 
 export const fetchPosts = async ({ pageParam: { pagination } }: any) => {
   const query = qs.stringify(
@@ -15,6 +16,9 @@ export const fetchPosts = async ({ pageParam: { pagination } }: any) => {
               populate: ['avatar'],
             },
           },
+        },
+        likedByUsers: {
+          count: true,
         },
         cover: {
           fields: ['formats', 'name', 'alternativeText'],
@@ -83,6 +87,23 @@ export const createPost = async (postData: PostData) => {
   return res.data;
 };
 
+export const createPostLike = async (postLikeData: PostLikeData) => {
+  console.log(postLikeData);
+  const res = await apiAxios.post(`/posts`, {
+    data: postLikeData,
+  });
+
+  return res.data;
+};
+
+export const useCreatePostLike = () => {
+  return useMutation({
+    mutationFn: (postLikeData: PostLikeData) => {
+      return createPostLike(postLikeData);
+    },
+  });
+};
+
 export const useCreatePost = () => {
   return useMutation({
     mutationFn: (postData: PostData) => {
@@ -105,7 +126,7 @@ export const useFetchPosts = () => {
     initialPageParam: {
       pagination: {
         start: 0,
-        limit: 1,
+        limit: 10,
       },
     },
     getNextPageParam: (lastPage: any) => {
