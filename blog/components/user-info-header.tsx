@@ -14,7 +14,6 @@ import { baseURL } from '@/api';
 
 const UserInfoHeader = () => {
   const { user } = useAuth();
-  console.log(JSON.stringify(user));
   return (
     <Box>
       <HStack className="items-center justify-between">

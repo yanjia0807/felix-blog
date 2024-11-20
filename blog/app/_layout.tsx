@@ -13,9 +13,9 @@ const queryClient = new QueryClient();
 export default function RootLayout() {
   return (
     <GestureHandlerRootView className="flex-1">
-      <KeyboardProvider>
-        <BottomSheetModalProvider>
-          <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <KeyboardProvider>
+          <BottomSheetModalProvider>
             <GluestackUIProvider mode="light">
               <AuthProvider>
                 <Stack initialRouteName="tabs" screenOptions={{ headerShown: false }}>
@@ -24,9 +24,9 @@ export default function RootLayout() {
                 </Stack>
               </AuthProvider>
             </GluestackUIProvider>
-          </QueryClientProvider>
-        </BottomSheetModalProvider>
-      </KeyboardProvider>
+          </BottomSheetModalProvider>
+        </KeyboardProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

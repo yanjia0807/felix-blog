@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 
 export const baseURL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const config = {
@@ -9,25 +9,47 @@ const config = {
     'access-control-allow-origin': '*',
   },
 };
-const apiAxios = axios.create(config);
+const apiClient = axios.create(config);
 
-apiAxios.interceptors.response.use(
-  (response: AxiosResponse) => {
+apiClient.interceptors.request.use(
+  (config) => {
+    console.log(`[Request] ${config.method?.toUpperCase()} ${config.url}`, {
+      headers: config.headers,
+      params: config.params,
+      data: config.data,
+    });
+    return config;
+  },
+  (error) => {
+    console.error('[Request Error]', error);
+    return Promise.reject(error);
+  },
+);
+
+apiClient.interceptors.response.use(
+  (response) => {
+    console.log(
+      `[Response] ${response.config.method?.toUpperCase()} ${response.config.url} - Status: ${response.status}`,
+      {
+        data: response.data,
+        headers: response.headers,
+      },
+    );
     return response.data;
   },
   (error: Error) => {
-    console.error('api failed', error);
     if (axios.isAxiosError(error)) {
-      console.error('api failed', error.response?.data);
-      throw error.response?.data.error;
+      console.error(`[Response Error]`, error.response?.data);
+      return Promise.reject(error.response?.data.error);
     } else {
-      throw error;
+      console.error('[Response Error]', error.message);
+      return Promise.reject(error);
     }
   },
 );
 
 function setAuthHeader(accessToken: string | null) {
-  apiAxios.interceptors.request.use(
+  apiClient.interceptors.request.use(
     (config: any) => {
       if (accessToken) {
         config.headers.Authorization = 'Bearer ' + accessToken;
@@ -42,4 +64,4 @@ function setAuthHeader(accessToken: string | null) {
   );
 }
 
-export { apiAxios, setAuthHeader };
+export { apiClient, setAuthHeader };

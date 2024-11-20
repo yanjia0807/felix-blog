@@ -6,7 +6,7 @@ import { FlashList } from '@shopify/flash-list';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
-import { useFetchPosts } from '@/api';
+import { fetchPosts } from '@/api';
 import { VStack } from '@/components/ui/vstack';
 import { ProfileAvatar } from '@/components/profile-avatar';
 import { Spinner } from '@/components/ui/spinner';
@@ -23,6 +23,7 @@ import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import useCustomToast from '@/components/use-custom-toast';
 import _ from 'lodash';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 const MenuPopover = (props: any) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -48,16 +49,14 @@ const MenuPopover = (props: any) => {
         );
       }}>
       <PopoverBackdrop />
-      <PopoverContent className="px-2 py-1">
-        <PopoverBody className="" contentContainerClassName="">
+      <PopoverContent className="px-1 py-1">
+        <PopoverBody className="" contentContainerClassName="items-center justify-center">
           <Button size="xs" variant="link">
-            <ButtonIcon as={BookMarked} />
-            <ButtonText> 收藏</ButtonText>
+            <ButtonText>收藏</ButtonText>
           </Button>
           <Divider />
           <Button size="xs" variant="link">
-            <ButtonIcon as={Share2} />
-            <ButtonText> 分享</ButtonText>
+            <ButtonText>分享</ButtonText>
           </Button>
         </PopoverBody>
       </PopoverContent>
@@ -76,7 +75,31 @@ const PostHome = () => {
     isFetchingNextPage,
     status,
     refetch,
-  } = useFetchPosts();
+  } = useInfiniteQuery({
+    queryKey: ['posts'],
+    queryFn: fetchPosts,
+    initialPageParam: {
+      pagination: {
+        start: 0,
+        limit: 10,
+      },
+    },
+    getNextPageParam: (lastPage: any) => {
+      const {
+        meta: {
+          pagination: { limit, start, total },
+        },
+      } = lastPage;
+
+      if (start + limit >= total) {
+        return null;
+      }
+
+      return {
+        pagination: { limit, start: start + limit },
+      };
+    },
+  });
   const posts: any = _.reduce(
     data?.pages,
     (result: any, item: any) => [...result, ...item.data],
@@ -114,7 +137,7 @@ const PostHome = () => {
             <PostThumbnail item={item} />
             <HStack className="items-center justify-between">
               <HStack space="lg" className="flex-row items-center">
-                <LikesInfo count={likes} />
+                <LikesInfo post={item} />
                 <CommentInfo />
               </HStack>
               <HStack className="items-center">

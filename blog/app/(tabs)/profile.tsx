@@ -12,14 +12,45 @@ import SegmentedControl from '@react-native-segmented-control/segmented-control'
 import { FlashList, MasonryFlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { Dimensions } from 'react-native';
-import { useFetchPosts } from '@/api';
+import { fetchPosts } from '@/api';
 import UserInfoHeader from '@/components/user-info-header';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useAuth } from '@/components/auth-context';
 
 const { width } = Dimensions.get('window');
 const numColumns = 2;
 
 const PostListView = () => {
-  const { data: posts, error, isLoading, isSuccess }: any = useFetchPosts();
+  const {
+    data: posts,
+    error,
+    isLoading,
+    isSuccess,
+  }: any = useInfiniteQuery({
+    queryKey: ['posts'],
+    queryFn: fetchPosts,
+    initialPageParam: {
+      pagination: {
+        start: 0,
+        limit: 10,
+      },
+    },
+    getNextPageParam: (lastPage: any) => {
+      const {
+        meta: {
+          pagination: { limit, start, total },
+        },
+      } = lastPage;
+
+      if (start + limit >= total) {
+        return null;
+      }
+
+      return {
+        pagination: { limit, start: start + limit },
+      };
+    },
+  });
 
   const renderItem = ({ item }: any) => {
     return (
@@ -107,6 +138,7 @@ const PhotoListView = () => {
 
 const Profile = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const { user } = useAuth();
 
   return (
     <>
@@ -115,37 +147,41 @@ const Profile = () => {
           title: '我的',
         }}
       />
-      <VStack className="flex-1 p-6" space="xl">
-        <UserInfoHeader />
-        <Divider />
-        <HStack space="md" className="justify-around">
-          <VStack className="items-center justify-center">
-            <Text size="xl" bold={true}>
-              400
-            </Text>
-            <Text size="sm">帖子</Text>
-          </VStack>
-          <VStack className="items-center justify-center">
-            <Text size="xl" bold={true}>
-              21
-            </Text>
-            <Text size="sm">关注</Text>
-          </VStack>
-          <VStack className="items-center justify-center">
-            <Text size="xl" bold={true}>
-              3
-            </Text>
-            <Text size="sm">被关注</Text>
-          </VStack>
-        </HStack>
-        <Divider />
-        <SegmentedControl
-          values={['我的帖子', '照片墙']}
-          selectedIndex={selectedIndex}
-          onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
-        />
-        {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
-      </VStack>
+      {user ? (
+        <VStack className="flex-1 p-6" space="xl">
+          <UserInfoHeader />
+          <Divider />
+          <HStack space="md" className="justify-around">
+            <VStack className="items-center justify-center">
+              <Text size="xl" bold={true}>
+                400
+              </Text>
+              <Text size="sm">帖子</Text>
+            </VStack>
+            <VStack className="items-center justify-center">
+              <Text size="xl" bold={true}>
+                21
+              </Text>
+              <Text size="sm">关注</Text>
+            </VStack>
+            <VStack className="items-center justify-center">
+              <Text size="xl" bold={true}>
+                3
+              </Text>
+              <Text size="sm">被关注</Text>
+            </VStack>
+          </HStack>
+          <Divider />
+          <SegmentedControl
+            values={['我的帖子', '照片墙']}
+            selectedIndex={selectedIndex}
+            onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
+          />
+          {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
+        </VStack>
+      ) : (
+        <></>
+      )}
     </>
   );
 };

@@ -1,13 +1,11 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiAxios } from './config';
+import { apiClient } from './config';
 import qs from 'qs';
 
-export type Profile = any;
+export type UserData = any;
 
-export const fetchMe = async () => {
+export const fetchUser = async () => {
   try {
-    console.log(`fetchMe`);
-    const user: any = await apiAxios.get(`/users/me`);
+    const user: any = await apiClient.get(`/users/me`);
     const query = qs.stringify(
       {
         populate: {
@@ -27,13 +25,12 @@ export const fetchMe = async () => {
         encodeValuesOnly: true,
       },
     );
-    const res = await apiAxios.get(`/profiles?${query}`);
+    const res = await apiClient.get(`/profiles?${query}`);
     const profile = res.data[0];
     const result = {
       ...user,
       profile,
     };
-    console.log(`fetchMe`, result);
     return result;
   } catch (error: any) {
     if (error.name === 'UnauthorizedError') {
@@ -44,31 +41,21 @@ export const fetchMe = async () => {
   }
 };
 
-export const useFetchUser = (tokenExists: boolean) => {
-  return useQuery({
-    queryKey: ['user'],
-    queryFn: fetchMe,
-    enabled: tokenExists,
-  });
-};
-
 export const updateUser = async ({
   documentId,
   profile,
 }: {
   documentId: string;
-  profile: Profile;
+  profile: UserData;
 }) => {
   try {
     if (documentId) {
-      console.log('updateUser', documentId, profile);
-      const res = await apiAxios.put(`/profiles/${documentId}`, {
+      const res = await apiClient.put(`/profiles/${documentId}`, {
         data: profile,
       });
       return res;
     } else {
-      console.log('createProfile', profile);
-      const res = await apiAxios.post(`/profiles`, {
+      const res = await apiClient.post(`/profiles`, {
         data: profile,
       });
       return res;
@@ -76,12 +63,4 @@ export const updateUser = async ({
   } catch (error: any) {
     throw new Error(error.message);
   }
-};
-
-export const useUpdateUser = () => {
-  return useMutation({
-    mutationFn: ({ documentId, profile }: { documentId: string; profile: Profile }) => {
-      return updateUser({ documentId, profile });
-    },
-  });
 };

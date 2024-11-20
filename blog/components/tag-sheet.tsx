@@ -35,13 +35,7 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
   const { bottom: bottomSafeArea } = useSafeAreaInsets();
   const snapPoints = ['50%'];
 
-  const onSubmit = useCallback(
-    (data: any) => {
-      console.log('onSubmit', data);
-      refetch(data);
-    },
-    [refetch],
-  );
+  const onSubmit = useCallback((data: any) => refetch(data), [refetch]);
 
   const debouncedSubmit = React.useMemo(
     () => _.debounce(handleSubmit(onSubmit), 1000),

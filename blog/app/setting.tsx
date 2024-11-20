@@ -84,48 +84,52 @@ const Setting = () => {
         }}
       />
       <SafeAreaView className="flex-1">
-        <VStack className="flex-1 p-6" space="xl">
-          <UserInfoHeader />
-          <Divider />
-          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-            <VStack className="flex-1">
-              <HStack className="h-14 items-center justify-between p-3">
-                <HStack className="items-center" space="md">
-                  <Icon as={Bell} size="lg" />
-                  <Text>通知</Text>
-                </HStack>
-                <Switch size="sm" />
-              </HStack>
-              <Divider />
-              <HStack className="h-14 items-center justify-between p-3">
-                <HStack className="items-center" space="md">
-                  <Icon as={Moon} size="lg" />
-                  <Text>暗模式</Text>
-                </HStack>
-                <Switch size="sm" />
-              </HStack>
-              <Divider />
-              <Pressable onPress={() => onResetPasswordBtnPress()}>
+        {user ? (
+          <VStack className="flex-1 p-6" space="xl">
+            <UserInfoHeader />
+            <Divider />
+            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+              <VStack className="flex-1">
                 <HStack className="h-14 items-center justify-between p-3">
                   <HStack className="items-center" space="md">
-                    <Icon as={KeyRound} size="lg" />
-                    <Text>设置密码</Text>
+                    <Icon as={Bell} size="lg" />
+                    <Text>通知</Text>
                   </HStack>
-                  <Icon as={ChevronRightIcon} size="lg" />
+                  <Switch size="sm" />
                 </HStack>
-              </Pressable>
-              <Divider />
-              <Pressable onPress={() => onLogoutBtnPress()}>
-                <HStack className="mt-6 h-14 items-center justify-center p-3">
-                  <HStack className="items-center">
-                    <Icon as={LogOut} size="lg" />
-                    <Text>退出登录</Text>
+                <Divider />
+                <HStack className="h-14 items-center justify-between p-3">
+                  <HStack className="items-center" space="md">
+                    <Icon as={Moon} size="lg" />
+                    <Text>暗模式</Text>
                   </HStack>
+                  <Switch size="sm" />
                 </HStack>
-              </Pressable>
-            </VStack>
-          </ScrollView>
-        </VStack>
+                <Divider />
+                <Pressable onPress={() => onResetPasswordBtnPress()}>
+                  <HStack className="h-14 items-center justify-between p-3">
+                    <HStack className="items-center" space="md">
+                      <Icon as={KeyRound} size="lg" />
+                      <Text>设置密码</Text>
+                    </HStack>
+                    <Icon as={ChevronRightIcon} size="lg" />
+                  </HStack>
+                </Pressable>
+                <Divider />
+                <Pressable onPress={() => onLogoutBtnPress()}>
+                  <HStack className="mt-6 h-14 items-center justify-center p-3">
+                    <HStack className="items-center">
+                      <Icon as={LogOut} size="lg" />
+                      <Text>退出登录</Text>
+                    </HStack>
+                  </HStack>
+                </Pressable>
+              </VStack>
+            </ScrollView>
+          </VStack>
+        ) : (
+          <></>
+        )}
       </SafeAreaView>
     </>
   );

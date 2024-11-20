@@ -1,11 +1,11 @@
-import { apiAxios } from './config';
+import { apiClient } from './config';
 import qs from 'qs';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type PostData = any;
-export type PostLikeData = any;
+export type UpdatePostLikeData = any;
 
-export const fetchPosts = async ({ pageParam: { pagination } }: any) => {
+export const fetchPosts = async ({ pageParam }: any) => {
+  const { pagination } = pageParam;
   const query = qs.stringify(
     {
       populate: {
@@ -16,9 +16,6 @@ export const fetchPosts = async ({ pageParam: { pagination } }: any) => {
               populate: ['avatar'],
             },
           },
-        },
-        likedByUsers: {
-          count: true,
         },
         cover: {
           fields: ['formats', 'name', 'alternativeText'],
@@ -40,13 +37,11 @@ export const fetchPosts = async ({ pageParam: { pagination } }: any) => {
       encodeValuesOnly: true,
     },
   );
-  const res = await apiAxios.get(`/posts?${query}`);
+  const res = await apiClient.get(`/posts/additional?${query}`);
   return res;
 };
 
-export const fetchPostByDocumentId = async ({ queryKey }: any) => {
-  const [_key, documentId] = queryKey;
-
+export const fetchPost = async ({ documentId }: any) => {
   const query = qs.stringify(
     {
       populate: {
@@ -73,76 +68,36 @@ export const fetchPostByDocumentId = async ({ queryKey }: any) => {
       encodeValuesOnly: true,
     },
   );
-  const res = await apiAxios.get(`/posts/${documentId}?${query}`);
-  console.log(JSON.stringify(res.data));
+  const res = await apiClient.get(`/posts/${documentId}/additional?${query}`);
   return res.data;
 };
 
 export const createPost = async (postData: PostData) => {
-  console.log(postData);
-  const res = await apiAxios.post(`/posts`, {
-    data: postData,
-  });
+  try {
+    const res = await apiClient.post(`/posts`, {
+      data: postData,
+    });
 
-  return res.data;
+    return res.data;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
 };
 
-export const createPostLike = async (postLikeData: PostLikeData) => {
-  console.log(postLikeData);
-  const res = await apiAxios.post(`/posts`, {
-    data: postLikeData,
-  });
-
-  return res.data;
-};
-
-export const useCreatePostLike = () => {
-  return useMutation({
-    mutationFn: (postLikeData: PostLikeData) => {
-      return createPostLike(postLikeData);
-    },
-  });
-};
-
-export const useCreatePost = () => {
-  return useMutation({
-    mutationFn: (postData: PostData) => {
-      return createPost(postData);
-    },
-  });
-};
-
-export const useFetchPost = (documentId: string) => {
-  return useQuery({
-    queryKey: ['posts', documentId],
-    queryFn: fetchPostByDocumentId,
-  });
-};
-
-export const useFetchPosts = () => {
-  return useInfiniteQuery({
-    queryKey: ['posts'],
-    queryFn: fetchPosts,
-    initialPageParam: {
-      pagination: {
-        start: 0,
-        limit: 10,
-      },
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { limit, start, total },
+export const updatePostLike = async ({ documentId, postData }: UpdatePostLikeData) => {
+  try {
+    const query = qs.stringify({
+      populate: {
+        likedByUsers: {
+          fields: ['documentId'],
         },
-      } = lastPage;
-
-      if (start + limit >= total) {
-        return null;
-      }
-
-      return {
-        pagination: { limit, start: start + limit },
-      };
-    },
-  });
+      },
+    });
+    const res = await apiClient.put(`/posts/${documentId}?${query}`, {
+      data: postData,
+    });
+    return res;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
 };

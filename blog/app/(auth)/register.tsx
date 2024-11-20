@@ -234,7 +234,7 @@ const SignUp = () => {
             <Text size="sm">已有账号？</Text>
             <Link
               onPress={() => {
-                router.push('/login');
+                router.replace('/login');
               }}>
               <LinkText size="sm">登录</LinkText>
             </Link>

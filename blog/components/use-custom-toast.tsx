@@ -36,10 +36,7 @@ const ConfirmToast = ({ toast, id, onConfirm, title, description }: any) => {
             variant="outline"
             size="sm"
             className="flex-grow"
-            onPress={() => {
-              console.log('close', id);
-              toast.close(id);
-            }}>
+            onPress={() => toast.close(id)}>
             <ButtonText>取消</ButtonText>
           </Button>
         </ButtonGroup>

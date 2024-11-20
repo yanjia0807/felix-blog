@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   loginUser,
   registerUser,
@@ -8,25 +8,28 @@ import {
   sendEmailConfirmation,
   sendResetPasswordEmail,
 } from '@/api/auth';
-import { setAuthHeader, useFetchUser } from '@/api';
-import useCustomToast from './use-custom-toast';
-
+import { fetchUser, setAuthHeader } from '@/api';
 const AuthContext = createContext<any>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
-  const [user, setUser] = useState<any>(null);
   const [tokenExists, setTokenExists] = useState<boolean>(false);
-  const toast = useCustomToast();
-  const { data: userData, error, isFetching, status } = useFetchUser(tokenExists);
   const queryClient = useQueryClient();
+
+  const { data, error, isFetching, isSuccess, status } = useQuery({
+    queryKey: ['user'],
+    queryFn: fetchUser,
+    enabled: tokenExists,
+  });
 
   useEffect(() => {
     const loadAuthData = async () => {
       const accessToken = await AsyncStorage.getItem('accessToken');
-      setTokenExists(!!accessToken);
-      console.log('accessToken', accessToken);
       if (accessToken) {
         setAuthHeader(accessToken);
+        setTokenExists(true);
+      } else {
+        setAuthHeader(null);
+        setTokenExists(false);
       }
     };
 
@@ -34,9 +37,9 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   const logout = async () => {
-    console.log('logout');
     await AsyncStorage.removeItem('accessToken');
     queryClient.removeQueries({ queryKey: ['user'] });
+    setTokenExists(false);
     setAuthHeader(null);
   };
 
@@ -54,9 +57,7 @@ export const AuthProvider = ({ children }: any) => {
 
   const registerMutation = useMutation({
     mutationFn: (data: any) => registerUser(data),
-    onSuccess: async (data: any) => {
-      console.log('data', data);
-    },
+    onSuccess: async (data: any) => {},
     onError: (error) => {
       console.error('error', error);
     },
@@ -72,12 +73,8 @@ export const AuthProvider = ({ children }: any) => {
 
   const resetPasswordMutation = useMutation({
     mutationFn: (data: any) => resetPassword(data),
-    onSuccess: async (data) => {
-      console.log('resetPasswordMutation', data);
-    },
-    onError: (error) => {
-      console.error('resetPasswordMutation', error);
-    },
+    onSuccess: async (data) => {},
+    onError: (error) => {},
   });
 
   const sendEmailConfirmationMutation = useMutation({
@@ -91,7 +88,7 @@ export const AuthProvider = ({ children }: any) => {
   return (
     <AuthContext.Provider
       value={{
-        user: userData,
+        user: data,
         loginMutation,
         registerMutation,
         forgetPasswordMutation,

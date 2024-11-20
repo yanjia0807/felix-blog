@@ -3,7 +3,6 @@ import * as FileSystem from 'expo-file-system';
 
 export const upload = async (files: any) => {
   const uploadTasks: Promise<any>[] = [];
-  console.log('uploading files,', files);
 
   files.forEach((file: any) => {
     const uploadTask = FileSystem.uploadAsync(`${baseURL}/api/upload`, file, {
@@ -20,6 +19,5 @@ export const upload = async (files: any) => {
     const body = JSON.parse(item.body);
     return body[0].id;
   });
-  console.log('uploaded files,', result);
   return result;
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { VStack } from '@/components/ui/vstack';
 import { Text } from '@/components/ui/text';
-import { ArrowRight, CircleCheck } from 'lucide-react-native';
+import { ArrowRight } from 'lucide-react-native';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Stack, useRouter } from 'expo-router';
 import { useAuth } from '@/components/auth-context';

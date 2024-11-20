@@ -132,7 +132,6 @@ const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref
 
   const onRecordingStatusUpdate = useCallback(
     (status: RecordingStatus) => {
-      // console.log("update...", status);
       if (status.isRecording) {
         metering.value = status.metering || -160;
       }

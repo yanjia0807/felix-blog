@@ -18,7 +18,6 @@ const SoundBtn = ({ uri, onRemove }: any) => {
   };
 
   const playSound = async () => {
-    console.log(soundObj.current);
     if (!soundObj.current.isPlaying) {
       console.log('playing sound');
       await soundObj.current.sound.setPositionAsync(0);

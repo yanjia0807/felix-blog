@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { apiAxios, baseURL } from './config';
+import { apiClient, baseURL } from './config';
 
 export const loginUser = async (credentials: any) => {
   try {
-    const res = await apiAxios.post(`/auth/local`, {
+    const res = await apiClient.post(`/auth/local`, {
       identifier: credentials.identifier,
       password: credentials.password,
     });
@@ -19,7 +19,7 @@ export const loginUser = async (credentials: any) => {
 
 export const registerUser = async ({ username, email, password }: any) => {
   try {
-    const res = await apiAxios.post(`/auth/local/register`, {
+    const res = await apiClient.post(`/auth/local/register`, {
       username,
       email,
       password,
@@ -33,19 +33,19 @@ export const registerUser = async ({ username, email, password }: any) => {
 };
 
 export const sendEmailConfirmation = async ({ email }: any) => {
-  const res = await apiAxios.post(`/auth/send-email-confirmation`, {
+  const res = await apiClient.post(`/auth/send-email-confirmation`, {
     email,
   });
   return res;
 };
 
 export const sendResetPasswordEmail = async ({ email }: any) => {
-  const res = await apiAxios.post(`/auth/forgot-password`, { email });
+  const res = await apiClient.post(`/auth/forgot-password`, { email });
   return res;
 };
 
 export const resetPassword = async ({ code, password, passwordConfirmation }: any) => {
-  const res = await apiAxios.post(`/auth/reset-password`, {
+  const res = await apiClient.post(`/auth/reset-password`, {
     code,
     password,
     passwordConfirmation,

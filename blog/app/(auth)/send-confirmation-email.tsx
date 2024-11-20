@@ -8,9 +8,7 @@ import { useRouter } from 'expo-router';
 const SendConfirmationEmail = () => {
   const router = useRouter();
 
-  const handleSendMail = () => {
-    console.log('sendMail');
-  };
+  const handleSendMail = () => {};
 
   return (
     <VStack className="mt-48 flex-1 items-center" space="lg">

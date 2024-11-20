@@ -36,8 +36,8 @@ import { DatePicker } from '@/components/date-picker';
 import { Box } from '@/components/ui/box';
 import { Stack, router } from 'expo-router';
 import { useAuth } from '@/components/auth-context';
-import { useUpdateUser } from '@/api';
-import { useQueryClient } from '@tanstack/react-query';
+import { UserData, updateUser } from '@/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useCustomToast from '@/components/use-custom-toast';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -82,7 +82,12 @@ const ProfileEdit = () => {
     },
   });
 
-  const { isSuccess, isError, isPending, mutate } = useUpdateUser();
+  const { isSuccess, isError, isPending, mutate } = useMutation({
+    mutationFn: ({ documentId, profile }: { documentId: string; profile: UserData }) => {
+      return updateUser({ documentId, profile });
+    },
+    onSuccess: () => {},
+  });
 
   const renderBio = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl size="lg" isInvalid={!!errors.bio}>

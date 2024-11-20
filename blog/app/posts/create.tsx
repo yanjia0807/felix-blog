@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Keyboard, TouchableOpacity } from 'react-native';
 import _ from 'lodash';
 import { AlertCircleIcon, CircleX, ImageIcon, MapPinIcon, Mic, TagIcon } from 'lucide-react-native';
@@ -12,8 +12,6 @@ import {
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
-  FormControlLabel,
-  FormControlLabelText,
 } from '@/components/ui/form-control';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -34,10 +32,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z, ZodType } from 'zod';
 import { Spinner } from '@/components/ui/spinner';
 import colors from 'tailwindcss/colors';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import TagBtn from '@/components/tag-btn';
 import { upload } from '@/api/file';
-import { PostData, useCreatePost } from '@/api/post';
+import { createPost, PostData } from '@/api/post';
 import useCustomToast from '@/components/use-custom-toast';
 import { Input, InputField } from '@/components/ui/input';
 
@@ -52,7 +50,11 @@ const PostCreate = () => {
   const [location, setLocation] = useState<any>();
   const [tags, setTags] = useState<any>([]);
   const insets = useSafeAreaInsets();
-  const { isSuccess, isError, isPending, mutate } = useCreatePost();
+  const { isSuccess, isError, isPending, mutate } = useMutation({
+    mutationFn: (data: PostData) => {
+      return createPost(data);
+    },
+  });
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const maxCharCount = 5000;

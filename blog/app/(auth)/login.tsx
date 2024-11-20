@@ -159,7 +159,7 @@ const SignIn = () => {
           <HStack space="sm" className="items-center justify-center">
             <Link
               onPress={() => {
-                router.push('/register');
+                router.replace('/register');
               }}>
               <LinkText size="sm">注册新用户</LinkText>
             </Link>
