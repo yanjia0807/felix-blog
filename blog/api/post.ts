@@ -2,7 +2,8 @@ import { apiClient } from './config';
 import qs from 'qs';
 
 export type PostData = any;
-export type UpdatePostLikeData = any;
+export type UpdatePostLikedData = any;
+export type UpdatePostFavoritedData = any;
 
 export const fetchPosts = async ({ pageParam }: any) => {
   const { pagination } = pageParam;
@@ -84,7 +85,7 @@ export const createPost = async (postData: PostData) => {
   }
 };
 
-export const updatePostLike = async ({ documentId, postData }: UpdatePostLikeData) => {
+export const updatePostLiked = async ({ documentId, postData }: UpdatePostLikedData) => {
   try {
     const query = qs.stringify({
       populate: {
@@ -93,6 +94,18 @@ export const updatePostLike = async ({ documentId, postData }: UpdatePostLikeDat
         },
       },
     });
+    const res = await apiClient.put(`/posts/${documentId}?${query}`, {
+      data: postData,
+    });
+    return res;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const updatePostFavorited = async ({ documentId, postData }: UpdatePostFavoritedData) => {
+  try {
+    const query = qs.stringify({});
     const res = await apiClient.put(`/posts/${documentId}?${query}`, {
       data: postData,
     });

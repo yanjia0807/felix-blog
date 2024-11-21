@@ -5,7 +5,7 @@ import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 import { MessageCircle } from 'lucide-react-native';
 
-const CommentInfo = () => {
+const CommentInfo = ({ post }: any) => {
   return (
     <TouchableOpacity>
       <HStack space="xs" className="items-center">

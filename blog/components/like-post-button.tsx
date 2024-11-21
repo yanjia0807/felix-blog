@@ -8,36 +8,41 @@ import { Text } from './ui/text';
 import { Heart } from 'lucide-react-native';
 import { useAuth } from './auth-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { UpdatePostLikeData, updatePostLike } from '@/api';
+import { UpdatePostLikedData, updatePostLiked } from '@/api';
 
-const LikesInfo = ({ post }: any) => {
+const LikePostButton = ({ post }: any) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
   const { mutate } = useMutation({
-    mutationFn: ({ documentId, postData }: UpdatePostLikeData) => {
-      return updatePostLike({ documentId, postData });
+    mutationFn: ({ documentId, postData }: UpdatePostLikedData) => {
+      return updatePostLiked({ documentId, postData });
     },
+
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ['posts'] });
       const prevData: any = queryClient.getQueryData(['posts']);
-      queryClient.setQueryData(['posts'], (oldData: any) => {
-        if (oldData) {
+      if (prevData) {
+        queryClient.setQueryData(['posts'], (oldData: any) => {
           const newData = _.cloneDeep(oldData);
-          const newPosts = _.flatten(_.map(newData.pages, 'data'));
-          const newPost = _.find(newPosts, { documentId: post.documentId });
+          const newPost = _.find(_.flatten(_.map(newData.pages, 'data')), {
+            documentId: post.documentId,
+          });
           if (newPost) {
             newPost.likedByMe = !newPost.likedByMe;
-            newPost.likedByUsers = newPost.likedByUsers.filter(
-              (userItem: any) => userItem.documentId !== user.documentId,
-            );
+            newPost.likedByUsers = newPost.likedByMe
+              ? _.concat(_.map(post.likedByUsers, 'documentId'), user.documentId)
+              : _.filter(
+                  newPost.likedByUsers,
+                  (userItem: any) => userItem.documentId !== user.documentId,
+                );
+            return newData;
           }
-          return newData;
-        }
-
-        return oldData;
-      });
-      return { prevData };
+        });
+        return { prevData };
+      }
     },
+
     onSettled: (data, error, variables, context) => {
       if (error) {
         queryClient.setQueryData(['posts'], context?.prevData);
@@ -47,8 +52,8 @@ const LikesInfo = ({ post }: any) => {
     },
   });
 
-  const toggleLike = () => {
-    let likedByUserIds = post.likedByMe
+  const onLikedButtonPress = () => {
+    const userDocumentIds = post.likedByMe
       ? _.map(
           _.filter(post.likedByUsers, (item: any) => item.documentId !== user.documentId),
           'documentId',
@@ -58,13 +63,13 @@ const LikesInfo = ({ post }: any) => {
     mutate({
       documentId: post.documentId,
       postData: {
-        likedByUsers: likedByUserIds,
+        likedByUsers: userDocumentIds,
       },
     });
   };
 
   return (
-    <TouchableOpacity onPress={() => toggleLike()}>
+    <TouchableOpacity onPress={() => onLikedButtonPress()}>
       <HStack space="xs" className="items-center">
         <Icon as={Heart} color={post?.likedByMe ? colors.red[500] : colors.gray[500]} />
         <Text size="xs">{post?.likedByUsers.length}</Text>
@@ -73,4 +78,4 @@ const LikesInfo = ({ post }: any) => {
   );
 };
 
-export default LikesInfo;
+export default LikePostButton;

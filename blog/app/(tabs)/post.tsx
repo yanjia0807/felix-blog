@@ -12,57 +12,16 @@ import { ProfileAvatar } from '@/components/profile-avatar';
 import { Spinner } from '@/components/ui/spinner';
 import colors from 'tailwindcss/colors';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { BookMarked, Ellipsis, MapPin, Share2 } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 import { RefreshControl, TouchableOpacity } from 'react-native';
 import PostThumbnail from '@/components/post-thumbnail';
-import LikesInfo from '@/components/likes-info';
+import LikePostButton from '@/components/like-post-button';
 import CommentInfo from '@/components/comment-info';
 import AuthorInfo from '@/components/author-info';
-import { Popover, PopoverBackdrop, PopoverContent, PopoverBody } from '@/components/ui/popover';
-import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
-import { Divider } from '@/components/ui/divider';
 import useCustomToast from '@/components/use-custom-toast';
 import _ from 'lodash';
 import { useInfiniteQuery } from '@tanstack/react-query';
-
-const MenuPopover = (props: any) => {
-  const [isOpen, setIsOpen] = React.useState(false);
-
-  const handleOpen = () => {
-    setIsOpen(true);
-  };
-  const handleClose = () => {
-    setIsOpen(false);
-  };
-
-  return (
-    <Popover
-      isOpen={isOpen}
-      onClose={handleClose}
-      onOpen={handleOpen}
-      {...props}
-      trigger={(triggerProps: any) => {
-        return (
-          <TouchableOpacity {...triggerProps}>
-            <Icon as={Ellipsis} />
-          </TouchableOpacity>
-        );
-      }}>
-      <PopoverBackdrop />
-      <PopoverContent className="px-1 py-1">
-        <PopoverBody className="" contentContainerClassName="items-center justify-center">
-          <Button size="xs" variant="link">
-            <ButtonText>收藏</ButtonText>
-          </Button>
-          <Divider />
-          <Button size="xs" variant="link">
-            <ButtonText>分享</ButtonText>
-          </Button>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
-  );
-};
+import PostMenuPopover from '@/components/post-menu-popover';
 
 const PostHome = () => {
   const toast = useCustomToast();
@@ -71,7 +30,7 @@ const PostHome = () => {
     error,
     fetchNextPage,
     hasNextPage,
-    isFetching,
+    isLoading,
     isFetchingNextPage,
     status,
     refetch,
@@ -100,16 +59,14 @@ const PostHome = () => {
       };
     },
   });
+
   const posts: any = _.reduce(
     data?.pages,
     (result: any, item: any) => [...result, ...item.data],
     [],
   );
 
-  const renderItem = ({ item }: any) => {
-    const author = item.author;
-    const likes = item.likedByUsers.count;
-
+  const renderPostItem = ({ item }: any) => {
     return (
       <Card className="mb-6 rounded-lg p-5">
         <TouchableOpacity
@@ -123,8 +80,8 @@ const PostHome = () => {
           }}>
           <VStack space="md">
             <HStack className="items-center justify-between">
-              <AuthorInfo author={author} />
-              <MenuPopover />
+              <AuthorInfo author={item.author} />
+              <PostMenuPopover post={item} />
             </HStack>
             <HStack className="items-center justify-between">
               <Text size="xs">30分钟之前</Text>
@@ -137,8 +94,8 @@ const PostHome = () => {
             <PostThumbnail item={item} />
             <HStack className="items-center justify-between">
               <HStack space="lg" className="flex-row items-center">
-                <LikesInfo post={item} />
-                <CommentInfo />
+                <LikePostButton post={item} />
+                <CommentInfo post={item} />
               </HStack>
               <HStack className="items-center">
                 {Array(5)
@@ -196,7 +153,7 @@ const PostHome = () => {
       <VStack className="flex-1 p-4" space="md">
         <FlashList
           data={posts}
-          renderItem={({ item }) => renderItem({ item })}
+          renderItem={renderPostItem}
           estimatedItemSize={200}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
@@ -208,9 +165,9 @@ const PostHome = () => {
           refreshControl={
             <RefreshControl
               colors={['#9Bd35A', '#689F38']}
-              refreshing={isFetching}
+              refreshing={isLoading}
               onRefresh={() => {
-                if (!isFetching) {
+                if (!isLoading) {
                   refetch();
                 }
               }}

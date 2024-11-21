@@ -82,6 +82,12 @@
       "relation": "manyToMany",
       "target": "api::post.post",
       "mappedBy": "likedByUsers"
+    },
+    "favoritePosts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::post.post",
+      "inversedBy": "favoritedByUsers"
     }
   }
 }

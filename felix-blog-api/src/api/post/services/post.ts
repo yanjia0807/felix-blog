@@ -46,9 +46,18 @@ export default factories.createCoreService("api::post.post", {
       where: { likedByUsers: { documentId: userDocumentId } },
       select: ["documentId"],
     });
+
+    const favoritePosts = await strapi.db.query("api::post.post").findMany({
+      where: { favoritedByUsers: { documentId: userDocumentId } },
+      select: ["documentId"],
+    });
+
     const modifiedPosts = posts.map((post) => ({
       ...post,
       likedByMe: likedPosts
+        .map((post) => post.documentId)
+        .includes(post.documentId),
+      favoritedByMe: favoritePosts
         .map((post) => post.documentId)
         .includes(post.documentId),
     }));
@@ -75,11 +84,12 @@ export default factories.createCoreService("api::post.post", {
         likedByUsers: {
           fields: ["documentId"],
         },
+        favoritedByUsers: {
+          fields: ["documentId"],
+        },
         ...populate,
       },
     });
-
-    console.log(post);
 
     if (!userDocumentId) {
       return {
@@ -91,6 +101,9 @@ export default factories.createCoreService("api::post.post", {
     const modifiedPosts = {
       ...post,
       likedByMe: post.likedByUsers
+        .map((item) => item.documentId)
+        .includes(userDocumentId),
+      favoritedByMe: post.favoritedByUsers
         .map((item) => item.documentId)
         .includes(userDocumentId),
     };

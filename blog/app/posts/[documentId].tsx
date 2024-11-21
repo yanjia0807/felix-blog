@@ -16,7 +16,7 @@ import { HStack } from '@/components/ui/hstack';
 import { BookMarked, Share2 } from 'lucide-react-native';
 import { Icon } from '@/components/ui/icon';
 import CommentInfo from '@/components/comment-info';
-import LikesInfo from '@/components/likes-info';
+import LikePostButton from '@/components/like-post-button';
 import AuthorInfo from '@/components/author-info';
 import TagBtn from '@/components/tag-btn';
 import GalleryPreview from 'react-native-gallery-preview';
@@ -24,6 +24,7 @@ import { Pressable } from '@/components/ui/pressable';
 import RecordingBtn from '@/components/recording-btn';
 import useCustomToast from '@/components/use-custom-toast';
 import { useQuery } from '@tanstack/react-query';
+import BookMarkedButton from '@/components/book-marked-button';
 
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
@@ -40,6 +41,25 @@ const PostDetail = () => {
     queryKey: ['posts', documentId],
     queryFn: () => fetchPost({ documentId }),
   });
+
+  const files = post?.blocks?.find(
+    (item: any) => item['__component'] === 'shared.attachment',
+  )?.files;
+
+  const images = files
+    ?.filter((item: any) => item.mime.startsWith('image/'))
+    .map((item: any) => ({
+      id: item.id,
+      documentId: item.documentId,
+      small: item.formats.small,
+    }));
+
+  const cover = images && images[0];
+  const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
+  const content = post?.content;
+  const author = post?.author;
+  const publishedAt = post && moment(post.publishedAt).format('YYYY-MM-DD h:mm:ss');
+  const tags = post?.tags;
 
   if (isError) {
     toast.error(error.message);
@@ -79,25 +99,6 @@ const PostDetail = () => {
     </Button>
   );
 
-  const files = post?.blocks?.find(
-    (item: any) => item['__component'] === 'shared.attachment',
-  )?.files;
-
-  const images = files
-    ?.filter((item: any) => item.mime.startsWith('image/'))
-    .map((item: any) => ({
-      id: item.id,
-      documentId: item.documentId,
-      small: item.formats.small,
-    }));
-
-  const cover = images && images[0];
-  const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
-  const content = post?.content;
-  const author = post?.author;
-  const publishedAt = post && moment(post.publishedAt).format('YYYY-MM-DD h:mm:ss');
-  const tags = post?.tags;
-
   return (
     <>
       {images?.length > 1 && (
@@ -132,9 +133,10 @@ const PostDetail = () => {
                     borderRadius: 12,
                   }}
                 />
-                <TouchableOpacity className="absolute -bottom-4 right-16 h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
-                  <Icon size="md" className="text-secondary-0" as={BookMarked} />
-                </TouchableOpacity>
+                <BookMarkedButton
+                  post={post}
+                  className="absolute -bottom-4 right-16 h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl"
+                />
                 <TouchableOpacity className="absolute -bottom-4 right-4 h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
                   <Icon size="md" className="text-secondary-0" as={Share2} />
                 </TouchableOpacity>
@@ -156,7 +158,7 @@ const PostDetail = () => {
             <HStack className="items-center justify-between">
               <AuthorInfo author={author} />
               <HStack space="lg" className="flex-row items-center">
-                <LikesInfo post={post} />
+                <LikePostButton post={post} />
                 <CommentInfo />
               </HStack>
             </HStack>
