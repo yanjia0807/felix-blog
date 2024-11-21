@@ -88,6 +88,12 @@
       "relation": "manyToMany",
       "target": "api::post.post",
       "inversedBy": "favoritedByUsers"
+    },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comment.comment",
+      "mappedBy": "user"
     }
   }
 }

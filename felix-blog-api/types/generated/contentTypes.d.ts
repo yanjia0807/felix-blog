@@ -398,6 +398,42 @@ export interface ApiAboutAbout extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiCommentComment extends Struct.CollectionTypeSchema {
+  collectionName: 'comments';
+  info: {
+    description: '';
+    displayName: 'Comment';
+    pluralName: 'comments';
+    singularName: 'comment';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    children: Schema.Attribute.Relation<'manyToOne', 'api::comment.comment'>;
+    content: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::comment.comment'
+    > &
+      Schema.Attribute.Private;
+    parent: Schema.Attribute.Relation<'oneToMany', 'api::comment.comment'>;
+    post: Schema.Attribute.Relation<'manyToOne', 'api::post.post'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
   collectionName: 'globals';
   info: {
@@ -448,6 +484,7 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
       'plugin::users-permissions.user'
     >;
     blocks: Schema.Attribute.DynamicZone<['shared.attachment']>;
+    comments: Schema.Attribute.Relation<'oneToMany', 'api::comment.comment'>;
     content: Schema.Attribute.Text;
     cover: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
@@ -999,6 +1036,7 @@ export interface PluginUsersPermissionsUser
   };
   attributes: {
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    comments: Schema.Attribute.Relation<'oneToMany', 'api::comment.comment'>;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
@@ -1054,6 +1092,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::about.about': ApiAboutAbout;
+      'api::comment.comment': ApiCommentComment;
       'api::global.global': ApiGlobalGlobal;
       'api::post.post': ApiPostPost;
       'api::profile.profile': ApiProfileProfile;

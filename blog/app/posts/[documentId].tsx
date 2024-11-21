@@ -1,4 +1,4 @@
-import { TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { fetchPost } from '@/api/post';
@@ -25,6 +25,8 @@ import RecordingBtn from '@/components/recording-btn';
 import useCustomToast from '@/components/use-custom-toast';
 import { useQuery } from '@tanstack/react-query';
 import BookMarkedButton from '@/components/book-marked-button';
+import PostComments from '@/components/post-comments';
+import { Divider } from '@/components/ui/divider';
 
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
@@ -118,8 +120,8 @@ const PostDetail = () => {
       />
       {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       {isSuccess && (
-        <Card className="flex-1 p-4">
-          <VStack space="md">
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <VStack space="md" className="flex-1 bg-white p-4">
             {cover ? (
               <Box className="h-48 w-full">
                 <Image
@@ -151,7 +153,6 @@ const PostDetail = () => {
                 </TouchableOpacity>
               </HStack>
             )}
-
             <HStack space="md">
               <Text size="sm"> {publishedAt}</Text>
             </HStack>
@@ -188,8 +189,10 @@ const PostDetail = () => {
               />
             )}
             <Text size="sm">{content}</Text>
+            <Divider />
+            <PostComments postDocumentId={post.documentId} />
           </VStack>
-        </Card>
+        </ScrollView>
       )}
     </>
   );

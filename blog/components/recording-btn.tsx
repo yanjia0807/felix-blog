@@ -10,7 +10,6 @@ const SoundBtn = ({ uri, onRemove }: any) => {
   const soundObj = useRef<any>({ sound: null, isPlaying: false });
 
   const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    console.log('update status', status);
     if (status.isLoaded) {
       soundObj.current.isPlaying = status.isPlaying;
       setIsPlaying(status.isPlaying);
@@ -36,11 +35,10 @@ const SoundBtn = ({ uri, onRemove }: any) => {
 
   useEffect(() => {
     const loadSound = async () => {
-      console.log('loading sound');
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
       });
-      const { sound, status } = await Audio.Sound.createAsync(
+      const { sound, status }: any = await Audio.Sound.createAsync(
         { uri },
         { shouldPlay: false },
         onPlaybackStatusUpdate,
@@ -52,14 +50,13 @@ const SoundBtn = ({ uri, onRemove }: any) => {
 
     return soundObj.current.sound
       ? () => {
-          console.log('unloading Sound');
           soundObj.current.sound.unloadAsync();
         }
       : undefined;
   }, []);
 
   return (
-    <ButtonGroup space="xs" isAttached={true} className="m-1">
+    <ButtonGroup space="xs" isAttached={true} className="">
       <Button
         size="xs"
         onPress={() => playSound()}
