@@ -8,7 +8,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/components/auth-context';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 0,
+    },
+  },
+});
 
 export default function RootLayout() {
   return (

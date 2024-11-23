@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { apiClient } from './config';
 import qs from 'qs';
 
@@ -9,20 +10,29 @@ export const fetchPostComments = async ({ postDocumentId }: any) => {
       {
         populate: {
           user: {
+            fields: ['username'],
             populate: {
               profile: {
-                populate: ['avatar'],
+                populate: {
+                  avatar: {
+                    fields: ['alternativeText', 'width', 'height', 'formats'],
+                  },
+                },
+                fields: ['id'],
               },
             },
           },
-          parent: true,
-          post: true,
+          post: {
+            fields: ['id'],
+          },
         },
-        pagination: { pageSize: -1 },
         order: 'createdAt:desc',
         filters: {
           post: {
             documentId: postDocumentId,
+          },
+          topComment: {
+            $null: true,
           },
         },
       },
@@ -30,8 +40,81 @@ export const fetchPostComments = async ({ postDocumentId }: any) => {
         encodeValuesOnly: true,
       },
     );
-    const res = await apiClient.get(`/comments/?${query}`);
+    const res: any = await apiClient.get(`/comments/?${query}`);
     return res;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const fetchChildComments = async ({ topCommentDocumentId }: any) => {
+  if (!topCommentDocumentId) return { data: [], meta: null };
+
+  try {
+    const query = qs.stringify({
+      populate: {
+        user: {
+          fields: ['username'],
+          populate: {
+            profile: {
+              populate: {
+                avatar: {
+                  fields: ['alternativeText', 'width', 'height', 'formats'],
+                },
+              },
+              fields: ['id'],
+            },
+          },
+        },
+        topComment: {
+          fields: ['id'],
+        },
+        post: {
+          fields: ['id'],
+        },
+        reply: {
+          populate: {
+            user: {
+              fields: ['username'],
+              populate: {
+                profile: {
+                  populate: {
+                    avatar: {
+                      fields: ['alternativeText', 'width', 'height', 'formats'],
+                    },
+                  },
+                  fields: ['id'],
+                },
+              },
+            },
+          },
+        },
+      },
+      order: 'createdAt:desc',
+      filters: {
+        topComment: {
+          documentId: topCommentDocumentId,
+        },
+      },
+    });
+
+    const res: any = await apiClient.get(`/comments/?${query}`);
+    return res;
+  } catch (error) {}
+};
+
+export const fetchPostCommentTotal = async ({ postDocumentId }: any) => {
+  try {
+    const query = qs.stringify(
+      {
+        postDocumentId,
+      },
+      {
+        encodeValuesOnly: true,
+      },
+    );
+    const res: any = await apiClient.get(`/comments/total?${query}`);
+    return res.data.total;
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -39,6 +122,10 @@ export const fetchPostComments = async ({ postDocumentId }: any) => {
 
 export const createComment = async (commentData: CommentData) => {
   try {
+    const res = await apiClient.post(`/comments`, {
+      data: commentData,
+    });
+    return res;
   } catch (error: any) {
     throw new Error(error.message);
   }

@@ -21,7 +21,6 @@ export default factories.createCoreController(
       const userDocumentId = ctx.state?.user?.documentId;
       const query = ctx.query;
       const params = ctx.params;
-      console.log(query, params);
 
       const posts = await strapi
         .service("api::post.post")

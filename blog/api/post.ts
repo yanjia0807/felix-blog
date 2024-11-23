@@ -47,6 +47,7 @@ export const fetchPost = async ({ documentId }: any) => {
     {
       populate: {
         tags: true,
+        cover: true,
         author: {
           populate: {
             profile: {

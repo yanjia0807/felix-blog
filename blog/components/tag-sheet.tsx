@@ -5,7 +5,6 @@ import {
   BottomSheetFooter,
   BottomSheetModal,
   BottomSheetView,
-  BottomSheetFlatList,
 } from '@gorhom/bottom-sheet';
 import { Text } from './ui/text';
 import { Heading } from './ui/heading';
@@ -13,7 +12,6 @@ import { BottomSheetFlashList } from '@gorhom/bottom-sheet';
 import { useFetchTags } from '@/api/tag';
 import { Button, ButtonText } from './ui/button';
 import _ from 'lodash';
-import { Divider } from './ui/divider';
 import { HStack } from './ui/hstack';
 import { Pressable } from './ui/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,8 +30,8 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
   } = useForm({});
 
   const { data: tags, error, isError, isLoading, refetch } = useFetchTags(getValues());
-  const { bottom: bottomSafeArea } = useSafeAreaInsets();
-  const snapPoints = ['50%'];
+  const insets = useSafeAreaInsets();
+  const snapPoints = ['50%', '100%'];
 
   const onSubmit = useCallback((data: any) => refetch(data), [refetch]);
 
@@ -85,7 +83,7 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
 
   const renderFooter = useCallback(
     (props: any) => (
-      <BottomSheetFooter {...props} bottomInset={bottomSafeArea}>
+      <BottomSheetFooter {...props}>
         <HStack className="flex-1 items-center justify-around">
           <Button onPress={() => cancel()}>
             <ButtonText>取消</ButtonText>
@@ -96,7 +94,7 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
         </HStack>
       </BottomSheetFooter>
     ),
-    [bottomSafeArea, cancel, commitTag],
+    [cancel, commitTag],
   );
 
   useEffect(() => {
@@ -107,6 +105,8 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
     <BottomSheetModal
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
+      topInset={insets.top}
+      bottomInset={insets.bottom}
       enableDynamicSizing={false}
       footerComponent={(props) => renderFooter({ ...props })}
       keyboardBehavior="fillParent"
@@ -121,7 +121,7 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
           render={({ field: { onChange, value } }) => (
             <BottomSheetTextInput
               placeholder="搜索标签..."
-              className="mb-4 w-full rounded-2xl border border-info-200 p-2"
+              className="my-4 w-full rounded-2xl border border-gray-100 bg-gray-100 p-2"
               value={value}
               onChangeText={(e) => {
                 onChange(e);
@@ -130,7 +130,7 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
             />
           )}
         />
-        <HStack className="flex-wrap">
+        <HStack className="mb-4 flex-wrap">
           {selectedTags.map((item: any) => (
             <TagBtn key={item.id} tag={item} removeTag={removeTag} />
           ))}

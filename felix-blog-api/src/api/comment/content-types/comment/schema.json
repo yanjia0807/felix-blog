@@ -27,17 +27,21 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "comments"
     },
-    "parent": {
+    "topComment": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::comment.comment",
-      "mappedBy": "children"
+      "relation": "oneToOne",
+      "target": "api::comment.comment"
     },
-    "children": {
+    "likes": {
+      "type": "integer"
+    },
+    "unlikes": {
+      "type": "integer"
+    },
+    "reply": {
       "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::comment.comment",
-      "inversedBy": "parent"
+      "relation": "oneToOne",
+      "target": "api::comment.comment"
     }
   }
 }

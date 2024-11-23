@@ -1,5 +1,5 @@
 import React from 'react';
-import { router, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/components/auth-context';
 import { ProfileAvatar } from '@/components/profile-avatar';
@@ -9,22 +9,19 @@ import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
 import {
   ImageBackground,
-  RefreshControl,
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { ArrowRightIcon, MapPin, Search, SearchIcon } from 'lucide-react-native';
+import { MapPin, Search } from 'lucide-react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Box } from '@/components/ui/box';
-import { Link, LinkText } from '@/components/ui/link';
 import { Icon } from '@/components/ui/icon';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { BlurView } from 'expo-blur';
 import moment from 'moment';
-import { Card } from '@/components/ui/card';
 
 const tags = [
   { id: 1, name: '生活' },

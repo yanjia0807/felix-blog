@@ -5,7 +5,12 @@ import { X } from 'lucide-react-native';
 const TagBtn = ({ tag, removeTag }: any) => {
   return (
     <ButtonGroup space="xs" isAttached={true} className="m-1">
-      <Button action="secondary" variant="outline" size="xs" key={tag.id} className="rounded-xl">
+      <Button
+        action="secondary"
+        variant="outline"
+        size="xs"
+        key={tag.id}
+        className="rounded-2xl border-gray-100 bg-gray-50">
         <ButtonText>{tag.name}</ButtonText>
         {removeTag && <ButtonIcon as={X} onPress={() => removeTag(tag)}></ButtonIcon>}
       </Button>

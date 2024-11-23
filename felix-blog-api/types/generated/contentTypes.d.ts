@@ -410,20 +410,22 @@ export interface ApiCommentComment extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    children: Schema.Attribute.Relation<'manyToOne', 'api::comment.comment'>;
     content: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    likes: Schema.Attribute.Integer;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::comment.comment'
     > &
       Schema.Attribute.Private;
-    parent: Schema.Attribute.Relation<'oneToMany', 'api::comment.comment'>;
     post: Schema.Attribute.Relation<'manyToOne', 'api::post.post'>;
     publishedAt: Schema.Attribute.DateTime;
+    reply: Schema.Attribute.Relation<'oneToOne', 'api::comment.comment'>;
+    topComment: Schema.Attribute.Relation<'oneToOne', 'api::comment.comment'>;
+    unlikes: Schema.Attribute.Integer;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

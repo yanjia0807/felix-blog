@@ -93,6 +93,7 @@ const PostCreate = () => {
     const fileIds: string[] = files.length > 0 ? await upload(files) : await Promise.resolve([]);
 
     const postData: PostData = {
+      title: formData.title,
       content: formData.content,
       author: 2,
     };
@@ -245,7 +246,8 @@ const PostCreate = () => {
         }}
       />
       <>
-        <KeyboardAwareScrollView contentContainerStyle={{ flex: 1, padding: 16 }}>
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flex: 1, padding: 16, backgroundColor: 'white' }}>
           {isPending && (
             <Spinner
               size="small"

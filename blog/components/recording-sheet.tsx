@@ -54,7 +54,7 @@ const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
-  const { bottom: bottomSafeArea } = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const metering = useSharedValue<number>(0);
   const [durationMillis, setDurationMillis] = useState<number>(0);
   const snapPoints = ['50%'];
@@ -209,18 +209,18 @@ const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref
     (props: any) => {
       console.log('renderFooter');
       return (
-        <BottomSheetFooter {...props} bottomInset={bottomSafeArea}>
+        <BottomSheetFooter {...props}>
           <HStack className="flex-1 items-center justify-around">
             <TouchableOpacity
-              className="h-32 w-32 items-center justify-center rounded-full bg-red-400"
+              className="h-24 w-24 items-center justify-center rounded-full bg-red-400"
               onPress={doRecording}>
               {recordingStatus?.isRecording ? (
                 <>
                   <AnimatedRing metering={metering} />
-                  <MicOff size={36} color="white" />
+                  <MicOff size={32} color="white" />
                 </>
               ) : (
-                <Mic size={36} color="white" />
+                <Mic size={32} color="white" />
               )}
             </TouchableOpacity>
             <Button
@@ -244,15 +244,7 @@ const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref
         </BottomSheetFooter>
       );
     },
-    [
-      bottomSafeArea,
-      doRecording,
-      recordingStatus,
-      metering,
-      pauseRecording,
-      resetRecording,
-      commitRecording,
-    ],
+    [doRecording, recordingStatus, metering, pauseRecording, resetRecording, commitRecording],
   );
 
   return (
@@ -260,6 +252,8 @@ const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
+      topInset={insets.top}
+      bottomInset={insets.bottom}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}
       onDismiss={resetRecording}>
