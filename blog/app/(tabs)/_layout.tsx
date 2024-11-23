@@ -1,5 +1,6 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { Icon } from '@/components/ui/icon';
 import { Tabs } from 'expo-router';
+import { Home, NotebookPen, User2 } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -8,21 +9,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '主页',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
+          tabBarIcon: ({ color }) => <Icon size={26} as={Home} color={color} />,
         }}
       />
       <Tabs.Screen
         name="post"
         options={{
           title: '发现',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="map" color={color} />,
+          tabBarIcon: ({ color }) => <Icon size={26} as={NotebookPen} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: '我的',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
+          tabBarIcon: ({ color }) => <Icon size={26} as={User2} color={color} />,
         }}
       />
     </Tabs>
