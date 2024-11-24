@@ -24,16 +24,16 @@ export default function RootLayout() {
     <GestureHandlerRootView className="flex-1">
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
-          <BottomSheetModalProvider>
-            <GluestackUIProvider mode="light">
+          <GluestackUIProvider mode="light">
+            <BottomSheetModalProvider>
               <AuthProvider>
                 <Stack initialRouteName="tabs" screenOptions={{ headerShown: false }}>
                   <Stack.Screen name="(tabs)" options={{}} />
                   <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
                 </Stack>
               </AuthProvider>
-            </GluestackUIProvider>
-          </BottomSheetModalProvider>
+            </BottomSheetModalProvider>
+          </GluestackUIProvider>
         </KeyboardProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

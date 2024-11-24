@@ -423,8 +423,12 @@ export interface ApiCommentComment extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     post: Schema.Attribute.Relation<'manyToOne', 'api::post.post'>;
     publishedAt: Schema.Attribute.DateTime;
+    relatedComments: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::comment.comment'
+    >;
     reply: Schema.Attribute.Relation<'oneToOne', 'api::comment.comment'>;
-    topComment: Schema.Attribute.Relation<'oneToOne', 'api::comment.comment'>;
+    topComment: Schema.Attribute.Relation<'manyToOne', 'api::comment.comment'>;
     unlikes: Schema.Attribute.Integer;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

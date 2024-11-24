@@ -1,12 +1,14 @@
-import React from 'react';
-import { HStack } from './ui/hstack';
-import { Box } from './ui/box';
-import { Text } from './ui/text';
-import { Image } from 'expo-image';
-import { VStack } from './ui/vstack';
-import { baseURL } from '@/api';
 import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
+import React from 'react';
+
+import { baseURL } from '@/api';
+
+import { Box } from './ui/box';
 import { Center } from './ui/center';
+import { HStack } from './ui/hstack';
+import { Text } from './ui/text';
+import { VStack } from './ui/vstack';
 
 const PostThumbnail = ({ item }: any) => {
   const files = item?.blocks

@@ -25,6 +25,9 @@ export const fetchPostComments = async ({ postDocumentId }: any) => {
           post: {
             fields: ['id'],
           },
+          relatedComments: {
+            count: true,
+          },
         },
         order: 'createdAt:desc',
         filters: {
@@ -47,9 +50,7 @@ export const fetchPostComments = async ({ postDocumentId }: any) => {
   }
 };
 
-export const fetchChildComments = async ({ topCommentDocumentId }: any) => {
-  if (!topCommentDocumentId) return { data: [], meta: null };
-
+export const fetchRelatedComments = async ({ topDocumentId, pagination }: any) => {
   try {
     const query = qs.stringify({
       populate: {
@@ -93,9 +94,10 @@ export const fetchChildComments = async ({ topCommentDocumentId }: any) => {
       order: 'createdAt:desc',
       filters: {
         topComment: {
-          documentId: topCommentDocumentId,
+          documentId: topDocumentId,
         },
       },
+      pagination,
     });
 
     const res: any = await apiClient.get(`/comments/?${query}`);
@@ -131,8 +133,10 @@ export const createComment = async (commentData: CommentData) => {
   }
 };
 
-export const deleteComment = async (commentData: CommentData) => {
+export const deleteComment = async (documentId: string) => {
   try {
+    const res = await apiClient.delete(`/comments/${documentId}`);
+    return res;
   } catch (error: any) {
     throw new Error(error.message);
   }

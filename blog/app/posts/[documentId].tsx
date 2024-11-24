@@ -26,7 +26,7 @@ import { useQuery } from '@tanstack/react-query';
 import BookMarkedButton from '@/components/book-marked-button';
 import PostCommentsSheet from '@/components/post-comments-sheet';
 import { Heading } from '@/components/ui/heading';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { fetchPostCommentTotal } from '@/api/comment';
 
 const PostDetailCover = ({ cover, post }: any) => {
@@ -144,7 +144,7 @@ const PostDetail = () => {
   const toast = useCustomToast();
   const [initialIndex, setInitialIndex] = useState<number>(0);
   const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
-  const commentsSheetRef = useRef<BottomSheetModal>();
+  const commentsSheetRef = useRef<BottomSheet>();
 
   const {
     isPending,
@@ -197,15 +197,6 @@ const PostDetail = () => {
 
   return (
     <>
-      {images?.length > 1 && (
-        <GalleryPreview
-          images={images || []}
-          initialIndex={initialIndex}
-          isVisible={galleryPreviewIsOpen}
-          onRequestClose={() => setGalleryPreviewIsOpen(false)}
-        />
-      )}
-      <PostCommentsSheet postDocumentId={post?.documentId} ref={commentsSheetRef} />
       <Stack.Screen
         options={{
           title: '',
@@ -213,10 +204,11 @@ const PostDetail = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-
       {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       {isSuccess && (
-        <ScrollView contentContainerClassName="bg-white p-4" showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerClassName="flex-1 bg-white p-4"
+          showsVerticalScrollIndicator={false}>
           <VStack space="md" className="flex-1">
             <Heading>{post.title}</Heading>
             <PostDetailCover cover={post?.cover} post={post} />
@@ -235,13 +227,21 @@ const PostDetail = () => {
               {post?.content}
             </Text>
             <HStack>
-              <Button variant="link" onPress={() => commentsSheetRef.current?.present()}>
+              <Button variant="link" onPress={() => commentsSheetRef.current?.expand()}>
                 <ButtonText>{`查看评论(${total})`}</ButtonText>
               </Button>
             </HStack>
           </VStack>
         </ScrollView>
       )}
+
+      <PostCommentsSheet postDocumentId={post?.documentId} ref={commentsSheetRef} />
+      <GalleryPreview
+        images={images || []}
+        initialIndex={initialIndex}
+        isVisible={galleryPreviewIsOpen}
+        onRequestClose={() => setGalleryPreviewIsOpen(false)}
+      />
     </>
   );
 };

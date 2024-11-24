@@ -29,8 +29,15 @@
     },
     "topComment": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::comment.comment"
+      "relation": "manyToOne",
+      "target": "api::comment.comment",
+      "inversedBy": "relatedComments"
+    },
+    "relatedComments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comment.comment",
+      "mappedBy": "topComment"
     },
     "likes": {
       "type": "integer"

@@ -1,8 +1,9 @@
-import React, { forwardRef, useEffect, useState } from 'react';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import React, { forwardRef, useEffect, useState } from 'react';
+
 import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet';
-import { VStack } from './ui/vstack';
 import { HStack } from './ui/hstack';
+import { VStack } from './ui/vstack';
 
 const LocationSheet = forwardRef(({ setLocation }: any, ref: any) => {
   const [currentLocation, setCurrentLocation] = useState<any>(null);

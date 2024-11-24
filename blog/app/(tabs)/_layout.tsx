@@ -4,7 +4,7 @@ import { Home, NotebookPen, User2 } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
-    <Tabs initialRouteName="post">
+    <Tabs>
       <Tabs.Screen
         name="index"
         options={{
