@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
 import { CameraView as ExpoCameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import React, { useState } from 'react';
+import { Text } from '@/components/ui/text';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
-import { Text } from '@/components/ui/text';
 
 const ImageCamera = () => {
   const [facing, setFacing] = useState<CameraType>('back');

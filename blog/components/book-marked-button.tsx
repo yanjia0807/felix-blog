@@ -1,13 +1,13 @@
-import { TouchableOpacity } from 'react-native';
-import React from 'react';
-import { Icon } from './ui/icon';
-import { BookMarked } from 'lucide-react-native';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { useAuth } from './auth-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updatePostFavorited, UpdatePostFavoritedData } from '@/api';
 import _ from 'lodash';
+import { BookMarked } from 'lucide-react-native';
+import React from 'react';
+import { TouchableOpacity } from 'react-native';
 import colors from 'tailwindcss/colors';
+import { updatePostFavorited, UpdatePostFavoritedData } from '@/api';
+import { useAuth } from './auth-context';
+import { Icon } from './ui/icon';
 
 const BookmarkedButtonStyles = tva({});
 

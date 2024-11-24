@@ -1,33 +1,33 @@
-import { SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
-import React, { useRef, useState } from 'react';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { fetchPost } from '@/api/post';
-import { Text } from '@/components/ui/text';
-import { Button, ButtonText } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
-import { VStack } from '@/components/ui/vstack';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
+import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { Box } from '@/components/ui/box';
-import { baseURL } from '@/api';
-import moment from 'moment';
-import { HStack } from '@/components/ui/hstack';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { BookMarked, Share2 } from 'lucide-react-native';
-import { Icon } from '@/components/ui/icon';
+import moment from 'moment';
+import React, { useRef, useState } from 'react';
+import { SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import GalleryPreview from 'react-native-gallery-preview';
+import { baseURL } from '@/api';
+import { fetchPostCommentTotal } from '@/api/comment';
+import { fetchPost } from '@/api/post';
+import AuthorInfo from '@/components/author-info';
+import BookMarkedButton from '@/components/book-marked-button';
 import CommentInfo from '@/components/comment-info';
 import LikePostButton from '@/components/like-post-button';
-import AuthorInfo from '@/components/author-info';
-import TagBtn from '@/components/tag-btn';
-import GalleryPreview from 'react-native-gallery-preview';
-import { Pressable } from '@/components/ui/pressable';
-import RecordingBtn from '@/components/recording-btn';
-import useCustomToast from '@/components/use-custom-toast';
-import { useQuery } from '@tanstack/react-query';
-import BookMarkedButton from '@/components/book-marked-button';
 import PostCommentsSheet from '@/components/post-comments-sheet';
+import RecordingBtn from '@/components/recording-btn';
+import TagBtn from '@/components/tag-btn';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
-import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { fetchPostCommentTotal } from '@/api/comment';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
+import { Spinner } from '@/components/ui/spinner';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import useCustomToast from '@/components/use-custom-toast';
 
 const PostDetailCover = ({ cover, post }: any) => {
   if (cover) {
@@ -196,7 +196,7 @@ const PostDetail = () => {
   );
 
   return (
-    <>
+    <SafeAreaView className="flex-1 bg-white">
       <Stack.Screen
         options={{
           title: '',
@@ -206,9 +206,7 @@ const PostDetail = () => {
       />
       {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       {isSuccess && (
-        <ScrollView
-          contentContainerClassName="flex-1 bg-white p-4"
-          showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
           <VStack space="md" className="flex-1">
             <Heading>{post.title}</Heading>
             <PostDetailCover cover={post?.cover} post={post} />
@@ -242,7 +240,7 @@ const PostDetail = () => {
         isVisible={galleryPreviewIsOpen}
         onRequestClose={() => setGalleryPreviewIsOpen(false)}
       />
-    </>
+    </SafeAreaView>
   );
 };
 

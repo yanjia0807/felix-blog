@@ -1,12 +1,9 @@
-import React from 'react';
+import { FlashList } from '@shopify/flash-list';
+import { BlurView } from 'expo-blur';
 import { Stack } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/components/auth-context';
-import { ProfileAvatar } from '@/components/profile-avatar';
-import useCustomToast from '@/components/use-custom-toast';
-import { HStack } from '@/components/ui/hstack';
-import { Heading } from '@/components/ui/heading';
-import { Text } from '@/components/ui/text';
+import { MapPin, Search } from 'lucide-react-native';
+import moment from 'moment';
+import React from 'react';
 import {
   ImageBackground,
   SafeAreaView,
@@ -14,14 +11,16 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { MapPin, Search } from 'lucide-react-native';
-import { FlashList } from '@shopify/flash-list';
-import { Box } from '@/components/ui/box';
-import { Icon } from '@/components/ui/icon';
+import { useAuth } from '@/components/auth-context';
+import { ProfileAvatar } from '@/components/profile-avatar';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import { BlurView } from 'expo-blur';
-import moment from 'moment';
+import { Box } from '@/components/ui/box';
+import { Heading } from '@/components/ui/heading';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import useCustomToast from '@/components/use-custom-toast';
 
 const tags = [
   { id: 1, name: '生活' },
@@ -481,24 +480,16 @@ const Home = () => {
           headerShown: false,
         }}
       />
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <HStack className="items-center justify-between px-4">
-          <HStack>
-            <Text size="sm">felix</Text>
-            <Heading size="3xl">Blog</Heading>
+      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+        <VStack className="flex-1" space="2xl">
+          <HStack className="items-center justify-between ">
+            <HStack>
+              <Text size="sm">felix</Text>
+              <Heading size="3xl">Blog</Heading>
+            </HStack>
+            <ProfileAvatar className="mx-4" />
           </HStack>
-          <ProfileAvatar className="mx-4" />
-        </HStack>
-        <VStack className="flex-1 p-4" space="2xl">
-          <HStack>
-            <Input className="flex-1">
-              <InputField />
-              <InputSlot>
-                <InputIcon as={Search} className="mx-2"></InputIcon>
-              </InputSlot>
-            </Input>
-          </HStack>
-          <VStack>
+          <VStack className="flex-1" space="xl">
             <FlashList
               data={posts}
               estimatedItemSize={168}
@@ -506,25 +497,25 @@ const Home = () => {
               horizontal={true}
               showsHorizontalScrollIndicator={false}
             />
-          </VStack>
-          <VStack space="md">
-            <Heading size="sm">最近更新</Heading>
-            <FlashList
-              data={users}
-              estimatedItemSize={42}
-              renderItem={renderUserItem}
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-            />
-          </VStack>
-          <VStack space="md" className="flex-1">
-            <Heading size="sm">推荐</Heading>
-            <FlashList
-              data={recomments}
-              renderItem={renderRecommendItem}
-              estimatedItemSize={200}
-              showsVerticalScrollIndicator={false}
-            />
+            <VStack space="md">
+              <Heading size="sm">最近更新</Heading>
+              <FlashList
+                data={users}
+                estimatedItemSize={42}
+                renderItem={renderUserItem}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              />
+            </VStack>
+            <VStack space="md" className="flex-1">
+              <Heading size="sm">推荐</Heading>
+              <FlashList
+                data={recomments}
+                renderItem={renderRecommendItem}
+                estimatedItemSize={200}
+                showsVerticalScrollIndicator={false}
+              />
+            </VStack>
           </VStack>
         </VStack>
       </ScrollView>

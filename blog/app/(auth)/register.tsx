@@ -1,4 +1,14 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router, Stack } from 'expo-router';
+import { AlertCircleIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { z } from 'zod';
+import { useAuth } from '@/components/auth-context';
+import PrivacyPolicyDialog from '@/components/privacy-policy-dialog';
+import TermsOfServiceDialog from '@/components/terms-of-service-dialog';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
   FormControlError,
@@ -9,27 +19,13 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from '@/components/ui/form-control';
-import { Input, InputField } from '@/components/ui/input';
-import { VStack } from '@/components/ui/vstack';
-import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
-
-import { useAuth } from '@/components/auth-context';
-import { Controller, useForm } from 'react-hook-form';
-import { AlertCircleIcon } from 'lucide-react-native';
-import { Spinner } from '@/components/ui/spinner';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useCustomToast from '@/components/use-custom-toast';
-import { router, Stack } from 'expo-router';
-import { Link, LinkText } from '@/components/ui/link';
-import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
-import TermsOfServiceDialog from '@/components/terms-of-service-dialog';
-import PrivacyPolicyDialog from '@/components/privacy-policy-dialog';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import colors from 'tailwindcss/colors';
+import { Input, InputField } from '@/components/ui/input';
+import { Link, LinkText } from '@/components/ui/link';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+
+import useCustomToast from '@/components/use-custom-toast';
 
 type RegisterSchemaDetails = z.infer<typeof registerSchema>;
 
@@ -188,7 +184,7 @@ const SignUp = () => {
         onClose={() => setIsPrivacyDialogOpen(false)}
       />
       <VStack
-        className="flex-1 items-center justify-between p-4"
+        className="flex-1 items-center justify-between p-6"
         style={{ paddingBottom: insets.bottom }}>
         <VStack className="flex-1" space="lg">
           <Controller control={control} name="username" render={renderUsername} />

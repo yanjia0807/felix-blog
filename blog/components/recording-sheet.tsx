@@ -1,5 +1,3 @@
-import { TouchableOpacity } from 'react-native';
-import React, { forwardRef, useCallback, useState } from 'react';
 import {
   BottomSheetBackdrop,
   BottomSheetFooter,
@@ -8,6 +6,10 @@ import {
 } from '@gorhom/bottom-sheet';
 import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
+import { Mic, MicOff } from 'lucide-react-native';
+import moment from 'moment';
+import React, { forwardRef, useCallback, useState } from 'react';
+import { TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -16,13 +18,11 @@ import Animated, {
   BounceIn,
   BounceOut,
 } from 'react-native-reanimated';
-import { Mic, MicOff } from 'lucide-react-native';
-import { HStack } from './ui/hstack';
-import { Heading } from './ui/heading';
-import { Button, ButtonText } from './ui/button';
-import moment from 'moment';
-import colors from 'tailwindcss/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import colors from 'tailwindcss/colors';
+import { Button, ButtonText } from './ui/button';
+import { Heading } from './ui/heading';
+import { HStack } from './ui/hstack';
 
 const AnimatedRing = ({ metering }: any) => {
   const ringStyle = useAnimatedStyle(() => ({

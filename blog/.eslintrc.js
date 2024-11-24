@@ -2,17 +2,13 @@
 module.exports = {
   extends: ['expo', 'prettier'],
   plugins: ['prettier', 'react-hooks', 'import'],
-  settings: {
-    'import/resolver': {
-      typescript: {},
-    },
-  },
   rules: {
     'prettier/prettier': 'warn',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
+    'import/no-unresolved': 'off',
     'import/order': [
-      'error',
+      'warn',
       {
         groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
         pathGroups: [

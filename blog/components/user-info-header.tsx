@@ -1,16 +1,15 @@
-import { View } from 'react-native';
+import { router } from 'expo-router';
+import { Calendar, EditIcon, MapPin, MessageCircle, ScanFace } from 'lucide-react-native';
 import React from 'react';
-import { HStack } from './ui/hstack';
+import { baseURL } from '@/api';
+import { useAuth } from './auth-context';
 import { Avatar, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';
-import { VStack } from './ui/vstack';
+import { Button, ButtonIcon, ButtonText } from './ui/button';
+import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
-import { Calendar, EditIcon, MapPin, MessageCircle, ScanFace } from 'lucide-react-native';
-import { Button, ButtonIcon, ButtonText } from './ui/button';
-import { router } from 'expo-router';
-import { useAuth } from './auth-context';
-import { baseURL } from '@/api';
+import { VStack } from './ui/vstack';
 
 const UserInfoHeader = () => {
   const { user } = useAuth();

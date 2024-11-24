@@ -1,4 +1,3 @@
-import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import {
   BottomSheetTextInput,
   BottomSheetBackdrop,
@@ -6,17 +5,18 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { Text } from './ui/text';
-import { Heading } from './ui/heading';
 import { BottomSheetFlashList } from '@gorhom/bottom-sheet';
-import { useFetchTags } from '@/api/tag';
-import { Button, ButtonText } from './ui/button';
 import _ from 'lodash';
+import React, { forwardRef, useCallback, useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFetchTags } from '@/api/tag';
+import TagBtn from './tag-btn';
+import { Button, ButtonText } from './ui/button';
+import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Pressable } from './ui/pressable';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import TagBtn from './tag-btn';
-import { Controller, useForm } from 'react-hook-form';
+import { Text } from './ui/text';
 
 const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);

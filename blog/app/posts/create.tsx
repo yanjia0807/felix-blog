@@ -1,10 +1,28 @@
-import React, { useRef, useState } from 'react';
-import { Keyboard, TouchableOpacity } from 'react-native';
-import _ from 'lodash';
-import { AlertCircleIcon, CircleX, ImageIcon, MapPinIcon, Mic, TagIcon } from 'lucide-react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
+import _ from 'lodash';
+import { AlertCircleIcon, CircleX, ImageIcon, MapPinIcon, Mic, TagIcon } from 'lucide-react-native';
+import React, { useRef, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { Keyboard, TouchableOpacity } from 'react-native';
+import GalleryPreview from 'react-native-gallery-preview';
+import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import colors from 'tailwindcss/colors';
+import { z, ZodType } from 'zod';
+import { upload } from '@/api/file';
+import { createPost, PostData } from '@/api/post';
+import ImagePickerSheet from '@/components/image-picker-sheet';
+import LocationSheet from '@/components/location-sheet';
+import RecordingBtn from '@/components/recording-btn';
+import RecordingSheet from '@/components/recording-sheet';
+import TagBtn from '@/components/tag-btn';
+import TagSheet from '@/components/tag-sheet';
+import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Divider } from '@/components/ui/divider';
 import {
   FormControl,
   FormControlHelper,
@@ -13,31 +31,13 @@ import {
   FormControlErrorIcon,
   FormControlErrorText,
 } from '@/components/ui/form-control';
-import { Textarea, TextareaInput } from '@/components/ui/textarea';
-import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
-import ImagePickerSheet from '@/components/image-picker-sheet';
-import RecordingSheet from '@/components/recording-sheet';
-import { Divider } from '@/components/ui/divider';
-import GalleryPreview from 'react-native-gallery-preview';
+import { Grid, GridItem } from '@/components/ui/grid';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import LocationSheet from '@/components/location-sheet';
-import TagSheet from '@/components/tag-sheet';
-import { Grid, GridItem } from '@/components/ui/grid';
-import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import RecordingBtn from '@/components/recording-btn';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z, ZodType } from 'zod';
-import { Spinner } from '@/components/ui/spinner';
-import colors from 'tailwindcss/colors';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import TagBtn from '@/components/tag-btn';
-import { upload } from '@/api/file';
-import { createPost, PostData } from '@/api/post';
-import useCustomToast from '@/components/use-custom-toast';
 import { Input, InputField } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
+import { Textarea, TextareaInput } from '@/components/ui/textarea';
+import useCustomToast from '@/components/use-custom-toast';
 
 type PostFormData = {
   title: string;

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { CircleX, Volume2 } from 'lucide-react-native';
-import { ButtonGroup, Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import moment from 'moment';
+import React, { useEffect, useRef, useState } from 'react';
+import { ButtonGroup, Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 
 const SoundBtn = ({ uri, onRemove }: any) => {
   const [isPlaying, setIsPlaying] = useState(false);

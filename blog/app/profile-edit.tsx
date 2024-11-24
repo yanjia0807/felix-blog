@@ -1,7 +1,18 @@
-import React from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Stack, router } from 'expo-router';
 import _ from 'lodash';
+import { CameraIcon, ChevronDownIcon, AlertCircle, AlertCircleIcon } from 'lucide-react-native';
+import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { z } from 'zod';
+import { UserData, updateUser } from '@/api';
+import { useAuth } from '@/components/auth-context';
+import { DatePicker } from '@/components/date-picker';
 import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
+import { Box } from '@/components/ui/box';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { Center } from '@/components/ui/center';
 import {
@@ -26,21 +37,11 @@ import {
   SelectDragIndicator,
   SelectItem,
 } from '@/components/ui/select';
-import { VStack } from '@/components/ui/vstack';
-import { CameraIcon, ChevronDownIcon, AlertCircle, AlertCircleIcon } from 'lucide-react-native';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { genderEnum } from '@/constants/enum';
-import { DatePicker } from '@/components/date-picker';
-import { Box } from '@/components/ui/box';
-import { Stack, router } from 'expo-router';
-import { useAuth } from '@/components/auth-context';
-import { UserData, updateUser } from '@/api';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import useCustomToast from '@/components/use-custom-toast';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { VStack } from '@/components/ui/vstack';
+import useCustomToast from '@/components/use-custom-toast';
+import { genderEnum } from '@/constants/enum';
+import { SafeAreaView } from 'react-native';
 
 const ProfileEdit = () => {
   const { user }: any = useAuth();
@@ -207,7 +208,7 @@ const ProfileEdit = () => {
   );
 
   return (
-    <Box style={{ paddingBottom: insets.bottom }}>
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
           title: '编辑资料',
@@ -217,7 +218,8 @@ const ProfileEdit = () => {
       />
       <KeyboardAwareScrollView
         contentContainerStyle={{
-          paddingHorizontal: 32,
+          paddingHorizontal: 24,
+          backgroundColor: 'white',
         }}
         bottomOffset={30}
         showsVerticalScrollIndicator={false}>
@@ -260,7 +262,7 @@ const ProfileEdit = () => {
           </VStack>
         </VStack>
       </KeyboardAwareScrollView>
-    </Box>
+    </SafeAreaView>
   );
 };
 

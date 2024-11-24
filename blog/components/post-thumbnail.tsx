@@ -11,6 +11,7 @@ import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
 const PostThumbnail = ({ item }: any) => {
+  console.log('~~~~~~~', item);
   const files = item?.blocks
     ? item?.blocks
         .find((item: any) => item['__component'] === 'shared.attachment')

@@ -6,13 +6,8 @@ import { factories } from '@strapi/strapi';
 
 export default factories.createCoreService("api::post.post", {
   async findAdditional(userDocumentId: number, query: any) {
-    const {
-      limit = 10,
-      start = 0,
-      populate,
-      filters,
-      ...rest
-    } = query.pagination;
+    const { populate, filters, pagination, ...rest } = query;
+    const { limit = 10, start = 0 } = pagination;
 
     const posts = await strapi.documents("api::post.post").findMany({
       start,

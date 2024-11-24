@@ -1,9 +1,9 @@
-import React from 'react';
-import { Button, ButtonText } from '@/components/ui/button';
 import { router, Stack } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
+import React from 'react';
 import { useAuth } from '@/components/auth-context';
 import { ProfileAvatar } from '@/components/profile-avatar';
+import { Button, ButtonText } from '@/components/ui/button';
+import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
 const Feature = () => {

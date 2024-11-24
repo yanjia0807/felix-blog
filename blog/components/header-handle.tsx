@@ -1,6 +1,6 @@
+import { BottomSheetHandle, BottomSheetHandleProps } from '@gorhom/bottom-sheet';
 import React, { memo } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { BottomSheetHandle, BottomSheetHandleProps } from '@gorhom/bottom-sheet';
 
 interface HeaderHandleProps extends BottomSheetHandleProps {
   children?: string | React.ReactNode | React.ReactNode[];

@@ -1,3 +1,14 @@
+import BottomSheet, {
+  BottomSheetFooter,
+  BottomSheetSectionList,
+  BottomSheetTextInput,
+  TouchableOpacity,
+} from '@gorhom/bottom-sheet';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import _ from 'lodash';
+import { Heart, HeartCrack } from 'lucide-react-native';
+import moment from 'moment';
 import React, {
   forwardRef,
   useCallback,
@@ -6,20 +17,10 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import _ from 'lodash';
-import BottomSheet, {
-  BottomSheetFooter,
-  BottomSheetSectionList,
-  BottomSheetTextInput,
-  TouchableOpacity,
-} from '@gorhom/bottom-sheet';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Heart, HeartCrack } from 'lucide-react-native';
-import moment from 'moment';
 import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
+import { baseURL } from '@/api';
 import {
   createComment,
   deleteComment,
@@ -27,17 +28,16 @@ import {
   fetchPostCommentTotal,
   fetchRelatedComments,
 } from '@/api/comment';
-import { baseURL } from '@/api';
-import { HStack } from './ui/hstack';
-import { VStack } from './ui/vstack';
-import { Text } from './ui/text';
+import { useAuth } from './auth-context';
 import { Avatar, AvatarImage } from './ui/avatar';
 import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet';
-import { Heading } from './ui/heading';
-import { Button, ButtonText } from './ui/button';
-import { Icon } from './ui/icon';
 import { Box } from './ui/box';
-import { useAuth } from './auth-context';
+import { Button, ButtonText } from './ui/button';
+import { Heading } from './ui/heading';
+import { HStack } from './ui/hstack';
+import { Icon } from './ui/icon';
+import { Text } from './ui/text';
+import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
 
 type CommentSchemaDetails = z.infer<typeof commentSchema>;
@@ -506,7 +506,7 @@ const PostCommentsSheet = forwardRef(({ postDocumentId }: any, ref: any) => {
       bottomInset={insets.bottom}
       keyboardBehavior="interactive"
       ref={ref}>
-      <VStack className="bg-white p-4" space="2xl">
+      <VStack className="bg-white p-6" space="2xl">
         {isFetchCommentsSuccess && (
           <BottomSheetSectionList
             sections={commentData}

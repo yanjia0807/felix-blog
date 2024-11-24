@@ -1,27 +1,28 @@
-import React from 'react';
-import { router, Stack } from 'expo-router';
-import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
-import { AddIcon, Icon } from '@/components/ui/icon';
 import { FlashList } from '@shopify/flash-list';
-import { Card } from '@/components/ui/card';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { fetchPosts } from '@/api';
-import { VStack } from '@/components/ui/vstack';
-import { ProfileAvatar } from '@/components/profile-avatar';
-import { Spinner } from '@/components/ui/spinner';
-import colors from 'tailwindcss/colors';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { MapPin } from 'lucide-react-native';
-import { RefreshControl, TouchableOpacity } from 'react-native';
-import PostThumbnail from '@/components/post-thumbnail';
-import LikePostButton from '@/components/like-post-button';
-import CommentInfo from '@/components/comment-info';
-import AuthorInfo from '@/components/author-info';
-import useCustomToast from '@/components/use-custom-toast';
-import _ from 'lodash';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { router, Stack } from 'expo-router';
+import _ from 'lodash';
+import { MapPin, Search } from 'lucide-react-native';
+import React from 'react';
+import { RefreshControl, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import colors from 'tailwindcss/colors';
+import { fetchPosts } from '@/api';
+import AuthorInfo from '@/components/author-info';
+import CommentInfo from '@/components/comment-info';
+import LikePostButton from '@/components/like-post-button';
 import PostMenuPopover from '@/components/post-menu-popover';
+import PostThumbnail from '@/components/post-thumbnail';
+import { ProfileAvatar } from '@/components/profile-avatar';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Card } from '@/components/ui/card';
+import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
+import { HStack } from '@/components/ui/hstack';
+import { AddIcon, Icon } from '@/components/ui/icon';
+import { Spinner } from '@/components/ui/spinner';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import useCustomToast from '@/components/use-custom-toast';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 
 const PostHome = () => {
   const toast = useCustomToast();
@@ -123,10 +124,6 @@ const PostHome = () => {
     );
   };
 
-  const renderHeaderLeft = (props: any) => {
-    return <ProfileAvatar className="mx-4" />;
-  };
-
   if (status === 'pending') {
     return (
       <Spinner
@@ -147,43 +144,54 @@ const PostHome = () => {
         options={{
           title: '记录',
           headerShown: true,
-          headerLeft: renderHeaderLeft,
         }}
       />
-      <VStack className="flex-1 p-4" space="md">
-        <FlashList
-          data={posts}
-          renderItem={renderPostItem}
-          estimatedItemSize={200}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          refreshControl={
-            <RefreshControl
-              colors={['#9Bd35A', '#689F38']}
-              refreshing={isLoading}
-              onRefresh={() => {
-                if (!isLoading) {
-                  refetch();
+      <SafeAreaView className="flex-1">
+        <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
+          <VStack className="flex-1" space="2xl">
+            <HStack>
+              <Input className="flex-1" variant="rounded">
+                <InputField />
+                <InputSlot>
+                  <InputIcon as={Search} className="mx-2"></InputIcon>
+                </InputSlot>
+              </Input>
+            </HStack>
+            <FlashList
+              data={posts}
+              renderItem={renderPostItem}
+              estimatedItemSize={200}
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              onEndReached={() => {
+                if (hasNextPage && !isFetchingNextPage) {
+                  fetchNextPage();
                 }
               }}
+              refreshControl={
+                <RefreshControl
+                  colors={['#9Bd35A', '#689F38']}
+                  refreshing={isLoading}
+                  onRefresh={() => {
+                    if (!isLoading) {
+                      refetch();
+                    }
+                  }}
+                />
+              }
             />
-          }
-        />
-        <Fab
-          size="md"
-          placement="bottom right"
-          onPress={() => {
-            router.push('/posts/create');
-          }}>
-          <FabIcon as={AddIcon} />
-          <FabLabel>记录</FabLabel>
-        </Fab>
-      </VStack>
+            <Fab
+              size="md"
+              placement="bottom right"
+              onPress={() => {
+                router.push('/posts/create');
+              }}>
+              <FabIcon as={AddIcon} />
+              <FabLabel>记录</FabLabel>
+            </Fab>
+          </VStack>
+        </ScrollView>
+      </SafeAreaView>
     </>
   );
 };

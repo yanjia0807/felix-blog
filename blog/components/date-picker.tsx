@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Input, InputField, InputIcon, InputSlot } from './ui/input';
-import { Calendar, CircleX } from 'lucide-react-native';
-import moment from 'moment';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { Calendar } from 'lucide-react-native';
+import moment from 'moment';
+import React, { useEffect, useRef, useState } from 'react';
 import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet';
+import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 
 type MyComponentProps = {
   value: any;

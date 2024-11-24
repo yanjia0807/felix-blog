@@ -1,20 +1,20 @@
-import React from 'react';
-import { VStack } from '@/components/ui/vstack';
 import { router, Stack } from 'expo-router';
-import { ScrollView } from 'react-native';
-import UserInfoHeader from '@/components/user-info-header';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Divider } from '@/components/ui/divider';
-import { Switch } from '@/components/ui/switch';
-import { Icon } from '@/components/ui/icon';
-import { Bell, ChevronRightIcon, KeyRound, LogOut, Moon } from 'lucide-react-native';
-import { Pressable } from '@/components/ui/pressable';
-import useCustomToast from '@/components/use-custom-toast';
-import { useAuth } from '@/components/auth-context';
 import _ from 'lodash';
+import { Bell, ChevronRightIcon, KeyRound, LogOut, Moon } from 'lucide-react-native';
+import React from 'react';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
+import { useAuth } from '@/components/auth-context';
 import { Button, ButtonText } from '@/components/ui/button';
+import { Divider } from '@/components/ui/divider';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
+import { Switch } from '@/components/ui/switch';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import useCustomToast from '@/components/use-custom-toast';
+import UserInfoHeader from '@/components/user-info-header';
 
 const Setting = () => {
   const toast = useCustomToast();

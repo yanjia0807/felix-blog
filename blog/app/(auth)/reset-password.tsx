@@ -1,4 +1,12 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { z } from 'zod';
+import { useAuth } from '@/components/auth-context';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
   FormControlError,
@@ -9,19 +17,10 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from '@/components/ui/form-control';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '@/components/auth-context';
-import { Controller, useForm } from 'react-hook-form';
-import { AlertCircleIcon } from 'lucide-react-native';
-import { Spinner } from '@/components/ui/spinner';
 import useCustomToast from '@/components/use-custom-toast';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 type ResetPasswordSchemaDetails = z.infer<typeof resetPasswordSchema>;
 
@@ -140,7 +139,7 @@ const ResetPassword = () => {
         }}
       />
       <VStack
-        className="w-full flex-1 justify-between p-4"
+        className="w-full flex-1 justify-between p-6"
         style={{ paddingBottom: insets.bottom }}>
         <VStack className="flex-1" space="lg">
           <Controller control={control} name="password" render={renderPassword} />

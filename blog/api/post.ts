@@ -1,5 +1,5 @@
-import { apiClient } from './config';
 import qs from 'qs';
+import { apiClient } from './config';
 
 export type PostData = any;
 export type UpdatePostLikedData = any;

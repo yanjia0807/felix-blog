@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { Card } from '@/components/ui/card';
-import { Spinner } from '@/components/ui/spinner';
-import { Box } from '@/components/ui/box';
-import { Heading } from '@/components/ui/heading';
-import { Divider } from '@/components/ui/divider';
-import { Stack } from 'expo-router';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { FlashList, MasonryFlashList } from '@shopify/flash-list';
-import { Image } from 'expo-image';
-import { Dimensions } from 'react-native';
-import { fetchPosts } from '@/api';
-import UserInfoHeader from '@/components/user-info-header';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
+import { Stack } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, SafeAreaView, ScrollView } from 'react-native';
+import { fetchPosts } from '@/api';
 import { useAuth } from '@/components/auth-context';
+import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
+import { Divider } from '@/components/ui/divider';
+import { Heading } from '@/components/ui/heading';
+import { HStack } from '@/components/ui/hstack';
+import { Spinner } from '@/components/ui/spinner';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import UserInfoHeader from '@/components/user-info-header';
 
 const { width } = Dimensions.get('window');
 const numColumns = 2;
@@ -141,48 +141,50 @@ const Profile = () => {
   const { user } = useAuth();
 
   return (
-    <>
+    <SafeAreaView className="flex-1 bg-white">
       <Stack.Screen
         options={{
           title: '我的',
         }}
       />
       {user ? (
-        <VStack className="flex-1 p-6" space="xl">
-          <UserInfoHeader />
-          <Divider />
-          <HStack space="md" className="justify-around">
-            <VStack className="items-center justify-center">
-              <Text size="xl" bold={true}>
-                400
-              </Text>
-              <Text size="sm">帖子</Text>
-            </VStack>
-            <VStack className="items-center justify-center">
-              <Text size="xl" bold={true}>
-                21
-              </Text>
-              <Text size="sm">关注</Text>
-            </VStack>
-            <VStack className="items-center justify-center">
-              <Text size="xl" bold={true}>
-                3
-              </Text>
-              <Text size="sm">被关注</Text>
-            </VStack>
-          </HStack>
-          <Divider />
-          <SegmentedControl
-            values={['我的帖子', '照片墙']}
-            selectedIndex={selectedIndex}
-            onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
-          />
-          {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
-        </VStack>
+        <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
+          <VStack className="flex-1" space="xl">
+            <UserInfoHeader />
+            <Divider />
+            <HStack space="md" className="justify-around">
+              <VStack className="items-center justify-center">
+                <Text size="xl" bold={true}>
+                  400
+                </Text>
+                <Text size="sm">帖子</Text>
+              </VStack>
+              <VStack className="items-center justify-center">
+                <Text size="xl" bold={true}>
+                  21
+                </Text>
+                <Text size="sm">关注</Text>
+              </VStack>
+              <VStack className="items-center justify-center">
+                <Text size="xl" bold={true}>
+                  3
+                </Text>
+                <Text size="sm">被关注</Text>
+              </VStack>
+            </HStack>
+            <Divider />
+            <SegmentedControl
+              values={['我的帖子', '照片墙']}
+              selectedIndex={selectedIndex}
+              onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
+            />
+            {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
+          </VStack>
+        </ScrollView>
       ) : (
         <></>
       )}
-    </>
+    </SafeAreaView>
   );
 };
 

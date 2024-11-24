@@ -1,13 +1,13 @@
-import React from 'react';
-import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
-import { useAuth } from './auth-context';
-import { baseURL } from '@/api/config';
-import { Icon } from './ui/icon';
-import { User } from 'lucide-react-native';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { Pressable } from './ui/pressable';
 import { useRouter } from 'expo-router';
+import { User } from 'lucide-react-native';
+import React from 'react';
+import { baseURL } from '@/api/config';
+import { useAuth } from './auth-context';
+import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';
+import { Icon } from './ui/icon';
+import { Pressable } from './ui/pressable';
 
 const ProfileAvatarStyles = tva({});
 

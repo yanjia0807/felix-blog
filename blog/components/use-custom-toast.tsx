@@ -1,11 +1,11 @@
-import React, { memo } from 'react';
-import { Toast, ToastDescription, ToastTitle, useToast } from './ui/toast';
+import _ from 'lodash';
+import React from 'react';
 import { Pressable } from 'react-native';
+import { Button, ButtonGroup, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 import { CloseIcon, Icon } from './ui/icon';
+import { Toast, ToastDescription, ToastTitle, useToast } from './ui/toast';
 import { VStack } from './ui/vstack';
-import _ from 'lodash';
-import { Button, ButtonGroup, ButtonText } from './ui/button';
 
 const ConfirmToast = ({ toast, id, onConfirm, title, description }: any) => {
   return (

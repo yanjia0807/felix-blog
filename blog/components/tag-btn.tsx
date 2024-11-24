@@ -1,6 +1,6 @@
+import { X } from 'lucide-react-native';
 import React from 'react';
 import { ButtonGroup, Button, ButtonIcon, ButtonText } from './ui/button';
-import { X } from 'lucide-react-native';
 
 const TagBtn = ({ tag, removeTag }: any) => {
   return (

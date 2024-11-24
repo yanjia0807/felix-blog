@@ -7,9 +7,9 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
 } from './ui/alert-dialog';
-import { Text } from './ui/text';
 import { Button, ButtonText } from './ui/button';
 import { Heading } from './ui/heading';
+import { Text } from './ui/text';
 
 const TermsOfServiceDialog = ({ isOpen, onClose }: any) => {
   return (

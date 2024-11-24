@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import { useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import _ from 'lodash';
 import { CameraIcon, ImageIcon, CircleXIcon } from 'lucide-react-native';
+import React, { useState } from 'react';
+import ImageCamera from './Image-camera';
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -10,10 +14,6 @@ import {
   ActionsheetIcon,
   ActionsheetItemText,
 } from './ui/actionsheet';
-import { useCameraPermissions } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
-import _ from 'lodash';
-import ImageCamera from './Image-camera';
 
 const ImagePickerSheet = ({ isOpen, onClose, onChange, value }: any) => {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();

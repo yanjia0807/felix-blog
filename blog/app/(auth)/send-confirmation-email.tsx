@@ -1,13 +1,10 @@
-import React from 'react';
-import { VStack } from '@/components/ui/vstack';
-import { Text } from '@/components/ui/text';
 import { ArrowRight, MailQuestion } from 'lucide-react-native';
+import React from 'react';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { useRouter } from 'expo-router';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 
 const SendConfirmationEmail = () => {
-  const router = useRouter();
-
   const handleSendMail = () => {};
 
   return (

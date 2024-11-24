@@ -1,14 +1,14 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
+import { Heart } from 'lucide-react-native';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { HStack } from './ui/hstack';
 import colors from 'tailwindcss/colors';
+import { UpdatePostLikedData, updatePostLiked } from '@/api';
+import { useAuth } from './auth-context';
+import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
-import { Heart } from 'lucide-react-native';
-import { useAuth } from './auth-context';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { UpdatePostLikedData, updatePostLiked } from '@/api';
 
 const LikePostButton = ({ post }: any) => {
   const { user } = useAuth();

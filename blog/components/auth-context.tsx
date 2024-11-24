@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { fetchUser, setAuthHeader } from '@/api';
 import {
   loginUser,
   registerUser,
@@ -8,7 +9,6 @@ import {
   sendEmailConfirmation,
   sendResetPasswordEmail,
 } from '@/api/auth';
-import { fetchUser, setAuthHeader } from '@/api';
 const AuthContext = createContext<any>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
