@@ -19,7 +19,7 @@ import UserInfoHeader from '@/components/user-info-header';
 const Setting = () => {
   const toast = useCustomToast();
   const { user, forgetPasswordMutation, logout } = useAuth();
-  const { reset, error, mutate, isSuccess, isError, isPending } = forgetPasswordMutation;
+  const { mutate } = forgetPasswordMutation;
   const passwordToastId = _.random(0, 10000).toString();
   const logoutToastId = _.random(0, 10000).toString();
 

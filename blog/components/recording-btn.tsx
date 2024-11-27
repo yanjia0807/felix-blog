@@ -53,7 +53,7 @@ const SoundBtn = ({ uri, onRemove }: any) => {
           soundObj.current.sound.unloadAsync();
         }
       : undefined;
-  }, []);
+  }, [uri]);
 
   return (
     <ButtonGroup space="xs" isAttached={true} className="">

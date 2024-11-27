@@ -18,11 +18,11 @@ import { Card } from '@/components/ui/card';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 
 const PostHome = () => {
   const toast = useCustomToast();
@@ -180,17 +180,17 @@ const PostHome = () => {
                 />
               }
             />
-            <Fab
-              size="md"
-              placement="bottom right"
-              onPress={() => {
-                router.push('/posts/create');
-              }}>
-              <FabIcon as={AddIcon} />
-              <FabLabel>记录</FabLabel>
-            </Fab>
           </VStack>
         </ScrollView>
+        <Fab
+          size="md"
+          placement="bottom right"
+          onPress={() => {
+            router.push('/posts/create');
+          }}>
+          <FabIcon as={AddIcon} />
+          <FabLabel>记录</FabLabel>
+        </Fab>
       </SafeAreaView>
     </>
   );

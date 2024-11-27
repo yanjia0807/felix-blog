@@ -1,4 +1,5 @@
 import '@/global.css';
+import { useReactQueryDevTools } from '@dev-plugins/react-query';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
@@ -20,6 +21,7 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  useReactQueryDevTools(queryClient);
   return (
     <GestureHandlerRootView className="flex-1">
       <QueryClientProvider client={queryClient}>

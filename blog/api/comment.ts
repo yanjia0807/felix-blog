@@ -1,48 +1,44 @@
 import _ from 'lodash';
-import { apiClient } from './config';
 import qs from 'qs';
+import { apiClient } from './config';
 
 export type CommentData = any;
 
-export const fetchPostComments = async ({ postDocumentId }: any) => {
+export const fetchPostComments = async ({ postDocumentId, pagination }: any) => {
   try {
-    const query = qs.stringify(
-      {
-        populate: {
-          user: {
-            fields: ['username'],
-            populate: {
-              profile: {
-                populate: {
-                  avatar: {
-                    fields: ['alternativeText', 'width', 'height', 'formats'],
-                  },
+    const query = qs.stringify({
+      populate: {
+        user: {
+          fields: ['username'],
+          populate: {
+            profile: {
+              populate: {
+                avatar: {
+                  fields: ['alternativeText', 'width', 'height', 'formats'],
                 },
-                fields: ['id'],
               },
+              fields: ['id'],
             },
           },
-          post: {
-            fields: ['id'],
-          },
-          relatedComments: {
-            count: true,
-          },
         },
-        order: 'createdAt:desc',
-        filters: {
-          post: {
-            documentId: postDocumentId,
-          },
-          topComment: {
-            $null: true,
-          },
+        post: {
+          fields: ['id'],
+        },
+        relatedComments: {
+          count: true,
         },
       },
-      {
-        encodeValuesOnly: true,
+      sort: ['createdAt:desc'],
+      filters: {
+        post: {
+          documentId: postDocumentId,
+        },
+        topComment: {
+          $null: true,
+        },
       },
-    );
+      pagination,
+    });
     const res: any = await apiClient.get(`/comments/?${query}`);
     return res;
   } catch (error: any) {
@@ -50,7 +46,7 @@ export const fetchPostComments = async ({ postDocumentId }: any) => {
   }
 };
 
-export const fetchRelatedComments = async ({ topDocumentId, pagination }: any) => {
+export const fetchRelatedComments = async ({ topCommentDocumentId, pagination }: any) => {
   try {
     const query = qs.stringify({
       populate: {
@@ -90,11 +86,14 @@ export const fetchRelatedComments = async ({ topDocumentId, pagination }: any) =
             },
           },
         },
+        relatedComments: {
+          count: true,
+        },
       },
-      order: 'createdAt:desc',
+      sort: ['createdAt:desc'],
       filters: {
         topComment: {
-          documentId: topDocumentId,
+          documentId: topCommentDocumentId,
         },
       },
       pagination,
@@ -102,7 +101,9 @@ export const fetchRelatedComments = async ({ topDocumentId, pagination }: any) =
 
     const res: any = await apiClient.get(`/comments/?${query}`);
     return res;
-  } catch (error) {}
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
 };
 
 export const fetchPostCommentTotal = async ({ postDocumentId }: any) => {
@@ -123,11 +124,54 @@ export const fetchPostCommentTotal = async ({ postDocumentId }: any) => {
 };
 
 export const createComment = async (commentData: CommentData) => {
+  const query = qs.stringify({
+    populate: {
+      user: {
+        fields: ['username'],
+        populate: {
+          profile: {
+            populate: {
+              avatar: {
+                fields: ['alternativeText', 'width', 'height', 'formats'],
+              },
+            },
+            fields: ['id'],
+          },
+        },
+      },
+      post: {
+        fields: ['id'],
+      },
+      topComment: {
+        fields: ['id'],
+      },
+      reply: {
+        populate: {
+          user: {
+            fields: ['username'],
+            populate: {
+              profile: {
+                populate: {
+                  avatar: {
+                    fields: ['alternativeText', 'width', 'height', 'formats'],
+                  },
+                },
+                fields: ['id'],
+              },
+            },
+          },
+        },
+      },
+      relatedComments: {
+        count: true,
+      },
+    },
+  });
   try {
-    const res = await apiClient.post(`/comments`, {
+    const res = await apiClient.post(`/comments?${query}`, {
       data: commentData,
     });
-    return res;
+    return res.data;
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -136,7 +180,7 @@ export const createComment = async (commentData: CommentData) => {
 export const deleteComment = async (documentId: string) => {
   try {
     const res = await apiClient.delete(`/comments/${documentId}`);
-    return res;
+    return res.data;
   } catch (error: any) {
     throw new Error(error.message);
   }

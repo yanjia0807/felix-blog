@@ -5,7 +5,7 @@ import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet'
 import { HStack } from './ui/hstack';
 import { VStack } from './ui/vstack';
 
-const LocationSheet = forwardRef(({ setLocation }: any, ref: any) => {
+const LocationSheet = forwardRef(function LocationSheet({ setLocation }: any, ref: any) {
   const [currentLocation, setCurrentLocation] = useState<any>(null);
   const [places, setPlaces] = useState<any>([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -25,7 +25,7 @@ const LocationSheet = forwardRef(({ setLocation }: any, ref: any) => {
       handleComponent={BottomSheetDragIndicator}
       ref={ref}>
       <BottomSheetView className="flex-1">
-        <VStack className="flex-1 items-center p-4" space="2xl">
+        <VStack className="flex-1 p-4 items-center" space="2xl">
           <HStack></HStack>
         </VStack>
       </BottomSheetView>
