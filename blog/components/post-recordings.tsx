@@ -1,10 +1,32 @@
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { CircleX, Volume2 } from 'lucide-react-native';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { ButtonGroup, Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
+import { HStack } from './ui/hstack';
 
-const SoundBtn = ({ uri, onRemove }: any) => {
+const PostRecordings = ({ recordings = [], onRemoveRecording, className = '' }: any) => {
+  const PostRecordingsStyles = tva({});
+
+  return (
+    <HStack space="sm" className={`${PostRecordingsStyles(className)} my-2 flex-wrap`}>
+      {recordings.map((item: any) => {
+        return (
+          <PostRecordingIcon
+            key={item.uri || item.getURI()}
+            uri={item.uri || item.getURI()}
+            onRemove={onRemoveRecording}
+          />
+        );
+      })}
+    </HStack>
+  );
+};
+
+const PostRecordingIcon = ({ uri, onRemove, className }: any) => {
+  const PostRecordingIconStyles = tva({});
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [durationMillis, setDurationMillis] = useState(0);
   const soundObj = useRef<any>({ sound: null, isPlaying: false });
@@ -18,14 +40,10 @@ const SoundBtn = ({ uri, onRemove }: any) => {
 
   const playSound = async () => {
     if (!soundObj.current.isPlaying) {
-      console.log('playing sound');
       await soundObj.current.sound.setPositionAsync(0);
       await soundObj.current.sound.playAsync();
-      console.log('played sound');
     } else {
-      console.log('stoping sound');
       await soundObj.current.sound.stopAsync();
-      console.log('stoped sound');
     }
   };
 
@@ -56,9 +74,9 @@ const SoundBtn = ({ uri, onRemove }: any) => {
   }, [uri]);
 
   return (
-    <ButtonGroup space="xs" isAttached={true} className="">
+    <ButtonGroup space="sm" isAttached={true} className={PostRecordingIconStyles({ className })}>
       <Button
-        size="xs"
+        size="sm"
         onPress={() => playSound()}
         className="items-center justify-start rounded-xl">
         <ButtonIcon as={Volume2} />
@@ -76,4 +94,4 @@ const SoundBtn = ({ uri, onRemove }: any) => {
   );
 };
 
-export default SoundBtn;
+export default PostRecordings;

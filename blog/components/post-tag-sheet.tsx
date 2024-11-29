@@ -1,8 +1,7 @@
-import {
+import BottomSheet, {
   BottomSheetTextInput,
   BottomSheetBackdrop,
   BottomSheetFooter,
-  BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { BottomSheetFlashList } from '@gorhom/bottom-sheet';
@@ -11,14 +10,14 @@ import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFetchTags } from '@/api/tag';
-import TagBtn from './tag-btn';
+import PostTags from './post-tags';
 import { Button, ButtonText } from './ui/button';
-import { Heading } from './ui/heading';
+import { Divider } from './ui/divider';
 import { HStack } from './ui/hstack';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 
-const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any) {
+const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);
 
   const {
@@ -31,10 +30,7 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
 
   const { data: tags, error, isError, isLoading, refetch } = useFetchTags(getValues());
   const insets = useSafeAreaInsets();
-  const snapPoints = ['50%', '100%'];
-
   const onSubmit = useCallback((data: any) => refetch(data), [refetch]);
-
   const debouncedSubmit = React.useMemo(
     () => _.debounce(handleSubmit(onSubmit), 1000),
     [handleSubmit, onSubmit],
@@ -44,18 +40,18 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
     setSelectedTags((prev: any) => [...prev, tag]);
   };
 
-  const removeTag = (tag: any) => {
+  const onRemoveTag = (tag: any) => {
     setSelectedTags((prev: any) => _.reject(prev, ['id', tag.id]));
   };
 
   const cancel = useCallback(() => {
     setSelectedTags([...value]);
-    ref.current?.dismiss();
+    ref.current?.close();
   }, [ref, value]);
 
   const commitTag = useCallback(() => {
     onChange({ selectedTags });
-    ref.current?.dismiss();
+    ref.current?.close();
   }, [onChange, ref, selectedTags]);
 
   const renderItem = ({ item }: any) => {
@@ -84,11 +80,12 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
   const renderFooter = useCallback(
     (props: any) => (
       <BottomSheetFooter {...props}>
-        <HStack className="flex-1 items-center justify-around">
-          <Button onPress={() => cancel()}>
+        <HStack className="bg-gray-50 p-2 flex-1 items-center justify-around">
+          <Button className="flex-1" variant="link" onPress={() => cancel()}>
             <ButtonText>取消</ButtonText>
           </Button>
-          <Button onPress={() => commitTag()} action="primary" variant="solid">
+          <Divider orientation="vertical"></Divider>
+          <Button className="flex-1" variant="link" onPress={() => commitTag()} action="primary">
             <ButtonText>确定</ButtonText>
           </Button>
         </HStack>
@@ -102,26 +99,25 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
   }, [value]);
 
   return (
-    <BottomSheetModal
-      snapPoints={snapPoints}
+    <BottomSheet
+      snapPoints={['50%', '80%']}
+      index={-1}
       backdropComponent={renderBackdrop}
       topInset={insets.top}
       bottomInset={insets.bottom}
       enableDynamicSizing={false}
+      enablePanDownToClose={true}
       footerComponent={(props) => renderFooter({ ...props })}
       keyboardBehavior="fillParent"
       ref={ref}>
-      <BottomSheetView className="flex-1 px-4">
-        <Heading size="xl" className="mb-4">
-          标签
-        </Heading>
+      <BottomSheetView className="flex-1 m-4">
         <Controller
           name="name"
           control={control}
           render={({ field: { onChange, value } }) => (
             <BottomSheetTextInput
               placeholder="搜索标签..."
-              className="my-4 w-full rounded-2xl border border-gray-100 bg-gray-100 p-2"
+              className="my-2 w-full rounded-2xl border border-gray-100 bg-gray-100 p-3 focus:border-primary-700"
               value={value}
               onChangeText={(e) => {
                 onChange(e);
@@ -130,11 +126,7 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
             />
           )}
         />
-        <HStack className="mb-4 flex-wrap">
-          {selectedTags.map((item: any) => (
-            <TagBtn key={item.id} tag={item} removeTag={removeTag} />
-          ))}
-        </HStack>
+        <PostTags tags={selectedTags} onRemoveTag={onRemoveTag} />
         <BottomSheetFlashList
           data={tags}
           renderItem={renderItem}
@@ -144,8 +136,8 @@ const TagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any
           extraData={{ selectedTags }}
         />
       </BottomSheetView>
-    </BottomSheetModal>
+    </BottomSheet>
   );
 });
 
-export default TagSheet;
+export default PostTagSheet;

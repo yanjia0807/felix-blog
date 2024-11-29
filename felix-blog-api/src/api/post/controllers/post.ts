@@ -2,7 +2,7 @@
  * post controller
  */
 
-import { factories } from '@strapi/strapi'
+import { factories } from "@strapi/strapi";
 
 export default factories.createCoreController(
   "api::post.post",
@@ -26,6 +26,15 @@ export default factories.createCoreController(
         .service("api::post.post")
         .findOneAdditional(userDocumentId, params, query);
       return posts;
+    },
+
+    async count(ctx) {
+      const userDocumentId = ctx.state?.user?.documentId;
+
+      const count = await strapi
+        .service("api::post.post")
+        .count(userDocumentId);
+      return { data: count };
     },
   })
 );

@@ -1,17 +1,26 @@
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { FlashList, MasonryFlashList } from '@shopify/flash-list';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Dimensions, SafeAreaView, ScrollView } from 'react-native';
-import { fetchPosts } from '@/api';
+import _, { flatten } from 'lodash';
+import { BookMarked, Heart, MapPin, MessageCircle } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Dimensions,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import { fetchCount, fetchMyPosts, fetchMyPhotos } from '@/api';
+import { baseURL } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { Box } from '@/components/ui/box';
-import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -21,48 +30,90 @@ const { width } = Dimensions.get('window');
 const numColumns = 2;
 
 const PostListView = () => {
-  const {
-    data: posts,
-    error,
-    isLoading,
-    isSuccess,
-  }: any = useInfiniteQuery({
-    queryKey: ['posts'],
-    queryFn: fetchPosts,
-    initialPageParam: {
-      pagination: {
-        start: 0,
-        limit: 10,
-      },
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { limit, start, total },
+  const { user } = useAuth();
+
+  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
+    useInfiniteQuery({
+      queryKey: ['posts', user.documentId],
+      queryFn: fetchMyPosts,
+      initialPageParam: {
+        pagination: {
+          page: 1,
+          pageSize: 5,
         },
-      } = lastPage;
+        userDocumentId: user.documentId,
+      },
+      getNextPageParam: (lastPage: any) => {
+        const {
+          meta: {
+            pagination: { page, pageSize, pageCount },
+          },
+        } = lastPage;
 
-      if (start + limit >= total) {
+        if (page < pageCount) {
+          return {
+            pagination: { page: page + 1, pageSize },
+            userDocumentId: user.documentId,
+          };
+        }
+
         return null;
-      }
+      },
+    });
 
-      return {
-        pagination: { limit, start: start + limit },
-      };
-    },
-  });
+  const posts: any = _.reduce(
+    data?.pages,
+    (result: any, item: any) => [...result, ...item.data],
+    [],
+  );
 
   const renderItem = ({ item }: any) => {
     return (
-      <Card className="my-2 rounded-lg">
-        <Text className="mb-2 text-sm font-normal text-typography-700">{item.publishedAt}</Text>
-        <VStack className="mb-6">
-          <Heading size="md" className="mb-4">
-            {item.title}
-          </Heading>
-          <Text size="sm">{item.content}</Text>
+      <TouchableOpacity onPress={() => {}} className="my-3 rounded-lg bg-background-0 p-4">
+        <VStack space="lg">
+          <HStack className="items-start justify-start" space="md">
+            <VStack space="md" className="flex-1">
+              <Heading numberOfLines={1} size="md">
+                {item.title}
+              </Heading>
+              <HStack className="items-center justify-between">
+                <Text size="xs">30分钟之前</Text>
+                <HStack space="xs" className="items-center">
+                  <Icon as={MapPin} size="xs" />
+                  <Text size="xs">重庆市，渝北区</Text>
+                </HStack>
+              </HStack>
+              <Text numberOfLines={3} size="sm">
+                {item.content}
+              </Text>
+            </VStack>
+          </HStack>
+          <HStack className="items-center justify-end" space="md">
+            <HStack space="lg" className="flex-row items-center">
+              <HStack space="xs" className="items-center">
+                <Icon as={Heart} />
+                <Text size="xs">{item?.likedByUsers?.count}</Text>
+              </HStack>
+              <HStack space="xs" className="items-center">
+                <Icon as={BookMarked} />
+                <Text size="xs">{item?.favoritedByUsers?.count}</Text>
+              </HStack>
+              <HStack space="xs" className="items-center">
+                <Icon as={MessageCircle} />
+                <Text size="xs">{item?.comments?.count}</Text>
+              </HStack>
+            </HStack>
+          </HStack>
         </VStack>
-      </Card>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderEmptyComponent = (props: any) => {
+    return (
+      <Box className="mt-10 w-full items-center justify-center">
+        <Text size="sm">没有数据</Text>
+      </Box>
     );
   };
 
@@ -72,42 +123,113 @@ const PostListView = () => {
       <FlashList
         data={posts}
         renderItem={renderItem}
-        estimatedItemSize={200}
+        estimatedItemSize={154}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
+        ListEmptyComponent={renderEmptyComponent}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        refreshControl={
+          <RefreshControl
+            colors={['#9Bd35A', '#689F38']}
+            refreshing={isLoading}
+            onRefresh={() => {
+              if (!isLoading) {
+                refetch();
+              }
+            }}
+          />
+        }
       />
     </Box>
   );
 };
 
 const PhotoListView = () => {
-  const [photos, setPhotos] = useState<any>([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
-  const fetchPhotos = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=15`);
-      const data = await response.json();
-      setPhotos((prevPhotos: any) => [...prevPhotos, ...data]);
-      setPage((prevPage) => prevPage + 1);
-    } catch (error) {
-      console.error('Error fetching photos:', error);
-    } finally {
-      setLoading(false);
-    }
+  const renderEmptyComponent = (props: any) => {
+    return (
+      <Box className="mt-10 w-full items-center justify-center">
+        <Text size="sm">没有数据</Text>
+      </Box>
+    );
   };
 
-  useEffect(() => {
-    fetchPhotos();
-  }, []);
+  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
+    useInfiniteQuery({
+      queryKey: ['posts', user.documentId, 'photos'],
+      queryFn: fetchMyPhotos,
+      initialPageParam: {
+        pagination: {
+          page: 1,
+          pageSize: 5,
+        },
+        userDocumentId: user.documentId,
+      },
+      getNextPageParam: (lastPage: any) => {
+        const {
+          meta: {
+            pagination: { page, pageSize, pageCount },
+          },
+        } = lastPage;
+
+        if (page < pageCount) {
+          return {
+            pagination: { page: page + 1, pageSize },
+            userDocumentId: user.documentId,
+          };
+        }
+
+        return null;
+      },
+    });
+
+  const listData = useMemo(() => {
+    let files = [];
+    console.log('!', data);
+
+    if (data) {
+      files = _.reduce(
+        data.pages,
+        (result: any, page: any) => {
+          const pageFiles = _.reduce(
+            page.data,
+            (pageResult: any, item: any) => {
+              let temp: any = [];
+              if (item.cover) {
+                temp = [...temp, { ...item.cover, type: 'cover' }];
+              }
+              const attachment = _.find(
+                item.blocks,
+                (block: any) => block['__component'] === 'shared.attachment',
+              );
+              if (attachment?.files.length > 0) {
+                temp = [
+                  ...temp,
+                  ..._.filter(attachment.files, (file: any) => file.mime.startsWith('image/')),
+                ];
+              }
+              return [...pageResult, ...temp];
+            },
+            [],
+          );
+          return [...result, ...pageFiles];
+        },
+        [],
+      );
+    }
+    return files;
+  }, [data]);
 
   const renderItem = ({ item }: any) => {
     return (
       <Image
         recyclingKey={item.id}
-        source={{ uri: item.download_url }}
+        source={{ uri: `${baseURL}/${item.formats.small.url}` }}
         contentFit="cover"
         style={{
           flex: 1,
@@ -122,15 +244,34 @@ const PhotoListView = () => {
   return (
     <Box className="mr-1/4 flex-1">
       <MasonryFlashList
-        data={photos}
+        data={listData}
         getItemType={() => 'image'}
         renderItem={renderItem}
         numColumns={numColumns}
         ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}
+        ListEmptyComponent={renderEmptyComponent}
         estimatedItemSize={width / numColumns}
-        onEndReached={fetchPhotos}
-        onEndReachedThreshold={0.5}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        refreshControl={
+          <RefreshControl
+            colors={['#9Bd35A', '#689F38']}
+            refreshing={isLoading}
+            onRefresh={() => {
+              if (!isLoading) {
+                refetch();
+              }
+            }}
+          />
+        }
         showsVerticalScrollIndicator={false}
+        getColumnFlex={(items, index, maxColumns, extraData) => {
+          console.log('@', items, index, maxColumns, extraData);
+          return numColumns;
+        }}
       />
     </Box>
   );
@@ -140,8 +281,13 @@ const Profile = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { user } = useAuth();
 
+  const { data: total } = useQuery<any>({
+    queryKey: ['posts', user.documentId, 'total'],
+    queryFn: () => fetchCount(),
+  });
+
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
           title: '我的',
@@ -155,7 +301,7 @@ const Profile = () => {
             <HStack space="md" className="justify-around">
               <VStack className="items-center justify-center">
                 <Text size="xl" bold={true}>
-                  400
+                  {total?.data || 0}
                 </Text>
                 <Text size="sm">帖子</Text>
               </VStack>

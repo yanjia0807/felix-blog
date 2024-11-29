@@ -1,13 +1,12 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
-import { AlertCircleIcon, CircleX, ImageIcon, MapPinIcon, Mic, TagIcon } from 'lucide-react-native';
-import React, { useRef, useState } from 'react';
+import { AlertCircleIcon, ImageIcon, MapPinIcon, Mic, TagIcon } from 'lucide-react-native';
+import React, { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Keyboard, TouchableOpacity } from 'react-native';
+import { Keyboard, SafeAreaView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,10 +16,12 @@ import { upload } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
 import ImagePickerSheet from '@/components/image-picker-sheet';
 import LocationSheet from '@/components/location-sheet';
-import RecordingBtn from '@/components/recording-btn';
-import RecordingSheet from '@/components/recording-sheet';
-import TagBtn from '@/components/tag-btn';
-import TagSheet from '@/components/tag-sheet';
+import PostImageGrid from '@/components/post-images-grid';
+import PostRecordingSheet from '@/components/post-recording-sheet';
+import PostRecordings from '@/components/post-recordings';
+import PostTagSheet from '@/components/post-tag-sheet';
+import PostTags from '@/components/post-tags';
+import { Box } from '@/components/ui/box';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import {
@@ -31,9 +32,7 @@ import {
   FormControlErrorIcon,
   FormControlErrorText,
 } from '@/components/ui/form-control';
-import { Grid, GridItem } from '@/components/ui/grid';
 import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
@@ -53,6 +52,15 @@ const PostCreate = () => {
   const { isSuccess, isError, isPending, mutate } = useMutation({
     mutationFn: (data: PostData) => {
       return createPost(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      toast.success('保存成功');
+      router.dismiss();
+    },
+    onError(error, variables, context) {
+      toast.error(error.message);
+      console.error(error);
     },
   });
   const queryClient = useQueryClient();
@@ -80,23 +88,36 @@ const PostCreate = () => {
   const [initialIndex, setInitialIndex] = useState<number>(0);
   const [imageSheetIsOpen, setImageSheetIsOpen] = useState(false);
   const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
-  const recordingSheetRef = useRef<BottomSheetModal>();
-  const locationSheetRef = useRef<BottomSheetModal>();
-  const tagSheetRef = useRef<BottomSheetModal>();
+  const recordingSheetRef = useRef<BottomSheet>();
+  const locationSheetRef = useRef<BottomSheet>();
+  const tagSheetRef = useRef<BottomSheet>();
 
   const onSubmit = async (formData: PostFormData) => {
-    const files = [
-      ...images?.map((item: any) => item.uri),
-      ...recordings?.map((item: any) => item._uri),
-    ];
+    let coverId = null;
+    let fileIds: string[] = [];
 
-    const fileIds: string[] = files.length > 0 ? await upload(files) : await Promise.resolve([]);
+    if (images.length > 0) {
+      const ids = await upload(_.map(images, (item: any) => item.uri));
+      let coverIndex = _.findIndex(images, (item: any) => item.cover);
+      if (coverIndex < 0) coverIndex = 0;
+      fileIds = _.concat(fileIds, ids);
+      coverId = ids[coverIndex];
+    }
+
+    if (recordings.length > 0) {
+      const ids = await upload(_.map(recordings, (item: any) => item._uri));
+      fileIds = _.concat(fileIds, ids);
+    }
 
     const postData: PostData = {
       title: formData.title,
       content: formData.content,
       author: 2,
     };
+
+    if (coverId !== null) {
+      postData.cover = coverId;
+    }
 
     if (fileIds.length > 0) {
       postData.blocks = [
@@ -111,44 +132,46 @@ const PostCreate = () => {
       postData.tags = _.map(tags, 'id');
     }
 
-    mutate(postData, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['posts'] });
-        toast.success('保存成功');
-        router.dismiss();
-      },
-      onError(error, variables, context) {
-        toast.error(error.message);
-        console.error(error);
-      },
-    });
+    mutate(postData);
   };
 
-  const handleAddImage = async (images: any) => {
+  const onAddImage = async (images: any) => {
     setImages((pre: any) => _.unionBy(pre, images, 'assetId'));
   };
 
-  const handleRemoveImage = async (assetId: string) => {
+  const onRemoveImage = async (assetId: string) => {
     setImages((pre: any) => _.filter(pre, (item) => item.assetId !== assetId));
   };
 
-  const handleAddRecording = (recording: any) => {
+  const onSetCover = async (assetId: string) => {
+    setImages((pre: any) =>
+      _.map(pre, (item) => {
+        if (item.assetId === assetId) {
+          return { ...item, cover: true };
+        } else {
+          return { ...item, cover: false };
+        }
+      }),
+    );
+  };
+
+  const onAddRecording = (recording: any) => {
     setRecordings((pre: any) => [...pre, recording]);
   };
 
-  const handleRemoveRecording = async (uri: string) => {
+  const onRemoveRecording = async (uri: string) => {
     setRecordings((pre: any) => _.filter(pre, (item) => item._uri !== uri));
   };
 
-  const handleAddTags = ({ selectedTags }: any) => {
+  const onAddTags = ({ selectedTags }: any) => {
     setTags(selectedTags);
   };
 
-  const handleRemoveTag = (tag: any) => {
+  const onRemoveTag = (tag: any) => {
     setTags((prev: any) => _.reject(prev, ['id', tag.id]));
   };
 
-  const handleOpenGallery = async (index: number) => {
+  const onOpenGallery = async (index: number) => {
     setInitialIndex(index);
     setGalleryPreviewIsOpen(true);
   };
@@ -176,61 +199,68 @@ const PostCreate = () => {
     </HStack>
   );
 
-  const renderTitle = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.title} size="md">
-      <Input variant="underlined" className="border-0 border-b p-2">
-        <InputField
-          placeholder="请输入标题"
-          inputMode="text"
-          autoCapitalize="none"
-          onBlur={onBlur}
-          onChangeText={onChange}
-          value={value}
-        />
-      </Input>
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>{errors?.title?.message}</FormControlErrorText>
-      </FormControlError>
-    </FormControl>
+  const renderTitle = useCallback(
+    ({ field: { onChange, onBlur, value } }: any) => (
+      <FormControl isInvalid={!!errors.title} size="md">
+        <Input variant="underlined" className="border-0 border-b p-2">
+          <InputField
+            placeholder="请输入标题"
+            inputMode="text"
+            autoCapitalize="none"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+          />
+        </Input>
+        <FormControlError>
+          <FormControlErrorIcon as={AlertCircleIcon} />
+          <FormControlErrorText>{errors?.title?.message}</FormControlErrorText>
+        </FormControlError>
+      </FormControl>
+    ),
+    [errors.title],
   );
 
-  const renderContent = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl size="md" className="h-32" isInvalid={!!errors.content}>
-      <Textarea className="flex-1 border-0">
-        <TextareaInput
-          placeholder="你此时的感想..."
-          inputMode="text"
-          autoCapitalize="none"
-          onBlur={onBlur}
-          onChangeText={(props) => {
-            setCharCount(props?.length);
-            onChange(props);
-          }}
-          value={value}
-        />
-      </Textarea>
-      <FormControlHelper className="justify-end">
-        <FormControlHelperText>{`${charCount}/${maxCharCount}`}</FormControlHelperText>
-      </FormControlHelper>
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>{errors?.content?.message}</FormControlErrorText>
-      </FormControlError>
-    </FormControl>
+  const renderContent = useCallback(
+    ({ field: { onChange, onBlur, value } }: any) => (
+      <FormControl size="md" isInvalid={!!errors.content}>
+        <Box className="">
+          <Textarea className="border-0 h-32" size="md" variant="default">
+            <TextareaInput
+              placeholder="你此时的感想..."
+              inputMode="text"
+              autoCapitalize="none"
+              onBlur={onBlur}
+              onChangeText={(props) => {
+                setCharCount(props?.length);
+                onChange(props);
+              }}
+              value={value}
+            />
+          </Textarea>
+        </Box>
+
+        <FormControlHelper className="justify-end">
+          <FormControlHelperText>{`${charCount}/${maxCharCount}`}</FormControlHelperText>
+        </FormControlHelper>
+        <FormControlError>
+          <FormControlErrorIcon as={AlertCircleIcon} />
+          <FormControlErrorText>{errors?.content?.message}</FormControlErrorText>
+        </FormControlError>
+      </FormControl>
+    ),
+    [charCount, errors.content],
   );
+
   return (
-    <>
+    <SafeAreaView className="flex-1">
       <ImagePickerSheet
         isOpen={imageSheetIsOpen}
         onClose={() => {
           setImageSheetIsOpen(false);
         }}
-        onChange={handleAddImage}
+        onChange={onAddImage}
       />
-      <RecordingSheet ref={recordingSheetRef} onChange={handleAddRecording} />
-      <TagSheet ref={tagSheetRef} value={tags} onChange={handleAddTags} />
-      <LocationSheet ref={locationSheetRef} setLocation={setLocation} />
       <GalleryPreview
         images={images}
         initialIndex={initialIndex}
@@ -258,69 +288,21 @@ const PostCreate = () => {
           <Controller control={control} name="title" render={renderTitle} />
           <Controller control={control} name="content" render={renderContent} />
           <Divider className="my-2 bg-background-200" />
-
-          {tags.length > 0 && (
-            <HStack space="sm" className="flex-wrap">
-              {tags.map((item: any) => (
-                <TagBtn key={item.id} tag={item} removeTag={handleRemoveTag} />
-              ))}
-            </HStack>
-          )}
-
+          {tags.length > 0 && <PostTags tags={tags} onRemoveTag={onRemoveTag} />}
           {recordings.length > 0 && (
-            <HStack space="sm" className="my-2 flex-wrap">
-              {recordings.map((recording: any) => {
-                return (
-                  <RecordingBtn
-                    key={recording.getURI()}
-                    uri={recording.getURI()}
-                    onRemove={handleRemoveRecording}
-                  />
-                );
-              })}
-            </HStack>
+            <PostRecordings recordings={recordings} onRemoveRecording={onRemoveRecording} />
           )}
-
           {images.length > 0 && (
-            <Grid
-              className="gap-0"
-              _extra={{
-                className: 'grid-cols-4',
-              }}>
-              {images.map((image: any, index: number) => (
-                <GridItem
-                  key={image.assetId}
-                  className="p-2"
-                  _extra={{
-                    className: 'col-span-1',
-                  }}>
-                  <TouchableOpacity
-                    onPress={() => handleOpenGallery(index)}
-                    key={image.assetId}
-                    className="shadow-sm">
-                    <Image
-                      alt={image.fileName}
-                      style={{
-                        aspectRatio: 1,
-                        borderRadius: 12,
-                      }}
-                      source={{
-                        uri: image.uri,
-                      }}
-                    />
-                    <TouchableOpacity
-                      className="absolute right-0 top-0 m-1"
-                      onPress={() => handleRemoveImage(image.assetId)}>
-                      <Icon as={CircleX} size="sm" className="text-white" />
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-                </GridItem>
-              ))}
-            </Grid>
+            <PostImageGrid
+              images={images}
+              onOpenGallery={onOpenGallery}
+              onRemoveImage={onRemoveImage}
+              onSetCover={onSetCover}
+            />
           )}
         </KeyboardAwareScrollView>
-        <KeyboardStickyView offset={{ closed: -insets.bottom, opened: 0 }}>
-          <HStack space="md" className="w-full bg-background-200 px-4">
+        <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
+          <HStack space="md" className="w-full bg-grey-50 px-4">
             <ButtonGroup space="sm">
               <Button variant="link" onPress={() => setImageSheetIsOpen(true)}>
                 <ButtonIcon as={ImageIcon} />
@@ -332,7 +314,7 @@ const PostCreate = () => {
                 variant="link"
                 onPress={() => {
                   Keyboard.dismiss();
-                  recordingSheetRef.current?.present();
+                  recordingSheetRef.current?.snapToIndex(0);
                 }}>
                 <ButtonIcon as={Mic} />
                 <ButtonText>录音</ButtonText>
@@ -343,7 +325,7 @@ const PostCreate = () => {
                 variant="link"
                 onPress={() => {
                   Keyboard.dismiss();
-                  locationSheetRef.current?.present();
+                  locationSheetRef.current?.snapToIndex(0);
                 }}>
                 <ButtonIcon as={MapPinIcon} />
                 <ButtonText>位置</ButtonText>
@@ -354,7 +336,7 @@ const PostCreate = () => {
                 variant="link"
                 onPress={() => {
                   Keyboard.dismiss();
-                  tagSheetRef.current?.present();
+                  tagSheetRef.current?.snapToIndex(0);
                 }}>
                 <ButtonIcon as={TagIcon} />
                 <ButtonText>标签</ButtonText>
@@ -362,8 +344,11 @@ const PostCreate = () => {
             </ButtonGroup>
           </HStack>
         </KeyboardStickyView>
+        <PostRecordingSheet ref={recordingSheetRef} onChange={onAddRecording} />
+        <PostTagSheet ref={tagSheetRef} value={tags} onChange={onAddTags} />
+        <LocationSheet ref={locationSheetRef} setLocation={setLocation} />
       </>
-    </>
+    </SafeAreaView>
   );
 };
 

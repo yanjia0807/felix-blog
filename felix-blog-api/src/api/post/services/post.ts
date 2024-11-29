@@ -2,10 +2,10 @@
  * post service
  */
 
-import { factories } from '@strapi/strapi';
+import { factories } from "@strapi/strapi";
 
 export default factories.createCoreService("api::post.post", {
-  async findAdditional(userDocumentId: number, query: any) {
+  async findAdditional(userDocumentId: string, query: any) {
     const { populate, filters, pagination, ...rest } = query;
     const { limit = 10, start = 0 } = pagination;
 
@@ -107,5 +107,15 @@ export default factories.createCoreService("api::post.post", {
       data: modifiedPosts,
       meta: {},
     };
+  },
+
+  async count(userDocumentId: string) {
+    return await strapi.documents("api::post.post").count({
+      filters: {
+        author: {
+          documentId: userDocumentId,
+        },
+      },
+    });
   },
 });

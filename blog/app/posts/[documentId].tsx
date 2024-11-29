@@ -16,8 +16,8 @@ import BookMarkedButton from '@/components/book-marked-button';
 import CommentInfo from '@/components/comment-info';
 import LikePostButton from '@/components/like-post-button';
 import PostCommentsSheet from '@/components/post-comments-sheet';
-import RecordingBtn from '@/components/recording-btn';
-import TagBtn from '@/components/tag-btn';
+import PostRecordings from '@/components/post-recordings';
+import PostTags from '@/components/post-tags';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
@@ -67,14 +67,9 @@ const PostDetailCover = ({ cover, post }: any) => {
   }
 };
 
-const DateBar = ({ updatedAt, publishedAt }: any) => {
-  let content = '';
+const DateInfo = ({ createdAt }: any) => {
   const format = 'YYYY-MM-DD hh:mm:ss';
-  if (publishedAt) {
-    content = `发布于：${moment(publishedAt).format(format)}`;
-  } else {
-    content = `更新于：${moment(updatedAt).format(format)}`;
-  }
+  const content = `发布于：${moment(createdAt).format(format)}`;
   return (
     <Text size="sm" bold={true}>
       {content}
@@ -82,37 +77,13 @@ const DateBar = ({ updatedAt, publishedAt }: any) => {
   );
 };
 
-const TagBar = ({ tags }: any) => {
-  if (tags.length > 0) {
-    return (
-      <HStack space="sm" className="flex-wrap">
-        {tags.map((item: any) => (
-          <TagBtn key={item.id} tag={item} />
-        ))}
-      </HStack>
-    );
-  }
-};
-
-const RecordingBar = ({ recordings }: any) => {
-  if (recordings?.length > 0) {
-    return (
-      <HStack space="sm" className="my-2 flex-wrap">
-        {recordings.map((recording: any) => {
-          return <RecordingBtn key={recording.id} uri={`${baseURL}/${recording.url}`} />;
-        })}
-      </HStack>
-    );
-  }
-};
-
-const ImageList = ({ images, handleOpenGallery }: any) => {
+const ImageList = ({ images, onOpenGallery }: any) => {
   const renderImageItem = ({ item, index }: any) => {
     return (
-      <Pressable className="mx-2 h-48 w-48" onPress={() => handleOpenGallery(index)}>
+      <Pressable className="mx-2 h-48 w-48" onPress={() => onOpenGallery(index)}>
         <Image
           source={{
-            uri: `${baseURL}/${item.formats.small.url}`,
+            uri: item.uri,
           }}
           alt={item.alternativeText}
           style={{
@@ -171,15 +142,21 @@ const PostDetail = () => {
     .map((item: any) => ({
       id: item.id,
       documentId: item.documentId,
-      formats: item.formats,
+      uri: `${baseURL}${item.formats.small.url}`,
     }));
-  const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
+
+  const recordings = files
+    ?.filter((item: any) => item.mime.startsWith('audio/'))
+    .map((item: any) => ({
+      ...item,
+      uri: item.url,
+    }));
 
   if (isError) {
     toast.error(error.message);
   }
 
-  const handleOpenGallery = async (index: number) => {
+  const onOpenGallery = async (index: number) => {
     setInitialIndex(index);
     setGalleryPreviewIsOpen(true);
   };
@@ -206,11 +183,11 @@ const PostDetail = () => {
       />
       {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       {isSuccess && (
-        <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
-          <VStack space="md" className="flex-1">
+        <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
+          <VStack className="flex-1" space="md">
             <Heading>{post.title}</Heading>
             <PostDetailCover cover={post?.cover} post={post} />
-            <DateBar publishedAt={post?.publishedAt} updatedAt={post?.updatedAt} />
+            <DateInfo createdAt={post?.createdAt} />
             <HStack className="items-center justify-between">
               <AuthorInfo author={post?.author} />
               <HStack space="lg" className="flex-row items-center">
@@ -218,12 +195,10 @@ const PostDetail = () => {
                 <CommentInfo />
               </HStack>
             </HStack>
-            <TagBar tags={post?.tags} />
-            <RecordingBar recordings={recordings} />
-            <ImageList images={images} handleOpenGallery={handleOpenGallery} />
-            <Text size="md" className="mb-8">
-              {post?.content}
-            </Text>
+            <PostTags tags={post?.tags} />
+            <PostRecordings recordings={recordings} />
+            <ImageList images={images} onOpenGallery={onOpenGallery} />
+            <Text size="md">{post?.content}</Text>
             <HStack>
               <Button variant="link" onPress={() => commentsSheetRef.current?.expand()}>
                 <ButtonText>{`查看评论(${total})`}</ButtonText>
@@ -232,7 +207,6 @@ const PostDetail = () => {
           </VStack>
         </ScrollView>
       )}
-
       <PostCommentsSheet postDocumentId={post?.documentId} ref={commentsSheetRef} />
       <GalleryPreview
         images={images || []}

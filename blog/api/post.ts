@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import qs from 'qs';
 import { apiClient } from './config';
 
@@ -7,38 +8,100 @@ export type UpdatePostFavoritedData = any;
 
 export const fetchPosts = async ({ pageParam }: any) => {
   const { pagination } = pageParam;
-  const query = qs.stringify(
-    {
-      populate: {
-        tags: true,
-        author: {
-          populate: {
-            profile: {
-              populate: ['avatar'],
-            },
+  const query = qs.stringify({
+    populate: {
+      tags: true,
+      author: {
+        populate: {
+          profile: {
+            populate: ['avatar'],
           },
         },
-        cover: {
-          fields: ['formats', 'name', 'alternativeText'],
-        },
-        blocks: {
-          on: {
-            'shared.attachment': {
-              populate: {
-                files: true,
-              },
+      },
+      cover: {
+        fields: ['formats', 'name', 'alternativeText'],
+      },
+      blocks: {
+        on: {
+          'shared.attachment': {
+            populate: {
+              files: true,
             },
           },
         },
       },
-      order: 'id:desc',
-      pagination,
     },
-    {
-      encodeValuesOnly: true,
-    },
-  );
+    sort: 'createdAt:desc',
+    pagination,
+  });
   const res = await apiClient.get(`/posts/additional?${query}`);
+  return res;
+};
+
+export const fetchMyPosts = async ({ pageParam }: any) => {
+  const { pagination, userDocumentId } = pageParam;
+  const query = qs.stringify({
+    populate: {
+      tags: true,
+      author: {
+        populate: {
+          profile: {
+            populate: ['avatar'],
+          },
+        },
+      },
+      likedByUsers: {
+        count: true,
+      },
+      favoritedByUsers: {
+        count: true,
+      },
+      comments: {
+        count: true,
+      },
+      cover: {
+        fields: ['formats', 'name', 'alternativeText'],
+      },
+    },
+    // filters: {
+    //   author: userDocumentId,
+    // },
+    sort: 'createdAt:desc',
+    pagination,
+  });
+  const res = await apiClient.get(`/posts?${query}`);
+  return res;
+};
+
+export const fetchMyPhotos = async ({ pageParam }: any) => {
+  const { pagination, userDocumentId } = pageParam;
+  const query = qs.stringify({
+    populate: {
+      blocks: {
+        on: {
+          'shared.attachment': {
+            populate: {
+              files: true,
+            },
+          },
+        },
+      },
+      cover: {
+        fields: ['formats', 'name', 'alternativeText'],
+      },
+    },
+    // filters: {
+    //   author: userDocumentId,
+    // },
+    sort: 'createdAt:desc',
+    pagination,
+  });
+  const res = await apiClient.get(`/posts?${query}`);
+  return res;
+};
+
+export const fetchCount = async () => {
+  const res = await apiClient.get(`/posts/count`);
   return res;
 };
 

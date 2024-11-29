@@ -1,5 +1,5 @@
-import { baseURL } from './config';
 import * as FileSystem from 'expo-file-system';
+import { baseURL } from './config';
 
 export const upload = async (files: any) => {
   const uploadTasks: Promise<any>[] = [];

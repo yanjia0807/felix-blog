@@ -12,10 +12,10 @@ import CommentInfo from '@/components/comment-info';
 import LikePostButton from '@/components/like-post-button';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
-import { ProfileAvatar } from '@/components/profile-avatar';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
+import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
@@ -40,24 +40,24 @@ const PostHome = () => {
     queryFn: fetchPosts,
     initialPageParam: {
       pagination: {
-        start: 0,
-        limit: 10,
+        page: 1,
+        pageSize: 5,
       },
     },
     getNextPageParam: (lastPage: any) => {
       const {
         meta: {
-          pagination: { limit, start, total },
+          pagination: { page, pageSize, pageCount },
         },
       } = lastPage;
 
-      if (start + limit >= total) {
-        return null;
+      if (page < pageCount) {
+        return {
+          pagination: { page: page + 1, pageSize },
+        };
       }
 
-      return {
-        pagination: { limit, start: start + limit },
-      };
+      return null;
     },
   });
 
@@ -91,6 +91,7 @@ const PostHome = () => {
                 <Text size="xs">重庆市，渝北区</Text>
               </HStack>
             </HStack>
+            <Heading numberOfLines={2}>{item.title}</Heading>
             <Text numberOfLines={3}>{item.content}</Text>
             <PostThumbnail item={item} />
             <HStack className="items-center justify-between">

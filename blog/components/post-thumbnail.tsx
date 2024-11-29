@@ -1,9 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import React from 'react';
-
 import { baseURL } from '@/api';
-
 import { Box } from './ui/box';
 import { Center } from './ui/center';
 import { HStack } from './ui/hstack';
@@ -12,9 +10,10 @@ import { VStack } from './ui/vstack';
 
 const PostThumbnail = ({ item }: any) => {
   const files = item?.blocks
-    ? item?.blocks
+    ? item.blocks
         .find((item: any) => item['__component'] === 'shared.attachment')
-        ?.files?.map((item: any) => ({
+        ?.files?.filter((item: any) => item.mime.startsWith('image/'))
+        .map((item: any) => ({
           id: item.id,
           name: item.name,
           alternativeText: item.alternativeText,
@@ -43,7 +42,7 @@ const PostThumbnail = ({ item }: any) => {
             <VStack className="w-1/3" space="sm">
               {files.map((item: any, index: number) => {
                 if (index > 0 && index < 4) {
-                  if (files.length > 4 && index == 3) {
+                  if (files.length > 4 && index === 3) {
                     return (
                       <Box key={item.id} className="flex-1">
                         <Center className="absolute bottom-0 left-0 right-0 top-0 z-10">

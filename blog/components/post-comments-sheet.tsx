@@ -2,6 +2,7 @@ import BottomSheet, {
   BottomSheetFooter,
   BottomSheetSectionList,
   BottomSheetTextInput,
+  BottomSheetView,
   TouchableOpacity,
 } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +27,7 @@ import { Avatar, AvatarImage } from './ui/avatar';
 import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
+import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
@@ -45,7 +47,6 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
   const [replyComment, setReplyComment] = useState<any>();
   const [selectCommentDocumentId, setSelectCommentDocumentId] = useState<any>();
   const [expandCommentIds, setExpandCommentIds] = useState<any>([]);
-  const [snapPoints, setSnapPoints] = useState(['50%', '100%']);
   const inputRef = useRef<any>(null);
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -202,6 +203,9 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
     },
     onSuccess: (data: any, variables: any, context: unknown) => {
       toast.success({ title: '操作成功', description: '评论已发布' });
+      queryClient.invalidateQueries({
+        queryKey: [postDocumentId, 'comments', 'total'],
+      });
       if (variables.topComment) {
         setExpandCommentIds((prev: any) => {
           const current = _.find(prev, (documentId: string) => documentId === variables.topComment);
@@ -247,6 +251,9 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
     },
     onSuccess: (data: any, variables: any, context: unknown) => {
       toast.success({ title: '操作成功', description: '评论已删除' });
+      queryClient.invalidateQueries({
+        queryKey: [postDocumentId, 'comments', 'total'],
+      });
       if (variables.topDocumentId) {
         queryClient.invalidateQueries({
           queryKey: [postDocumentId, variables.topDocumentId, 'comments'],
@@ -481,6 +488,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
     );
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const onSubmit = (data: CommentSchemaDetails) => {
     const comment = {
       content: data.content,
@@ -497,7 +505,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
     (props: any) => {
       return (
         <BottomSheetFooter {...props}>
-          <Box className="flex-1 bg-gray-100">
+          <Box className="flex-1">
             <Controller
               name="content"
               control={control}
@@ -511,7 +519,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
                   onChangeText={onChange}
                   onBlur={onBlur}
                   onSubmitEditing={handleSubmit(onSubmit)}
-                  className="m-2 h-10 flex-1 rounded-2xl border border-gray-200 bg-gray-300 p-2"
+                  className="m-2 h-10 flex-1 rounded-2xl border border-gray-200 bg-gray-100 p-2"
                 />
               )}
             />
@@ -521,10 +529,6 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
     },
     [control, handleSubmit, onSubmit, replyComment],
   );
-
-  const renderHeaderComponent = (props: any) => {
-    return <Heading size="sm">{`${total}条评论`}</Heading>;
-  };
 
   const renderEmptyComponent = (props: any) => {
     return (
@@ -536,7 +540,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
 
   return (
     <BottomSheet
-      snapPoints={snapPoints}
+      snapPoints={['50%', '80%']}
       index={-1}
       enableDynamicSizing={false}
       backdropComponent={BottomSheetBackdrop}
@@ -547,26 +551,33 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
       bottomInset={insets.bottom}
       keyboardBehavior="interactive"
       ref={ref}>
-      <VStack className="bg-white p-6" space="2xl">
-        {isFetchCommentsSuccess && (
-          <BottomSheetSectionList
-            sections={sectionListData}
-            keyExtractor={(item: any) => item.id.toString()}
-            renderItem={renderCommentItem}
-            renderSectionHeader={renderSectionHeader}
-            renderSectionFooter={renderSectionFooter}
-            ListHeaderComponent={renderHeaderComponent}
-            ListEmptyComponent={renderEmptyComponent}
-            showsVerticalScrollIndicator={false}
-            stickySectionHeadersEnabled={false}
-            onEndReached={() => {
-              if (hasNextCommentsPage && !isFetchingNextCommentsPage) {
-                fetchNextCommentsPage();
-              }
-            }}
-          />
-        )}
-      </VStack>
+      <BottomSheetView className="flex-1 p-4">
+        <Box className="items-center mb-4">
+          <Heading size="lg" className="p-4">
+            {`${total}条评论`}
+          </Heading>
+          <Divider />
+        </Box>
+        <VStack className="bg-white p-2" space="2xl">
+          {isFetchCommentsSuccess && (
+            <BottomSheetSectionList
+              sections={sectionListData}
+              keyExtractor={(item: any) => item.id.toString()}
+              renderItem={renderCommentItem}
+              renderSectionHeader={renderSectionHeader}
+              renderSectionFooter={renderSectionFooter}
+              ListEmptyComponent={renderEmptyComponent}
+              showsVerticalScrollIndicator={false}
+              stickySectionHeadersEnabled={false}
+              onEndReached={() => {
+                if (hasNextCommentsPage && !isFetchingNextCommentsPage) {
+                  fetchNextCommentsPage();
+                }
+              }}
+            />
+          )}
+        </VStack>
+      </BottomSheetView>
     </BottomSheet>
   );
 });

@@ -1,7 +1,6 @@
-import {
+import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFooter,
-  BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Audio } from 'expo-av';
@@ -50,14 +49,13 @@ const AnimatedRing = ({ metering }: any) => {
   );
 };
 
-const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref: any) {
+const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref: any) {
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
   const insets = useSafeAreaInsets();
   const metering = useSharedValue<number>(0);
   const [durationMillis, setDurationMillis] = useState<number>(0);
-  const snapPoints = ['50%'];
 
   const stopRecording = useCallback(async () => {
     try {
@@ -207,12 +205,11 @@ const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref
 
   const renderFooter = useCallback(
     (props: any) => {
-      console.log('renderFooter');
       return (
         <BottomSheetFooter {...props}>
-          <HStack className="flex-1 items-center justify-around">
+          <HStack className="flex-1 bg-gray-50 p-2 items-center justify-around">
             <TouchableOpacity
-              className="h-24 w-24 items-center justify-center rounded-full bg-red-400"
+              className="h-24 w-24 items-center justify-center rounded-full bg-red-500"
               onPress={doRecording}>
               {recordingStatus?.isRecording ? (
                 <>
@@ -224,20 +221,22 @@ const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref
               )}
             </TouchableOpacity>
             <Button
+              variant="link"
               isDisabled={!recordingStatus || !recordingStatus.isRecording}
               onPress={pauseRecording}>
               <ButtonText>暂停</ButtonText>
             </Button>
             <Button
+              variant="link"
               isDisabled={!recordingStatus || recordingStatus.isRecording}
               onPress={resetRecording}>
               <ButtonText>重置</ButtonText>
             </Button>
             <Button
+              variant="link"
               isDisabled={!recordingStatus || recordingStatus?.isRecording}
               onPress={commitRecording}
-              action="primary"
-              variant="solid">
+              action="primary">
               <ButtonText>确定</ButtonText>
             </Button>
           </HStack>
@@ -248,25 +247,24 @@ const RecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref
   );
 
   return (
-    <BottomSheetModal
+    <BottomSheet
       ref={ref}
-      snapPoints={snapPoints}
+      index={-1}
+      snapPoints={['50%']}
       enableDynamicSizing={false}
+      enablePanDownToClose={true}
       topInset={insets.top}
       bottomInset={insets.bottom}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}
-      onDismiss={resetRecording}>
-      <BottomSheetView className="justify-center p-4">
-        <Heading size="xl" className="mb-4">
-          录音
-        </Heading>
-        <Heading size="4xl" className="self-center">
+      onClose={resetRecording}>
+      <BottomSheetView className="m-4 items-center">
+        <Heading size="4xl" className="mt-12">
           {moment.utc(durationMillis).format('mm:ss')}
         </Heading>
       </BottomSheetView>
-    </BottomSheetModal>
+    </BottomSheet>
   );
 });
 
-export default RecordingSheet;
+export default PostRecordingSheet;
