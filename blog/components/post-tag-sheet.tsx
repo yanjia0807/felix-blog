@@ -5,11 +5,12 @@ import BottomSheet, {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { BottomSheetFlashList } from '@gorhom/bottom-sheet';
+import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFetchTags } from '@/api/tag';
+import { fetchTags, useFetchTags } from '@/api/tag';
 import PostTags from './post-tags';
 import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
@@ -28,7 +29,17 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
     getValues,
   } = useForm({});
 
-  const { data: tags, error, isError, isLoading, refetch } = useFetchTags(getValues());
+  const {
+    data: tags,
+    error,
+    isError,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['tags', { name: getValues() }],
+    queryFn: () => fetchTags(getValues()),
+  });
+
   const insets = useSafeAreaInsets();
   const onSubmit = useCallback((data: any) => refetch(data), [refetch]);
   const debouncedSubmit = React.useMemo(
@@ -36,7 +47,7 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
     [handleSubmit, onSubmit],
   );
 
-  const addTag = (tag: any) => {
+  const onAddTag = (tag: any) => {
     setSelectedTags((prev: any) => [...prev, tag]);
   };
 
@@ -44,12 +55,12 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
     setSelectedTags((prev: any) => _.reject(prev, ['id', tag.id]));
   };
 
-  const cancel = useCallback(() => {
+  const onCancel = useCallback(() => {
     setSelectedTags([...value]);
     ref.current?.close();
   }, [ref, value]);
 
-  const commitTag = useCallback(() => {
+  const onCommitTag = useCallback(() => {
     onChange({ selectedTags });
     ref.current?.close();
   }, [onChange, ref, selectedTags]);
@@ -59,7 +70,7 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
       <Pressable
         disabled={_.some(selectedTags, ['id', item.id])}
         className="w-full justify-start border-secondary-50 py-2"
-        onPress={() => addTag(item)}>
+        onPress={() => onAddTag(item)}>
         <Text className="w-full">{item.name}</Text>
       </Pressable>
     );
@@ -81,17 +92,17 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
     (props: any) => (
       <BottomSheetFooter {...props}>
         <HStack className="bg-gray-50 p-2 flex-1 items-center justify-around">
-          <Button className="flex-1" variant="link" onPress={() => cancel()}>
+          <Button className="flex-1" variant="link" onPress={() => onCancel()}>
             <ButtonText>取消</ButtonText>
           </Button>
           <Divider orientation="vertical"></Divider>
-          <Button className="flex-1" variant="link" onPress={() => commitTag()} action="primary">
+          <Button className="flex-1" variant="link" onPress={() => onCommitTag()} action="primary">
             <ButtonText>确定</ButtonText>
           </Button>
         </HStack>
       </BottomSheetFooter>
     ),
-    [cancel, commitTag],
+    [onCancel, onCommitTag],
   );
 
   useEffect(() => {

@@ -1,18 +1,12 @@
-import { apiClient } from './config';
-import qs from 'qs';
 import { useQuery } from '@tanstack/react-query';
+import qs from 'qs';
+import { apiClient } from './config';
 
-export const fetchTags = async ({ queryKey }: any) => {
-  const [_key, { name }] = queryKey;
+export const fetchTags = async ({ name }: any) => {
   const query = name
-    ? qs.stringify(
-        {
-          filters: { name: { $contains: name } },
-        },
-        {
-          encodeValuesOnly: true,
-        },
-      )
+    ? qs.stringify({
+        filters: { name: { $contains: name } },
+      })
     : '';
   const res = await apiClient.get(`/tags?${query}`);
   return res.data;

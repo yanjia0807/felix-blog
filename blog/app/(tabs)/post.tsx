@@ -1,24 +1,26 @@
 import { FlashList } from '@shopify/flash-list';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { MapPin, Search } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import colors from 'tailwindcss/colors';
-import { fetchPosts } from '@/api';
+import { fetchPosts, fetchTags } from '@/api';
 import AuthorInfo from '@/components/author-info';
 import CommentInfo from '@/components/comment-info';
 import LikePostButton from '@/components/like-post-button';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -67,9 +69,22 @@ const PostHome = () => {
     [],
   );
 
-  const renderPostItem = ({ item }: any) => {
+  const { isLoading: isLoadingTags, data: tags } = useQuery({
+    queryKey: ['tags'],
+    queryFn: fetchTags,
+  });
+
+  const renderTagsItem = ({ item }: any) => {
     return (
-      <Card className="mb-6 rounded-lg p-5">
+      <Pressable className="p-2 mx-2 bg-white rounded-lg">
+        <Text>{item.name}</Text>
+      </Pressable>
+    );
+  };
+
+  const renderPostItem = ({ item, index }: any) => {
+    return (
+      <Card className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`}>
         <TouchableOpacity
           onPress={() => {
             router.push({
@@ -149,7 +164,7 @@ const PostHome = () => {
       />
       <SafeAreaView className="flex-1">
         <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
-          <VStack className="flex-1" space="2xl">
+          <VStack className="flex-1" space="3xl">
             <HStack>
               <Input className="flex-1" variant="rounded">
                 <InputField />
@@ -158,6 +173,13 @@ const PostHome = () => {
                 </InputSlot>
               </Input>
             </HStack>
+            <FlashList
+              data={tags}
+              estimatedItemSize={42}
+              renderItem={renderTagsItem}
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+            />
             <FlashList
               data={posts}
               renderItem={renderPostItem}

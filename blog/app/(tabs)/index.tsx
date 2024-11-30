@@ -22,24 +22,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-const tags = [
-  { id: 1, name: '生活' },
-  { id: 2, name: '旅行' },
-  { id: 3, name: '美食' },
-  { id: 4, name: '科技' },
-  { id: 5, name: '健康' },
-  { id: 6, name: '运动' },
-  { id: 7, name: '摄影' },
-  { id: 8, name: '阅读' },
-  { id: 9, name: '学习' },
-  { id: 10, name: '创业' },
-  { id: 11, name: '情感' },
-  { id: 12, name: '艺术' },
-  { id: 13, name: '音乐' },
-  { id: 14, name: '电影' },
-  { id: 15, name: '自我成长' },
-];
-
 const posts = [
   {
     id: 101,
@@ -333,18 +315,6 @@ const recomments = [
 ];
 
 const Home = () => {
-  const { user, logout } = useAuth();
-  const toast = useCustomToast();
-  const dimension = useWindowDimensions();
-
-  const renderTagItem = ({ item }: any) => {
-    return (
-      <Box className="mx-2 p-2">
-        <Text>{item.name}</Text>
-      </Box>
-    );
-  };
-
   const renderPostItem = ({ item }: any) => {
     return (
       <ImageBackground
@@ -390,9 +360,11 @@ const Home = () => {
     );
   };
 
-  const renderRecommendItem = ({ item }: any) => {
+  const renderRecommendItem = ({ item, index }: any) => {
     return (
-      <TouchableOpacity onPress={() => {}} className="my-6 rounded-lg bg-background-0 p-4">
+      <TouchableOpacity
+        onPress={() => {}}
+        className={`my-6 rounded-lg bg-background-0 p-4 ${index === 0 ? 'mt-0' : ''}`}>
         <VStack space="lg">
           <HStack className="items-center justify-between" space="md">
             <Box className="w-8">
@@ -489,7 +461,7 @@ const Home = () => {
             </HStack>
             <ProfileAvatar className="mx-4" />
           </HStack>
-          <VStack className="flex-1" space="xl">
+          <VStack className="flex-1" space="3xl">
             <FlashList
               data={posts}
               estimatedItemSize={168}
@@ -497,8 +469,10 @@ const Home = () => {
               horizontal={true}
               showsHorizontalScrollIndicator={false}
             />
-            <VStack space="md">
-              <Heading size="sm">最近更新</Heading>
+            <VStack>
+              <Text size="lg" bold={true} className="my-4">
+                最近更新
+              </Text>
               <FlashList
                 data={users}
                 estimatedItemSize={42}
@@ -507,8 +481,10 @@ const Home = () => {
                 showsHorizontalScrollIndicator={false}
               />
             </VStack>
-            <VStack space="md" className="flex-1">
-              <Heading size="sm">推荐</Heading>
+            <VStack className="flex-1">
+              <Text size="lg" bold={true} className="my-4">
+                推荐
+              </Text>
               <FlashList
                 data={recomments}
                 renderItem={renderRecommendItem}
