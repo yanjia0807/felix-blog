@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import qs from 'qs';
-import { apiClient } from './config';
+import { apiClient } from './api-client';
 
 export type PostData = any;
 export type UpdatePostLikedData = any;

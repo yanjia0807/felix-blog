@@ -8,7 +8,7 @@ import moment from 'moment';
 import React, { useRef, useState } from 'react';
 import { SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
-import { baseURL } from '@/api';
+import { apiServerURL } from '@/api';
 import { fetchPostCommentTotal } from '@/api/comment';
 import { fetchPost } from '@/api/post';
 import AuthorInfo from '@/components/author-info';
@@ -35,7 +35,7 @@ const PostDetailCover = ({ cover, post }: any) => {
       <Box className="h-48 w-full">
         <Image
           source={{
-            uri: `${baseURL}/${cover.formats.small.url}`,
+            uri: `${apiServerURL}/${cover.formats.small.url}`,
           }}
           alt={cover.alternativeText}
           style={{
@@ -142,7 +142,7 @@ const PostDetail = () => {
     .map((item: any) => ({
       id: item.id,
       documentId: item.documentId,
-      uri: `${baseURL}${item.formats.small.url}`,
+      uri: `${apiServerURL}${item.formats.small.url}`,
     }));
 
   const recordings = files

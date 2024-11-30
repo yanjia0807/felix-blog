@@ -1,5 +1,5 @@
 import React from 'react';
-import { baseURL } from '@/api';
+import { apiServerURL } from '@/api';
 import { Avatar, AvatarImage } from './ui/avatar';
 import { HStack } from './ui/hstack';
 import { Text } from './ui/text';
@@ -11,7 +11,7 @@ const AuthorInfo = ({ author }: any) => {
       <Avatar size="sm">
         <AvatarImage
           source={{
-            uri: `${baseURL}/${author?.profile?.avatar.formats.thumbnail.url}`,
+            uri: `${apiServerURL}/${author?.profile?.avatar.formats.thumbnail.url}`,
           }}
         />
       </Avatar>

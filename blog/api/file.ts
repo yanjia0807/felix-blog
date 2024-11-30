@@ -1,11 +1,11 @@
 import * as FileSystem from 'expo-file-system';
-import { baseURL } from './config';
+import { apiServerURL } from './api-client';
 
 export const upload = async (files: any) => {
   const uploadTasks: Promise<any>[] = [];
 
   files.forEach((file: any) => {
-    const uploadTask = FileSystem.uploadAsync(`${baseURL}/api/upload`, file, {
+    const uploadTask = FileSystem.uploadAsync(`${apiServerURL}/api/upload`, file, {
       httpMethod: 'POST',
       uploadType: FileSystem.FileSystemUploadType.MULTIPART,
       fieldName: 'files',

@@ -1,6 +1,7 @@
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { init, Geolocation } from 'react-native-amap-geolocation';
+import { MapView, Marker } from 'react-native-amap3d';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from './ui/box';
 import { Divider } from './ui/divider';
@@ -48,9 +49,19 @@ const LocationSheet = forwardRef(function LocationSheet({ setLocation }: any, re
       enablePanDownToClose={true}
       ref={ref}>
       <BottomSheetView className="flex-1 m-4">
-        <VStack className="flex-1 p-4 items-center" space="2xl">
-          <HStack></HStack>
-        </VStack>
+        {currentLocation && (
+          <MapView
+            onLoad={() => console.log('onLoad')}
+            onPress={({ nativeEvent }) => console.log(nativeEvent)}
+            onCameraIdle={({ nativeEvent }) => console.log(nativeEvent)}>
+            <Marker
+              position={{
+                latitude: currentLocation.latitude,
+                longitude: currentLocation.longitude,
+              }}
+            />
+          </MapView>
+        )}
       </BottomSheetView>
     </BottomSheet>
   );

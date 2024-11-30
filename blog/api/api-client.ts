@@ -1,19 +1,21 @@
 import axios from 'axios';
 
-export const baseURL = process.env.EXPO_PUBLIC_API_BASE_URL;
+export const apiServerURL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 const config = {
-  baseURL: `${baseURL}/api`,
+  apiServerURL: `${apiServerURL}/api`,
   timeout: 300000,
   headers: {
     'Content-Type': 'application/json',
     'access-control-allow-origin': '*',
   },
 };
+
 const apiClient = axios.create(config);
 
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`[Request] ${config.method?.toUpperCase()} ${config.url}`, {
+    console.log(`[api request] ${config.method?.toUpperCase()} ${config.url}`, {
       headers: config.headers,
       params: config.params,
       data: config.data,
@@ -21,7 +23,7 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('[Request Error]', error);
+    console.error('[api request error]', error);
     return Promise.reject(error);
   },
 );
@@ -29,7 +31,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     console.log(
-      `[Response] ${response.config.method?.toUpperCase()} ${response.config.url} - Status: ${response.status}`,
+      `[api response] ${response.config.method?.toUpperCase()} ${response.config.url} - status: ${response.status}`,
       {
         data: response.data,
         headers: response.headers,
@@ -39,10 +41,10 @@ apiClient.interceptors.response.use(
   },
   (error: Error) => {
     if (axios.isAxiosError(error)) {
-      console.error(`[Response Error]`, error.response?.data);
+      console.error(`[api response error]`, error.response?.data);
       return Promise.reject(error.response?.data.error);
     } else {
-      console.error('[Response Error]', error.message);
+      console.error('[api response error]', error.message);
       return Promise.reject(error);
     }
   },

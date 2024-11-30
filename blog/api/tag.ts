@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import qs from 'qs';
-import { apiClient } from './config';
+import { apiClient } from './api-client';
 
 export const fetchTags = async ({ name }: any) => {
   const query = name

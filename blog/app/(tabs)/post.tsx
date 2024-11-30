@@ -150,15 +150,10 @@ const PostHome = () => {
     );
   }
 
-  if (status === 'error') {
-    toast.error('获取数据异常');
-  }
-
   return (
     <>
       <Stack.Screen
         options={{
-          title: '记录',
           headerShown: true,
         }}
       />

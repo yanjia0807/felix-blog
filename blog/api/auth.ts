@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { apiClient, baseURL } from './config';
+import { apiClient } from './api-client';
 
 export const loginUser = async (credentials: any) => {
   try {
