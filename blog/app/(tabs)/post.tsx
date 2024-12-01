@@ -10,6 +10,7 @@ import { fetchPosts, fetchTags } from '@/api';
 import AuthorInfo from '@/components/author-info';
 import CommentInfo from '@/components/comment-info';
 import LikePostButton from '@/components/like-post-button';
+import MainHeader from '@/components/main-header';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
@@ -20,7 +21,6 @@ import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -76,9 +76,9 @@ const PostHome = () => {
 
   const renderTagsItem = ({ item }: any) => {
     return (
-      <Pressable className="p-2 mx-2 bg-white rounded-lg">
+      <TouchableOpacity className="p-2 mx-2 bg-white rounded-lg">
         <Text>{item.name}</Text>
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 
@@ -155,31 +155,33 @@ const PostHome = () => {
   }
 
   return (
-    <>
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '记录',
-          headerShown: true,
+          headerShown: false,
         }}
       />
-      <SafeAreaView className="flex-1">
-        <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
-          <VStack className="flex-1" space="3xl">
-            <HStack>
-              <Input className="flex-1" variant="rounded">
-                <InputField />
-                <InputSlot>
-                  <InputIcon as={Search} className="mx-2"></InputIcon>
-                </InputSlot>
-              </Input>
-            </HStack>
+      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+        <VStack className="flex-1" space="3xl">
+          <MainHeader />
+          <HStack>
+            <Input className="flex-1" variant="rounded">
+              <InputField />
+              <InputSlot>
+                <InputIcon as={Search} className="mx-2"></InputIcon>
+              </InputSlot>
+            </Input>
+          </HStack>
+          <Box>
             <FlashList
               data={tags}
-              estimatedItemSize={42}
+              estimatedItemSize={100}
               renderItem={renderTagsItem}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
             />
+          </Box>
+          <Box>
             <FlashList
               data={posts}
               renderItem={renderPostItem}
@@ -193,7 +195,6 @@ const PostHome = () => {
               }}
               refreshControl={
                 <RefreshControl
-                  colors={['#9Bd35A', '#689F38']}
                   refreshing={isLoading}
                   onRefresh={() => {
                     if (!isLoading) {
@@ -203,19 +204,19 @@ const PostHome = () => {
                 />
               }
             />
-          </VStack>
-        </ScrollView>
-        <Fab
-          size="md"
-          placement="bottom right"
-          onPress={() => {
-            router.push('/posts/create');
-          }}>
-          <FabIcon as={AddIcon} />
-          <FabLabel>记录</FabLabel>
-        </Fab>
-      </SafeAreaView>
-    </>
+          </Box>
+        </VStack>
+      </ScrollView>
+      <Fab
+        size="md"
+        placement="bottom right"
+        onPress={() => {
+          router.push('/posts/create');
+        }}>
+        <FabIcon as={AddIcon} />
+        <FabLabel>帖子</FabLabel>
+      </Fab>
+    </SafeAreaView>
   );
 };
 

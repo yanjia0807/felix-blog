@@ -1,12 +1,44 @@
 import _ from 'lodash';
 import qs from 'qs';
-import { apiClient } from './config';
+import { apiClient } from './api-client';
 
 export type PostData = any;
 export type UpdatePostLikedData = any;
 export type UpdatePostFavoritedData = any;
 
 export const fetchPosts = async ({ pageParam }: any) => {
+  const { pagination } = pageParam;
+  const query = qs.stringify({
+    populate: {
+      tags: true,
+      author: {
+        populate: {
+          profile: {
+            populate: ['avatar'],
+          },
+        },
+      },
+      cover: {
+        fields: ['formats', 'name', 'alternativeText'],
+      },
+      blocks: {
+        on: {
+          'shared.attachment': {
+            populate: {
+              files: true,
+            },
+          },
+        },
+      },
+    },
+    sort: 'createdAt:desc',
+    pagination,
+  });
+  const res = await apiClient.get(`/posts/additional?${query}`);
+  return res;
+};
+
+export const fetchRecommendPosts = async ({ pageParam }: any) => {
   const { pagination } = pageParam;
   const query = qs.stringify({
     populate: {

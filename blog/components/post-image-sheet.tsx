@@ -1,7 +1,7 @@
 import { useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import _ from 'lodash';
-import { CameraIcon, ImageIcon, CircleXIcon } from 'lucide-react-native';
+import { CameraIcon, ImageIcon, CircleXIcon, XIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import ImageCamera from './Image-camera';
 import {
@@ -15,7 +15,7 @@ import {
   ActionsheetItemText,
 } from './ui/actionsheet';
 
-const ImagePickerSheet = ({ isOpen, onClose, onChange, value }: any) => {
+const PostImageSheet = ({ isOpen, onClose, onChange, value }: any) => {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [cameraIsOpen, setCameraIsOpen] = useState(false);
 
@@ -52,16 +52,16 @@ const ImagePickerSheet = ({ isOpen, onClose, onChange, value }: any) => {
             <ActionsheetDragIndicator />
           </ActionsheetDragIndicatorWrapper>
           <ActionsheetItem onPress={onPressCamera}>
-            <ActionsheetIcon className="stroke-background-700" as={CameraIcon} />
-            <ActionsheetItemText>拍照</ActionsheetItemText>
+            <ActionsheetIcon size="md" as={CameraIcon} />
+            <ActionsheetItemText size="md">拍照</ActionsheetItemText>
           </ActionsheetItem>
           <ActionsheetItem onPress={onPressImage}>
-            <ActionsheetIcon className="stroke-background-700" as={ImageIcon} />
-            <ActionsheetItemText>从相册选择</ActionsheetItemText>
+            <ActionsheetIcon size="md" as={ImageIcon} />
+            <ActionsheetItemText size="md">从相册选择</ActionsheetItemText>
           </ActionsheetItem>
           <ActionsheetItem onPress={onClose}>
-            <ActionsheetIcon className="stroke-background-400" as={CircleXIcon} />
-            <ActionsheetItemText>取消</ActionsheetItemText>
+            <ActionsheetIcon size="md" as={XIcon} />
+            <ActionsheetItemText size="md">取消</ActionsheetItemText>
           </ActionsheetItem>
         </ActionsheetContent>
       </Actionsheet>
@@ -70,4 +70,4 @@ const ImagePickerSheet = ({ isOpen, onClose, onChange, value }: any) => {
   );
 };
 
-export default ImagePickerSheet;
+export default PostImageSheet;

@@ -18,10 +18,14 @@ const PostTags = ({ tags, onRemoveTag, className }: any) => {
 const PostTagIcon = ({ tag, onRemoveTag, className }: any) => {
   const PostTagIconStyles = tva({});
   return (
-    <ButtonGroup space="sm" isAttached={true} className={PostTagIconStyles({ className })}>
-      <Button size="sm" className="items-center justify-start rounded-xl">
+    <ButtonGroup space="xs" isAttached={true} className={PostTagIconStyles({ className })}>
+      <Button
+        size="xs"
+        action="secondary"
+        variant="outline"
+        className="items-center justify-start rounded-lg"
+        onPress={() => onRemoveTag && onRemoveTag(tag)}>
         <ButtonText>{tag.name}</ButtonText>
-        {onRemoveTag && <ButtonIcon as={CircleX} onPress={() => onRemoveTag(tag)} />}
       </Button>
     </ButtonGroup>
   );

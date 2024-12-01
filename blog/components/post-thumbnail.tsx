@@ -1,7 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import React from 'react';
-import { baseURL } from '@/api';
+import { apiServerURL } from '@/api';
 import { Box } from './ui/box';
 import { Center } from './ui/center';
 import { HStack } from './ui/hstack';
@@ -28,7 +28,7 @@ const PostThumbnail = ({ item }: any) => {
           <Box className="grow">
             <Image
               source={{
-                uri: `${baseURL}${files[0].thumbnail.url}`,
+                uri: `${apiServerURL}${files[0].thumbnail.url}`,
               }}
               alt={item.alternativeText}
               style={{
@@ -54,7 +54,7 @@ const PostThumbnail = ({ item }: any) => {
                         <BlurView className="flex-1" intensity={40} tint="default">
                           <Image
                             source={{
-                              uri: `${baseURL}${item.thumbnail?.url}`,
+                              uri: `${apiServerURL}${item.thumbnail?.url}`,
                             }}
                             alt={item.alternativeText}
                             style={{
@@ -72,7 +72,7 @@ const PostThumbnail = ({ item }: any) => {
                     <Box key={item.id} className="flex-1">
                       <Image
                         source={{
-                          uri: `${baseURL}${item.thumbnail.url}`,
+                          uri: `${apiServerURL}${item.thumbnail.url}`,
                         }}
                         alt={item.alternativeText}
                         style={{

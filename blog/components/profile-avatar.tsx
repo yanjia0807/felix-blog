@@ -2,7 +2,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useRouter } from 'expo-router';
 import { User } from 'lucide-react-native';
 import React from 'react';
-import { baseURL } from '@/api/config';
+import { apiServerURL } from '@/api/api-client';
 import { useAuth } from './auth-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';
@@ -26,7 +26,7 @@ export const ProfileAvatar = ({ className, ...props }: any) => {
             <AvatarFallbackText>{user.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${baseURL}/${user.profile?.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}/${user.profile?.avatar?.formats.thumbnail.url}`,
               }}
             />
           </Avatar>

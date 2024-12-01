@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { Calendar, EditIcon, MapPin, MessageCircle, ScanFace } from 'lucide-react-native';
 import React from 'react';
-import { baseURL } from '@/api';
+import { apiServerURL } from '@/api';
 import { useAuth } from './auth-context';
 import { Avatar, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';
@@ -19,7 +19,7 @@ const UserInfoHeader = () => {
         <Avatar size="lg">
           <AvatarImage
             source={{
-              uri: `${baseURL}/${user.profile?.avatar?.formats.thumbnail.url}`,
+              uri: `${apiServerURL}/${user.profile?.avatar?.formats.thumbnail.url}`,
             }}
           />
         </Avatar>

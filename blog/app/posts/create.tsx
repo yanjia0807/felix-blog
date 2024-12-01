@@ -3,10 +3,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
-import { AlertCircleIcon, ImageIcon, MapPinIcon, Mic, TagIcon } from 'lucide-react-native';
+import {
+  AlertCircleIcon,
+  ImageIcon,
+  LocateFixed,
+  MapPinIcon,
+  Mic,
+  Pin,
+  Tag,
+  TagIcon,
+} from 'lucide-react-native';
 import React, { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Keyboard, SafeAreaView } from 'react-native';
+import { Keyboard, Pressable, SafeAreaView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,9 +23,9 @@ import colors from 'tailwindcss/colors';
 import { z, ZodType } from 'zod';
 import { upload } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
-import ImagePickerSheet from '@/components/image-picker-sheet';
-import LocationSheet from '@/components/location-sheet';
+import PostImageSheet from '@/components/post-image-sheet';
 import PostImageGrid from '@/components/post-images-grid';
+import PostPositionSheet from '@/components/post-position-sheet';
 import PostRecordingSheet from '@/components/post-recording-sheet';
 import PostRecordings from '@/components/post-recordings';
 import PostTagSheet from '@/components/post-tag-sheet';
@@ -33,7 +42,7 @@ import {
   FormControlErrorText,
 } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField } from '@/components/ui/input';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import useCustomToast from '@/components/use-custom-toast';
@@ -46,7 +55,7 @@ type PostFormData = {
 const PostCreate = () => {
   const [images, setImages] = useState<any>([]);
   const [recordings, setRecordings] = useState<any>([]);
-  const [location, setLocation] = useState<any>();
+  const [position, setPosition] = useState<any>();
   const [tags, setTags] = useState<any>([]);
   const insets = useSafeAreaInsets();
   const { isSuccess, isError, isPending, mutate } = useMutation({
@@ -171,6 +180,13 @@ const PostCreate = () => {
     setTags((prev: any) => _.reject(prev, ['id', tag.id]));
   };
 
+  const initPosition = () => {};
+
+  const onAddPosition = (position: any) => {
+    console.log('@', position);
+    setPosition(position);
+  };
+
   const onOpenGallery = async (index: number) => {
     setInitialIndex(index);
     setGalleryPreviewIsOpen(true);
@@ -178,7 +194,7 @@ const PostCreate = () => {
 
   const renderHeaderLeft = () => (
     <Button
-      size="sm"
+      size="md"
       action="secondary"
       variant="link"
       onPress={() => {
@@ -189,11 +205,11 @@ const PostCreate = () => {
   );
 
   const renderHeaderRight = () => (
-    <HStack space="sm">
+    <HStack space="md" className="items-center">
       <Button size="sm" action="secondary" variant="link">
         <ButtonText>[存草稿]</ButtonText>
       </Button>
-      <Button action="primary" size="sm" variant="link" onPress={handleSubmit(onSubmit)}>
+      <Button action="primary" size="md" variant="link" onPress={handleSubmit(onSubmit)}>
         <ButtonText>发布</ButtonText>
       </Button>
     </HStack>
@@ -211,6 +227,15 @@ const PostCreate = () => {
             onChangeText={onChange}
             value={value}
           />
+          <InputSlot>
+            <Pressable
+              onPress={() => {
+                Keyboard.dismiss();
+                tagSheetRef.current?.snapToIndex(0);
+              }}>
+              <InputIcon as={Tag}></InputIcon>
+            </Pressable>
+          </InputSlot>
         </Input>
         <FormControlError>
           <FormControlErrorIcon as={AlertCircleIcon} />
@@ -254,13 +279,6 @@ const PostCreate = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <ImagePickerSheet
-        isOpen={imageSheetIsOpen}
-        onClose={() => {
-          setImageSheetIsOpen(false);
-        }}
-        onChange={onAddImage}
-      />
       <GalleryPreview
         images={images}
         initialIndex={initialIndex}
@@ -269,7 +287,7 @@ const PostCreate = () => {
       />
       <Stack.Screen
         options={{
-          title: '记录',
+          title: '写帖子',
           headerShown: true,
           headerLeft: renderHeaderLeft,
           headerRight: renderHeaderRight,
@@ -286,9 +304,21 @@ const PostCreate = () => {
             />
           )}
           <Controller control={control} name="title" render={renderTitle} />
+          {tags.length > 0 && <PostTags tags={tags} onRemoveTag={onRemoveTag} />}
           <Controller control={control} name="content" render={renderContent} />
           <Divider className="my-2 bg-background-200" />
-          {tags.length > 0 && <PostTags tags={tags} onRemoveTag={onRemoveTag} />}
+          <HStack className="justify-end">
+            <Button
+              variant="link"
+              action="secondary"
+              onPress={() => {
+                Keyboard.dismiss();
+                locationSheetRef.current?.snapToIndex(0);
+              }}>
+              <ButtonIcon as={MapPinIcon} />
+              {position ? <ButtonText>{position.name}</ButtonText> : <ButtonText>位置</ButtonText>}
+            </Button>
+          </HStack>
           {recordings.length > 0 && (
             <PostRecordings recordings={recordings} onRemoveRecording={onRemoveRecording} />
           )}
@@ -304,7 +334,7 @@ const PostCreate = () => {
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
           <HStack space="md" className="w-full bg-grey-50 px-4">
             <ButtonGroup space="sm">
-              <Button variant="link" onPress={() => setImageSheetIsOpen(true)}>
+              <Button variant="link" action="secondary" onPress={() => setImageSheetIsOpen(true)}>
                 <ButtonIcon as={ImageIcon} />
                 <ButtonText>图片</ButtonText>
               </Button>
@@ -312,6 +342,7 @@ const PostCreate = () => {
             <ButtonGroup space="sm">
               <Button
                 variant="link"
+                action="secondary"
                 onPress={() => {
                   Keyboard.dismiss();
                   recordingSheetRef.current?.snapToIndex(0);
@@ -320,33 +351,18 @@ const PostCreate = () => {
                 <ButtonText>录音</ButtonText>
               </Button>
             </ButtonGroup>
-            <ButtonGroup space="sm">
-              <Button
-                variant="link"
-                onPress={() => {
-                  Keyboard.dismiss();
-                  locationSheetRef.current?.snapToIndex(0);
-                }}>
-                <ButtonIcon as={MapPinIcon} />
-                <ButtonText>位置</ButtonText>
-              </Button>
-            </ButtonGroup>
-            <ButtonGroup space="sm">
-              <Button
-                variant="link"
-                onPress={() => {
-                  Keyboard.dismiss();
-                  tagSheetRef.current?.snapToIndex(0);
-                }}>
-                <ButtonIcon as={TagIcon} />
-                <ButtonText>标签</ButtonText>
-              </Button>
-            </ButtonGroup>
           </HStack>
         </KeyboardStickyView>
         <PostRecordingSheet ref={recordingSheetRef} onChange={onAddRecording} />
         <PostTagSheet ref={tagSheetRef} value={tags} onChange={onAddTags} />
-        <LocationSheet ref={locationSheetRef} setLocation={setLocation} />
+        <PostPositionSheet ref={locationSheetRef} onChange={onAddPosition} />
+        <PostImageSheet
+          isOpen={imageSheetIsOpen}
+          onClose={() => {
+            setImageSheetIsOpen(false);
+          }}
+          onChange={onAddImage}
+        />
       </>
     </SafeAreaView>
   );

@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { fetchCount, fetchMyPosts, fetchMyPhotos } from '@/api';
-import { baseURL } from '@/api';
+import { apiServerURL } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { Box } from '@/components/ui/box';
 import { Divider } from '@/components/ui/divider';
@@ -229,7 +229,7 @@ const PhotoListView = () => {
     return (
       <Image
         recyclingKey={item.id}
-        source={{ uri: `${baseURL}/${item.formats.small.url}` }}
+        source={{ uri: `${apiServerURL}/${item.formats.small.url}` }}
         contentFit="cover"
         style={{
           flex: 1,

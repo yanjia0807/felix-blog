@@ -1,4 +1,4 @@
-import { apiClient } from './config';
+import { apiClient } from './api-client';
 import qs from 'qs';
 
 export type UserData = any;

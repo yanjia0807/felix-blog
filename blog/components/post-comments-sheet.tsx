@@ -14,7 +14,7 @@ import React, { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useSt
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-import { baseURL } from '@/api';
+import { apiServerURL } from '@/api';
 import {
   createComment,
   deleteComment,
@@ -326,7 +326,9 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
         <Box className="w-10">
           <Avatar size="sm" className="my-1">
             <AvatarImage
-              source={{ uri: `${baseURL}/${section.user.profile.avatar?.formats.thumbnail.url}` }}
+              source={{
+                uri: `${apiServerURL}/${section.user.profile.avatar?.formats.thumbnail.url}`,
+              }}
             />
           </Avatar>
         </Box>
@@ -426,7 +428,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
       <HStack className="my-1 ml-10 items-start" space="sm">
         <Avatar size="xs" className="my-1">
           <AvatarImage
-            source={{ uri: `${baseURL}/${item.user.profile.avatar?.formats.thumbnail.url}` }}
+            source={{ uri: `${apiServerURL}/${item.user.profile.avatar?.formats.thumbnail.url}` }}
           />
         </Avatar>
         <VStack className="flex-1 items-start justify-start">
@@ -553,9 +555,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
       ref={ref}>
       <BottomSheetView className="flex-1 p-4">
         <Box className="items-center mb-4">
-          <Heading size="lg" className="p-4">
-            {`${total}条评论`}
-          </Heading>
+          <Heading className="p-4">{`${total}条评论`}</Heading>
           <Divider />
         </Box>
         <VStack className="bg-white p-2" space="2xl">

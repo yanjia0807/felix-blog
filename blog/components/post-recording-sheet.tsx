@@ -5,7 +5,7 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
-import { Mic, MicOff } from 'lucide-react-native';
+import { Check, Mic, MicOff, PauseCircle, RotateCcw } from 'lucide-react-native';
 import moment from 'moment';
 import React, { forwardRef, useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -19,7 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import colors from 'tailwindcss/colors';
-import { Button, ButtonText } from './ui/button';
+import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 
@@ -224,12 +224,14 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
               variant="link"
               isDisabled={!recordingStatus || !recordingStatus.isRecording}
               onPress={pauseRecording}>
+              <ButtonIcon as={PauseCircle} />
               <ButtonText>暂停</ButtonText>
             </Button>
             <Button
               variant="link"
               isDisabled={!recordingStatus || recordingStatus.isRecording}
               onPress={resetRecording}>
+              <ButtonIcon as={RotateCcw} />
               <ButtonText>重置</ButtonText>
             </Button>
             <Button
@@ -237,6 +239,7 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
               isDisabled={!recordingStatus || recordingStatus?.isRecording}
               onPress={commitRecording}
               action="primary">
+              <ButtonIcon as={Check} />
               <ButtonText>确定</ButtonText>
             </Button>
           </HStack>
