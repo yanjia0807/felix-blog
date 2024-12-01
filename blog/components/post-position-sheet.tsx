@@ -362,7 +362,7 @@ const UserMarker = ({ coordinate }: any) => {
   );
 };
 
-const PostPositionSheet = forwardRef(function LocationSheet({ onChange }: any, ref: any) {
+const PostPositionSheet = forwardRef(function PostPositionSheet({ onChange }: any, ref: any) {
   const insets = useSafeAreaInsets();
   const [position, setPosition] = useState<Position | null>(null);
 
@@ -475,7 +475,7 @@ const PostPositionSheet = forwardRef(function LocationSheet({ onChange }: any, r
       ref={ref}>
       <BottomSheetView className="flex-1 m-4">
         <VStack className="flex-1" space="md">
-          <Box className="h-1/3">
+          <Box className="h-42">
             <MapView
               onPress={({ nativeEvent }) => console.log('onPress', nativeEvent)}
               onCameraIdle={({ nativeEvent }) => console.log('onCameraIdle', nativeEvent)}
