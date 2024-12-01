@@ -10,6 +10,7 @@ const config = {
     'access-control-allow-origin': '*',
   },
 };
+
 const apiClient = axios.create(config);
 
 apiClient.interceptors.request.use(

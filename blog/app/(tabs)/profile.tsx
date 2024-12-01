@@ -3,9 +3,9 @@ import { FlashList, MasonryFlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack } from 'expo-router';
-import _, { flatten } from 'lodash';
+import _ from 'lodash';
 import { BookMarked, Heart, MapPin, MessageCircle } from 'lucide-react-native';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Dimensions,
   RefreshControl,
@@ -21,7 +21,6 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserInfoHeader from '@/components/user-info-header';
@@ -119,31 +118,34 @@ const PostListView = () => {
 
   return (
     <Box className="flex-1">
-      {isLoading && <Spinner />}
-      <FlashList
-        data={posts}
-        renderItem={renderItem}
-        estimatedItemSize={154}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        ListEmptyComponent={renderEmptyComponent}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
+      {user ? (
+        <FlashList
+          data={posts}
+          renderItem={renderItem}
+          estimatedItemSize={154}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          ListEmptyComponent={renderEmptyComponent}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          refreshControl={
+            <RefreshControl
+              colors={['#9Bd35A', '#689F38']}
+              refreshing={isLoading}
+              onRefresh={() => {
+                if (!isLoading) {
+                  refetch();
+                }
+              }}
+            />
           }
-        }}
-        refreshControl={
-          <RefreshControl
-            colors={['#9Bd35A', '#689F38']}
-            refreshing={isLoading}
-            onRefresh={() => {
-              if (!isLoading) {
-                refetch();
-              }
-            }}
-          />
-        }
-      />
+        />
+      ) : (
+        <></>
+      )}
     </Box>
   );
 };
@@ -243,36 +245,40 @@ const PhotoListView = () => {
 
   return (
     <Box className="mr-1/4 flex-1">
-      <MasonryFlashList
-        data={listData}
-        getItemType={() => 'image'}
-        renderItem={renderItem}
-        numColumns={numColumns}
-        ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}
-        ListEmptyComponent={renderEmptyComponent}
-        estimatedItemSize={width / numColumns}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
+      {user ? (
+        <MasonryFlashList
+          data={listData}
+          getItemType={() => 'image'}
+          renderItem={renderItem}
+          numColumns={numColumns}
+          ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}
+          ListEmptyComponent={renderEmptyComponent}
+          estimatedItemSize={width / numColumns}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          refreshControl={
+            <RefreshControl
+              colors={['#9Bd35A', '#689F38']}
+              refreshing={isLoading}
+              onRefresh={() => {
+                if (!isLoading) {
+                  refetch();
+                }
+              }}
+            />
           }
-        }}
-        refreshControl={
-          <RefreshControl
-            colors={['#9Bd35A', '#689F38']}
-            refreshing={isLoading}
-            onRefresh={() => {
-              if (!isLoading) {
-                refetch();
-              }
-            }}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-        getColumnFlex={(items, index, maxColumns, extraData) => {
-          console.log('@', items, index, maxColumns, extraData);
-          return numColumns;
-        }}
-      />
+          showsVerticalScrollIndicator={false}
+          getColumnFlex={(items, index, maxColumns, extraData) => {
+            console.log('@', items, index, maxColumns, extraData);
+            return numColumns;
+          }}
+        />
+      ) : (
+        <></>
+      )}
     </Box>
   );
 };
@@ -282,8 +288,9 @@ const Profile = () => {
   const { user } = useAuth();
 
   const { data: total } = useQuery<any>({
-    queryKey: ['posts', user.documentId, 'total'],
+    queryKey: ['posts', user?.documentId, 'total'],
     queryFn: () => fetchCount(),
+    enabled: !!user,
   });
 
   return (

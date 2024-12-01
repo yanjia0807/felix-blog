@@ -150,10 +150,6 @@ const PostHome = () => {
     );
   }
 
-  if (status === 'error') {
-    toast.error('获取数据异常');
-  }
-
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen

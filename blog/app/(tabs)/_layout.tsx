@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, NotebookPen, User2 } from 'lucide-react-native';
+import { Home, Map, NotebookPen, User2 } from 'lucide-react-native';
 import { Icon } from '@/components/ui/icon';
 
 export default function TabLayout() {
@@ -17,6 +17,13 @@ export default function TabLayout() {
         options={{
           title: '发现',
           tabBarIcon: ({ color }) => <Icon size={26} as={NotebookPen} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: '朋友',
+          tabBarIcon: ({ color }) => <Icon size={26} as={Map} color={color} />,
         }}
       />
       <Tabs.Screen
