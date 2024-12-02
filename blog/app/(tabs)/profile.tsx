@@ -122,6 +122,7 @@ const PostListView = () => {
         <FlashList
           data={posts}
           renderItem={renderItem}
+          keyExtractor={(item: any) => item.documentId}
           estimatedItemSize={154}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}

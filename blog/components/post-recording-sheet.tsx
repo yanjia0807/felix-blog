@@ -7,7 +7,7 @@ import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw } from 'lucide-react-native';
 import moment from 'moment';
-import React, { forwardRef, useCallback, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useMemo, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -56,6 +56,7 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
   const insets = useSafeAreaInsets();
   const metering = useSharedValue<number>(0);
   const [durationMillis, setDurationMillis] = useState<number>(0);
+  const snapPoints = useMemo(() => ['50%', '75%'], []);
 
   const stopRecording = useCallback(async () => {
     try {
@@ -113,7 +114,6 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
   }, [recording]);
 
   const resetRecording = useCallback(async () => {
-    console.log('reset...');
     if (recordingStatus && !recordingStatus.isDoneRecording) {
       await stopRecording();
     }
@@ -124,6 +124,7 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
   }, [metering, recordingStatus, stopRecording]);
 
   const commitRecording = useCallback(async () => {
+    console.log('@', recording);
     onChange(recording);
     ref.current?.close();
   }, [onChange, recording, ref]);
@@ -249,11 +250,12 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
     [doRecording, recordingStatus, metering, pauseRecording, resetRecording, commitRecording],
   );
 
+  console.log('post-recording-sheet render');
   return (
     <BottomSheet
       ref={ref}
       index={-1}
-      snapPoints={['50%']}
+      snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose={true}
       topInset={insets.top}
@@ -261,7 +263,7 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}
       onClose={resetRecording}>
-      <BottomSheetView className="m-4 items-center">
+      <BottomSheetView className="flex-1 p-4 items-center">
         <Heading size="4xl" className="mt-12">
           {moment.utc(durationMillis).format('mm:ss')}
         </Heading>
@@ -270,4 +272,4 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
   );
 });
 
-export default PostRecordingSheet;
+export default memo(PostRecordingSheet);

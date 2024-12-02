@@ -7,10 +7,10 @@ import BottomSheet, {
 import { BottomSheetFlashList } from '@gorhom/bottom-sheet';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
-import React, { forwardRef, useCallback, useEffect, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { fetchTags, useFetchTags } from '@/api/tag';
+import { fetchTags } from '@/api/tag';
 import PostTags from './post-tags';
 import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
@@ -20,7 +20,7 @@ import { Text } from './ui/text';
 
 const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);
-
+  const snapPoints = useMemo(() => ['50%', '75%'], []);
   const {
     control,
     formState: { errors },
@@ -42,6 +42,7 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
 
   const insets = useSafeAreaInsets();
   const onSubmit = useCallback((data: any) => refetch(data), [refetch]);
+
   const debouncedSubmit = React.useMemo(
     () => _.debounce(handleSubmit(onSubmit), 1000),
     [handleSubmit, onSubmit],
@@ -105,13 +106,18 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
     [onCancel, onCommitTag],
   );
 
-  useEffect(() => {
-    setSelectedTags([...value]);
-  }, [value]);
+  const onBottomSheetAnimate = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === -1) {
+      if (!_.isEqual(selectedTags, value)) {
+        setSelectedTags([...value]);
+      }
+    }
+  };
 
+  console.log('post-tag-sheet render', value);
   return (
     <BottomSheet
-      snapPoints={['50%', '80%']}
+      snapPoints={snapPoints}
       index={-1}
       backdropComponent={renderBackdrop}
       topInset={insets.top}
@@ -120,8 +126,9 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
       enablePanDownToClose={true}
       footerComponent={(props) => renderFooter({ ...props })}
       keyboardBehavior="fillParent"
-      ref={ref}>
-      <BottomSheetView className="flex-1 m-4">
+      ref={ref}
+      onAnimate={onBottomSheetAnimate}>
+      <BottomSheetView className="flex-1 p-4">
         <Controller
           name="name"
           control={control}
@@ -151,4 +158,4 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
   );
 });
 
-export default PostTagSheet;
+export default memo(PostTagSheet);

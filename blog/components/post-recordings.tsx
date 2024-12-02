@@ -3,6 +3,7 @@ import { Audio, AVPlaybackStatus } from 'expo-av';
 import { CircleX, Volume2 } from 'lucide-react-native';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
+import { apiServerURL } from '@/api';
 import { ButtonGroup, Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 
@@ -10,21 +11,16 @@ const PostRecordings = ({ recordings = [], onRemoveRecording, className = '' }: 
   const PostRecordingsStyles = tva({});
 
   return (
-    <HStack space="sm" className={`${PostRecordingsStyles(className)} my-2 flex-wrap`}>
+    <HStack space="sm" className={`${PostRecordingsStyles(className)} flex-wrap`}>
       {recordings.map((item: any) => {
-        return (
-          <PostRecordingIcon
-            key={item.uri || item.getURI()}
-            uri={item.uri || item.getURI()}
-            onRemove={onRemoveRecording}
-          />
-        );
+        const key = item._uri || item.url;
+        return <PostRecordingIcon key={key} item={item} onRemove={onRemoveRecording} />;
       })}
     </HStack>
   );
 };
 
-const PostRecordingIcon = ({ uri, onRemove, className }: any) => {
+const PostRecordingIcon = ({ item, onRemove, className }: any) => {
   const PostRecordingIconStyles = tva({});
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -48,7 +44,8 @@ const PostRecordingIcon = ({ uri, onRemove, className }: any) => {
   };
 
   const removeSound = async () => {
-    onRemove(uri);
+    const key = item._uri || item.url;
+    onRemove(key);
   };
 
   useEffect(() => {
@@ -56,8 +53,9 @@ const PostRecordingIcon = ({ uri, onRemove, className }: any) => {
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
       });
+      let source = item._uri ? { uri: item._uri } : { uri: `${apiServerURL}${item.url}` };
       const { sound, status }: any = await Audio.Sound.createAsync(
-        { uri },
+        source,
         { shouldPlay: false },
         onPlaybackStatusUpdate,
       );
@@ -71,7 +69,7 @@ const PostRecordingIcon = ({ uri, onRemove, className }: any) => {
           soundObj.current.sound.unloadAsync();
         }
       : undefined;
-  }, [uri]);
+  }, [item._uri, item.url]);
 
   return (
     <ButtonGroup space="sm" isAttached={true} className={PostRecordingIconStyles({ className })}>

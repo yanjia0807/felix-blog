@@ -45,9 +45,9 @@ const PostImageSheet = ({ isOpen, onClose, onChange, value }: any) => {
 
   return (
     <>
-      <Actionsheet isOpen={isOpen} onClose={onClose}>
+      <Actionsheet isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false}>
         <ActionsheetBackdrop />
-        <ActionsheetContent>
+        <ActionsheetContent className="p-4">
           <ActionsheetDragIndicatorWrapper>
             <ActionsheetDragIndicator />
           </ActionsheetDragIndicatorWrapper>

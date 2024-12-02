@@ -24,10 +24,8 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
 
 const PostHome = () => {
-  const toast = useCustomToast();
   const {
     data,
     error,
@@ -73,6 +71,7 @@ const PostHome = () => {
     queryKey: ['tags'],
     queryFn: fetchTags,
   });
+  console.log('@@', tags);
 
   const renderTagsItem = ({ item }: any) => {
     return (
@@ -168,22 +167,24 @@ const PostHome = () => {
               </InputSlot>
             </Input>
           </HStack>
-          <Box>
+          <HStack className="h-12 w-full">
             <FlashList
               data={tags}
               estimatedItemSize={100}
               renderItem={renderTagsItem}
               horizontal={true}
+              keyExtractor={(item: any) => item.documentId}
               showsHorizontalScrollIndicator={false}
             />
-          </Box>
-          <Box>
+          </HStack>
+          <Box className="flex-1">
             <FlashList
               data={posts}
               renderItem={renderPostItem}
               estimatedItemSize={200}
               showsVerticalScrollIndicator={false}
               showsHorizontalScrollIndicator={false}
+              keyExtractor={(item: any) => item.documentId}
               onEndReached={() => {
                 if (hasNextPage && !isFetchingNextPage) {
                   fetchNextPage();

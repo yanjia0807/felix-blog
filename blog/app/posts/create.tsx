@@ -3,16 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
-import {
-  AlertCircleIcon,
-  ImageIcon,
-  LocateFixed,
-  MapPinIcon,
-  Mic,
-  Pin,
-  Tag,
-  TagIcon,
-} from 'lucide-react-native';
+import { AlertCircleIcon, ImageIcon, MapPinIcon, Mic, Tag } from 'lucide-react-native';
 import React, { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Keyboard, Pressable, SafeAreaView } from 'react-native';
@@ -164,28 +155,25 @@ const PostCreate = () => {
     );
   };
 
-  const onAddRecording = (recording: any) => {
+  const onAddRecording = useCallback((recording: any) => {
     setRecordings((pre: any) => [...pre, recording]);
-  };
+  }, []);
 
   const onRemoveRecording = async (uri: string) => {
     setRecordings((pre: any) => _.filter(pre, (item) => item._uri !== uri));
   };
 
-  const onAddTags = ({ selectedTags }: any) => {
+  const onAddTags = useCallback(({ selectedTags }: any) => {
     setTags(selectedTags);
-  };
+  }, []);
 
   const onRemoveTag = (tag: any) => {
-    setTags((prev: any) => _.reject(prev, ['id', tag.id]));
+    setTags((prev: any) => _.filter(prev, (item: any) => item.id !== tag.id));
   };
 
-  const initPosition = () => {};
-
-  const onAddPosition = (position: any) => {
-    console.log('@', position);
+  const onAddPosition = useCallback((position: any) => {
     setPosition(position);
-  };
+  }, []);
 
   const onOpenGallery = async (index: number) => {
     setInitialIndex(index);

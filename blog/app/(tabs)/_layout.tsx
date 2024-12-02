@@ -9,28 +9,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '主页',
-          tabBarIcon: ({ color }) => <Icon size={26} as={Home} color={color} />,
+          tabBarIcon: ({ color }) => <Icon size={26 as any} as={Home} color={color} />,
         }}
       />
       <Tabs.Screen
         name="post"
         options={{
           title: '发现',
-          tabBarIcon: ({ color }) => <Icon size={26} as={NotebookPen} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="map"
-        options={{
-          title: '朋友',
-          tabBarIcon: ({ color }) => <Icon size={26} as={Map} color={color} />,
+          tabBarIcon: ({ color }) => <Icon size={26 as any} as={NotebookPen} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: '我的',
-          tabBarIcon: ({ color }) => <Icon size={26} as={User2} color={color} />,
+          tabBarIcon: ({ color }) => <Icon size={26 as any} as={User2} color={color} />,
         }}
       />
     </Tabs>

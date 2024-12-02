@@ -19,10 +19,10 @@ import {
 } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
+import { Link, LinkText } from '@/components/ui/link';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
-import { Link, LinkText } from '@/components/ui/link';
 
 type LoginSchemaDetails = z.infer<typeof loginSchema>;
 
@@ -156,13 +156,14 @@ const SignIn = () => {
             }}>
             <ButtonText>取消</ButtonText>
           </Button>
-          <HStack space="sm" className="items-center justify-center">
-            <Link
+          <HStack className="items-center justify-center">
+            <Button
+              variant="link"
               onPress={() => {
                 router.replace('/register');
               }}>
-              <LinkText size="sm">注册新用户</LinkText>
-            </Link>
+              <LinkText>注册新用户</LinkText>
+            </Button>
           </HStack>
         </VStack>
         <HStack space="lg" reversed={true}></HStack>

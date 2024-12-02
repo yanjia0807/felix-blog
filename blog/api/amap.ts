@@ -10,19 +10,16 @@ export const fetchPositionRound = async (params: any) => {
       location,
       page_num,
       page_size,
-      radius: 200,
+      radius: 100,
     });
     const res: any = await amapClient.get(`/v5/place/around?${query}`);
     if (!res.status) {
       throw new Error(res.info);
     }
 
-    if (res.infocode !== '10000') {
+    if (Number(res.infocode) !== 10000) {
       console.warn('fetch round failed', res);
-      return {
-        count: '0',
-        pois: [],
-      };
+      throw new Error(res.info);
     }
 
     return res;

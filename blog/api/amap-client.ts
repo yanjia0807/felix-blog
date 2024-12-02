@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-const amapUrl = process.env.EXPO_PUBLIC_AMAP_WEB_API_URL;
-const amapKey = process.env.EXPO_PUBLIC_AMAP_WEB_API_KEY;
+export const amapWebApiUrl = process.env.EXPO_PUBLIC_AMAP_WEB_API_URL;
+export const amapWebApiKey = process.env.EXPO_PUBLIC_AMAP_WEB_API_KEY;
+export const amapIosApiKey = process.env.EXPO_PUBLIC_AMAP_IOS_KEY;
 
 const config = {
-  baseURL: amapUrl,
+  baseURL: amapWebApiUrl,
   headers: {
     'Content-Type': 'application/json',
     'access-control-allow-origin': '*',
@@ -16,7 +17,7 @@ export const amapClient = axios.create(config);
 amapClient.interceptors.request.use(
   (config) => {
     config.params = config.params || {};
-    config.params.key = amapKey;
+    config.params.key = amapWebApiKey;
 
     console.log(`[amap request] ${config.method?.toUpperCase()} ${config.url}`, {
       headers: config.headers,

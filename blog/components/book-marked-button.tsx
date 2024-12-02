@@ -13,8 +13,9 @@ const BookmarkedButtonStyles = tva({});
 
 const BookMarkedButton = ({ className, post, ...props }: any) => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
+  const queryClient = useQueryClient();
+  console.log('@', post);
   const { mutate } = useMutation({
     mutationFn: ({ documentId, postData }: UpdatePostFavoritedData) => {
       return updatePostFavorited({ documentId, postData });
@@ -72,7 +73,7 @@ const BookMarkedButton = ({ className, post, ...props }: any) => {
         size="md"
         className="text-secondary-0"
         as={BookMarked}
-        color={post.favoritedByMe ? colors.green[500] : colors.white}
+        color={post?.favoritedByMe ? colors.green[500] : colors.white}
       />
     </TouchableOpacity>
   );

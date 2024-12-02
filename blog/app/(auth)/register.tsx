@@ -190,24 +190,16 @@ const SignUp = () => {
           <Controller control={control} name="username" render={renderUsername} />
           <Controller control={control} name="email" render={renderEmail} />
           <Controller control={control} name="password" render={renderPassword} />
-          <HStack className="my-6 flex-wrap items-center justify-center">
-            <Text size="sm">
-              <Text size="sm" bold={true}>
-                同意服务条款：
-              </Text>
-              在点击“注册”按钮前，请阅读并同意我们的
-              <Link onPress={() => setIsTermsDialogOpen(true)} className="m-0 p-0">
-                <LinkText size="sm" underline={false}>
-                  服务条款
-                </LinkText>
-              </Link>
-              和
-              <Link onPress={() => setIsPrivacyDialogOpen(true)}>
-                <LinkText size="sm" underline={false}>
-                  隐私政策
-                </LinkText>
-              </Link>
-            </Text>
+          <HStack className="my-6 flex-wrap">
+            <Text bold={true}>同意服务条款：</Text>
+            <Text>在点击“注册”按钮前，请阅读并同意我们的</Text>
+            <Link onPress={() => setIsTermsDialogOpen(true)}>
+              <LinkText>服务条款</LinkText>
+            </Link>
+            <Text>和</Text>
+            <Link onPress={() => setIsPrivacyDialogOpen(true)}>
+              <LinkText>隐私政策</LinkText>
+            </Link>
           </HStack>
           <Button
             className="rounded-3xl"
@@ -226,14 +218,15 @@ const SignUp = () => {
             }}>
             <ButtonText>取消</ButtonText>
           </Button>
-          <HStack space="sm" className="items-center justify-center">
-            <Text size="sm">已有账号？</Text>
-            <Link
+          <HStack space="xs" className="items-center justify-center">
+            <Text bold={true}>已有账号？</Text>
+            <Button
+              variant="link"
               onPress={() => {
                 router.replace('/login');
               }}>
-              <LinkText size="sm">登录</LinkText>
-            </Link>
+              <LinkText>登录</LinkText>
+            </Button>
           </HStack>
         </VStack>
       </VStack>

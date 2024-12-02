@@ -18,6 +18,7 @@ import LikePostButton from '@/components/like-post-button';
 import PostCommentsSheet from '@/components/post-comments-sheet';
 import PostRecordings from '@/components/post-recordings';
 import PostTags from '@/components/post-tags';
+import ShareButton from '@/components/share-button';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
@@ -27,9 +28,8 @@ import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
 
-const PostDetailCover = ({ cover, post }: any) => {
+const PostDetailCover = ({ cover }: any) => {
   if (cover) {
     return (
       <Box className="h-48 w-full">
@@ -44,25 +44,7 @@ const PostDetailCover = ({ cover, post }: any) => {
             borderRadius: 12,
           }}
         />
-        <BookMarkedButton
-          post={post}
-          className="absolute -bottom-4 right-16 h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl"
-        />
-        <TouchableOpacity className="absolute -bottom-4 right-4 h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
-          <Icon size="md" className="text-secondary-0" as={Share2} />
-        </TouchableOpacity>
       </Box>
-    );
-  } else {
-    return (
-      <HStack className="items-center justify-end" space="md">
-        <TouchableOpacity className="h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
-          <Icon size="md" className="text-secondary-0" as={BookMarked} />
-        </TouchableOpacity>
-        <TouchableOpacity className="h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl">
-          <Icon size="md" className="text-secondary-0" as={Share2} />
-        </TouchableOpacity>
-      </HStack>
     );
   }
 };
@@ -100,7 +82,7 @@ const ImageList = ({ images, onOpenGallery }: any) => {
     return (
       <FlashList
         data={images}
-        keyExtractor={(item: any) => item.id}
+        keyExtractor={(item: any) => item.documentId}
         horizontal={true}
         renderItem={renderImageItem}
         estimatedItemSize={200}
@@ -112,7 +94,6 @@ const ImageList = ({ images, onOpenGallery }: any) => {
 
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
-  const toast = useCustomToast();
   const [initialIndex, setInitialIndex] = useState<number>(0);
   const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
   const commentsSheetRef = useRef<BottomSheet>();
@@ -145,16 +126,7 @@ const PostDetail = () => {
       uri: `${apiServerURL}${item.formats.small.url}`,
     }));
 
-  const recordings = files
-    ?.filter((item: any) => item.mime.startsWith('audio/'))
-    .map((item: any) => ({
-      ...item,
-      uri: item.url,
-    }));
-
-  if (isError) {
-    toast.error(error.message);
-  }
+  const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
 
   const onOpenGallery = async (index: number) => {
     setInitialIndex(index);
@@ -164,11 +136,22 @@ const PostDetail = () => {
   const renderHeaderLeft = () => (
     <Button
       variant="link"
+      size="md"
       onPress={() => {
         router.dismiss();
       }}>
       <ButtonText>返回</ButtonText>
     </Button>
+  );
+
+  const renderHeaderRight = () => (
+    <>
+      <BookMarkedButton
+        post={post}
+        className="h-8 w-8 mr-2 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl"
+      />
+      <ShareButton className="h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl" />
+    </>
   );
 
   return (
@@ -178,6 +161,7 @@ const PostDetail = () => {
           title: '',
           headerShown: true,
           headerLeft: renderHeaderLeft,
+          headerRight: renderHeaderRight,
         }}
       />
       {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
@@ -186,6 +170,7 @@ const PostDetail = () => {
           <VStack className="flex-1" space="md">
             <Heading>{post.title}</Heading>
             <PostDetailCover cover={post?.cover} post={post} />
+            <PostTags tags={post?.tags} />
             <DateInfo createdAt={post?.createdAt} />
             <HStack className="items-center justify-between">
               <AuthorInfo author={post?.author} />
@@ -194,7 +179,6 @@ const PostDetail = () => {
                 <CommentInfo />
               </HStack>
             </HStack>
-            <PostTags tags={post?.tags} />
             <PostRecordings recordings={recordings} />
             <ImageList images={images} onOpenGallery={onOpenGallery} />
             <Text size="md">{post?.content}</Text>
