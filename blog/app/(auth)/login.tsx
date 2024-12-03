@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { SafeAreaView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
@@ -41,7 +42,6 @@ const loginSchema = z.object({
 const SignIn = () => {
   const { loginMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = loginMutation;
-  const insets = useSafeAreaInsets();
   const toast = useCustomToast();
 
   const {
@@ -71,14 +71,6 @@ const SignIn = () => {
         });
       },
     });
-  };
-
-  const renderHeaderLeft = () => {
-    return (
-      <Text size="xl" bold={true}>
-        用户登录
-      </Text>
-    );
   };
 
   const renderIdentifier = ({ field: { onChange, onBlur, value } }: any) => (
@@ -131,16 +123,13 @@ const SignIn = () => {
   );
 
   return (
-    <>
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '',
-          headerLeft: renderHeaderLeft,
+          title: '用户登录',
         }}
       />
-      <VStack
-        className="w-full flex-1 justify-between p-6"
-        style={{ paddingBottom: insets.bottom }}>
+      <VStack className="w-full flex-1 justify-between p-6">
         <VStack className="flex-1" space="lg">
           <Controller control={control} name="identifier" render={renderIdentifier} />
           <Controller control={control} name="password" render={renderPassword} />
@@ -174,7 +163,7 @@ const SignIn = () => {
         </VStack>
         <HStack space="lg" reversed={true}></HStack>
       </VStack>
-    </>
+    </SafeAreaView>
   );
 };
 

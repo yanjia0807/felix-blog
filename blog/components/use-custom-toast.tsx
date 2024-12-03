@@ -23,8 +23,8 @@ const CustomToast = ({ toast, id, title, description, actions }: any) => {
           <ToastDescription className="text-typography-700">{description}</ToastDescription>
         </VStack>
         <ButtonGroup className="flex-row gap-3">
-          {_.map(actions, (action: any) => (
-            <Button size="sm" className="flex-grow" onPress={() => action['onPress']()}>
+          {_.map(actions, (action: any, index: number) => (
+            <Button key={index} size="sm" className="flex-grow" onPress={() => action['onPress']()}>
               <ButtonText>{action.buttonText}</ButtonText>
             </Button>
           ))}

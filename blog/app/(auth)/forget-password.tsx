@@ -1,7 +1,8 @@
+import { Stack } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native';
 import { useAuth } from '@/components/auth-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import {
@@ -13,12 +14,11 @@ import {
   FormControlHelperText,
 } from '@/components/ui/form-control';
 import { Input, InputField } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
+import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
 const ForgetPassword = () => {
-  const insets = useSafeAreaInsets();
   const toast = useCustomToast();
   const { forgetPasswordMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = forgetPasswordMutation;
@@ -44,11 +44,13 @@ const ForgetPassword = () => {
   };
 
   return (
-    <>
-      {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
-      <VStack
-        className="w-full flex-1 justify-between p-6"
-        style={{ paddingBottom: insets.bottom }}>
+    <SafeAreaView className="flex-1">
+      <Stack.Screen
+        options={{
+          title: '忘记密码',
+        }}
+      />
+      <VStack className="w-full flex-1 justify-between p-6">
         <VStack className="flex-1" space="lg">
           <Controller
             control={control}
@@ -90,7 +92,7 @@ const ForgetPassword = () => {
           </Button>
         </VStack>
       </VStack>
-    </>
+    </SafeAreaView>
   );
 };
 

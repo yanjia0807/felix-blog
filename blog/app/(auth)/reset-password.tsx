@@ -3,6 +3,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { SafeAreaView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
@@ -74,14 +75,6 @@ const ResetPassword = () => {
     });
   };
 
-  const renderHeaderLeft = () => {
-    return (
-      <Text size="xl" bold={true}>
-        设置密码
-      </Text>
-    );
-  };
-
   const renderPassword = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.password} size="lg">
       <FormControlLabel>
@@ -131,16 +124,13 @@ const ResetPassword = () => {
   );
 
   return (
-    <>
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '',
-          headerLeft: renderHeaderLeft,
+          title: '设置密码',
         }}
       />
-      <VStack
-        className="w-full flex-1 justify-between p-6"
-        style={{ paddingBottom: insets.bottom }}>
+      <VStack className="w-full flex-1 justify-between p-6">
         <VStack className="flex-1" space="lg">
           <Controller control={control} name="password" render={renderPassword} />
           <Controller
@@ -169,7 +159,7 @@ const ResetPassword = () => {
           </Button>
         </VStack>
       </VStack>
-    </>
+    </SafeAreaView>
   );
 };
 

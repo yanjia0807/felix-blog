@@ -3,6 +3,7 @@ import { router, Stack } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { SafeAreaView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
@@ -54,7 +55,6 @@ const registerSchema = z.object({
 const SignUp = () => {
   const { registerMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = registerMutation;
-  const insets = useSafeAreaInsets();
   const toast = useCustomToast();
   const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
   const [isPrivacyDialogOpen, setIsPrivacyDialogOpen] = useState(false);
@@ -83,14 +83,6 @@ const SignUp = () => {
         });
       },
     });
-  };
-
-  const renderHeaderLeft = () => {
-    return (
-      <Text size="xl" bold={true}>
-        用户注册
-      </Text>
-    );
   };
 
   const renderUsername = ({ field: { onChange, onBlur, value } }: any) => (
@@ -168,11 +160,10 @@ const SignUp = () => {
   );
 
   return (
-    <>
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '',
-          headerLeft: renderHeaderLeft,
+          title: '用户注册',
         }}
       />
       <TermsOfServiceDialog
@@ -183,9 +174,7 @@ const SignUp = () => {
         isOpen={isPrivacyDialogOpen}
         onClose={() => setIsPrivacyDialogOpen(false)}
       />
-      <VStack
-        className="flex-1 items-center justify-between p-6"
-        style={{ paddingBottom: insets.bottom }}>
+      <VStack className="flex-1 items-center justify-between p-6">
         <VStack className="flex-1" space="lg">
           <Controller control={control} name="username" render={renderUsername} />
           <Controller control={control} name="email" render={renderEmail} />
@@ -230,7 +219,7 @@ const SignUp = () => {
           </HStack>
         </VStack>
       </VStack>
-    </>
+    </SafeAreaView>
   );
 };
 
