@@ -1,5 +1,4 @@
 import '@/global.css';
-import { useReactQueryDevTools } from '@dev-plugins/react-query';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
@@ -8,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider } from '@/components/auth-context';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import { ThemeProvider } from '@/components/ui/theme-provider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,21 +21,22 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  useReactQueryDevTools(queryClient);
   return (
     <GestureHandlerRootView className="flex-1">
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
-          <GluestackUIProvider mode="light">
-            <BottomSheetModalProvider>
-              <AuthProvider>
-                <Stack initialRouteName="tabs" screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="(tabs)" options={{}} />
-                  <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
-                </Stack>
-              </AuthProvider>
-            </BottomSheetModalProvider>
-          </GluestackUIProvider>
+          <ThemeProvider>
+            <GluestackUIProvider mode="system">
+              <BottomSheetModalProvider>
+                <AuthProvider>
+                  <Stack initialRouteName="tabs" screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" options={{}} />
+                    <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+                  </Stack>
+                </AuthProvider>
+              </BottomSheetModalProvider>
+            </GluestackUIProvider>
+          </ThemeProvider>
         </KeyboardProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

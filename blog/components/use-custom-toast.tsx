@@ -126,7 +126,7 @@ const useCustomToast = () => {
   };
 
   const error = ({ toastId, title = '失败', description, ...props }: any) => {
-    showAlertToast({ toastId, title, description, action: 'info', ...props });
+    showAlertToast({ toastId, title, description, action: 'error', ...props });
   };
 
   const confirm = ({ toastId, title = '确认', description, onConfirm, props }: any) => {

@@ -1,7 +1,7 @@
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { Bell, ChevronRightIcon, KeyRound, LogOut, Moon } from 'lucide-react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
 import { useAuth } from '@/components/auth-context';
@@ -12,6 +12,7 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
+import { useTheme } from '@/components/ui/theme-provider';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import UserInfoHeader from '@/components/user-info-header';
@@ -22,6 +23,8 @@ const Setting = () => {
   const { mutate } = forgetPasswordMutation;
   const passwordToastId = _.random(0, 10000).toString();
   const logoutToastId = _.random(0, 10000).toString();
+  const { theme, updateTheme } = useTheme();
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(theme === 'dark');
 
   const onResetPasswordConfirm = () => {
     const data = { email: user.email };
@@ -57,6 +60,13 @@ const Setting = () => {
         toast.close(logoutToastId);
         toast.success({ description: '退出登录成功' });
       },
+    });
+  };
+
+  const onThemeSwitch = (value: boolean) => {
+    setIsDarkMode((prev: boolean) => {
+      updateTheme(prev ? 'light' : 'dark');
+      return !prev;
     });
   };
 
@@ -101,7 +111,7 @@ const Setting = () => {
                     <Icon as={Moon} size="lg" />
                     <Text>暗模式</Text>
                   </HStack>
-                  <Switch size="sm" />
+                  <Switch size="sm" value={isDarkMode} onValueChange={onThemeSwitch} />
                 </HStack>
                 <Divider />
                 <Pressable onPress={() => onResetPasswordBtnPress()}>
