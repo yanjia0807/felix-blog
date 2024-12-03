@@ -49,26 +49,28 @@ const BookMarkedButton = ({ className, post, ...props }: any) => {
     },
   });
 
-  const onFavoritedButtonPress = () => {
-    const userDocumentIds = post.favoritedByMe
-      ? _.map(
-          _.filter(post.favoritedByUsers, (item: any) => item.documentId !== user.documentId),
-          'documentId',
-        )
-      : _.concat(_.map(post.favoritedByUsers, 'documentId'), user.documentId);
+  const onFavoritedButtonPressed = () => {
+    if (user) {
+      const userDocumentIds = post.favoritedByMe
+        ? _.map(
+            _.filter(post.favoritedByUsers, (item: any) => item.documentId !== user.documentId),
+            'documentId',
+          )
+        : _.concat(_.map(post.favoritedByUsers, 'documentId'), user.documentId);
 
-    mutate({
-      documentId: post.documentId,
-      postData: {
-        favoritedByUsers: userDocumentIds,
-      },
-    });
+      mutate({
+        documentId: post.documentId,
+        postData: {
+          favoritedByUsers: userDocumentIds,
+        },
+      });
+    }
   };
 
   return (
     <TouchableOpacity
       className={BookmarkedButtonStyles({ className })}
-      onPress={() => onFavoritedButtonPress()}>
+      onPress={() => onFavoritedButtonPressed()}>
       <Icon
         size="md"
         className="text-secondary-0"

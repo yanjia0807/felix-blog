@@ -56,20 +56,26 @@ const PostMenuPopover = ({ post, ...props }: any) => {
     setIsOpen(false);
   };
 
-  const onFavoritedButtonPress = () => {
-    const userDocumentIds = post.favoritedByMe
-      ? _.map(
-          _.filter(post.favoritedByUsers, (item: any) => item.documentId !== user.documentId),
-          'documentId',
-        )
-      : _.concat(_.map(post.favoritedByUsers, 'documentId'), user.documentId);
+  const onFavoritedButtonPressed = () => {
+    if (user) {
+      const userDocumentIds = post.favoritedByMe
+        ? _.map(
+            _.filter(post.favoritedByUsers, (item: any) => item.documentId !== user.documentId),
+            'documentId',
+          )
+        : _.concat(_.map(post.favoritedByUsers, 'documentId'), user.documentId);
 
-    mutate({
-      documentId: post.documentId,
-      postData: {
-        favoritedByUsers: userDocumentIds,
-      },
-    });
+      mutate({
+        documentId: post.documentId,
+        postData: {
+          favoritedByUsers: userDocumentIds,
+        },
+      });
+    }
+  };
+
+  const onShareButtonPressed = () => {
+    console.log('user');
   };
 
   const renderTrigger = (triggerProps: any) => {
@@ -85,11 +91,11 @@ const PostMenuPopover = ({ post, ...props }: any) => {
       <PopoverBackdrop />
       <PopoverContent className="w-24 px-2 py-1">
         <PopoverBody contentContainerClassName="items-center justify-center">
-          <Button size="xs" variant="link" onPress={() => onFavoritedButtonPress()}>
+          <Button size="xs" variant="link" onPress={() => onFavoritedButtonPressed()}>
             <ButtonText>{post.favoritedByMe ? '已收藏' : '收藏'}</ButtonText>
           </Button>
           <Divider />
-          <Button size="xs" variant="link">
+          <Button size="xs" variant="link" onPress={() => onShareButtonPressed()}>
             <ButtonText>分享</ButtonText>
           </Button>
         </PopoverBody>

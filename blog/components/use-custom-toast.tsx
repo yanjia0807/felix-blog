@@ -7,6 +7,33 @@ import { CloseIcon, Icon } from './ui/icon';
 import { Toast, ToastDescription, ToastTitle, useToast } from './ui/toast';
 import { VStack } from './ui/vstack';
 
+const CustomToast = ({ toast, id, title, description, actions }: any) => {
+  return (
+    <Toast
+      nativeID={id}
+      className="w-full min-w-[240] max-w-[320] flex-row gap-4 bg-background-0 p-4 shadow-hard-2">
+      <VStack space="xl" className="flex-1">
+        <VStack space="xs">
+          <HStack className="items-center justify-between">
+            <ToastTitle className="font-semibold text-typography-900">{title}</ToastTitle>
+            <Pressable onPress={() => toast.close(id)}>
+              <Icon as={CloseIcon} className="stroke-background-500" />
+            </Pressable>
+          </HStack>
+          <ToastDescription className="text-typography-700">{description}</ToastDescription>
+        </VStack>
+        <ButtonGroup className="flex-row gap-3">
+          {_.map(actions, (action: any) => (
+            <Button size="sm" className="flex-grow" onPress={() => action['onPress']()}>
+              <ButtonText>{action.buttonText}</ButtonText>
+            </Button>
+          ))}
+        </ButtonGroup>
+      </VStack>
+    </Toast>
+  );
+};
+
 const ConfirmToast = ({ toast, id, onConfirm, title, description }: any) => {
   return (
     <Toast
@@ -123,11 +150,33 @@ const useCustomToast = () => {
     }
   };
 
+  const custom = ({ toastId, title, description, actions, props }: any) => {
+    const id = toastId || _.random(0, 10000).toString();
+    if (!toast.isActive(id)) {
+      toast.show({
+        id: id,
+        placement: 'top',
+        duration: null,
+        render: ({ id }) => (
+          <CustomToast
+            toast={toast}
+            id={id}
+            title={title}
+            description={description}
+            actions={actions}
+          />
+        ),
+        ...props,
+      });
+    }
+  };
+
   return {
     success,
     info,
     error,
     confirm,
+    custom,
     close: (toastId: string) => {
       toast.close(toastId);
     },

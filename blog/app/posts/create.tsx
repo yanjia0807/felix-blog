@@ -14,6 +14,7 @@ import colors from 'tailwindcss/colors';
 import { z, ZodType } from 'zod';
 import { upload } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
+import { useAuth } from '@/components/auth-context';
 import PostImageSheet from '@/components/post-image-sheet';
 import PostImageGrid from '@/components/post-images-grid';
 import PostPositionSheet from '@/components/post-position-sheet';
@@ -267,12 +268,6 @@ const PostCreate = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <GalleryPreview
-        images={images}
-        initialIndex={initialIndex}
-        isVisible={galleryPreviewIsOpen}
-        onRequestClose={() => setGalleryPreviewIsOpen(false)}
-      />
       <Stack.Screen
         options={{
           title: '写帖子',
@@ -350,6 +345,12 @@ const PostCreate = () => {
             setImageSheetIsOpen(false);
           }}
           onChange={onAddImage}
+        />
+        <GalleryPreview
+          images={images}
+          initialIndex={initialIndex}
+          isVisible={galleryPreviewIsOpen}
+          onRequestClose={() => setGalleryPreviewIsOpen(false)}
         />
       </>
     </SafeAreaView>

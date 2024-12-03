@@ -7,7 +7,7 @@ import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
 const Feature = () => {
-  const { user, logout } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const toast = useCustomToast();
   return (
     <VStack className="flex-1 p-4" space="md">
@@ -30,10 +30,7 @@ const Feature = () => {
         }}>
         <ButtonText>注册</ButtonText>
       </Button>
-      <Button
-        onPress={() => {
-          logout();
-        }}>
+      <Button onPress={() => logoutMutation()}>
         <ButtonText>登出</ButtonText>
       </Button>
       <Button

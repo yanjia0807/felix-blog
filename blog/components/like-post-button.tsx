@@ -53,19 +53,21 @@ const LikePostButton = ({ post }: any) => {
   });
 
   const onLikedButtonPress = () => {
-    const userDocumentIds = post.likedByMe
-      ? _.map(
-          _.filter(post.likedByUsers, (item: any) => item.documentId !== user.documentId),
-          'documentId',
-        )
-      : _.concat(_.map(post.likedByUsers, 'documentId'), user.documentId);
+    if (user) {
+      const userDocumentIds = post.likedByMe
+        ? _.map(
+            _.filter(post.likedByUsers, (item: any) => item.documentId !== user.documentId),
+            'documentId',
+          )
+        : _.concat(_.map(post.likedByUsers, 'documentId'), user.documentId);
 
-    mutate({
-      documentId: post.documentId,
-      postData: {
-        likedByUsers: userDocumentIds,
-      },
-    });
+      mutate({
+        documentId: post.documentId,
+        postData: {
+          likedByUsers: userDocumentIds,
+        },
+      });
+    }
   };
 
   return (

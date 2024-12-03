@@ -5,8 +5,8 @@ import _ from 'lodash';
 import { MapPin, Search } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
-import colors from 'tailwindcss/colors';
 import { fetchPosts, fetchTags } from '@/api';
+import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
 import CommentInfo from '@/components/comment-info';
 import LikePostButton from '@/components/like-post-button';
@@ -24,14 +24,18 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import useCustomToast from '@/components/use-custom-toast';
 
 const PostHome = () => {
+  const { user } = useAuth();
+  const toast = useCustomToast();
+
   const {
-    data,
+    data: postData,
     error,
     fetchNextPage,
     hasNextPage,
-    isLoading,
+    isLoading: isLoadingPost,
     isFetchingNextPage,
     status,
     refetch,
@@ -62,16 +66,15 @@ const PostHome = () => {
   });
 
   const posts: any = _.reduce(
-    data?.pages,
+    postData?.pages,
     (result: any, item: any) => [...result, ...item.data],
     [],
   );
 
-  const { isLoading: isLoadingTags, data: tags } = useQuery({
+  const { isLoading: isLoadingTag, data: tags } = useQuery({
     queryKey: ['tags'],
     queryFn: fetchTags,
   });
-  console.log('@@', tags);
 
   const renderTagsItem = ({ item }: any) => {
     return (
@@ -139,15 +142,32 @@ const PostHome = () => {
     );
   };
 
-  if (status === 'pending') {
-    return (
-      <Spinner
-        size="small"
-        className="absolute bottom-0 left-0 right-0 top-0"
-        color={colors.gray[500]}
-      />
-    );
-  }
+  const onCreatePostButtonPressed = () => {
+    if (!user) {
+      toast.custom({
+        title: '未登录',
+        description: `请登录以创建帖子。如果您还没有账号，可以注册一个。`,
+        actions: [
+          {
+            buttonText: '登录',
+            onPress: () => {
+              router.push('/login');
+            },
+          },
+          {
+            buttonText: '注册',
+            onPress: () => {
+              router.push('/register');
+            },
+          },
+        ],
+      });
+    } else {
+      router.push('/posts/create');
+    }
+  };
+
+  const isLoading = isLoadingPost || isLoadingTag;
 
   return (
     <SafeAreaView className="flex-1">
@@ -156,6 +176,7 @@ const PostHome = () => {
           headerShown: false,
         }}
       />
+      {isLoading && <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />}
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <VStack className="flex-1" space="3xl">
           <MainHeader />
@@ -177,7 +198,7 @@ const PostHome = () => {
               showsHorizontalScrollIndicator={false}
             />
           </HStack>
-          <Box className="flex-1">
+          <VStack className="flex-1">
             <FlashList
               data={posts}
               renderItem={renderPostItem}
@@ -192,7 +213,7 @@ const PostHome = () => {
               }}
               refreshControl={
                 <RefreshControl
-                  refreshing={isLoading}
+                  refreshing={isLoadingPost}
                   onRefresh={() => {
                     if (!isLoading) {
                       refetch();
@@ -201,15 +222,10 @@ const PostHome = () => {
                 />
               }
             />
-          </Box>
+          </VStack>
         </VStack>
       </ScrollView>
-      <Fab
-        size="md"
-        placement="bottom right"
-        onPress={() => {
-          router.push('/posts/create');
-        }}>
+      <Fab size="md" placement="bottom right" onPress={() => onCreatePostButtonPressed()}>
         <FabIcon as={AddIcon} />
         <FabLabel>帖子</FabLabel>
       </Fab>

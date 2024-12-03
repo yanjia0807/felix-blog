@@ -194,11 +194,11 @@ const SignUp = () => {
             <Text bold={true}>同意服务条款：</Text>
             <Text>在点击“注册”按钮前，请阅读并同意我们的</Text>
             <Link onPress={() => setIsTermsDialogOpen(true)}>
-              <LinkText>服务条款</LinkText>
+              <LinkText className="no-underline">服务条款</LinkText>
             </Link>
             <Text>和</Text>
             <Link onPress={() => setIsPrivacyDialogOpen(true)}>
-              <LinkText>隐私政策</LinkText>
+              <LinkText className="no-underline">隐私政策</LinkText>
             </Link>
           </HStack>
           <Button
@@ -218,14 +218,14 @@ const SignUp = () => {
             }}>
             <ButtonText>取消</ButtonText>
           </Button>
-          <HStack space="xs" className="items-center justify-center">
+          <HStack className="items-center justify-center" space="sm">
             <Text bold={true}>已有账号？</Text>
             <Button
               variant="link"
               onPress={() => {
                 router.replace('/login');
               }}>
-              <LinkText>登录</LinkText>
+              <LinkText className="no-underline">登录</LinkText>
             </Button>
           </HStack>
         </VStack>

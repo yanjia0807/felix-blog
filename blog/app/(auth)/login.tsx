@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack } from 'expo-router';
+import _ from 'lodash';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -42,6 +43,7 @@ const SignIn = () => {
   const { reset, error, mutate, isSuccess, isError, isPending } = loginMutation;
   const insets = useSafeAreaInsets();
   const toast = useCustomToast();
+
   const {
     control,
     handleSubmit,
@@ -50,14 +52,17 @@ const SignIn = () => {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: any) => {
-    mutate(data, {
-      onSuccess: () => {
+  const onSubmit = (formData: any) => {
+    mutate(formData, {
+      onSuccess: (data: any) => {
         toast.success({
           title: '登录成功',
-          description: '欢迎回来',
+          description: `${data.user.username}，欢迎回来`,
         });
-        router.dismissAll();
+
+        _.delay(() => {
+          router.dismissAll();
+        }, 1200);
       },
       onError: (error: any) => {
         toast.error({
@@ -156,13 +161,14 @@ const SignIn = () => {
             }}>
             <ButtonText>取消</ButtonText>
           </Button>
-          <HStack className="items-center justify-center">
+          <HStack className="items-center justify-center" space="sm">
+            <Text bold={true}>没有账号？</Text>
             <Button
               variant="link"
               onPress={() => {
                 router.replace('/register');
               }}>
-              <LinkText>注册新用户</LinkText>
+              <LinkText className="no-underline">注册新用户</LinkText>
             </Button>
           </HStack>
         </VStack>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 
 export const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER_URL;
 
@@ -28,6 +29,21 @@ apiClient.interceptors.request.use(
   },
 );
 
+apiClient.interceptors.request.use(
+  async (config: any) => {
+    const accessToken = await SecureStore.getItemAsync('accessToken');
+    if (accessToken) {
+      config.headers.Authorization = 'Bearer ' + accessToken;
+    } else {
+      delete config.headers.Authorization;
+    }
+    return config;
+  },
+  (error: any) => {
+    return Promise.reject(error);
+  },
+);
+
 apiClient.interceptors.response.use(
   (response) => {
     console.log(
@@ -50,20 +66,4 @@ apiClient.interceptors.response.use(
   },
 );
 
-function setAuthHeader(accessToken: string | null) {
-  apiClient.interceptors.request.use(
-    (config: any) => {
-      if (accessToken) {
-        config.headers.Authorization = 'Bearer ' + accessToken;
-      } else {
-        delete config.headers.Authorization;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    },
-  );
-}
-
-export { apiClient, setAuthHeader };
+export { apiClient };

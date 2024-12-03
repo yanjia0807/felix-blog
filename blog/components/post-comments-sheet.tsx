@@ -44,11 +44,11 @@ const commentSchema = z.object({
 });
 
 const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId }: any, ref: any) {
+  const { user } = useAuth();
   const [replyComment, setReplyComment] = useState<any>();
   const [selectCommentDocumentId, setSelectCommentDocumentId] = useState<any>();
   const [expandCommentIds, setExpandCommentIds] = useState<any>([]);
   const inputRef = useRef<any>(null);
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const insets = useSafeAreaInsets();
@@ -506,30 +506,34 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
   const renderFooter = useCallback(
     (props: any) => {
       return (
-        <BottomSheetFooter {...props}>
-          <Box className="flex-1">
-            <Controller
-              name="content"
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <BottomSheetTextInput
-                  ref={inputRef}
-                  inputMode="text"
-                  returnKeyType="send"
-                  value={value}
-                  placeholder={replyComment ? `回复 ${replyComment.username}` : '输入评论...'}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  onSubmitEditing={handleSubmit(onSubmit)}
-                  className="m-2 h-10 flex-1 rounded-2xl border border-gray-200 bg-gray-100 p-2"
+        <>
+          {user && (
+            <BottomSheetFooter {...props}>
+              <Box className="flex-1">
+                <Controller
+                  name="content"
+                  control={control}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <BottomSheetTextInput
+                      ref={inputRef}
+                      inputMode="text"
+                      returnKeyType="send"
+                      value={value}
+                      placeholder={replyComment ? `回复 ${replyComment.username}` : '输入评论...'}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      onSubmitEditing={handleSubmit(onSubmit)}
+                      className="m-2 h-10 flex-1 rounded-2xl border border-gray-200 bg-gray-100 p-2"
+                    />
+                  )}
                 />
-              )}
-            />
-          </Box>
-        </BottomSheetFooter>
+              </Box>
+            </BottomSheetFooter>
+          )}
+        </>
       );
     },
-    [control, handleSubmit, onSubmit, replyComment],
+    [control, handleSubmit, onSubmit, replyComment, user],
   );
 
   const renderEmptyComponent = (props: any) => {

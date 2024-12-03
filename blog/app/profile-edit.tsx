@@ -198,7 +198,7 @@ const ProfileEdit = () => {
 
   const renderHeaderLeft = () => (
     <Button
-      size="sm"
+      size="md"
       variant="link"
       onPress={() => {
         router.back();

@@ -1,7 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { fetchUser, setAuthHeader } from '@/api';
+import { fetchUser } from '@/api';
+
 import {
   loginUser,
   registerUser,
@@ -12,43 +13,40 @@ import {
 const AuthContext = createContext<any>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
-  const [tokenExists, setTokenExists] = useState<boolean>(false);
+  let [accessToken, setAccessToken] = useState<any>();
   const queryClient = useQueryClient();
 
-  const { data, error, isFetching, isSuccess, status } = useQuery({
+  const { data, error, isLoading, isSuccess, status } = useQuery({
     queryKey: ['user'],
     queryFn: fetchUser,
-    enabled: tokenExists,
+    enabled: !!accessToken,
+    initialData: null,
   });
 
   useEffect(() => {
     const loadAuthData = async () => {
-      const accessToken = await AsyncStorage.getItem('accessToken');
-      if (accessToken) {
-        setAuthHeader(accessToken);
-        setTokenExists(true);
-      } else {
-        setAuthHeader(null);
-        setTokenExists(false);
-      }
+      const token = await SecureStore.getItemAsync('accessToken');
+      console.log('Loaded token:', token);
+      setAccessToken(token);
     };
 
     loadAuthData();
   }, []);
 
-  const logout = async () => {
-    await AsyncStorage.removeItem('accessToken');
-    queryClient.removeQueries({ queryKey: ['user'] });
-    setTokenExists(false);
-    setAuthHeader(null);
+  const logoutMutation = async () => {
+    await SecureStore.deleteItemAsync('accessToken');
+    setAccessToken(null);
+    await queryClient.resetQueries({
+      queryKey: ['user'],
+    });
   };
 
   const loginMutation = useMutation({
     mutationFn: (data: any) => loginUser(data),
     onSuccess: async (data: any) => {
-      await AsyncStorage.setItem('accessToken', data.jwt);
-      setAuthHeader(data.jwt);
-      setTokenExists(true);
+      console.log('Login successful, token:', data.jwt);
+      await SecureStore.setItemAsync('accessToken', data.jwt);
+      setAccessToken(data.jwt);
     },
     onError: (error: Error) => {
       throw error;
@@ -94,7 +92,7 @@ export const AuthProvider = ({ children }: any) => {
         forgetPasswordMutation,
         resetPasswordMutation,
         sendEmailConfirmationMutation,
-        logout,
+        logoutMutation,
       }}>
       {children}
     </AuthContext.Provider>

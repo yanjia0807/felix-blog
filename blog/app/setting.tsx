@@ -18,7 +18,7 @@ import UserInfoHeader from '@/components/user-info-header';
 
 const Setting = () => {
   const toast = useCustomToast();
-  const { user, forgetPasswordMutation, logout } = useAuth();
+  const { user, forgetPasswordMutation, logoutMutation } = useAuth();
   const { mutate } = forgetPasswordMutation;
   const passwordToastId = _.random(0, 10000).toString();
   const logoutToastId = _.random(0, 10000).toString();
@@ -46,25 +46,23 @@ const Setting = () => {
     });
   };
 
-  const onLogoutConfirm = async () => {
-    await logout();
-    toast.close(logoutToastId);
-    toast.success({ description: '退出登录成功' });
-    router.navigate('/');
-  };
-
   const onLogoutBtnPress = () => {
     toast.confirm({
       toastId: logoutToastId,
       title: '退出登录',
       description: `确认要退出登录吗？`,
-      onConfirm: onLogoutConfirm,
+      onConfirm: async () => {
+        await logoutMutation();
+        router.navigate('/');
+        toast.close(logoutToastId);
+        toast.success({ description: '退出登录成功' });
+      },
     });
   };
 
   const renderHeaderLeft = () => (
     <Button
-      size="sm"
+      size="md"
       action="secondary"
       variant="link"
       onPress={() => {

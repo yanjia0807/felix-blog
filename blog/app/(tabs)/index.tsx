@@ -19,6 +19,7 @@ import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar'
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
@@ -157,7 +158,7 @@ const Home = () => {
     error,
     fetchNextPage,
     hasNextPage,
-    isLoading,
+    isLoading: isLoadingRecomment,
     isFetchingNextPage,
     status,
     refetch,
@@ -330,6 +331,8 @@ const Home = () => {
     [],
   );
 
+  const isLoading = isLoadingRecomment;
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -337,6 +340,7 @@ const Home = () => {
           headerShown: false,
         }}
       />
+      {isLoading && <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />}
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <VStack className="flex-1" space="3xl">
           <MainHeader />
