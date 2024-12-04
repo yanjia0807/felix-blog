@@ -3,14 +3,14 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 
 type Theme = 'light' | 'dark' | undefined;
 
-interface ThemeContextType {
+interface PreferencesContextType {
   theme: Theme;
   updateTheme: (newTheme: Theme) => void;
 }
 
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+export const PreferencesContext = createContext<PreferencesContextType | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+export const PreferencesProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>();
 
   useEffect(() => {
@@ -32,13 +32,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  return <ThemeContext.Provider value={{ theme, updateTheme }}>{children}</ThemeContext.Provider>;
+  return <PreferencesContext.Provider value={{ theme, updateTheme }}>{children}</PreferencesContext.Provider>;
 };
 
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
+export const usePreferences = () => {
+  const context = useContext(PreferencesContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error('usePreferences must be used within a PreferencesProvider');
   }
   return context;
 };

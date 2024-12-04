@@ -208,9 +208,9 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
     (props: any) => {
       return (
         <BottomSheetFooter {...props}>
-          <HStack className="flex-1 bg-gray-50 p-2 items-center justify-around">
+          <HStack className="flex-1 p-2 items-center justify-around">
             <TouchableOpacity
-              className="h-24 w-24 items-center justify-center rounded-full bg-red-500"
+              className="h-24 w-24 items-center justify-center rounded-full"
               onPress={doRecording}>
               {recordingStatus?.isRecording ? (
                 <>

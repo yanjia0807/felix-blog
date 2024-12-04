@@ -146,14 +146,14 @@ const PostDetail = () => {
     <>
       <BookMarkedButton
         post={post}
-        className="h-8 w-8 mr-2 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl"
+        className="h-8 w-8 mr-2 items-center justify-center rounded-full drop-shadow-xl"
       />
-      <ShareButton className="h-8 w-8 items-center justify-center rounded-full bg-secondary-500 drop-shadow-xl" />
+      <ShareButton className="h-8 w-8 items-center justify-center rounded-full drop-shadow-xl" />
     </>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
           title: '',

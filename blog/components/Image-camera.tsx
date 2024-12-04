@@ -31,7 +31,7 @@ const ImageCamera = () => {
   return (
     <Box className="flex-1">
       <ExpoCameraView className="flex-1" facing={facing}>
-        <Box className="flex-1 flex-row items-end bg-background-400">
+        <Box className="flex-1 flex-row items-end">
           <Button variant="solid" onPress={toggleCameraFacing}>
             <ButtonText>反转相机</ButtonText>
           </Button>

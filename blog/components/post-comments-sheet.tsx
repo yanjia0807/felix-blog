@@ -3,7 +3,7 @@ import BottomSheet, {
   BottomSheetSectionList,
   BottomSheetTextInput,
   BottomSheetView,
-  TouchableOpacity,
+  TouchableOpacity, BottomSheetBackdrop, 
 } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -24,7 +24,6 @@ import {
 } from '@/api/comment';
 import { useAuth } from './auth-context';
 import { Avatar, AvatarImage } from './ui/avatar';
-import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
@@ -523,7 +522,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
                       onChangeText={onChange}
                       onBlur={onBlur}
                       onSubmitEditing={handleSubmit(onSubmit)}
-                      className="m-2 h-10 flex-1 rounded-2xl border border-gray-200 bg-gray-100 p-2"
+                      className="m-2 h-10 flex-1 rounded-2xl border p-2"
                     />
                   )}
                 />
@@ -550,7 +549,6 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
       index={-1}
       enableDynamicSizing={false}
       backdropComponent={BottomSheetBackdrop}
-      handleComponent={BottomSheetDragIndicator}
       footerComponent={renderFooter}
       enablePanDownToClose={true}
       topInset={insets.top}
@@ -562,7 +560,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
           <Heading className="p-4">{`${total}条评论`}</Heading>
           <Divider />
         </Box>
-        <VStack className="bg-white p-2" space="2xl">
+        <VStack className="p-2" space="2xl">
           {isFetchCommentsSuccess && (
             <BottomSheetSectionList
               sections={sectionListData}

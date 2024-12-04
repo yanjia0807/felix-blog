@@ -289,7 +289,7 @@ const PostCreate = () => {
           <Controller control={control} name="title" render={renderTitle} />
           {tags.length > 0 && <PostTags tags={tags} onRemoveTag={onRemoveTag} />}
           <Controller control={control} name="content" render={renderContent} />
-          <Divider className="my-2 bg-background-200" />
+          <Divider className="my-2" />
           <HStack className="justify-end">
             <Button
               variant="link"
@@ -315,7 +315,7 @@ const PostCreate = () => {
           )}
         </KeyboardAwareScrollView>
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
-          <HStack space="md" className="w-full bg-grey-50 px-4">
+          <HStack space="md" className="w-full px-4">
             <ButtonGroup space="sm">
               <Button variant="link" action="secondary" onPress={() => setImageSheetIsOpen(true)}>
                 <ButtonIcon as={ImageIcon} />

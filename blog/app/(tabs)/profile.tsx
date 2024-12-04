@@ -68,7 +68,7 @@ const PostListView = () => {
 
   const renderItem = ({ item }: any) => {
     return (
-      <TouchableOpacity onPress={() => {}} className="my-3 rounded-lg bg-background-0 p-4">
+      <TouchableOpacity onPress={() => {}} className="my-3 rounded-lg p-4">
         <VStack space="lg">
           <HStack className="items-start justify-start" space="md">
             <VStack space="md" className="flex-1">

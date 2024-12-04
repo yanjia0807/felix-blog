@@ -17,6 +17,8 @@ import { apiServerURL, fetchRecommendPosts } from '@/api';
 import MainHeader from '@/components/main-header';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
+import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Spinner } from '@/components/ui/spinner';
@@ -200,7 +202,7 @@ const Home = () => {
         style={{
           borderRadius: 16,
         }}
-        className="mx-2 h-48 w-80 bg-background-0">
+        className="mx-2 h-48 w-80">
         <Box className="absolute bottom-0 w-full overflow-hidden rounded-2xl">
           <BlurView intensity={10} tint="light" className="p-2">
             <VStack space="md">
@@ -235,77 +237,81 @@ const Home = () => {
 
   const renderRecommentItem = ({ item, index }: any) => {
     return (
-      <TouchableOpacity
-        onPress={() => {
-          router.push({
-            pathname: '/posts/[documentId]',
-            params: {
-              documentId: item.documentId,
-            },
-          });
-        }}
-        className={`my-6 rounded-lg bg-background-0 p-4 ${index === 0 ? 'mt-0' : ''}`}>
-        <VStack space="lg">
-          <HStack className="items-center justify-between" space="md">
-            <Box className="w-8">
-              <Avatar size="sm">
-                <AvatarFallbackText>
-                  {item.author.username || item.author.profile?.nickname}
-                </AvatarFallbackText>
-                <AvatarImage
-                  source={{
-                    uri: `${apiServerURL}/${item.author.profile?.avatar.formats.thumbnail.url}`,
-                  }}
-                />
-              </Avatar>
-            </Box>
-            <VStack className="flex-1">
-              <HStack className="items-center justify-between">
-                <Text size="sm" bold={true}>
-                  {item.author.username || item.author.profile?.nickname}
-                </Text>
-                <Text size="xs">30分钟之前</Text>
-              </HStack>
-              <HStack className="items-center justify-between">
-                <HStack space="xs" className="items-center">
-                  <Icon as={MapPin} size="xs" />
-                  <Text size="xs">重庆市，渝北区</Text>
+      <Card className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`} size="md">
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: '/posts/[documentId]',
+              params: {
+                documentId: item.documentId,
+              },
+            });
+          }}>
+          <VStack space="lg">
+            <HStack className="items-center justify-between" space="md">
+              <Box className="w-8">
+                <Avatar size="sm">
+                  <AvatarFallbackText>
+                    {item.author.username || item.author.profile?.nickname}
+                  </AvatarFallbackText>
+                  <AvatarImage
+                    source={{
+                      uri: `${apiServerURL}/${item.author.profile?.avatar.formats.thumbnail.url}`,
+                    }}
+                  />
+                </Avatar>
+              </Box>
+              <VStack className="flex-1">
+                <HStack className="items-center justify-between">
+                  <Text size="sm" bold={true}>
+                    {item.author.username || item.author.profile?.nickname}
+                  </Text>
+                  <Text size="xs">30分钟之前</Text>
                 </HStack>
-              </HStack>
-            </VStack>
-          </HStack>
-          <HStack className="items-start justify-start" space="md">
-            <Box className="w-8"></Box>
-            <VStack space="md" className="flex-1">
-              <Text numberOfLines={1} bold={true} size="md">
-                {item.title}
-              </Text>
-              <Text numberOfLines={3} size="sm">
-                {item.content}
-              </Text>
-              <HStack className="items-center justify-between my-4">
-                {Array(5)
-                  .fill('https://i.pravatar.cc/150')
-                  .map((item, index) => (
-                    <Avatar
-                      key={index}
-                      size="xs"
-                      style={{
-                        position: 'absolute',
-                        right: index * 14,
-                      }}>
-                      <AvatarImage
-                        source={{
-                          uri: item,
-                        }}
-                      />
-                    </Avatar>
-                  ))}
-              </HStack>
-            </VStack>
-          </HStack>
-        </VStack>
-      </TouchableOpacity>
+                <HStack className="items-center justify-between">
+                  <HStack space="xs" className="items-center">
+                    <Icon as={MapPin} size="xs" />
+                    <Text size="xs">重庆市，渝北区</Text>
+                  </HStack>
+                </HStack>
+              </VStack>
+            </HStack>
+            <HStack className="items-start justify-start" space="md">
+              <Box className="w-8"></Box>
+              <VStack space="md" className="flex-1 justify-between">
+                <VStack>
+                  <Text numberOfLines={1} bold={true} size="md">
+                    {item.title}
+                  </Text>
+                  <Text numberOfLines={3} size="sm">
+                    {item.content}
+                  </Text>
+                </VStack>
+
+                <Box className="my-6 w-full">
+                  {Array(5)
+                    .fill('https://i.pravatar.cc/150')
+                    .map((item, index) => (
+                      <Avatar
+                        key={index}
+                        size="xs"
+                        style={{
+                          position: 'absolute',
+                          right: index * 14,
+                        }}>
+                        <AvatarImage
+                          source={{
+                            uri: item,
+                          }}
+                        />
+                      </Avatar>
+                    ))}
+                </Box>
+              </VStack>
+            </HStack>
+          </VStack>
+        </TouchableOpacity>
+      </Card>
     );
   };
 
@@ -340,9 +346,11 @@ const Home = () => {
           headerShown: false,
         }}
       />
-      {isLoading && <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />}
+      {isLoading && (
+        <Spinner size="small" className="absolute bg-background bottom-0 left-0 right-0 top-0" />
+      )}
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        <VStack className="flex-1" space="3xl">
+        <VStack className="flex-1 color-background-50" space="3xl">
           <MainHeader />
           <FlashList
             data={posts}
@@ -352,9 +360,7 @@ const Home = () => {
             showsHorizontalScrollIndicator={false}
           />
           <VStack>
-            <Text size="lg" bold={true} className="my-4">
-              最近更新
-            </Text>
+            <Heading className="my-4 color-primary-950">最近更新</Heading>
             <FlashList
               data={users}
               estimatedItemSize={42}
@@ -364,9 +370,7 @@ const Home = () => {
             />
           </VStack>
           <VStack className="flex-1">
-            <Text size="lg" bold={true} className="my-4">
-              推荐
-            </Text>
+            <Heading className="my-4">推荐</Heading>
             <FlashList
               data={recomments}
               renderItem={renderRecommentItem}

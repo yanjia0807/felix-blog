@@ -228,7 +228,7 @@ const ProfileEdit = () => {
             <Center className="absolute top-16 w-full">
               <Avatar size="2xl">
                 <AvatarImage source={require('@/assets/images/profile/image.png')} />
-                <AvatarBadge className="items-center justify-center bg-background-500">
+                <AvatarBadge className="items-center justify-center">
                   <Icon as={CameraIcon} />
                 </AvatarBadge>
               </Avatar>

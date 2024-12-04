@@ -78,7 +78,7 @@ const PostHome = () => {
 
   const renderTagsItem = ({ item }: any) => {
     return (
-      <TouchableOpacity className="p-2 mx-2 bg-white rounded-lg">
+      <TouchableOpacity className="p-2 mx-2 rounded-lg">
         <Text>{item.name}</Text>
       </TouchableOpacity>
     );

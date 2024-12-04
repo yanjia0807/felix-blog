@@ -12,7 +12,7 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
-import { useTheme } from '@/components/ui/theme-provider';
+import { usePreferences } from '@/components/preferences-provider';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import UserInfoHeader from '@/components/user-info-header';
@@ -23,7 +23,7 @@ const Setting = () => {
   const { mutate } = forgetPasswordMutation;
   const passwordToastId = _.random(0, 10000).toString();
   const logoutToastId = _.random(0, 10000).toString();
-  const { theme, updateTheme } = useTheme();
+  const { theme, updateTheme } = usePreferences();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(theme === 'dark');
 
   const onResetPasswordConfirm = () => {

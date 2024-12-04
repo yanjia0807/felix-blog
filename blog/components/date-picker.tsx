@@ -1,9 +1,8 @@
-import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Calendar } from 'lucide-react-native';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
-import { BottomSheetBackdrop, BottomSheetDragIndicator } from './ui/bottomsheet';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 
 type MyComponentProps = {
@@ -54,7 +53,6 @@ export const DatePicker: React.FC<MyComponentProps> = ({
       <BottomSheetModal
         ref={bottomSheetRef}
         backdropComponent={BottomSheetBackdrop}
-        handleComponent={BottomSheetDragIndicator}
         enableDynamicSizing={true}>
         <BottomSheetView>
           <DateTimePicker

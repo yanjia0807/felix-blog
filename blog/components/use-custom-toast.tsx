@@ -11,7 +11,7 @@ const CustomToast = ({ toast, id, title, description, actions }: any) => {
   return (
     <Toast
       nativeID={id}
-      className="w-full min-w-[240] max-w-[320] flex-row gap-4 bg-background-0 p-4 shadow-hard-2">
+      className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
       <VStack space="xl" className="flex-1">
         <VStack space="xs">
           <HStack className="items-center justify-between">
@@ -38,7 +38,7 @@ const ConfirmToast = ({ toast, id, onConfirm, title, description }: any) => {
   return (
     <Toast
       nativeID={id}
-      className="w-full min-w-[240] max-w-[320] flex-row gap-4 bg-background-0 p-4 shadow-hard-2">
+      className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
       <VStack space="xl" className="flex-1">
         <VStack space="xs">
           <HStack className="items-center justify-between">

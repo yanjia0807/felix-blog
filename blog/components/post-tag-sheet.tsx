@@ -92,7 +92,7 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
   const renderFooter = useCallback(
     (props: any) => (
       <BottomSheetFooter {...props}>
-        <HStack className="bg-gray-50 p-2 flex-1 items-center justify-around">
+        <HStack className="p-2 flex-1 items-center justify-around">
           <Button className="flex-1" variant="link" onPress={() => onCancel()}>
             <ButtonText>取消</ButtonText>
           </Button>
@@ -135,7 +135,7 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
           render={({ field: { onChange, value } }) => (
             <BottomSheetTextInput
               placeholder="搜索标签..."
-              className="my-2 w-full rounded-2xl border border-gray-100 bg-gray-100 p-3 focus:border-primary-700"
+              className="my-2 w-full rounded-2xl border p-3"
               value={value}
               onChangeText={(e) => {
                 onChange(e);
