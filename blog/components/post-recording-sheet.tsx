@@ -205,7 +205,7 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
   );
 
   const renderFooter = useCallback(
-    (props: any) => {
+    (props: any) => { 
       return (
         <BottomSheetFooter {...props}>
           <HStack className="flex-1 p-2 items-center justify-around">
@@ -263,7 +263,7 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}
       onClose={resetRecording}>
-      <BottomSheetView className="flex-1 p-4 items-center">
+      <BottomSheetView className="flex-1 p-4 items-center bg-background-100">
         <Heading size="4xl" className="mt-12">
           {moment.utc(durationMillis).format('mm:ss')}
         </Heading>

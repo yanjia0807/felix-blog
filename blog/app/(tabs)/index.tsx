@@ -347,7 +347,7 @@ const Home = () => {
         }}
       />
       {isLoading && (
-        <Spinner size="small" className="absolute bg-background bottom-0 left-0 right-0 top-0" />
+        <Spinner size="small" className="bg-background absolute bottom-0 left-0 right-0 top-0" />
       )}
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <VStack className="flex-1 color-background-50" space="3xl">

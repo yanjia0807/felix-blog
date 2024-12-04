@@ -278,7 +278,7 @@ const PostCreate = () => {
       />
       <>
         <KeyboardAwareScrollView
-          contentContainerStyle={{ flex: 1, padding: 16, backgroundColor: 'white' }}>
+          contentContainerStyle={{ flex: 1, padding: 16 }}>
           {isPending && (
             <Spinner
               size="small"

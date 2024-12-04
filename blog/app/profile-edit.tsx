@@ -219,8 +219,8 @@ const ProfileEdit = () => {
       <KeyboardAwareScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
-          backgroundColor: 'white',
         }}
+        contentContainerClassName=''
         bottomOffset={30}
         showsVerticalScrollIndicator={false}>
         <VStack className="flex-1" space="lg">

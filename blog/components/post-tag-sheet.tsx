@@ -124,11 +124,12 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
       bottomInset={insets.bottom}
       enableDynamicSizing={false}
       enablePanDownToClose={true}
-      footerComponent={(props) => renderFooter({ ...props })}
+      enableOverDrag={false}
+      footerComponent={renderFooter}
       keyboardBehavior="fillParent"
       ref={ref}
       onAnimate={onBottomSheetAnimate}>
-      <BottomSheetView className="flex-1 p-4">
+      <BottomSheetView className="flex-1 p-4 bg-background-100">
         <Controller
           name="name"
           control={control}

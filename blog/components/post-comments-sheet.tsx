@@ -3,7 +3,7 @@ import BottomSheet, {
   BottomSheetSectionList,
   BottomSheetTextInput,
   BottomSheetView,
-  TouchableOpacity, BottomSheetBackdrop, 
+  TouchableOpacity, BottomSheetBackdrop,   
 } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -555,7 +555,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
       bottomInset={insets.bottom}
       keyboardBehavior="interactive"
       ref={ref}>
-      <BottomSheetView className="flex-1 p-4">
+      <BottomSheetView className="flex-1 p-4 bg-background-100">
         <Box className="items-center mb-4">
           <Heading className="p-4">{`${total}条评论`}</Heading>
           <Divider />

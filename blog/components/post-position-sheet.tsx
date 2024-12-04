@@ -124,7 +124,7 @@ const PostPositionSheet = forwardRef(function PostPositionSheet({ onChange }: an
       enableDynamicSizing={false}
       enablePanDownToClose={true}
       ref={ref}>
-      <BottomSheetView className="flex-1 p-4">
+      <BottomSheetView className="flex-1 p-4 bg-background-100">
         <VStack className="flex-1" space="md">
           {error && (
             <Box className="flex-1 justify-center items-center">

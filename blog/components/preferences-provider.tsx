@@ -1,5 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useColorScheme } from 'react-native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import { GluestackUIProvider } from './ui/gluestack-ui-provider';
 
 type Theme = 'light' | 'dark' | undefined;
 
@@ -12,15 +15,20 @@ export const PreferencesContext = createContext<PreferencesContextType | undefin
 
 export const PreferencesProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>();
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
-    (async () => {
-      const savedTheme = (await AsyncStorage.getItem('theme')) as Theme;
+    const loadTheme = async () => {
+      const savedTheme = await AsyncStorage.getItem('theme') as Theme;
       if (savedTheme) {
         setTheme(savedTheme);
         AsyncStorage.setItem('theme', savedTheme);
+      } else {
+        setTheme(colorScheme || "light");
       }
-    })();
+    };
+
+    loadTheme();
   }, []);
 
   const updateTheme = (newTheme: Theme) => {
@@ -32,7 +40,13 @@ export const PreferencesProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
-  return <PreferencesContext.Provider value={{ theme, updateTheme }}>{children}</PreferencesContext.Provider>;
+  return <PreferencesContext.Provider value={{ theme, updateTheme }}>
+    <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <GluestackUIProvider mode={theme}>
+      {children}
+      </GluestackUIProvider>
+      </NavigationThemeProvider>
+      </PreferencesContext.Provider>;
 };
 
 export const usePreferences = () => {

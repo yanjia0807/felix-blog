@@ -307,5 +307,3 @@ export const config = {
     '--color-indicator-error': '232 70 69',
   }),
 };
-
-console.log("@@", config)
