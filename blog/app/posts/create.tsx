@@ -239,7 +239,7 @@ const PostCreate = () => {
     ({ field: { onChange, onBlur, value } }: any) => (
       <FormControl size="md" isInvalid={!!errors.content}>
         <Box className="">
-          <Textarea className="border-0 h-32" size="md" variant="default">
+          <Textarea className="h-32 border-0" size="md" variant="default">
             <TextareaInput
               placeholder="你此时的感想..."
               inputMode="text"
@@ -267,7 +267,7 @@ const PostCreate = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           title: '写帖子',
@@ -277,8 +277,7 @@ const PostCreate = () => {
         }}
       />
       <>
-        <KeyboardAwareScrollView
-          contentContainerStyle={{ flex: 1, padding: 16 }}>
+        <KeyboardAwareScrollView contentContainerStyle={{ flex: 1, padding: 16 }}>
           {isPending && (
             <Spinner
               size="small"

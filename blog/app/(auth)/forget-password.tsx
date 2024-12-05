@@ -14,7 +14,6 @@ import {
   FormControlHelperText,
 } from '@/components/ui/form-control';
 import { Input, InputField } from '@/components/ui/input';
-import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
@@ -33,6 +32,28 @@ const ForgetPassword = () => {
     },
   });
 
+  const renderEmail = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.email} size="lg">
+      <Input variant="rounded">
+        <InputField
+          placeholder="请输入邮箱地址"
+          inputMode="email"
+          autoCapitalize="none"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+        />
+      </Input>
+      <FormControlHelper className="justify-end">
+        <FormControlHelperText></FormControlHelperText>
+      </FormControlHelper>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.email?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
   const onSubmit = (data: any) => {
     mutate(data, {
       onSuccess: () => toast.success('发送重置密码邮件成功'),
@@ -44,7 +65,7 @@ const ForgetPassword = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           title: '忘记密码',
@@ -62,27 +83,7 @@ const ForgetPassword = () => {
                 message: '邮箱地址格式不正确',
               },
             }}
-            render={({ field: { onChange, onBlur, value } }: any) => (
-              <FormControl isInvalid={!!errors.email} size="lg">
-                <Input variant="rounded">
-                  <InputField
-                    placeholder="请输入邮箱地址"
-                    inputMode="email"
-                    autoCapitalize="none"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                </Input>
-                <FormControlHelper className="justify-end">
-                  <FormControlHelperText></FormControlHelperText>
-                </FormControlHelper>
-                <FormControlError>
-                  <FormControlErrorIcon as={AlertCircleIcon} />
-                  <FormControlErrorText>{errors?.email?.message}</FormControlErrorText>
-                </FormControlError>
-              </FormControl>
-            )}
+            render={renderEmail}
           />
           <Button className="rounded-3xl" size="lg" onPress={handleSubmit(onSubmit)}>
             <ButtonText>发送邮件</ButtonText>

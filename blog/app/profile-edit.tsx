@@ -208,7 +208,7 @@ const ProfileEdit = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           title: '编辑资料',
@@ -220,7 +220,6 @@ const ProfileEdit = () => {
         contentContainerStyle={{
           paddingHorizontal: 24,
         }}
-        contentContainerClassName=''
         bottomOffset={30}
         showsVerticalScrollIndicator={false}>
         <VStack className="flex-1" space="lg">

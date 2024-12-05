@@ -14,7 +14,6 @@ import MainHeader from '@/components/main-header';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
 import { Heading } from '@/components/ui/heading';
@@ -78,7 +77,7 @@ const PostHome = () => {
 
   const renderTagsItem = ({ item }: any) => {
     return (
-      <TouchableOpacity className="p-2 mx-2 rounded-lg">
+      <TouchableOpacity className="mx-2 rounded-lg bg-secondary-300 p-2">
         <Text>{item.name}</Text>
       </TouchableOpacity>
     );
@@ -170,7 +169,7 @@ const PostHome = () => {
   const isLoading = isLoadingPost || isLoadingTag;
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           headerShown: false,

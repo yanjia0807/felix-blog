@@ -205,10 +205,10 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
   );
 
   const renderFooter = useCallback(
-    (props: any) => { 
+    (props: any) => {
       return (
         <BottomSheetFooter {...props}>
-          <HStack className="flex-1 p-2 items-center justify-around">
+          <HStack className="flex-1 items-center justify-around p-2">
             <TouchableOpacity
               className="h-24 w-24 items-center justify-center rounded-full"
               onPress={doRecording}>
@@ -263,7 +263,7 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}
       onClose={resetRecording}>
-      <BottomSheetView className="flex-1 p-4 items-center bg-background-100">
+      <BottomSheetView className="flex-1 items-center bg-background-0 p-4">
         <Heading size="4xl" className="mt-12">
           {moment.utc(durationMillis).format('mm:ss')}
         </Heading>

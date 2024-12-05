@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
 import { useAuth } from '@/components/auth-context';
+import { usePreferences } from '@/components/preferences-provider';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
@@ -12,7 +13,6 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
-import { usePreferences } from '@/components/preferences-provider';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import UserInfoHeader from '@/components/user-info-header';
@@ -91,7 +91,7 @@ const Setting = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <SafeAreaView className="flex-1">
+      <SafeAreaView className="flex-1 bg-background-100">
         {user ? (
           <VStack className="flex-1 p-6" space="xl">
             <UserInfoHeader />

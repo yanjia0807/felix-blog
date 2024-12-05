@@ -160,7 +160,7 @@ const SignUp = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           title: '用户注册',

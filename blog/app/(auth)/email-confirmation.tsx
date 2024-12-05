@@ -10,7 +10,7 @@ const EmailConfirmation = () => {
   const router = useRouter();
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           title: '验证成功',

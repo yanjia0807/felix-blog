@@ -4,6 +4,7 @@ import BottomSheet, {
   BottomSheetFooter,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
+
 import { BottomSheetFlashList } from '@gorhom/bottom-sheet';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
@@ -92,7 +93,7 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
   const renderFooter = useCallback(
     (props: any) => (
       <BottomSheetFooter {...props}>
-        <HStack className="p-2 flex-1 items-center justify-around">
+        <HStack className="flex-1 items-center justify-around p-2">
           <Button className="flex-1" variant="link" onPress={() => onCancel()}>
             <ButtonText>取消</ButtonText>
           </Button>
@@ -129,7 +130,7 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
       keyboardBehavior="fillParent"
       ref={ref}
       onAnimate={onBottomSheetAnimate}>
-      <BottomSheetView className="flex-1 p-4 bg-background-100">
+      <BottomSheetView className="flex-1 bg-background-0 p-4">
         <Controller
           name="name"
           control={control}

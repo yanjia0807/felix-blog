@@ -340,7 +340,7 @@ const Home = () => {
   const isLoading = isLoadingRecomment;
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           headerShown: false,
@@ -350,7 +350,7 @@ const Home = () => {
         <Spinner size="small" className="bg-background absolute bottom-0 left-0 right-0 top-0" />
       )}
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        <VStack className="flex-1 color-background-50" space="3xl">
+        <VStack className="flex-1" space="3xl">
           <MainHeader />
           <FlashList
             data={posts}

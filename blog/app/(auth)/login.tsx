@@ -5,7 +5,6 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { SafeAreaView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
@@ -123,7 +122,7 @@ const SignIn = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           title: '用户登录',

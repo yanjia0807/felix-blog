@@ -19,7 +19,6 @@ import {
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { Input, InputField } from '@/components/ui/input';
-import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
@@ -124,7 +123,7 @@ const ResetPassword = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-background-100">
       <Stack.Screen
         options={{
           title: '设置密码',

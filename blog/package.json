@@ -46,7 +46,7 @@
     "@gluestack-ui/textarea": "^0.1.24",
     "@gluestack-ui/toast": "^1.0.8",
     "@gluestack-ui/tooltip": "^0.1.37",
-    "@gorhom/bottom-sheet": "^5.0.6",
+    "@gorhom/bottom-sheet": "^5",
     "@hookform/resolvers": "^3.9.1",
     "@legendapp/motion": "^2.4.0",
     "@react-native-async-storage/async-storage": "1.23.1",

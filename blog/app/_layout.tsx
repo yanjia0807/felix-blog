@@ -1,13 +1,18 @@
 import '@/global.css';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
-import React, { useEffect  } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider } from '@/components/auth-context';
-import { useFonts } from 'expo-font';
-import { PreferencesProvider } from '@/components/preferences-provider';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { PreferencesProvider, Theme } from '@/components/preferences-provider';
+import { SafeAreaView, useColorScheme } from 'react-native';
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,6 +26,9 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  const [theme, setTheme] = useState<Theme>();
+  const colorScheme = useColorScheme();
+
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -31,6 +39,29 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  useLayoutEffect(() => {
+    const loadTheme = async () => {
+      const savedTheme = (await AsyncStorage.getItem('theme')) as Theme;
+      if (savedTheme) {
+        setTheme(savedTheme);
+        AsyncStorage.setItem('theme', savedTheme);
+      } else {
+        setTheme(colorScheme || 'light');
+      }
+    };
+
+    loadTheme();
+  }, []);
+
+  const updateTheme = (newTheme: Theme) => {
+    setTheme(newTheme);
+    if (newTheme) {
+      AsyncStorage.setItem('theme', newTheme);
+    } else {
+      AsyncStorage.removeItem('theme');
+    }
+  };
+
   if (!loaded) {
     return null;
   }
@@ -39,17 +70,22 @@ export default function RootLayout() {
     <GestureHandlerRootView className="flex-1">
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
-          <PreferencesProvider>
-              <BottomSheetModalProvider> 
-                <AuthProvider>
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(tabs)" options={{}} />
-                    <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                </AuthProvider>
-                </BottomSheetModalProvider>
-          </PreferencesProvider>
+          <BottomSheetModalProvider>
+            <PreferencesProvider theme={theme} updateTheme={updateTheme}>
+              <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+                <GluestackUIProvider mode={theme}>
+                  <AuthProvider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="(tabs)" options={{}} />
+                      <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="+not-found" />
+                    </Stack>
+                    <StatusBar style={theme} />
+                  </AuthProvider>
+                </GluestackUIProvider>
+              </NavigationThemeProvider> 
+            </PreferencesProvider>
+          </BottomSheetModalProvider>
         </KeyboardProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
