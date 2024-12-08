@@ -19,7 +19,7 @@ const ShareButton = ({ className, ...props }: any) => {
     <TouchableOpacity
       className={ShareButtonStyles({ className })}
       onPress={() => onShareButtonPressed()}>
-      <Icon size="md" className="text-secondary-0" as={Share2} />
+      <Icon size="md" as={Share2} />
     </TouchableOpacity>
   );
 };

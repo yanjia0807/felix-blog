@@ -3,8 +3,6 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { SafeAreaView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
@@ -19,6 +17,7 @@ import {
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { Input, InputField } from '@/components/ui/input';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
@@ -38,7 +37,6 @@ const resetPasswordSchema = z.object({
 });
 
 const ResetPassword = () => {
-  const insets = useSafeAreaInsets();
   const toast = useCustomToast();
   const { resetPasswordMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = resetPasswordMutation;
@@ -123,7 +121,7 @@ const ResetPassword = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           title: '设置密码',

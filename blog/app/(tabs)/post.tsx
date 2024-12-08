@@ -4,7 +4,7 @@ import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { MapPin, Search } from 'lucide-react-native';
 import React from 'react';
-import { RefreshControl, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
 import { fetchPosts, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
@@ -14,12 +14,15 @@ import MainHeader from '@/components/main-header';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Badge, BadgeText } from '@/components/ui/badge';
+import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -77,15 +80,15 @@ const PostHome = () => {
 
   const renderTagsItem = ({ item }: any) => {
     return (
-      <TouchableOpacity className="mx-2 rounded-lg bg-secondary-300 p-2">
-        <Text>{item.name}</Text>
-      </TouchableOpacity>
+      <Button action="secondary" className="mx-2">
+        <ButtonText>{item.name}</ButtonText>
+      </Button>
     );
   };
 
   const renderPostItem = ({ item, index }: any) => {
     return (
-      <Card className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`}>
+      <Card variant="elevated" className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`}>
         <TouchableOpacity
           onPress={() => {
             router.push({
@@ -169,7 +172,7 @@ const PostHome = () => {
   const isLoading = isLoadingPost || isLoadingTag;
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           headerShown: false,
@@ -180,7 +183,7 @@ const PostHome = () => {
         <VStack className="flex-1" space="3xl">
           <MainHeader />
           <HStack>
-            <Input className="flex-1" variant="rounded">
+            <Input className="flex-1 bg-primary-50" variant="rounded">
               <InputField />
               <InputSlot>
                 <InputIcon as={Search} className="mx-2"></InputIcon>

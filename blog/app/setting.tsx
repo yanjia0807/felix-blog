@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { Bell, ChevronRightIcon, KeyRound, LogOut, Moon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native';
 import { useAuth } from '@/components/auth-context';
 import { usePreferences } from '@/components/preferences-provider';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -91,7 +91,7 @@ const Setting = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <SafeAreaView className="flex-1 bg-background-100">
+      <SafeAreaView className="flex-1 bg-background-50">
         {user ? (
           <VStack className="flex-1 p-6" space="xl">
             <UserInfoHeader />

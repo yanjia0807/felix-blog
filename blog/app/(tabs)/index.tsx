@@ -3,16 +3,10 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
-import { MapPin } from 'lucide-react-native';
+import { Activity, MapPin, Star } from 'lucide-react-native';
 import moment from 'moment';
 import React from 'react';
-import {
-  ImageBackground,
-  RefreshControl,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { ImageBackground, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
 import { apiServerURL, fetchRecommendPosts } from '@/api';
 import MainHeader from '@/components/main-header';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
@@ -21,6 +15,7 @@ import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -237,7 +232,7 @@ const Home = () => {
 
   const renderRecommentItem = ({ item, index }: any) => {
     return (
-      <Card className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`} size="md">
+      <Card variant="elevated" className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`} size="md">
         <TouchableOpacity
           onPress={() => {
             router.push({
@@ -340,7 +335,7 @@ const Home = () => {
   const isLoading = isLoadingRecomment;
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           headerShown: false,
@@ -360,7 +355,13 @@ const Home = () => {
             showsHorizontalScrollIndicator={false}
           />
           <VStack>
-            <Heading className="my-4 color-primary-950">最近更新</Heading>
+            <HStack className="items-center" space="xs">
+              <Icon as={Activity} className="text-secondary-950" />
+              <Text bold={true} className="my-4 text-secondary-950">
+                最近更新
+              </Text>
+            </HStack>
+
             <FlashList
               data={users}
               estimatedItemSize={42}
@@ -370,7 +371,12 @@ const Home = () => {
             />
           </VStack>
           <VStack className="flex-1">
-            <Heading className="my-4">推荐</Heading>
+            <HStack className="items-center" space="xs">
+              <Icon as={Star} className="text-secondary-950" />
+              <Text bold={true} className="my-4 text-secondary-950">
+                推荐
+              </Text>
+            </HStack>
             <FlashList
               data={recomments}
               renderItem={renderRecommentItem}

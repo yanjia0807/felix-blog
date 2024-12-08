@@ -3,8 +3,6 @@ import { router, Stack } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { SafeAreaView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
 import PrivacyPolicyDialog from '@/components/privacy-policy-dialog';
@@ -23,9 +21,9 @@ import {
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { Link, LinkText } from '@/components/ui/link';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-
 import useCustomToast from '@/components/use-custom-toast';
 
 type RegisterSchemaDetails = z.infer<typeof registerSchema>;
@@ -160,7 +158,7 @@ const SignUp = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           title: '用户注册',

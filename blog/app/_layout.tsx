@@ -10,9 +10,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider } from '@/components/auth-context';
 import { PreferencesProvider, Theme } from '@/components/preferences-provider';
-import { SafeAreaView, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
-import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -80,7 +81,7 @@ export default function RootLayout() {
                       <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
                       <Stack.Screen name="+not-found" />
                     </Stack>
-                    <StatusBar style={theme} />
+                    <StatusBar style="auto" />
                   </AuthProvider>
                 </GluestackUIProvider>
               </NavigationThemeProvider> 

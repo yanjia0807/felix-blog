@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { SafeAreaView } from 'react-native';
+
 import { useAuth } from '@/components/auth-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import {
   FormControlHelperText,
 } from '@/components/ui/form-control';
 import { Input, InputField } from '@/components/ui/input';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
@@ -65,7 +66,7 @@ const ForgetPassword = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           title: '忘记密码',

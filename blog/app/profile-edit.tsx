@@ -5,7 +5,6 @@ import _ from 'lodash';
 import { CameraIcon, ChevronDownIcon, AlertCircle, AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { SafeAreaView } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
@@ -26,6 +25,7 @@ import {
 } from '@/components/ui/form-control';
 import { Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import {
   Select,
   SelectTrigger,
@@ -208,7 +208,7 @@ const ProfileEdit = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           title: '编辑资料',

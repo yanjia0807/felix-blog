@@ -22,7 +22,6 @@ const PostTagIcon = ({ tag, onRemoveTag, className }: any) => {
       <Button
         size="xs"
         action="secondary"
-        variant="outline"
         className="items-center justify-start rounded-lg"
         onPress={() => onRemoveTag && onRemoveTag(tag)}>
         <ButtonText>{tag.name}</ButtonText>

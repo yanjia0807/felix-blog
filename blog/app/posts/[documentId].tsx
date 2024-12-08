@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import moment from 'moment';
 import React, { useRef, useState } from 'react';
-import { SafeAreaView, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
 import { fetchPostCommentTotal } from '@/api/comment';
@@ -23,6 +23,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -134,6 +135,7 @@ const PostDetail = () => {
   const renderHeaderLeft = () => (
     <Button
       variant="link"
+      action="secondary"
       size="md"
       onPress={() => {
         router.dismiss();
@@ -146,14 +148,14 @@ const PostDetail = () => {
     <>
       <BookMarkedButton
         post={post}
-        className="mr-2 h-8 w-8 items-center justify-center rounded-full drop-shadow-xl"
+        className="mr-2 h-8 w-8 items-center justify-center rounded-full "
       />
-      <ShareButton className="h-8 w-8 items-center justify-center rounded-full drop-shadow-xl" />
-    </>
+      <ShareButton className="h-8 w-8 items-center justify-center rounded-full " />
+    </> 
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           title: '',

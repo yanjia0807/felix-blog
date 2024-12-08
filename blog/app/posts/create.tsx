@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { AlertCircleIcon, ImageIcon, MapPinIcon, Mic, Tag } from 'lucide-react-native';
 import React, { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Keyboard, Pressable, SafeAreaView } from 'react-native';
+import { Keyboard, Pressable } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +14,6 @@ import colors from 'tailwindcss/colors';
 import { z, ZodType } from 'zod';
 import { upload } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
-import { useAuth } from '@/components/auth-context';
 import PostImageSheet from '@/components/post-image-sheet';
 import PostImageGrid from '@/components/post-images-grid';
 import PostPositionSheet from '@/components/post-position-sheet';
@@ -35,8 +34,10 @@ import {
 } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
+import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
 type PostFormData = {
@@ -238,22 +239,19 @@ const PostCreate = () => {
   const renderContent = useCallback(
     ({ field: { onChange, onBlur, value } }: any) => (
       <FormControl size="md" isInvalid={!!errors.content}>
-        <Box className="">
-          <Textarea className="h-32 border-0" size="md" variant="default">
-            <TextareaInput
-              placeholder="你此时的感想..."
-              inputMode="text"
-              autoCapitalize="none"
-              onBlur={onBlur}
-              onChangeText={(props) => {
-                setCharCount(props?.length);
-                onChange(props);
-              }}
-              value={value}
-            />
-          </Textarea>
-        </Box>
-
+        <Textarea className="h-32 border-l-0 border-r-0 border-t-0" size="md" variant="default">
+          <TextareaInput
+            placeholder="你此时的感想..."
+            inputMode="text"
+            autoCapitalize="none"
+            onBlur={onBlur}
+            onChangeText={(props) => {
+              setCharCount(props?.length);
+              onChange(props);
+            }}
+            value={value}
+          />
+        </Textarea>
         <FormControlHelper className="justify-end">
           <FormControlHelperText>{`${charCount}/${maxCharCount}`}</FormControlHelperText>
         </FormControlHelper>
@@ -267,7 +265,7 @@ const PostCreate = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           title: '写帖子',
@@ -278,40 +276,45 @@ const PostCreate = () => {
       />
       <>
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1, padding: 16 }}>
-          {isPending && (
-            <Spinner
-              size="small"
-              className="absolute bottom-0 left-0 right-0 top-0"
-              color={colors.gray[500]}
-            />
-          )}
-          <Controller control={control} name="title" render={renderTitle} />
-          {tags.length > 0 && <PostTags tags={tags} onRemoveTag={onRemoveTag} />}
-          <Controller control={control} name="content" render={renderContent} />
-          <Divider className="my-2" />
-          <HStack className="justify-end">
-            <Button
-              variant="link"
-              action="secondary"
-              onPress={() => {
-                Keyboard.dismiss();
-                locationSheetRef.current?.snapToIndex(0);
-              }}>
-              <ButtonIcon as={MapPinIcon} />
-              {position ? <ButtonText>{position.name}</ButtonText> : <ButtonText>位置</ButtonText>}
-            </Button>
-          </HStack>
-          {recordings.length > 0 && (
-            <PostRecordings recordings={recordings} onRemoveRecording={onRemoveRecording} />
-          )}
-          {images.length > 0 && (
-            <PostImageGrid
-              images={images}
-              onOpenGallery={onOpenGallery}
-              onRemoveImage={onRemoveImage}
-              onSetCover={onSetCover}
-            />
-          )}
+          <VStack className="flex-1" space="xl">
+            {isPending && (
+              <Spinner
+                size="small"
+                className="absolute bottom-0 left-0 right-0 top-0"
+                color={colors.gray[500]}
+              />
+            )}
+            <Controller control={control} name="title" render={renderTitle} />
+            {tags.length > 0 && <PostTags tags={tags} onRemoveTag={onRemoveTag} />}
+            <Controller control={control} name="content" render={renderContent} />
+            <HStack className="justify-end">
+              <Button
+                variant="link"
+                action="secondary"
+                onPress={() => {
+                  Keyboard.dismiss();
+                  locationSheetRef.current?.snapToIndex(0);
+                }}>
+                <ButtonIcon as={MapPinIcon} />
+                {position ? (
+                  <ButtonText>{position.name}</ButtonText>
+                ) : (
+                  <ButtonText>位置</ButtonText>
+                )}
+              </Button>
+            </HStack>
+            {recordings.length > 0 && (
+              <PostRecordings recordings={recordings} onRemoveRecording={onRemoveRecording} />
+            )}
+            {images.length > 0 && (
+              <PostImageGrid
+                images={images}
+                onOpenGallery={onOpenGallery}
+                onRemoveImage={onRemoveImage}
+                onSetCover={onSetCover}
+              />
+            )}
+          </VStack>
         </KeyboardAwareScrollView>
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
           <HStack space="md" className="w-full px-4">

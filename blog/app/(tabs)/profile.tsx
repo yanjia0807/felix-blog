@@ -6,13 +6,7 @@ import { Stack } from 'expo-router';
 import _ from 'lodash';
 import { BookMarked, Heart, MapPin, MessageCircle } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
-import {
-  Dimensions,
-  RefreshControl,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { Dimensions, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
 import { fetchCount, fetchMyPosts, fetchMyPhotos } from '@/api';
 import { apiServerURL } from '@/api';
 import { useAuth } from '@/components/auth-context';
@@ -21,6 +15,7 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserInfoHeader from '@/components/user-info-header';
@@ -295,7 +290,7 @@ const Profile = () => {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           title: '我的',
@@ -305,8 +300,9 @@ const Profile = () => {
         <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
           <VStack className="flex-1" space="xl">
             <UserInfoHeader />
-            <Divider />
-            <HStack space="md" className="justify-around">
+            <HStack
+              space="md"
+              className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
               <VStack className="items-center justify-center">
                 <Text size="xl" bold={true}>
                   {total?.data || 0}
@@ -326,7 +322,6 @@ const Profile = () => {
                 <Text size="sm">被关注</Text>
               </VStack>
             </HStack>
-            <Divider />
             <SegmentedControl
               values={['我的帖子', '照片墙']}
               selectedIndex={selectedIndex}

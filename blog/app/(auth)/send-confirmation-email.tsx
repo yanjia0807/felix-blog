@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
 import { ArrowRight, MailQuestion } from 'lucide-react-native';
 import React from 'react';
-import { SafeAreaView } from 'react-native';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
@@ -10,7 +10,7 @@ const SendConfirmationEmail = () => {
   const handleSendMail = () => {};
 
   return (
-    <SafeAreaView className="flex-1 bg-background-100">
+    <SafeAreaView className="flex-1 bg-background-50">
       <Stack.Screen
         options={{
           title: '发送验证邮件',
