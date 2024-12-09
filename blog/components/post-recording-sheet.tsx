@@ -1,13 +1,8 @@
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetFooter,
-  BottomSheetView,
-} from '@gorhom/bottom-sheet';
 import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw } from 'lucide-react-native';
 import moment from 'moment';
-import React, { forwardRef, memo, useCallback, useMemo, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -17,11 +12,17 @@ import Animated, {
   BounceIn,
   BounceOut,
 } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import colors from 'tailwindcss/colors';
+import {
+  Actionsheet,
+  ActionsheetBackdrop,
+  ActionsheetContent,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+} from './ui/actionsheet';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
+import { VStack } from './ui/vstack';
 
 const AnimatedRing = ({ metering }: any) => {
   const ringStyle = useAnimatedStyle(() => ({
@@ -41,7 +42,6 @@ const AnimatedRing = ({ metering }: any) => {
             width: 128,
             height: 128,
             borderRadius: 64,
-            backgroundColor: colors.red[200],
           },
           ringStyle,
         ]}></Animated.View>
@@ -49,14 +49,15 @@ const AnimatedRing = ({ metering }: any) => {
   );
 };
 
-const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any, ref: any) {
+const PostRecordingSheet = forwardRef(function RecordingSheet(
+  { onChange, onClose, isOpen }: any,
+  ref: any,
+) {
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
-  const insets = useSafeAreaInsets();
   const metering = useSharedValue<number>(0);
   const [durationMillis, setDurationMillis] = useState<number>(0);
-  const snapPoints = useMemo(() => ['50%', '75%'], []);
 
   const stopRecording = useCallback(async () => {
     try {
@@ -192,25 +193,20 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
     stopRecording,
   ]);
 
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        {...props}
-        pressBehavior="none"
-      />
-    ),
-    [],
-  );
-
-  const renderFooter = useCallback(
-    (props: any) => {
-      return (
-        <BottomSheetFooter {...props}>
-          <HStack className="flex-1 items-center justify-around p-2">
+  return (
+    <Actionsheet isOpen={isOpen} onClose={onClose} snapPoints={[50]}>
+      <ActionsheetBackdrop />
+      <ActionsheetContent className="h-full">
+        <ActionsheetDragIndicatorWrapper>
+          <ActionsheetDragIndicator />
+        </ActionsheetDragIndicatorWrapper>
+        <VStack className="flex-1 items-center justify-between">
+          <Heading size="4xl" className="mt-12">
+            {moment.utc(durationMillis).format('mm:ss')}
+          </Heading>
+          <HStack className="w-full items-center justify-between">
             <TouchableOpacity
-              className="h-24 w-24 items-center justify-center rounded-full"
+              className="h-24 w-24 items-center justify-center rounded-full bg-primary-500"
               onPress={doRecording}>
               {recordingStatus?.isRecording ? (
                 <>
@@ -222,21 +218,20 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
               )}
             </TouchableOpacity>
             <Button
-              variant="link"
+              action="secondary"
               isDisabled={!recordingStatus || !recordingStatus.isRecording}
               onPress={pauseRecording}>
               <ButtonIcon as={PauseCircle} />
               <ButtonText>暂停</ButtonText>
             </Button>
             <Button
-              variant="link"
+              action="secondary"
               isDisabled={!recordingStatus || recordingStatus.isRecording}
               onPress={resetRecording}>
               <ButtonIcon as={RotateCcw} />
               <ButtonText>重置</ButtonText>
             </Button>
             <Button
-              variant="link"
               isDisabled={!recordingStatus || recordingStatus?.isRecording}
               onPress={commitRecording}
               action="primary">
@@ -244,31 +239,9 @@ const PostRecordingSheet = forwardRef(function RecordingSheet({ onChange }: any,
               <ButtonText>确定</ButtonText>
             </Button>
           </HStack>
-        </BottomSheetFooter>
-      );
-    },
-    [doRecording, recordingStatus, metering, pauseRecording, resetRecording, commitRecording],
-  );
-
-  console.log('post-recording-sheet render');
-  return (
-    <BottomSheet
-      ref={ref}
-      index={-1}
-      snapPoints={snapPoints}
-      enableDynamicSizing={false}
-      enablePanDownToClose={true}
-      topInset={insets.top}
-      bottomInset={insets.bottom}
-      backdropComponent={renderBackdrop}
-      footerComponent={renderFooter}
-      onClose={resetRecording}>
-      <BottomSheetView className="flex-1 items-center bg-background-0 p-4">
-        <Heading size="4xl" className="mt-12">
-          {moment.utc(durationMillis).format('mm:ss')}
-        </Heading>
-      </BottomSheetView>
-    </BottomSheet>
+        </VStack>
+      </ActionsheetContent>
+    </Actionsheet>
   );
 });
 

@@ -6,11 +6,11 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  AlertDialogCloseButton,
 } from './ui/alert-dialog';
-import { Text } from './ui/text';
 import { Button, ButtonText } from './ui/button';
-
 import { Heading } from './ui/heading';
+import { Text } from './ui/text';
 const PrivacyPolicyDialog = ({ isOpen, onClose }: any) => {
   return (
     <AlertDialog isOpen={isOpen} onClose={onClose} size="md">
@@ -20,6 +20,7 @@ const PrivacyPolicyDialog = ({ isOpen, onClose }: any) => {
           <Heading className="font-semibold text-typography-950" size="md">
             隐私政策
           </Heading>
+          <AlertDialogCloseButton />
         </AlertDialogHeader>
         <AlertDialogBody className="mb-4 mt-3">
           <Text size="sm">
@@ -47,11 +48,11 @@ const PrivacyPolicyDialog = ({ isOpen, onClose }: any) => {
             使用本应用即表示您同意我们的隐私政策。如有疑问，请随时联系我们的支持团队。
           </Text>
         </AlertDialogBody>
-        <AlertDialogFooter className="">
-          <Button variant="outline" action="secondary" onPress={onClose} size="sm">
+        <AlertDialogFooter>
+          <Button action="positive" size="sm" onPress={onClose}>
             <ButtonText>同意</ButtonText>
           </Button>
-          <Button size="sm" onPress={onClose}>
+          <Button action="negative" size="sm" onPress={onClose}>
             <ButtonText>取消</ButtonText>
           </Button>
         </AlertDialogFooter>

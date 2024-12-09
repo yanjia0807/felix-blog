@@ -14,7 +14,6 @@ import MainHeader from '@/components/main-header';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Badge, BadgeText } from '@/components/ui/badge';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
@@ -172,7 +171,7 @@ const PostHome = () => {
   const isLoading = isLoadingPost || isLoadingTag;
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50">
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
           headerShown: false,
@@ -183,7 +182,7 @@ const PostHome = () => {
         <VStack className="flex-1" space="3xl">
           <MainHeader />
           <HStack>
-            <Input className="flex-1 bg-primary-50" variant="rounded">
+            <Input className="flex-1 bg-primary-100" variant="rounded">
               <InputField />
               <InputSlot>
                 <InputIcon as={Search} className="mx-2"></InputIcon>

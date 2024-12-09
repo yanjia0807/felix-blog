@@ -1,4 +1,3 @@
-import BottomSheet from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
@@ -6,7 +5,7 @@ import _ from 'lodash';
 import { AlertCircleIcon, ImageIcon, MapPinIcon, Mic, Tag } from 'lucide-react-native';
 import React, { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Keyboard, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,9 +20,7 @@ import PostRecordingSheet from '@/components/post-recording-sheet';
 import PostRecordings from '@/components/post-recordings';
 import PostTagSheet from '@/components/post-tag-sheet';
 import PostTags from '@/components/post-tags';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { Divider } from '@/components/ui/divider';
 import {
   FormControl,
   FormControlHelper,
@@ -88,11 +85,11 @@ const PostCreate = () => {
   });
 
   const [initialIndex, setInitialIndex] = useState<number>(0);
-  const [imageSheetIsOpen, setImageSheetIsOpen] = useState(false);
+  const [isRecordingSheetOpen, setIsRecordingSheetOpen] = useState<boolean>(false);
+  const [isImageSheetOpen, setIsImageSheetOpen] = useState(false);
+  const [isTagSheetOpen, setIsTagSheetOpen] = useState<boolean>(false);
+  const [isPositionSheetOpen, setIsPositionSheetOpen] = useState<boolean>(false);
   const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
-  const recordingSheetRef = useRef<BottomSheet>();
-  const locationSheetRef = useRef<BottomSheet>();
-  const tagSheetRef = useRef<BottomSheet>();
 
   const onSubmit = async (formData: PostFormData) => {
     let coverId = null;
@@ -218,11 +215,7 @@ const PostCreate = () => {
             value={value}
           />
           <InputSlot>
-            <Pressable
-              onPress={() => {
-                Keyboard.dismiss();
-                tagSheetRef.current?.snapToIndex(0);
-              }}>
+            <Pressable onPress={() => setIsTagSheetOpen(true)}>
               <InputIcon as={Tag}></InputIcon>
             </Pressable>
           </InputSlot>
@@ -265,7 +258,7 @@ const PostCreate = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50">
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
           title: '写帖子',
@@ -291,10 +284,7 @@ const PostCreate = () => {
               <Button
                 variant="link"
                 action="secondary"
-                onPress={() => {
-                  Keyboard.dismiss();
-                  locationSheetRef.current?.snapToIndex(0);
-                }}>
+                onPress={() => setIsPositionSheetOpen(true)}>
                 <ButtonIcon as={MapPinIcon} />
                 {position ? (
                   <ButtonText>{position.name}</ButtonText>
@@ -319,7 +309,7 @@ const PostCreate = () => {
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
           <HStack space="md" className="w-full px-4">
             <ButtonGroup space="sm">
-              <Button variant="link" action="secondary" onPress={() => setImageSheetIsOpen(true)}>
+              <Button variant="link" action="secondary" onPress={() => setIsImageSheetOpen(true)}>
                 <ButtonIcon as={ImageIcon} />
                 <ButtonText>图片</ButtonText>
               </Button>
@@ -328,23 +318,33 @@ const PostCreate = () => {
               <Button
                 variant="link"
                 action="secondary"
-                onPress={() => {
-                  Keyboard.dismiss();
-                  recordingSheetRef.current?.snapToIndex(0);
-                }}>
+                onPress={() => setIsRecordingSheetOpen(true)}>
                 <ButtonIcon as={Mic} />
                 <ButtonText>录音</ButtonText>
               </Button>
             </ButtonGroup>
           </HStack>
         </KeyboardStickyView>
-        <PostRecordingSheet ref={recordingSheetRef} onChange={onAddRecording} />
-        <PostTagSheet ref={tagSheetRef} value={tags} onChange={onAddTags} />
-        <PostPositionSheet ref={locationSheetRef} onChange={onAddPosition} />
+        <PostRecordingSheet
+          isOpen={isRecordingSheetOpen}
+          onClose={() => setIsRecordingSheetOpen(false)}
+          onChange={onAddRecording}
+        />
+        <PostTagSheet
+          isOpen={isTagSheetOpen}
+          onClose={() => setIsTagSheetOpen(false)}
+          value={tags}
+          onChange={onAddTags}
+        />
+        <PostPositionSheet
+          isOpen={isPositionSheetOpen}
+          onClose={() => setIsPositionSheetOpen(false)}
+          onChange={onAddPosition}
+        />
         <PostImageSheet
-          isOpen={imageSheetIsOpen}
+          isOpen={isImageSheetOpen}
           onClose={() => {
-            setImageSheetIsOpen(false);
+            setIsImageSheetOpen(false);
           }}
           onChange={onAddImage}
         />

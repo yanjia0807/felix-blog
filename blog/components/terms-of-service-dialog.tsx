@@ -6,6 +6,7 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  AlertDialogCloseButton,
 } from './ui/alert-dialog';
 import { Button, ButtonText } from './ui/button';
 import { Heading } from './ui/heading';
@@ -20,6 +21,7 @@ const TermsOfServiceDialog = ({ isOpen, onClose }: any) => {
           <Heading className="font-semibold text-typography-950" size="md">
             服务条款
           </Heading>
+          <AlertDialogCloseButton />
         </AlertDialogHeader>
         <AlertDialogBody className="mb-4 mt-3">
           <Text size="sm">欢迎使用我们的博客应用！在使用本应用前，请仔细阅读以下服务条款：</Text>
@@ -42,11 +44,11 @@ const TermsOfServiceDialog = ({ isOpen, onClose }: any) => {
             继续使用本应用，即表示您同意并接受上述条款。如有疑问，请联系我们的支持团队。
           </Text>
         </AlertDialogBody>
-        <AlertDialogFooter className="">
-          <Button variant="outline" action="secondary" onPress={onClose} size="sm">
+        <AlertDialogFooter>
+          <Button action="positive" size="sm" onPress={onClose}>
             <ButtonText>同意</ButtonText>
           </Button>
-          <Button size="sm" onPress={onClose}>
+          <Button action="negative" size="sm" onPress={onClose}>
             <ButtonText>取消</ButtonText>
           </Button>
         </AlertDialogFooter>

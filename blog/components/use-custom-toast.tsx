@@ -10,6 +10,7 @@ import { VStack } from './ui/vstack';
 const CustomToast = ({ toast, id, title, description, actions }: any) => {
   return (
     <Toast
+      action="error"
       nativeID={id}
       className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
       <VStack space="xl" className="flex-1">
@@ -38,20 +39,23 @@ const ConfirmToast = ({ toast, id, onConfirm, title, description }: any) => {
   return (
     <Toast
       nativeID={id}
+      action="info"
       className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
       <VStack space="xl" className="flex-1">
         <VStack space="xs">
           <HStack className="items-center justify-between">
-            <ToastTitle className="font-semibold text-typography-900">{title}</ToastTitle>
+            <ToastTitle className="font-semibold">{title}</ToastTitle>
             <Pressable onPress={() => toast.close(id)}>
-              <Icon as={CloseIcon} className="stroke-background-500" />
+              <Icon as={CloseIcon} />
             </Pressable>
           </HStack>
-          <ToastDescription className="text-typography-700">{description}</ToastDescription>
+          <ToastDescription>{description}</ToastDescription>
         </VStack>
         <ButtonGroup className="flex-row gap-3">
           <Button
             size="sm"
+            variant="outline"
+            action="default"
             className="flex-grow"
             onPress={() => {
               onConfirm();
@@ -59,8 +63,8 @@ const ConfirmToast = ({ toast, id, onConfirm, title, description }: any) => {
             <ButtonText>确定</ButtonText>
           </Button>
           <Button
-            action="secondary"
             variant="outline"
+            action="default"
             size="sm"
             className="flex-grow"
             onPress={() => toast.close(id)}>

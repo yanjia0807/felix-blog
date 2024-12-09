@@ -1,4 +1,3 @@
-import BottomSheet from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
@@ -94,8 +93,8 @@ const ImageList = ({ images, onOpenGallery }: any) => {
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
   const [initialIndex, setInitialIndex] = useState<number>(0);
-  const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
-  const commentsSheetRef = useRef<BottomSheet>();
+  const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
+  const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false);
 
   const {
     isPending,
@@ -129,7 +128,7 @@ const PostDetail = () => {
 
   const onOpenGallery = async (index: number) => {
     setInitialIndex(index);
-    setGalleryPreviewIsOpen(true);
+    setIsGalleryPreviewOpen(true);
   };
 
   const renderHeaderLeft = () => (
@@ -148,14 +147,14 @@ const PostDetail = () => {
     <>
       <BookMarkedButton
         post={post}
-        className="mr-2 h-8 w-8 items-center justify-center rounded-full "
+        className="mr-2 h-8 w-8 items-center justify-center rounded-full"
       />
-      <ShareButton className="h-8 w-8 items-center justify-center rounded-full " />
-    </> 
+      <ShareButton className="h-8 w-8 items-center justify-center rounded-full" />
+    </>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50">
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
           title: '',
@@ -183,19 +182,23 @@ const PostDetail = () => {
             <ImageList images={images} onOpenGallery={onOpenGallery} />
             <Text size="md">{post?.content}</Text>
             <HStack>
-              <Button variant="link" onPress={() => commentsSheetRef.current?.expand()}>
+              <Button variant="link" onPress={() => setIsCommentSheetOpen(true)}>
                 <ButtonText className="font-bold">{`评论(${total})`}</ButtonText>
               </Button>
             </HStack>
           </VStack>
         </ScrollView>
       )}
-      <PostCommentsSheet postDocumentId={post?.documentId} ref={commentsSheetRef} />
+      <PostCommentsSheet
+        postDocumentId={post?.documentId}
+        isOpen={isCommentSheetOpen}
+        onClose={() => setIsCommentSheetOpen(false)}
+      />
       <GalleryPreview
         images={images || []}
         initialIndex={initialIndex}
-        isVisible={galleryPreviewIsOpen}
-        onRequestClose={() => setGalleryPreviewIsOpen(false)}
+        isVisible={isGalleryPreviewOpen}
+        onRequestClose={() => setIsGalleryPreviewOpen(false)}
       />
     </SafeAreaView>
   );

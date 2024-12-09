@@ -1,18 +1,10 @@
-import BottomSheet, {
-  BottomSheetFooter,
-  BottomSheetSectionList,
-  BottomSheetTextInput,
-  BottomSheetView,
-  TouchableOpacity, BottomSheetBackdrop,   
-} from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import moment from 'moment';
-import React, { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { apiServerURL } from '@/api';
 import {
@@ -33,6 +25,10 @@ import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
+import { Actionsheet, ActionsheetBackdrop, ActionsheetContent, ActionsheetDragIndicator, ActionsheetDragIndicatorWrapper, ActionsheetSectionList } from './ui/actionsheet';
+import { Input, InputField } from './ui/input';
+import { Pressable } from './ui/pressable';
+import { KeyboardAvoidingView } from './ui/keyboard-avoiding-view';
 
 type CommentSchemaDetails = z.infer<typeof commentSchema>;
 
@@ -42,7 +38,7 @@ const commentSchema = z.object({
   }),
 });
 
-const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId }: any, ref: any) {
+const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
   const { user } = useAuth();
   const [replyComment, setReplyComment] = useState<any>();
   const [selectCommentDocumentId, setSelectCommentDocumentId] = useState<any>();
@@ -50,7 +46,6 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
   const inputRef = useRef<any>(null);
   const queryClient = useQueryClient();
   const toast = useCustomToast();
-  const insets = useSafeAreaInsets();
 
   useLayoutEffect(() => {
     if (replyComment && inputRef.current) {
@@ -332,7 +327,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
           </Avatar>
         </Box>
         <VStack className="flex-1 items-start justify-start">
-          <Text>{section.user.username}</Text>
+          <Text bold={true}>{section.user.username}</Text>
           <Text size="sm">{section.content}</Text>
           <HStack className="items-center justify-between">
             <HStack className="items-center">
@@ -354,6 +349,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
               {section.user.documentId === user?.documentId && (
                 <Button
                   size="sm"
+                  action='secondary'
                   variant="link"
                   className="mx-2"
                   onPress={() => onDeleteButtonPress(section.documentId, null)}>
@@ -362,18 +358,18 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
               )}
             </HStack>
             <HStack className="flex-1 items-center justify-end" space="md">
-              <TouchableOpacity>
+              <Pressable>
                 <HStack className="items-center" space="sm">
                   <Icon as={Heart} size="sm" />
                   <Text size="xs">{section.likes}</Text>
                 </HStack>
-              </TouchableOpacity>
-              <TouchableOpacity>
+              </Pressable>
+              <Pressable>
                 <HStack className="items-center" space="sm">
                   <Icon as={HeartCrack} size="sm" />
                   <Text size="xs">{section.unlikes}</Text>
                 </HStack>
-              </TouchableOpacity>
+              </Pressable>
             </HStack>
           </HStack>
           {section.relatedComments.count > 0 &&
@@ -382,6 +378,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
                 <Button
                   size="sm"
                   variant="link"
+                  action='secondary'
                   className="mx-2"
                   onPress={() => onExpandButtonPressed(section)}>
                   <ButtonText>展开回复</ButtonText>
@@ -402,6 +399,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
             <Button
               size="sm"
               variant="link"
+              action='secondary'
               className="mx-2"
               onPress={() => onExpandButtonPressed(section)}>
               <ButtonText>展开更多</ButtonText>
@@ -412,6 +410,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
               <Button
                 size="sm"
                 variant="link"
+                action='secondary'
                 className="mx-2"
                 onPress={() => onCollapseButtonPressed(section)}>
                 <ButtonText>收起</ButtonText>
@@ -432,11 +431,11 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
         </Avatar>
         <VStack className="flex-1 items-start justify-start">
           <HStack space="xs" className="items-center">
-            <Text>{item.user.username}</Text>
+            <Text bold={true}>{item.user.username}</Text>
             {item.reply && (
               <>
                 <Text>►</Text>
-                <Text>{item.reply.user.username}</Text>
+                <Text bold={true}>{item.reply.user.username}</Text>
               </>
             )}
           </HStack>
@@ -461,6 +460,7 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
                 <Button
                   size="sm"
                   variant="link"
+                  action='secondary'
                   className="mx-2"
                   onPress={() => onDeleteButtonPress(item.documentId, item.topComment.documentId)}>
                   <ButtonText>删除</ButtonText>
@@ -468,18 +468,18 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
               )}
             </HStack>
             <HStack className="flex-1 items-center justify-end" space="md">
-              <TouchableOpacity>
+              <Pressable>
                 <HStack className="items-center" space="sm">
                   <Icon as={Heart} size="sm" />
                   <Text size="xs">{item.likes}</Text>
                 </HStack>
-              </TouchableOpacity>
-              <TouchableOpacity>
+              </Pressable>
+              <Pressable>
                 <HStack className="items-center" space="sm">
                   <Icon as={HeartCrack} size="sm" />
                   <Text size="xs">{item.unlikes}</Text>
                 </HStack>
-              </TouchableOpacity>
+              </Pressable>
             </HStack>
           </HStack>
         </VStack>
@@ -502,39 +502,6 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
     createMutate(comment);
   };
 
-  const renderFooter = useCallback(
-    (props: any) => {
-      return (
-        <>
-          {user && (
-            <BottomSheetFooter {...props}>
-              <Box className="flex-1">
-                <Controller
-                  name="content"
-                  control={control}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <BottomSheetTextInput
-                      ref={inputRef}
-                      inputMode="text"
-                      returnKeyType="send"
-                      value={value}
-                      placeholder={replyComment ? `回复 ${replyComment.username}` : '输入评论...'}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      onSubmitEditing={handleSubmit(onSubmit)}
-                      className="m-2 h-10 flex-1 rounded-2xl border p-2"
-                    />
-                  )}
-                />
-              </Box>
-            </BottomSheetFooter>
-          )}
-        </>
-      );
-    },
-    [control, handleSubmit, onSubmit, replyComment, user],
-  );
-
   const renderEmptyComponent = (props: any) => {
     return (
       <Box className="mt-10 w-full items-center justify-center">
@@ -543,26 +510,38 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
     );
   };
 
+  const renderCommentInput = ({ field: { onChange, onBlur, value } }:any) => {
+    return (
+      <HStack>
+          <Input className="flex-1 bg-primary-100" variant="rounded">
+            <InputField inputMode="text" 
+              returnKeyType="send" value={value}
+              placeholder={replyComment ? `回复 ${replyComment.username}` : '输入评论...'}
+              onChangeText={onChange}
+              onBlur={onBlur} onSubmitEditing={handleSubmit(onSubmit)} />
+          </Input>
+      </HStack>
+    )
+  };
+
   return (
-    <BottomSheet
-      snapPoints={['50%', '80%']}
-      index={-1}
-      enableDynamicSizing={false}
-      backdropComponent={BottomSheetBackdrop}
-      footerComponent={renderFooter}
-      enablePanDownToClose={true}
-      topInset={insets.top}
-      bottomInset={insets.bottom}
-      keyboardBehavior="interactive"
-      ref={ref}>
-      <BottomSheetView className="flex-1 p-4 bg-background-0">
-        <Box className="items-center mb-4">
-          <Heading className="p-4">{`${total}条评论`}</Heading>
-          <Divider />
-        </Box>
-        <VStack className="p-2" space="2xl">
+    <Actionsheet isOpen={isOpen} onClose={onClose} snapPoints={[80]}>
+      <KeyboardAvoidingView
+          behavior="position"
+          className='flex-1'
+        >
+      <ActionsheetBackdrop />
+      <ActionsheetContent className="h-full">
+        <ActionsheetDragIndicatorWrapper>
+          <ActionsheetDragIndicator />
+        </ActionsheetDragIndicatorWrapper>
+        <VStack className="w-full flex-1 p-2" space="2xl">
+          <Box className="items-center mb-4">
+            <Heading className="p-4">{`${total}条评论`}</Heading>
+            <Divider />
+          </Box>
           {isFetchCommentsSuccess && (
-            <BottomSheetSectionList
+            <ActionsheetSectionList
               sections={sectionListData}
               keyExtractor={(item: any) => item.id.toString()}
               renderItem={renderCommentItem}
@@ -578,10 +557,18 @@ const PostCommentsSheet = forwardRef(function PostCommentsSheet({ postDocumentId
               }}
             />
           )}
+          {user && (
+              <Controller
+                name="content"
+                control={control}
+                render={renderCommentInput}
+              />
+          )}
         </VStack>
-      </BottomSheetView>
-    </BottomSheet>
+      </ActionsheetContent>
+      </KeyboardAvoidingView>
+    </Actionsheet>
   );
-});
+}
 
 export default PostCommentsSheet;

@@ -14,6 +14,7 @@ import { useColorScheme } from 'react-native';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
+import { BottomSheet } from '@/components/ui/bottomsheet';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +73,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
           <BottomSheetModalProvider>
+            <BottomSheet>
             <PreferencesProvider theme={theme} updateTheme={updateTheme}>
               <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
                 <GluestackUIProvider mode={theme}>
@@ -86,6 +88,7 @@ export default function RootLayout() {
                 </GluestackUIProvider>
               </NavigationThemeProvider> 
             </PreferencesProvider>
+            </BottomSheet>
           </BottomSheetModalProvider>
         </KeyboardProvider>
       </QueryClientProvider>

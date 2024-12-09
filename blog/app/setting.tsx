@@ -1,6 +1,14 @@
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
-import { Bell, ChevronRightIcon, KeyRound, LogOut, Moon } from 'lucide-react-native';
+import {
+  Bell,
+  ChevronRightIcon,
+  Info,
+  KeyRound,
+  LogOut,
+  Moon,
+  ServerIcon,
+} from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import { useAuth } from '@/components/auth-context';
@@ -91,7 +99,7 @@ const Setting = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <SafeAreaView className="flex-1 bg-background-50">
+      <SafeAreaView className="flex-1">
         {user ? (
           <VStack className="flex-1 p-6" space="xl">
             <UserInfoHeader />
@@ -119,6 +127,26 @@ const Setting = () => {
                     <HStack className="items-center" space="md">
                       <Icon as={KeyRound} size="lg" />
                       <Text>设置密码</Text>
+                    </HStack>
+                    <Icon as={ChevronRightIcon} size="lg" />
+                  </HStack>
+                </Pressable>
+                <Divider />
+                <Pressable>
+                  <HStack className="h-14 items-center justify-between p-3">
+                    <HStack className="items-center" space="md">
+                      <Icon as={ServerIcon} size="lg" />
+                      <Text>服务条款 & 隐私政策</Text>
+                    </HStack>
+                    <Icon as={ChevronRightIcon} size="lg" />
+                  </HStack>
+                </Pressable>
+                <Divider />
+                <Pressable>
+                  <HStack className="h-14 items-center justify-between p-3">
+                    <HStack className="items-center" space="md">
+                      <Icon as={Info} size="lg" />
+                      <Text>关于</Text>
                     </HStack>
                     <Icon as={ChevronRightIcon} size="lg" />
                   </HStack>

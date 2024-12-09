@@ -1,12 +1,12 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useRouter } from 'expo-router';
-import { User } from 'lucide-react-native';
+import { User, UserCircle } from 'lucide-react-native';
 import React from 'react';
 import { apiServerURL } from '@/api/api-client';
 import { useAuth } from './auth-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';
-import { Icon } from './ui/icon';
+import { Button, ButtonIcon } from './ui/button';
 import { Pressable } from './ui/pressable';
 
 const ProfileAvatarStyles = tva({});
@@ -32,12 +32,13 @@ export const ProfileAvatar = ({ className, ...props }: any) => {
           </Avatar>
         </Pressable>
       ) : (
-        <Pressable
+        <Button
+          variant="link"
           onPress={() => {
-            router.navigate('/register');
+            router.navigate('/anonymous-setting');
           }}>
-          <Icon as={User} />
-        </Pressable>
+          <ButtonIcon as={UserCircle} size={26 as any} />
+        </Button>
       )}
     </Box>
   );

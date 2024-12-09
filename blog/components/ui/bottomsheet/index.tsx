@@ -136,12 +136,13 @@ export const BottomSheetPortal = ({
 export const BottomSheetTrigger = ({
   className,
   ...props
-}: PressableProps & { className?: string }) => {
+}: PressableProps & { className?: string, onTrigger:any }) => {
   const { handleOpen } = useContext(BottomSheetContext);
   return (
-    <Pressable
+    <Pressable 
       onPress={(e) => {
-        props.onPress && props.onPress(e);
+        console.log('@@@', props.onTrigger)
+        props.onTrigger && props.onTrigger(e);
         handleOpen();
       }}
       {...props}

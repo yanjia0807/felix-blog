@@ -335,7 +335,7 @@ const Home = () => {
   const isLoading = isLoadingRecomment;
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50">
+    <SafeAreaView className="flex-1 color-background-50">
       <Stack.Screen
         options={{
           headerShown: false,

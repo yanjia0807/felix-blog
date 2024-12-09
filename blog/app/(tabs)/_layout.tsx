@@ -44,7 +44,7 @@ export default function TabLayout() {
     <Tabs>
       <TabSlot />
       <TabList
-        className="bg-background-200"
+        className="bg-background-50"
         style={{ paddingBottom: insets.bottom, paddingTop: 10, paddingHorizontal: 20 }}>
         <TabTrigger name="home" href="/" asChild>
           <TabButton text="主页" icon={Home}></TabButton>

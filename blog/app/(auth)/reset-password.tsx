@@ -121,7 +121,7 @@ const ResetPassword = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50">
+    <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
           title: '设置密码',
