@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -89,7 +89,13 @@ const ForgetPassword = () => {
           <Button className="rounded-3xl" size="lg" onPress={handleSubmit(onSubmit)}>
             <ButtonText>发送邮件</ButtonText>
           </Button>
-          <Button className="" size="lg" variant="link">
+          <Button
+            size="lg"
+            action="secondary"
+            variant="link"
+            onPress={() => {
+              router.dismiss();
+            }}>
             <ButtonText>取消</ButtonText>
           </Button>
         </VStack>

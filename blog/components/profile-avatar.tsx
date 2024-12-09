@@ -37,7 +37,7 @@ export const ProfileAvatar = ({ className, ...props }: any) => {
           onPress={() => {
             router.navigate('/anonymous-setting');
           }}>
-          <ButtonIcon as={UserCircle} size={26 as any} />
+          <ButtonIcon as={User} size={24 as any} />
         </Button>
       )}
     </Box>

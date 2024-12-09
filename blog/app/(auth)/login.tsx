@@ -112,8 +112,15 @@ const SignIn = () => {
           value={value}
         />
       </Input>
-      <FormControlHelper className="justify-end">
-        <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
+      <FormControlHelper className="items-center justify-end gap-4">
+        <Button
+          variant="link"
+          action="secondary"
+          onPress={() => {
+            router.push('/forget-password');
+          }}>
+          <ButtonText>忘记密码</ButtonText>
+        </Button>
       </FormControlHelper>
       <FormControlError>
         <FormControlErrorIcon as={AlertCircleIcon} />
@@ -142,9 +149,9 @@ const SignIn = () => {
             {isPending && <ButtonSpinner />}
           </Button>
           <Button
-            className=""
-            size="lg"
             variant="link"
+            action="secondary"
+            size="lg"
             onPress={() => {
               router.dismiss();
             }}>
@@ -157,7 +164,9 @@ const SignIn = () => {
               onPress={() => {
                 router.replace('/register');
               }}>
-              <LinkText className="no-underline">注册新用户</LinkText>
+              <ButtonText action="secondary" variant="link" className="no-underline">
+                注册新用户
+              </ButtonText>
             </Button>
           </HStack>
         </VStack>

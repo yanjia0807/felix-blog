@@ -197,9 +197,9 @@ const SignUp = () => {
             {isPending && <ButtonSpinner />}
           </Button>
           <Button
-            className=""
             size="lg"
             variant="link"
+            action="secondary"
             onPress={() => {
               router.dismiss();
             }}>
@@ -212,7 +212,9 @@ const SignUp = () => {
               onPress={() => {
                 router.replace('/login');
               }}>
-              <LinkText className="no-underline">登录</LinkText>
+              <ButtonText action="secondary" variant="link">
+                登录
+              </ButtonText>
             </Button>
           </HStack>
         </VStack>
