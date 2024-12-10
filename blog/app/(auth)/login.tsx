@@ -61,7 +61,7 @@ const SignIn = () => {
         });
 
         _.delay(() => {
-          router.dismissAll();
+          router.replace('/');
         }, 1200);
       },
       onError: (error: any) => {
@@ -88,9 +88,6 @@ const SignIn = () => {
           value={value}
         />
       </Input>
-      <FormControlHelper className="justify-end">
-        <FormControlHelperText></FormControlHelperText>
-      </FormControlHelper>
       <FormControlError>
         <FormControlErrorIcon as={AlertCircleIcon} />
         <FormControlErrorText>{errors?.identifier?.message}</FormControlErrorText>
@@ -112,15 +109,8 @@ const SignIn = () => {
           value={value}
         />
       </Input>
-      <FormControlHelper className="items-center justify-end gap-4">
-        <Button
-          variant="link"
-          action="secondary"
-          onPress={() => {
-            router.push('/forget-password');
-          }}>
-          <ButtonText>忘记密码</ButtonText>
-        </Button>
+      <FormControlHelper className="justify-end">
+        <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
       </FormControlHelper>
       <FormControlError>
         <FormControlErrorIcon as={AlertCircleIcon} />
@@ -133,44 +123,35 @@ const SignIn = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '用户登录',
+          title: '密码登录',
         }}
       />
       <VStack className="w-full flex-1 justify-between p-6">
-        <VStack className="flex-1" space="lg">
-          <Controller control={control} name="identifier" render={renderIdentifier} />
-          <Controller control={control} name="password" render={renderPassword} />
-          <Button
-            className="rounded-3xl"
-            size="lg"
-            onPress={handleSubmit(onSubmit)}
-            disabled={isPending}>
-            <ButtonText>登录</ButtonText>
-            {isPending && <ButtonSpinner />}
-          </Button>
-          <Button
-            variant="link"
-            action="secondary"
-            size="lg"
-            onPress={() => {
-              router.dismiss();
-            }}>
-            <ButtonText>取消</ButtonText>
-          </Button>
-          <HStack className="items-center justify-center" space="sm">
-            <Text bold={true}>没有账号？</Text>
+        <VStack className="flex-1">
+          <VStack space="lg">
+            <Controller control={control} name="identifier" render={renderIdentifier} />
+            <Controller control={control} name="password" render={renderPassword} />
+          </VStack>
+          <VStack className="mt-12">
+            <Button
+              className="rounded-2xl"
+              size="lg"
+              onPress={handleSubmit(onSubmit)}
+              disabled={isPending}>
+              <ButtonText>登录</ButtonText>
+              {isPending && <ButtonSpinner />}
+            </Button>
             <Button
               variant="link"
+              action="secondary"
+              size="lg"
               onPress={() => {
-                router.replace('/register');
+                router.dismiss();
               }}>
-              <ButtonText action="secondary" variant="link" className="no-underline">
-                注册新用户
-              </ButtonText>
+              <ButtonText>取消</ButtonText>
             </Button>
-          </HStack>
+          </VStack>
         </VStack>
-        <HStack space="lg" reversed={true}></HStack>
       </VStack>
     </SafeAreaView>
   );

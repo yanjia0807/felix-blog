@@ -72,7 +72,7 @@ const SignUp = () => {
           title: '注册成功',
           description: '我们已向您的邮箱发送了一封验证邮件，请点击验证',
         });
-        router.push('/login');
+        router.replace('/login');
       },
       onError: (error: any) => {
         toast.error({
@@ -123,9 +123,6 @@ const SignUp = () => {
           value={value}
         />
       </Input>
-      <FormControlHelper className="justify-end">
-        <FormControlHelperText></FormControlHelperText>
-      </FormControlHelper>
       <FormControlError>
         <FormControlErrorIcon as={AlertCircleIcon} />
         <FormControlErrorText>{errors?.email?.message}</FormControlErrorText>
@@ -174,10 +171,12 @@ const SignUp = () => {
       />
       <VStack className="flex-1 items-center justify-between p-6">
         <VStack className="flex-1" space="lg">
-          <Controller control={control} name="username" render={renderUsername} />
-          <Controller control={control} name="email" render={renderEmail} />
-          <Controller control={control} name="password" render={renderPassword} />
-          <HStack className="my-6 flex-wrap">
+          <VStack space="lg">
+            <Controller control={control} name="username" render={renderUsername} />
+            <Controller control={control} name="email" render={renderEmail} />
+            <Controller control={control} name="password" render={renderPassword} />
+          </VStack>
+          <HStack className="mt-6 flex-wrap">
             <Text bold={true}>同意服务条款：</Text>
             <Text>在点击“注册”按钮前，请阅读并同意我们的</Text>
             <Link onPress={() => setIsTermsDialogOpen(true)}>
@@ -188,35 +187,25 @@ const SignUp = () => {
               <LinkText className="no-underline">隐私政策</LinkText>
             </Link>
           </HStack>
-          <Button
-            className="rounded-3xl"
-            size="lg"
-            onPress={handleSubmit(onSubmit)}
-            disabled={isPending}>
-            <ButtonText>注册</ButtonText>
-            {isPending && <ButtonSpinner />}
-          </Button>
-          <Button
-            size="lg"
-            variant="link"
-            action="secondary"
-            onPress={() => {
-              router.dismiss();
-            }}>
-            <ButtonText>取消</ButtonText>
-          </Button>
-          <HStack className="items-center justify-center" space="sm">
-            <Text bold={true}>已有账号？</Text>
+          <VStack className="mt-12">
             <Button
-              variant="link"
-              onPress={() => {
-                router.replace('/login');
-              }}>
-              <ButtonText action="secondary" variant="link">
-                登录
-              </ButtonText>
+              className="rounded-2xl"
+              size="lg"
+              onPress={handleSubmit(onSubmit)}
+              disabled={isPending}>
+              <ButtonText>注册</ButtonText>
+              {isPending && <ButtonSpinner />}
             </Button>
-          </HStack>
+            <Button
+              size="lg"
+              variant="link"
+              action="secondary"
+              onPress={() => {
+                router.dismiss();
+              }}>
+              <ButtonText>取消</ButtonText>
+            </Button>
+          </VStack>
         </VStack>
       </VStack>
     </SafeAreaView>

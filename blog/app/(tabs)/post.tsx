@@ -144,28 +144,7 @@ const PostHome = () => {
   };
 
   const onCreatePostButtonPressed = () => {
-    if (!user) {
-      toast.custom({
-        title: '未登录',
-        description: `请登录以创建帖子。如果您还没有账号，可以注册一个。`,
-        actions: [
-          {
-            buttonText: '登录',
-            onPress: () => {
-              router.push('/login');
-            },
-          },
-          {
-            buttonText: '注册',
-            onPress: () => {
-              router.push('/register');
-            },
-          },
-        ],
-      });
-    } else {
-      router.push('/posts/create');
-    }
+    router.push('/posts/create');
   };
 
   const isLoading = isLoadingPost || isLoadingTag;
@@ -226,10 +205,12 @@ const PostHome = () => {
           </VStack>
         </VStack>
       </ScrollView>
-      <Fab size="md" placement="bottom right" onPress={() => onCreatePostButtonPressed()}>
-        <FabIcon as={AddIcon} />
-        <FabLabel>帖子</FabLabel>
-      </Fab>
+      {user && (
+        <Fab size="md" placement="bottom right" onPress={() => onCreatePostButtonPressed()}>
+          <FabIcon as={AddIcon} />
+          <FabLabel>帖子</FabLabel>
+        </Fab>
+      )}
     </SafeAreaView>
   );
 };

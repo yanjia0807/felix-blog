@@ -2,7 +2,7 @@ import SegmentedControl from '@react-native-segmented-control/segmented-control'
 import { FlashList, MasonryFlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import _ from 'lodash';
 import { BookMarked, Heart, MapPin, MessageCircle } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
@@ -280,14 +280,19 @@ const PhotoListView = () => {
 };
 
 const Profile = () => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const { user } = useAuth();
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const { data: total } = useQuery<any>({
     queryKey: ['posts', user?.documentId, 'total'],
     queryFn: () => fetchCount(),
     enabled: !!user,
   });
+
+  if (!user) {
+    return <Redirect href="/anonymous" />;
+  }
 
   return (
     <SafeAreaView className="flex-1">
@@ -296,43 +301,39 @@ const Profile = () => {
           title: '我的',
         }}
       />
-      {user ? (
-        <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
-          <VStack className="flex-1" space="xl">
-            <UserInfoHeader />
-            <HStack
-              space="md"
-              className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
-              <VStack className="items-center justify-center">
-                <Text size="xl" bold={true}>
-                  {total?.data || 0}
-                </Text>
-                <Text size="sm">帖子</Text>
-              </VStack>
-              <VStack className="items-center justify-center">
-                <Text size="xl" bold={true}>
-                  21
-                </Text>
-                <Text size="sm">关注</Text>
-              </VStack>
-              <VStack className="items-center justify-center">
-                <Text size="xl" bold={true}>
-                  3
-                </Text>
-                <Text size="sm">被关注</Text>
-              </VStack>
-            </HStack>
-            <SegmentedControl
-              values={['我的帖子', '照片墙']}
-              selectedIndex={selectedIndex}
-              onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
-            />
-            {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
-          </VStack>
-        </ScrollView>
-      ) : (
-        <></>
-      )}
+      <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
+        <VStack className="flex-1" space="xl">
+          <UserInfoHeader />
+          <HStack
+            space="md"
+            className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
+            <VStack className="items-center justify-center">
+              <Text size="xl" bold={true}>
+                {total?.data || 0}
+              </Text>
+              <Text size="sm">帖子</Text>
+            </VStack>
+            <VStack className="items-center justify-center">
+              <Text size="xl" bold={true}>
+                21
+              </Text>
+              <Text size="sm">关注</Text>
+            </VStack>
+            <VStack className="items-center justify-center">
+              <Text size="xl" bold={true}>
+                3
+              </Text>
+              <Text size="sm">被关注</Text>
+            </VStack>
+          </HStack>
+          <SegmentedControl
+            values={['我的帖子', '照片墙']}
+            selectedIndex={selectedIndex}
+            onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
+          />
+          {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
+        </VStack>
+      </ScrollView>
     </SafeAreaView>
   );
 };
