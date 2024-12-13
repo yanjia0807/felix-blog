@@ -27,7 +27,7 @@ const forgetPasswordSchema = z.object({
   }),
 });
 
-const ForgetPassword = () => {
+const ForgetPasswordScreen = () => {
   const toast = useCustomToast();
   const { forgetPasswordMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = forgetPasswordMutation;
@@ -112,4 +112,4 @@ const ForgetPassword = () => {
   );
 };
 
-export default ForgetPassword;
+export default ForgetPasswordScreen;

@@ -5,7 +5,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-const Feature = () => {
+const FeatureScreen = () => {
   const { user, logoutMutation } = useAuth();
   const toast = useCustomToast();
   return (
@@ -60,4 +60,4 @@ const Feature = () => {
   );
 };
 
-export default Feature;
+export default FeatureScreen;

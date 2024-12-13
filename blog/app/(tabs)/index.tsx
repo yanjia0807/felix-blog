@@ -1,4 +1,3 @@
-import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { router, Stack } from 'expo-router';
@@ -6,13 +5,12 @@ import _ from 'lodash';
 import { Activity, MapPin, Star } from 'lucide-react-native';
 import moment from 'moment';
 import React from 'react';
-import { ImageBackground, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
+import { FlatList, ImageBackground, RefreshControl, TouchableOpacity } from 'react-native';
 import { apiServerURL, fetchRecommendPosts } from '@/api';
 import MainHeader from '@/components/main-header';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
-import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
@@ -149,42 +147,7 @@ const users = [
   },
 ];
 
-const Home = () => {
-  const {
-    data: recommentData,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isLoading: isLoadingRecomment,
-    isFetchingNextPage,
-    status,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: ['posts'],
-    queryFn: fetchRecommendPosts,
-    initialPageParam: {
-      pagination: {
-        page: 1,
-        pageSize: 5,
-      },
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { page, pageSize, pageCount },
-        },
-      } = lastPage;
-
-      if (page < pageCount) {
-        return {
-          pagination: { page: page + 1, pageSize },
-        };
-      }
-
-      return null;
-    },
-  });
-
+const HomeHeader = () => {
   const renderPostItem = ({ item }: any) => {
     return (
       <ImageBackground
@@ -229,6 +192,91 @@ const Home = () => {
       </ImageBackground>
     );
   };
+
+  const renderUserItem = ({ item }: any) => {
+    return (
+      <VStack className="items-center" space="sm">
+        <Avatar key={item.id} size="md" className="mx-4">
+          <AvatarFallbackText>{item.name}</AvatarFallbackText>
+          <AvatarImage
+            source={{
+              uri: item.avatar,
+            }}
+          />
+        </Avatar>
+        <Text size="sm">{item.name}</Text>
+      </VStack>
+    );
+  };
+
+  return (
+    <>
+      <MainHeader className="mb-12 h-16" />
+      <VStack className="flex-1" space="3xl">
+        <FlatList
+          data={posts}
+          renderItem={renderPostItem}
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+        />
+        <VStack>
+          <HStack className="items-center" space="xs">
+            <Icon as={Activity} className="text-secondary-950" />
+            <Text bold={true} className="my-4 text-secondary-950">
+              最近更新
+            </Text>
+          </HStack>
+          <FlatList
+            data={users}
+            renderItem={renderUserItem}
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+          />
+        </VStack>
+        <HStack className="items-center" space="xs">
+          <Icon as={Star} className="text-secondary-950" />
+          <Text bold={true} className="my-4 text-secondary-950">
+            推荐
+          </Text>
+        </HStack>
+      </VStack>
+    </>
+  );
+};
+
+const HomeScreen = () => {
+  const {
+    data: recommentData,
+    fetchNextPage,
+    hasNextPage,
+    isLoading: isLoadingRecomment,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ['posts'],
+    queryFn: fetchRecommendPosts,
+    initialPageParam: {
+      pagination: {
+        page: 1,
+        pageSize: 5,
+      },
+    },
+    getNextPageParam: (lastPage: any) => {
+      const {
+        meta: {
+          pagination: { page, pageSize, pageCount },
+        },
+      } = lastPage;
+
+      if (page < pageCount) {
+        return {
+          pagination: { page: page + 1, pageSize },
+        };
+      }
+
+      return null;
+    },
+  });
 
   const renderRecommentItem = ({ item, index }: any) => {
     return (
@@ -310,22 +358,6 @@ const Home = () => {
     );
   };
 
-  const renderUserItem = ({ item }: any) => {
-    return (
-      <VStack className="items-center" space="sm">
-        <Avatar key={item.id} size="md" className="mx-4">
-          <AvatarFallbackText>{item.name}</AvatarFallbackText>
-          <AvatarImage
-            source={{
-              uri: item.avatar,
-            }}
-          />
-        </Avatar>
-        <Text size="sm">{item.name}</Text>
-      </VStack>
-    );
-  };
-
   const recomments: any = _.reduce(
     recommentData?.pages,
     (result: any, item: any) => [...result, ...item.data],
@@ -333,6 +365,10 @@ const Home = () => {
   );
 
   const isLoading = isLoadingRecomment;
+
+  const renderListHeader = (props: any) => {
+    return <HomeHeader {...props}></HomeHeader>;
+  };
 
   return (
     <SafeAreaView className="flex-1 color-background-50">
@@ -344,66 +380,32 @@ const Home = () => {
       {isLoading && (
         <Spinner size="small" className="bg-background absolute bottom-0 left-0 right-0 top-0" />
       )}
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        <VStack className="flex-1" space="3xl">
-          <MainHeader />
-          <FlashList
-            data={posts}
-            estimatedItemSize={168}
-            renderItem={renderPostItem}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-          />
-          <VStack>
-            <HStack className="items-center" space="xs">
-              <Icon as={Activity} className="text-secondary-950" />
-              <Text bold={true} className="my-4 text-secondary-950">
-                最近更新
-              </Text>
-            </HStack>
-
-            <FlashList
-              data={users}
-              estimatedItemSize={42}
-              renderItem={renderUserItem}
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-            />
-          </VStack>
-          <VStack className="flex-1">
-            <HStack className="items-center" space="xs">
-              <Icon as={Star} className="text-secondary-950" />
-              <Text bold={true} className="my-4 text-secondary-950">
-                推荐
-              </Text>
-            </HStack>
-            <FlashList
-              data={recomments}
-              renderItem={renderRecommentItem}
-              estimatedItemSize={200}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              onEndReached={() => {
-                if (hasNextPage && !isFetchingNextPage) {
-                  fetchNextPage();
+      <VStack className="flex-1 px-6">
+        <FlatList
+          data={recomments}
+          ListHeaderComponent={renderListHeader}
+          renderItem={renderRecommentItem}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={() => {
+                if (!isLoading) {
+                  refetch();
                 }
               }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isLoading}
-                  onRefresh={() => {
-                    if (!isLoading) {
-                      refetch();
-                    }
-                  }}
-                />
-              }
             />
-          </VStack>
-        </VStack>
-      </ScrollView>
+          }
+        />
+      </VStack>
     </SafeAreaView>
   );
 };
 
-export default Home;
+export default HomeScreen;

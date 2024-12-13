@@ -1,10 +1,9 @@
-import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { MapPin, Search } from 'lucide-react-native';
 import React from 'react';
-import { RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
+import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { fetchPosts, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
@@ -27,7 +26,42 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-const PostHome = () => {
+const PostHeader = ({ tags }: any) => {
+  const renderTagsItem = ({ item }: any) => {
+    return (
+      <Button action="secondary" className="mx-2">
+        <ButtonText>{item.name}</ButtonText>
+      </Button>
+    );
+  };
+
+  return (
+    <>
+      <MainHeader className="mb-12 h-16" />
+      <VStack className="mb-8 flex-1" space="3xl">
+        <HStack>
+          <Input className="flex-1 bg-primary-100" variant="rounded">
+            <InputField />
+            <InputSlot>
+              <InputIcon as={Search} className="mx-2"></InputIcon>
+            </InputSlot>
+          </Input>
+        </HStack>
+        <HStack className="h-12 w-full">
+          <FlatList
+            data={tags}
+            renderItem={renderTagsItem}
+            horizontal={true}
+            keyExtractor={(item: any) => item.documentId}
+            showsHorizontalScrollIndicator={false}
+          />
+        </HStack>
+      </VStack>
+    </>
+  );
+};
+
+const PostScreen = () => {
   const { user } = useAuth();
   const toast = useCustomToast();
 
@@ -76,14 +110,6 @@ const PostHome = () => {
     queryKey: ['tags'],
     queryFn: fetchTags,
   });
-
-  const renderTagsItem = ({ item }: any) => {
-    return (
-      <Button action="secondary" className="mx-2">
-        <ButtonText>{item.name}</ButtonText>
-      </Button>
-    );
-  };
 
   const renderPostItem = ({ item, index }: any) => {
     return (
@@ -143,6 +169,10 @@ const PostHome = () => {
     );
   };
 
+  const renderListHeader = (props: any) => {
+    return <PostHeader tags={tags} {...props}></PostHeader>;
+  };
+
   const onCreatePostButtonPressed = () => {
     router.push('/posts/create');
   };
@@ -157,54 +187,31 @@ const PostHome = () => {
         }}
       />
       {isLoading && <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />}
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        <VStack className="flex-1" space="3xl">
-          <MainHeader />
-          <HStack>
-            <Input className="flex-1 bg-primary-100" variant="rounded">
-              <InputField />
-              <InputSlot>
-                <InputIcon as={Search} className="mx-2"></InputIcon>
-              </InputSlot>
-            </Input>
-          </HStack>
-          <HStack className="h-12 w-full">
-            <FlashList
-              data={tags}
-              estimatedItemSize={100}
-              renderItem={renderTagsItem}
-              horizontal={true}
-              keyExtractor={(item: any) => item.documentId}
-              showsHorizontalScrollIndicator={false}
-            />
-          </HStack>
-          <VStack className="flex-1">
-            <FlashList
-              data={posts}
-              renderItem={renderPostItem}
-              estimatedItemSize={200}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item: any) => item.documentId}
-              onEndReached={() => {
-                if (hasNextPage && !isFetchingNextPage) {
-                  fetchNextPage();
+      <VStack className="flex-1 px-6">
+        <FlatList
+          data={posts}
+          ListHeaderComponent={renderListHeader}
+          renderItem={renderPostItem}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item: any) => item.documentId}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoadingPost}
+              onRefresh={() => {
+                if (!isLoading) {
+                  refetch();
                 }
               }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isLoadingPost}
-                  onRefresh={() => {
-                    if (!isLoading) {
-                      refetch();
-                    }
-                  }}
-                />
-              }
             />
-          </VStack>
-        </VStack>
-      </ScrollView>
+          }
+        />
+      </VStack>
       {user && (
         <Fab size="md" placement="bottom right" onPress={() => onCreatePostButtonPressed()}>
           <FabIcon as={AddIcon} />
@@ -215,4 +222,4 @@ const PostHome = () => {
   );
 };
 
-export default PostHome;
+export default PostScreen;

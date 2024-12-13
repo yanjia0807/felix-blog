@@ -3,13 +3,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { AlertCircleIcon, ImageIcon, MapPinIcon, Mic, Tag } from 'lucide-react-native';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import colors from 'tailwindcss/colors';
 import { z, ZodType } from 'zod';
 import { upload } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
@@ -271,11 +270,7 @@ const PostCreate = () => {
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1, padding: 16 }}>
           <VStack className="flex-1" space="xl">
             {isPending && (
-              <Spinner
-                size="small"
-                className="absolute bottom-0 left-0 right-0 top-0"
-                color={colors.gray[500]}
-              />
+              <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />
             )}
             <Controller control={control} name="title" render={renderTitle} />
             {tags.length > 0 && <PostTags tags={tags} onRemoveTag={onRemoveTag} />}

@@ -1,13 +1,11 @@
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { CircleX } from 'lucide-react-native';
 import React from 'react';
-import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
+import { twMerge } from 'tailwind-merge';
+import { Button, ButtonGroup, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 
 const PostTags = ({ tags, onRemoveTag, className }: any) => {
-  const PostTagsStyles = tva({});
   return (
-    <HStack space="sm" className={`${PostTagsStyles({ className })} my-2 flex-wrap`}>
+    <HStack space="sm" className={twMerge('my-2 flex-wrap', className)}>
       {tags.map((item: any) => (
         <PostTagIcon key={item.id} tag={item} onRemoveTag={onRemoveTag} />
       ))}
@@ -16,9 +14,8 @@ const PostTags = ({ tags, onRemoveTag, className }: any) => {
 };
 
 const PostTagIcon = ({ tag, onRemoveTag, className }: any) => {
-  const PostTagIconStyles = tva({});
   return (
-    <ButtonGroup space="xs" isAttached={true} className={PostTagIconStyles({ className })}>
+    <ButtonGroup space="xs" isAttached={true} className={twMerge(className)}>
       <Button
         size="xs"
         action="secondary"

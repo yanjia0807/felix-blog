@@ -1,17 +1,15 @@
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { CircleX, Volume2 } from 'lucide-react-native';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 import { apiServerURL } from '@/api';
 import { ButtonGroup, Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 
 const PostRecordings = ({ recordings = [], onRemoveRecording, className = '' }: any) => {
-  const PostRecordingsStyles = tva({});
-
   return (
-    <HStack space="sm" className={`${PostRecordingsStyles(className)} flex-wrap`}>
+    <HStack space="sm" className={twMerge('flex-wrap', className)}>
       {recordings.map((item: any) => {
         const key = item._uri || item.url;
         return <PostRecordingIcon key={key} item={item} onRemove={onRemoveRecording} />;
@@ -21,8 +19,6 @@ const PostRecordings = ({ recordings = [], onRemoveRecording, className = '' }: 
 };
 
 const PostRecordingIcon = ({ item, onRemove, className }: any) => {
-  const PostRecordingIconStyles = tva({});
-
   const [isPlaying, setIsPlaying] = useState(false);
   const [durationMillis, setDurationMillis] = useState(0);
   const soundObj = useRef<any>({ sound: null, isPlaying: false });
@@ -72,7 +68,7 @@ const PostRecordingIcon = ({ item, onRemove, className }: any) => {
   }, [item._uri, item.url]);
 
   return (
-    <ButtonGroup space="sm" isAttached={true} className={PostRecordingIconStyles({ className })}>
+    <ButtonGroup space="sm" isAttached={true} className={twMerge(className)}>
       <Button
         size="sm"
         onPress={() => playSound()}

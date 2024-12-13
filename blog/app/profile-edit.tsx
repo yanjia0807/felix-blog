@@ -1,16 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Stack, router } from 'expo-router';
-import _ from 'lodash';
 import { CameraIcon, ChevronDownIcon, AlertCircle, AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { UserData, updateUser } from '@/api';
 import { useAuth } from '@/components/auth-context';
-import { DatePicker } from '@/components/date-picker';
+import { CustomDatePicker } from '@/components/custom-date-picker';
 import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
@@ -43,11 +41,10 @@ import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { genderEnum } from '@/constants/enum';
 
-const ProfileEdit = () => {
+const ProfileEditScreen = () => {
   const { user }: any = useAuth();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
-  const insets = useSafeAreaInsets();
   const profile = { ...user.profile };
 
   type ProfileSchemaDetails = z.infer<typeof profileSchema>;
@@ -148,7 +145,7 @@ const ProfileEdit = () => {
       <FormControlLabel>
         <FormControlLabelText>出生日期</FormControlLabelText>
       </FormControlLabel>
-      <DatePicker value={value} onChange={onChange} variant="rounded"></DatePicker>
+      <CustomDatePicker value={value} onChange={onChange} variant="rounded" />
       <FormControlError>
         <FormControlErrorIcon as={AlertCircle} />
         <FormControlErrorText>{errors?.birthday?.message}</FormControlErrorText>
@@ -254,7 +251,11 @@ const ProfileEdit = () => {
             <Controller name="gender" control={control} render={renderGender} />
             <Controller name="birthday" control={control} render={renderBirthday} />
             <Controller name="phoneNumber" control={control} render={renderPhonNumber} />
-            <Button action="primary" size="lg" onPress={handleSubmit(onSubmit)}>
+            <Button
+              action="primary"
+              size="lg"
+              className="rounded-2xl"
+              onPress={handleSubmit(onSubmit)}>
               <ButtonText>保存</ButtonText>
               {isPending && <ButtonSpinner />}
             </Button>
@@ -265,4 +266,4 @@ const ProfileEdit = () => {
   );
 };
 
-export default ProfileEdit;
+export default ProfileEditScreen;

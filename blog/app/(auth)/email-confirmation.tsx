@@ -6,7 +6,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const EmailConfirmation = () => {
+const EmailConfirmationScreen = () => {
   const router = useRouter();
 
   return (
@@ -36,4 +36,4 @@ const EmailConfirmation = () => {
   );
 };
 
-export default EmailConfirmation;
+export default EmailConfirmationScreen;

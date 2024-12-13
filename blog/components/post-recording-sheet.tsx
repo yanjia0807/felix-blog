@@ -125,7 +125,6 @@ const PostRecordingSheet = forwardRef(function RecordingSheet(
   }, [metering, recordingStatus, stopRecording]);
 
   const commitRecording = useCallback(async () => {
-    console.log('@', recording);
     onChange(recording);
     ref.current?.close();
   }, [onChange, recording, ref]);

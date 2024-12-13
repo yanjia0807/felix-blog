@@ -50,7 +50,7 @@ const registerSchema = z.object({
     .min(6, '密码长度至少为6位'),
 });
 
-const SignUp = () => {
+const RegisterScreen = () => {
   const { registerMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = registerMutation;
   const toast = useCustomToast();
@@ -212,4 +212,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default RegisterScreen;

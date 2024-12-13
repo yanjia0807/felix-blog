@@ -25,7 +25,7 @@ import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import UserInfoHeader from '@/components/user-info-header';
 
-const Setting = () => {
+const SettingScreen = () => {
   const toast = useCustomToast();
   const { user, forgetPasswordMutation, logoutMutation } = useAuth();
   const { mutate } = forgetPasswordMutation;
@@ -171,4 +171,4 @@ const Setting = () => {
   );
 };
 
-export default Setting;
+export default SettingScreen;

@@ -6,7 +6,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const SendConfirmationEmail = () => {
+const SendConfirmationEmailScreen = () => {
   const handleSendMail = () => {};
 
   return (
@@ -32,4 +32,4 @@ const SendConfirmationEmail = () => {
   );
 };
 
-export default SendConfirmationEmail;
+export default SendConfirmationEmailScreen;

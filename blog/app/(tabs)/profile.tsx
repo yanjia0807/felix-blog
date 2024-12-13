@@ -2,7 +2,7 @@ import SegmentedControl from '@react-native-segmented-control/segmented-control'
 import { FlashList, MasonryFlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { Redirect, Stack } from 'expo-router';
+import { Redirect, router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { BookMarked, Heart, MapPin, MessageCircle } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
@@ -11,7 +11,6 @@ import { fetchCount, fetchMyPosts, fetchMyPhotos } from '@/api';
 import { apiServerURL } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { Box } from '@/components/ui/box';
-import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -63,7 +62,16 @@ const PostListView = () => {
 
   const renderItem = ({ item }: any) => {
     return (
-      <TouchableOpacity onPress={() => {}} className="my-3 rounded-lg p-4">
+      <TouchableOpacity
+        onPress={() => {
+          router.push({
+            pathname: '/posts/[documentId]',
+            params: {
+              documentId: item.documentId,
+            },
+          });
+        }}
+        className="my-3 rounded-lg p-4">
         <VStack space="lg">
           <HStack className="items-start justify-start" space="md">
             <VStack space="md" className="flex-1">
@@ -129,7 +137,6 @@ const PostListView = () => {
           }}
           refreshControl={
             <RefreshControl
-              colors={['#9Bd35A', '#689F38']}
               refreshing={isLoading}
               onRefresh={() => {
                 if (!isLoading) {
@@ -188,7 +195,6 @@ const PhotoListView = () => {
 
   const listData = useMemo(() => {
     let files = [];
-    console.log('!', data);
 
     if (data) {
       files = _.reduce(
@@ -241,45 +247,39 @@ const PhotoListView = () => {
 
   return (
     <Box className="mr-1/4 flex-1">
-      {user ? (
-        <MasonryFlashList
-          data={listData}
-          getItemType={() => 'image'}
-          renderItem={renderItem}
-          numColumns={numColumns}
-          ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}
-          ListEmptyComponent={renderEmptyComponent}
-          estimatedItemSize={width / numColumns}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          refreshControl={
-            <RefreshControl
-              colors={['#9Bd35A', '#689F38']}
-              refreshing={isLoading}
-              onRefresh={() => {
-                if (!isLoading) {
-                  refetch();
-                }
-              }}
-            />
+      <MasonryFlashList
+        data={listData}
+        getItemType={() => 'image'}
+        renderItem={renderItem}
+        numColumns={numColumns}
+        ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}
+        ListEmptyComponent={renderEmptyComponent}
+        estimatedItemSize={width / numColumns}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
           }
-          showsVerticalScrollIndicator={false}
-          getColumnFlex={(items, index, maxColumns, extraData) => {
-            console.log('@', items, index, maxColumns, extraData);
-            return numColumns;
-          }}
-        />
-      ) : (
-        <></>
-      )}
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={() => {
+              if (!isLoading) {
+                refetch();
+              }
+            }}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+        getColumnFlex={(items, index, maxColumns, extraData) => {
+          return numColumns;
+        }}
+      />
     </Box>
   );
 };
 
-const Profile = () => {
+const ProfileScreen = () => {
   const { user } = useAuth();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -338,4 +338,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfileScreen;

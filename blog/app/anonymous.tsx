@@ -8,7 +8,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const AnonymousSetting = () => {
+const AnonymousScreen = () => {
   const renderHeaderLeft = () => (
     <Button
       size="md"
@@ -71,4 +71,4 @@ const AnonymousSetting = () => {
   );
 };
 
-export default AnonymousSetting;
+export default AnonymousScreen;

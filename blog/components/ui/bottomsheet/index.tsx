@@ -141,7 +141,6 @@ export const BottomSheetTrigger = ({
   return (
     <Pressable 
       onPress={(e) => {
-        console.log('@@@', props.onTrigger)
         props.onTrigger && props.onTrigger(e);
         handleOpen();
       }}

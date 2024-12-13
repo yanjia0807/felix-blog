@@ -3,14 +3,14 @@ import _ from 'lodash';
 import { Heart } from 'lucide-react-native';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import colors from 'tailwindcss/colors';
+import { twMerge } from 'tailwind-merge';
 import { UpdatePostLikedData, updatePostLiked } from '@/api';
 import { useAuth } from './auth-context';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 
-const LikePostButton = ({ post }: any) => {
+const LikePostButton = ({ post, className }: any) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -73,7 +73,7 @@ const LikePostButton = ({ post }: any) => {
   return (
     <TouchableOpacity onPress={() => onLikedButtonPress()}>
       <HStack space="xs" className="items-center">
-        <Icon as={Heart} color={post?.likedByMe ? colors.red[500] : colors.gray[500]} />
+        <Icon as={Heart} className={twMerge(post?.likedByMe && 'text-red-400', className)} />
         <Text size="xs">{post?.likedByUsers.length}</Text>
       </HStack>
     </TouchableOpacity>

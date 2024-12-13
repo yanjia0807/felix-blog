@@ -1,21 +1,17 @@
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import { BookMarked } from 'lucide-react-native';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import colors from 'tailwindcss/colors';
+import { twMerge } from 'tailwind-merge';
 import { updatePostFavorited, UpdatePostFavoritedData } from '@/api';
 import { useAuth } from './auth-context';
 import { Icon } from './ui/icon';
-
-const BookmarkedButtonStyles = tva({});
+import { Pressable } from './ui/pressable';
 
 const BookMarkedButton = ({ className, post, ...props }: any) => {
   const { user } = useAuth();
 
   const queryClient = useQueryClient();
-  console.log('@', post);
   const { mutate } = useMutation({
     mutationFn: ({ documentId, postData }: UpdatePostFavoritedData) => {
       return updatePostFavorited({ documentId, postData });
@@ -68,16 +64,11 @@ const BookMarkedButton = ({ className, post, ...props }: any) => {
   };
 
   return (
-    <TouchableOpacity
-      className={BookmarkedButtonStyles({ className })}
+    <Pressable
+      className={twMerge(className, post?.favoritedByMe && 'bg-tertiary-200')}
       onPress={() => onFavoritedButtonPressed()}>
-      <Icon
-        size="md"
-        className="text-secondary-0"
-        as={BookMarked}
-        color={post?.favoritedByMe ? colors.green[500] : colors.white}
-      />
-    </TouchableOpacity>
+      <Icon size="md" as={BookMarked} />
+    </Pressable>
   );
 };
 

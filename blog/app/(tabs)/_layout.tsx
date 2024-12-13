@@ -1,9 +1,8 @@
 import { Tabs, TabList, TabTrigger, TabSlot, TabTriggerSlotProps } from 'expo-router/ui';
-import { Home, Map, NotebookPen, User2 } from 'lucide-react-native';
+import { Handshake, Home, NotebookPen, User2 } from 'lucide-react-native';
 import React, { forwardRef, Ref } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
@@ -18,7 +17,6 @@ export const TabButton = forwardRef(function TabButton(
   { icon, text, children, isFocused, ...props }: TabButtonProps,
   ref: Ref<View>,
 ) {
-  console.log('@', icon, children, isFocused, props);
   return (
     <Pressable
       ref={ref}
@@ -51,6 +49,9 @@ export default function TabLayout() {
         </TabTrigger>
         <TabTrigger name="post" href="/post" asChild>
           <TabButton text="发现" icon={NotebookPen}></TabButton>
+        </TabTrigger>
+        <TabTrigger name="friend" href="/friend" asChild>
+          <TabButton text="朋友" icon={Handshake}></TabButton>
         </TabTrigger>
         <TabTrigger name="profile" href="/profile" asChild>
           <TabButton text="我的" icon={User2}></TabButton>

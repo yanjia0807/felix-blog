@@ -1,14 +1,13 @@
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Image } from 'expo-image';
 import { BookImage, CircleX } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
+import { twMerge } from 'tailwind-merge';
 import { Grid, GridItem } from '@/components/ui/grid';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Icon } from './ui/icon';
 import { Popover, PopoverBackdrop, PopoverContent } from './ui/popover';
-import { Text } from './ui/text';
 
 const ImageItem = ({
   image,
@@ -49,7 +48,6 @@ const ImageItem = ({
 };
 
 const PostImageGrid = ({ images, onOpenGallery, onRemoveImage, className, onSetCover }: any) => {
-  const PostImagesGridStyles = tva({});
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
   const handleSetCover = (imageId: string | null) => {
@@ -63,7 +61,7 @@ const PostImageGrid = ({ images, onOpenGallery, onRemoveImage, className, onSetC
 
   return (
     <Grid
-      className={`${PostImagesGridStyles({ className })} gap-0`}
+      className={twMerge('gap-0', className)}
       _extra={{
         className: 'grid-cols-4',
       }}>
