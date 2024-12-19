@@ -8,6 +8,7 @@ import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Icon } from './ui/icon';
 import { Popover, PopoverBackdrop, PopoverContent } from './ui/popover';
+import { VStack } from './ui/vstack';
 
 const ImageItem = ({
   image,
@@ -25,19 +26,23 @@ const ImageItem = ({
       key={image.assetId}
       className="shadow-sm">
       <Image
-        alt={image.fileName}
+        alt={image.fileName || image.alternativeText || image.assetId}
         style={{
           aspectRatio: 1,
-          borderRadius: 12,
+          borderRadius: 8,
         }}
         source={{
           uri: image.uri,
-        }}></Image>
-      <TouchableOpacity
-        className="absolute right-0 top-0 m-1"
-        onPress={() => onRemoveImage(image.assetId)}>
-        <Icon as={CircleX} size="sm" className="text-gray-50" />
-      </TouchableOpacity>
+        }}
+      />
+      {onRemoveImage && (
+        <TouchableOpacity
+          className="absolute right-0 top-0 m-1"
+          onPress={() => onRemoveImage(image.assetId)}>
+          <Icon as={CircleX} size="sm" className="text-gray-50" />
+        </TouchableOpacity>
+      )}
+
       {image.cover && (
         <Box className="absolute bottom-0 right-0 m-1">
           <Icon as={BookImage} size="sm" className="color-gray-50" />
@@ -56,7 +61,9 @@ const PostImageGrid = ({ images, onOpenGallery, onRemoveImage, className, onSetC
   };
 
   const onLongPressImage = (assetId: string) => {
-    setSelectedImageId(assetId);
+    if (onSetCover) {
+      setSelectedImageId(assetId);
+    }
   };
 
   return (

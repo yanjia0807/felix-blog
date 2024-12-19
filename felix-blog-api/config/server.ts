@@ -8,5 +8,5 @@ export default ({ env }) => ({
     serverOptions: {
       requestTimeout: 30 * 60 * 1000,
     },
-  },
+  }
 });

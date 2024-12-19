@@ -1,7 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Stack, router } from 'expo-router';
-import { CameraIcon, ChevronDownIcon, AlertCircle, AlertCircleIcon } from 'lucide-react-native';
+import {
+  CameraIcon,
+  ChevronDownIcon,
+  AlertCircle,
+  AlertCircleIcon,
+  ChevronLeft,
+} from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -11,7 +17,7 @@ import { useAuth } from '@/components/auth-context';
 import { CustomDatePicker } from '@/components/custom-date-picker';
 import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { Center } from '@/components/ui/center';
 import {
   FormControl,
@@ -195,12 +201,11 @@ const ProfileEditScreen = () => {
 
   const renderHeaderLeft = () => (
     <Button
-      size="md"
       variant="link"
       onPress={() => {
         router.back();
       }}>
-      <ButtonText>返回</ButtonText>
+      <ButtonIcon as={ChevronLeft} />
     </Button>
   );
 
@@ -252,6 +257,7 @@ const ProfileEditScreen = () => {
             <Controller name="birthday" control={control} render={renderBirthday} />
             <Controller name="phoneNumber" control={control} render={renderPhonNumber} />
             <Button
+              disabled={isPending}
               action="primary"
               size="lg"
               className="rounded-2xl"

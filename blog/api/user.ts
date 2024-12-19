@@ -1,12 +1,20 @@
-import { apiClient } from './api-client';
 import qs from 'qs';
+import { apiClient } from './api-client';
 
 export type UserData = any;
 
-export const fetchUser = async () => {
+export const fetchMe = async () => {
   try {
-    const user: any = await apiClient.get(`/users/me`);
-    const query = qs.stringify(
+    const query = qs.stringify({
+      populate: {
+        followers: true,
+        followings: true,
+      },
+    });
+
+    const user: any = await apiClient.get(`/users/me?${query}`);
+
+    const query1 = qs.stringify(
       {
         populate: {
           avatar: {
@@ -25,7 +33,7 @@ export const fetchUser = async () => {
         encodeValuesOnly: true,
       },
     );
-    const res = await apiClient.get(`/profiles?${query}`);
+    const res = await apiClient.get(`/profiles?${query1}`);
     const profile = res.data[0];
     const result = {
       ...user,
@@ -63,4 +71,32 @@ export const updateUser = async ({
   } catch (error: any) {
     throw new Error(error.message);
   }
+};
+
+export const fetchUser = async (documentId: string): Promise<any> => {
+  try {
+    const res = await apiClient.get(`/users/${documentId}`);
+    return res;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const fetchUsers = async ({ pageParam }: any) => {
+  const { pagination, filters } = pageParam;
+  const query = qs.stringify({
+    populate: {
+      profile: {
+        populate: {
+          avatar: {
+            fields: ['formats', 'name', 'alternativeText'],
+          },
+        },
+      },
+    },
+    pagination,
+    filters,
+  });
+  const res = await apiClient.get(`/users?${query}`);
+  return res;
 };

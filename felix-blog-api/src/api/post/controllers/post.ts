@@ -8,33 +8,17 @@ export default factories.createCoreController(
   "api::post.post",
   ({ strapi }) => ({
     async findAdditional(ctx) {
-      const userDocumentId = ctx.state?.user?.documentId;
-      const query = ctx.query;
+      const posts = await strapi.service("api::post.post").findAdditional(ctx);
 
-      const posts = await strapi
-        .service("api::post.post")
-        .findAdditional(userDocumentId, query);
       return posts;
     },
 
     async findOneAdditional(ctx) {
-      const userDocumentId = ctx.state?.user?.documentId;
-      const query = ctx.query;
-      const params = ctx.params;
-
       const posts = await strapi
         .service("api::post.post")
-        .findOneAdditional(userDocumentId, params, query);
+        .findOneAdditional(ctx);
+
       return posts;
-    },
-
-    async count(ctx) {
-      const userDocumentId = ctx.state?.user?.documentId;
-
-      const count = await strapi
-        .service("api::post.post")
-        .count(userDocumentId);
-      return { data: count };
-    },
+    }
   })
 );

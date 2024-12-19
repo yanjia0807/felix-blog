@@ -1,298 +1,37 @@
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { FlashList, MasonryFlashList } from '@shopify/flash-list';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { Image } from 'expo-image';
+import { useQuery } from '@tanstack/react-query';
 import { Redirect, router, Stack } from 'expo-router';
 import _ from 'lodash';
-import { BookMarked, Heart, MapPin, MessageCircle } from 'lucide-react-native';
-import React, { useMemo, useState } from 'react';
-import { Dimensions, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
-import { fetchCount, fetchMyPosts, fetchMyPhotos } from '@/api';
-import { apiServerURL } from '@/api';
+import { Calendar, EditIcon, MapPin, ScanFace, Settings2 } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { ScrollView } from 'react-native';
+import { apiServerURL, fetchMyPostCount } from '@/api';
 import { useAuth } from '@/components/auth-context';
+import PhotoListView from '@/components/photo-list-view';
+import PostListView from '@/components/post-list-view';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
-import { Heading } from '@/components/ui/heading';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import UserInfoHeader from '@/components/user-info-header';
-
-const { width } = Dimensions.get('window');
-const numColumns = 2;
-
-const PostListView = () => {
-  const { user } = useAuth();
-
-  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
-    useInfiniteQuery({
-      queryKey: ['posts', user.documentId],
-      queryFn: fetchMyPosts,
-      initialPageParam: {
-        pagination: {
-          page: 1,
-          pageSize: 5,
-        },
-        userDocumentId: user.documentId,
-      },
-      getNextPageParam: (lastPage: any) => {
-        const {
-          meta: {
-            pagination: { page, pageSize, pageCount },
-          },
-        } = lastPage;
-
-        if (page < pageCount) {
-          return {
-            pagination: { page: page + 1, pageSize },
-            userDocumentId: user.documentId,
-          };
-        }
-
-        return null;
-      },
-    });
-
-  const posts: any = _.reduce(
-    data?.pages,
-    (result: any, item: any) => [...result, ...item.data],
-    [],
-  );
-
-  const renderItem = ({ item }: any) => {
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          router.push({
-            pathname: '/posts/[documentId]',
-            params: {
-              documentId: item.documentId,
-            },
-          });
-        }}
-        className="my-3 rounded-lg p-4">
-        <VStack space="lg">
-          <HStack className="items-start justify-start" space="md">
-            <VStack space="md" className="flex-1">
-              <Heading numberOfLines={1} size="md">
-                {item.title}
-              </Heading>
-              <HStack className="items-center justify-between">
-                <Text size="xs">30分钟之前</Text>
-                <HStack space="xs" className="items-center">
-                  <Icon as={MapPin} size="xs" />
-                  <Text size="xs">重庆市，渝北区</Text>
-                </HStack>
-              </HStack>
-              <Text numberOfLines={3} size="sm">
-                {item.content}
-              </Text>
-            </VStack>
-          </HStack>
-          <HStack className="items-center justify-end" space="md">
-            <HStack space="lg" className="flex-row items-center">
-              <HStack space="xs" className="items-center">
-                <Icon as={Heart} />
-                <Text size="xs">{item?.likedByUsers?.count}</Text>
-              </HStack>
-              <HStack space="xs" className="items-center">
-                <Icon as={BookMarked} />
-                <Text size="xs">{item?.favoritedByUsers?.count}</Text>
-              </HStack>
-              <HStack space="xs" className="items-center">
-                <Icon as={MessageCircle} />
-                <Text size="xs">{item?.comments?.count}</Text>
-              </HStack>
-            </HStack>
-          </HStack>
-        </VStack>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderEmptyComponent = (props: any) => {
-    return (
-      <Box className="mt-10 w-full items-center justify-center">
-        <Text size="sm">没有数据</Text>
-      </Box>
-    );
-  };
-
-  return (
-    <Box className="flex-1">
-      {user ? (
-        <FlashList
-          data={posts}
-          renderItem={renderItem}
-          keyExtractor={(item: any) => item.documentId}
-          estimatedItemSize={154}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          ListEmptyComponent={renderEmptyComponent}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={() => {
-                if (!isLoading) {
-                  refetch();
-                }
-              }}
-            />
-          }
-        />
-      ) : (
-        <></>
-      )}
-    </Box>
-  );
-};
-
-const PhotoListView = () => {
-  const { user } = useAuth();
-
-  const renderEmptyComponent = (props: any) => {
-    return (
-      <Box className="mt-10 w-full items-center justify-center">
-        <Text size="sm">没有数据</Text>
-      </Box>
-    );
-  };
-
-  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
-    useInfiniteQuery({
-      queryKey: ['posts', user.documentId, 'photos'],
-      queryFn: fetchMyPhotos,
-      initialPageParam: {
-        pagination: {
-          page: 1,
-          pageSize: 5,
-        },
-        userDocumentId: user.documentId,
-      },
-      getNextPageParam: (lastPage: any) => {
-        const {
-          meta: {
-            pagination: { page, pageSize, pageCount },
-          },
-        } = lastPage;
-
-        if (page < pageCount) {
-          return {
-            pagination: { page: page + 1, pageSize },
-            userDocumentId: user.documentId,
-          };
-        }
-
-        return null;
-      },
-    });
-
-  const listData = useMemo(() => {
-    let files = [];
-
-    if (data) {
-      files = _.reduce(
-        data.pages,
-        (result: any, page: any) => {
-          const pageFiles = _.reduce(
-            page.data,
-            (pageResult: any, item: any) => {
-              let temp: any = [];
-              if (item.cover) {
-                temp = [...temp, { ...item.cover, type: 'cover' }];
-              }
-              const attachment = _.find(
-                item.blocks,
-                (block: any) => block['__component'] === 'shared.attachment',
-              );
-              if (attachment?.files.length > 0) {
-                temp = [
-                  ...temp,
-                  ..._.filter(attachment.files, (file: any) => file.mime.startsWith('image/')),
-                ];
-              }
-              return [...pageResult, ...temp];
-            },
-            [],
-          );
-          return [...result, ...pageFiles];
-        },
-        [],
-      );
-    }
-    return files;
-  }, [data]);
-
-  const renderItem = ({ item }: any) => {
-    return (
-      <Image
-        recyclingKey={item.id}
-        source={{ uri: `${apiServerURL}/${item.formats.small.url}` }}
-        contentFit="cover"
-        style={{
-          flex: 1,
-          aspectRatio: 1,
-          marginLeft: 1,
-        }}
-        alt={`Photo by ${item.author}`}
-      />
-    );
-  };
-
-  return (
-    <Box className="mr-1/4 flex-1">
-      <MasonryFlashList
-        data={listData}
-        getItemType={() => 'image'}
-        renderItem={renderItem}
-        numColumns={numColumns}
-        ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}
-        ListEmptyComponent={renderEmptyComponent}
-        estimatedItemSize={width / numColumns}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={() => {
-              if (!isLoading) {
-                refetch();
-              }
-            }}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-        getColumnFlex={(items, index, maxColumns, extraData) => {
-          return numColumns;
-        }}
-      />
-    </Box>
-  );
-};
 
 const ProfileScreen = () => {
   const { user } = useAuth();
+
+  if (!user) {
+    return <Redirect href="/anonymous" />;
+  }
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const { data: total } = useQuery<any>({
     queryKey: ['posts', user?.documentId, 'total'],
-    queryFn: () => fetchCount(),
+    queryFn: () => fetchMyPostCount(),
     enabled: !!user,
   });
-
-  if (!user) {
-    return <Redirect href="/anonymous" />;
-  }
 
   return (
     <SafeAreaView className="flex-1">
@@ -303,7 +42,55 @@ const ProfileScreen = () => {
       />
       <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
         <VStack className="flex-1" space="xl">
-          <UserInfoHeader />
+          <HStack className="items-center justify-between">
+            <Avatar size="lg" className="shadow">
+              <AvatarImage
+                source={{
+                  uri: `${apiServerURL}/${user.profile?.avatar?.formats.thumbnail.url}`,
+                }}
+              />
+            </Avatar>
+            <HStack className="items-center" space="sm">
+              <Button
+                size="sm"
+                className="rounded-3xl px-6"
+                onPress={() => {
+                  router.push('/profile-edit');
+                }}>
+                <ButtonText>编辑</ButtonText>
+                <ButtonIcon as={EditIcon} />
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-3xl px-6"
+                onPress={() => {
+                  router.push('/setting');
+                }}>
+                <ButtonText>设置</ButtonText>
+                <ButtonIcon as={Settings2} />
+              </Button>
+            </HStack>
+          </HStack>
+          <VStack space="md">
+            <Text size="3xl" bold={true}>
+              {user.username}
+            </Text>
+            <HStack space="md" className="items-center">
+              <HStack className="items-center" space="xs">
+                <Icon size="xs" as={Calendar} />
+                <Text size="xs">{user.profile.birthday}</Text>
+              </HStack>
+              <HStack className="items-center" space="xs">
+                <Icon size="xs" as={ScanFace} />
+                <Text size="xs">{user.profile.gender === 'male' ? '男' : '女'}</Text>
+              </HStack>
+              <HStack className="items-center" space="xs">
+                <Icon size="xs" as={MapPin} />
+                <Text size="xs">重庆｜南岸区</Text>
+              </HStack>
+            </HStack>
+            <Text size="sm">{user.profile?.bio || '个人签名'}</Text>
+          </VStack>
           <HStack
             space="md"
             className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
@@ -331,7 +118,7 @@ const ProfileScreen = () => {
             selectedIndex={selectedIndex}
             onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
           />
-          {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
+          {selectedIndex === 0 ? <PostListView user={user} /> : <PhotoListView user={user} />}
         </VStack>
       </ScrollView>
     </SafeAreaView>

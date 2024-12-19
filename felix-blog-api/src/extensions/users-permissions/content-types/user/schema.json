@@ -83,12 +83,6 @@
       "target": "api::post.post",
       "mappedBy": "likedByUsers"
     },
-    "favoritePosts": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::post.post",
-      "inversedBy": "favoritedByUsers"
-    },
     "comments": {
       "type": "relation",
       "relation": "oneToMany",
@@ -106,6 +100,18 @@
       "relation": "oneToMany",
       "target": "api::message.message",
       "mappedBy": "recipient"
+    },
+    "followers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::follow.follow",
+      "mappedBy": "follower"
+    },
+    "followings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::follow.follow",
+      "mappedBy": "following"
     }
   }
 }

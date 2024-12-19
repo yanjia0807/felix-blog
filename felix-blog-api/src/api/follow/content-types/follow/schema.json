@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "follows",
+  "info": {
+    "singularName": "follow",
+    "pluralName": "follows",
+    "displayName": "Follow",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "follower": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "followers"
+    },
+    "following": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "followings"
+    },
+    "state": {
+      "type": "enumeration",
+      "enum": [
+        "active",
+        "blocked",
+        "pending",
+        "removed"
+      ],
+      "default": "pending"
+    }
+  }
+}

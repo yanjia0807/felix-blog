@@ -15,6 +15,7 @@ import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
 import { BottomSheet } from '@/components/ui/bottomsheet';
+import SocketProvider from '@/components/socket-context';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,11 +79,13 @@ export default function RootLayout() {
               <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
                 <GluestackUIProvider mode={theme}>
                   <AuthProvider>
-                    <Stack screenOptions={{ headerShown: false }}>
-                      <Stack.Screen name="(tabs)" options={{}} />
-                      <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
-                      <Stack.Screen name="+not-found" />
-                    </Stack>
+                    <SocketProvider>
+                      <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="(tabs)" options={{}} />
+                        <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="+not-found" />
+                      </Stack>
+                    </SocketProvider>
                     <StatusBar style="auto" />
                   </AuthProvider>
                 </GluestackUIProvider>

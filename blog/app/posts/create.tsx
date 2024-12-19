@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
-import { AlertCircleIcon, ImageIcon, MapPinIcon, Mic, Tag } from 'lucide-react-native';
+import { AlertCircleIcon, ChevronLeft, ImageIcon, MapPinIcon, Mic, Tag } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable } from 'react-native';
@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z, ZodType } from 'zod';
 import { upload } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
+import { useAuth } from '@/components/auth-context';
 import PostImageSheet from '@/components/post-image-sheet';
 import PostImageGrid from '@/components/post-images-grid';
 import PostPositionSheet from '@/components/post-position-sheet';
@@ -42,6 +43,7 @@ type PostFormData = {
 };
 
 const PostCreate = () => {
+  const { user } = useAuth();
   const [images, setImages] = useState<any>([]);
   const [recordings, setRecordings] = useState<any>([]);
   const [position, setPosition] = useState<any>();
@@ -110,7 +112,7 @@ const PostCreate = () => {
     const postData: PostData = {
       title: formData.title,
       content: formData.content,
-      author: 2,
+      author: user.documentId,
     };
 
     if (coverId !== null) {
@@ -180,13 +182,11 @@ const PostCreate = () => {
 
   const renderHeaderLeft = () => (
     <Button
-      size="md"
-      action="secondary"
       variant="link"
       onPress={() => {
         router.dismiss();
       }}>
-      <ButtonText>返回</ButtonText>
+      <ButtonIcon as={ChevronLeft} />
     </Button>
   );
 

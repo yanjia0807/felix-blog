@@ -17,7 +17,7 @@ const AuthorInfo = ({ author }: any) => {
       </Avatar>
       <VStack>
         <Text size="sm" bold={true}>
-          {author?.profile?.nickname || author?.username}
+          {author?.username}
         </Text>
       </VStack>
     </HStack>

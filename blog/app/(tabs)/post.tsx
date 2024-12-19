@@ -37,7 +37,7 @@ const PostHeader = ({ tags }: any) => {
 
   return (
     <>
-      <MainHeader className="mb-12 h-16" />
+      <MainHeader className="mb-6 h-16" />
       <VStack className="mb-8 flex-1" space="3xl">
         <HStack>
           <Input className="flex-1 bg-primary-100" variant="rounded">

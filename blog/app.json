@@ -40,15 +40,6 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      [
         "expo-image-picker",
         {
           "photosPermission": "$(PRODUCT_NAME) 需要访问您的照片，以便与您的朋友分享照片。"

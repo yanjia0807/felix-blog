@@ -211,7 +211,7 @@ const HomeHeader = () => {
 
   return (
     <>
-      <MainHeader className="mb-12 h-16" />
+      <MainHeader className="mb-6 h-16" />
       <VStack className="flex-1" space="3xl">
         <FlatList
           data={posts}

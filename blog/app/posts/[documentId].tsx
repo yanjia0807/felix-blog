@@ -1,93 +1,47 @@
 import { FlashList } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import moment from 'moment';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
-import { fetchPostCommentTotal } from '@/api/comment';
 import { fetchPost } from '@/api/post';
 import AuthorInfo from '@/components/author-info';
-import BookMarkedButton from '@/components/book-marked-button';
 import CommentInfo from '@/components/comment-info';
 import LikePostButton from '@/components/like-post-button';
 import PostCommentsSheet from '@/components/post-comments-sheet';
+import PostImageGrid from '@/components/post-images-grid';
 import PostRecordings from '@/components/post-recordings';
 import PostTags from '@/components/post-tags';
 import ShareButton from '@/components/share-button';
-import { Box } from '@/components/ui/box';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonIcon } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
+import { Image } from '@/components/ui/image';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const PostDetailCover = ({ cover }: any) => {
-  if (cover) {
-    return (
-      <Box className="h-48 w-full">
-        <Image
-          source={{
-            uri: `${apiServerURL}/${cover.formats.small.url}`,
-          }}
-          alt={cover.alternativeText}
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: 12,
-          }}
-        />
-      </Box>
-    );
-  }
+const PostCover = ({ cover }: any) => {
+  return (
+    <Image
+      source={{
+        uri: `${apiServerURL}/${cover.formats.small.url}`,
+      }}
+      alt={cover.alternativeText}
+      className="h-48 w-full rounded-md"
+    />
+  );
 };
 
 const DateInfo = ({ createdAt }: any) => {
   const format = 'YYYY-MM-DD hh:mm:ss';
-  const content = `发布于：${moment(createdAt).format(format)}`;
-  return (
-    <Text size="sm" bold={true}>
-      {content}
-    </Text>
-  );
-};
-
-const ImageList = ({ images, onOpenGallery }: any) => {
-  const renderImageItem = ({ item, index }: any) => {
-    return (
-      <Pressable className="mx-2 h-48 w-48" onPress={() => onOpenGallery(index)}>
-        <Image
-          source={{
-            uri: item.uri,
-          }}
-          alt={item.alternativeText}
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: 12,
-          }}
-        />
-      </Pressable>
-    );
-  };
-
-  if (images?.length > 0) {
-    return (
-      <FlashList
-        data={images}
-        keyExtractor={(item: any) => item.documentId}
-        horizontal={true}
-        renderItem={renderImageItem}
-        estimatedItemSize={200}
-        showsHorizontalScrollIndicator={false}
-      />
-    );
-  }
+  const content = `${moment(createdAt).format(format)}`;
+  return <Text size="sm">{content}</Text>;
 };
 
 const PostDetail = () => {
@@ -107,11 +61,6 @@ const PostDetail = () => {
     queryFn: () => fetchPost({ documentId }),
   });
 
-  const { data: total } = useQuery<any>({
-    queryKey: ['comments', documentId, 'total'],
-    queryFn: () => fetchPostCommentTotal({ postDocumentId: documentId }),
-  });
-
   const files = post?.blocks?.find(
     (item: any) => item['__component'] === 'shared.attachment',
   )?.files;
@@ -120,9 +69,11 @@ const PostDetail = () => {
     ?.filter((item: any) => item.mime.startsWith('image/'))
     .map((item: any) => ({
       id: item.id,
-      documentId: item.documentId,
+      assetId: item.documentId,
+      alternativeText: item.alternativeText,
       uri: `${apiServerURL}${item.formats.small.url}`,
     }));
+  console.log('@@@', files);
 
   const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
 
@@ -134,23 +85,15 @@ const PostDetail = () => {
   const renderHeaderLeft = () => (
     <Button
       variant="link"
-      action="secondary"
-      size="md"
       onPress={() => {
-        router.dismiss();
+        router.back();
       }}>
-      <ButtonText>返回</ButtonText>
+      <ButtonIcon as={ChevronLeft} />
     </Button>
   );
 
   const renderHeaderRight = () => (
-    <>
-      <BookMarkedButton
-        post={post}
-        className="mr-2 h-8 w-8 items-center justify-center rounded-full"
-      />
-      <ShareButton className="h-8 w-8 items-center justify-center rounded-full" />
-    </>
+    <ShareButton className="h-8 w-8 items-center justify-center rounded-full" />
   );
 
   return (
@@ -167,25 +110,28 @@ const PostDetail = () => {
       {isSuccess && (
         <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
           <VStack className="flex-1" space="md">
-            <Heading>{post.title}</Heading>
-            <PostDetailCover cover={post?.cover} post={post} />
-            <PostTags tags={post?.tags} />
-            <DateInfo createdAt={post?.createdAt} />
-            <HStack className="items-center justify-between">
-              <AuthorInfo author={post?.author} />
-              <HStack space="lg" className="flex-row items-center">
-                <LikePostButton post={post} />
-                <CommentInfo />
+            <Heading className="mb-4">{post.title}</Heading>
+            <VStack space="sm">
+              <HStack className="items-center justify-between">
+                <AuthorInfo author={post?.author} />
+                <HStack space="lg" className="items-center justify-end">
+                  <LikePostButton post={post} />
+                  <CommentInfo
+                    commentCount={post?.comments?.count}
+                    onCommentButtonPressed={() => setIsCommentSheetOpen(true)}
+                  />
+                </HStack>
               </HStack>
-            </HStack>
-            <PostRecordings recordings={recordings} />
-            <ImageList images={images} onOpenGallery={onOpenGallery} />
-            <Text size="md">{post?.content}</Text>
-            <HStack>
-              <Button variant="link" onPress={() => setIsCommentSheetOpen(true)}>
-                <ButtonText className="font-bold">{`评论(${total})`}</ButtonText>
-              </Button>
-            </HStack>
+              <HStack className="items-center" space="sm">
+                <DateInfo createdAt={post?.createdAt} />
+                <Text size="sm">重庆财富中心</Text>
+              </HStack>
+            </VStack>
+            {post?.cover && <PostCover cover={post.cover} />}
+            {post?.tags?.length > 0 && <PostTags tags={post?.tags} />}
+            {post?.content && <Text>{post?.content}</Text>}
+            {recordings?.length > 0 && <PostRecordings recordings={recordings} />}
+            {images?.length > 0 && <PostImageGrid images={images} onOpenGallery={onOpenGallery} />}
           </VStack>
         </ScrollView>
       )}

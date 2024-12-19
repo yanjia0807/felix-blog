@@ -10,10 +10,5 @@ export default {
       path: "/posts/:documentId/additional",
       handler: "api::post.post.findOneAdditional",
     },
-    {
-      method: "GET",
-      path: "/posts/count",
-      handler: "api::post.post.count",
-    },
   ],
 };

@@ -4,7 +4,6 @@ import { apiClient } from './api-client';
 
 export type PostData = any;
 export type UpdatePostLikedData = any;
-export type UpdatePostFavoritedData = any;
 
 export const fetchPosts = async ({ pageParam }: any) => {
   const { pagination } = pageParam;
@@ -70,8 +69,9 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchMyPosts = async ({ pageParam }: any) => {
+export const fetchUserPosts = async ({ pageParam }: any) => {
   const { pagination, userDocumentId } = pageParam;
+
   const query = qs.stringify({
     populate: {
       tags: true,
@@ -85,9 +85,6 @@ export const fetchMyPosts = async ({ pageParam }: any) => {
       likedByUsers: {
         count: true,
       },
-      favoritedByUsers: {
-        count: true,
-      },
       comments: {
         count: true,
       },
@@ -95,9 +92,11 @@ export const fetchMyPosts = async ({ pageParam }: any) => {
         fields: ['formats', 'name', 'alternativeText'],
       },
     },
-    // filters: {
-    //   author: userDocumentId,
-    // },
+    filters: {
+      author: {
+        documentId: userDocumentId,
+      },
+    },
     sort: 'createdAt:desc',
     pagination,
   });
@@ -105,7 +104,7 @@ export const fetchMyPosts = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchMyPhotos = async ({ pageParam }: any) => {
+export const fetchUserPhotos = async ({ pageParam }: any) => {
   const { pagination, userDocumentId } = pageParam;
   const query = qs.stringify({
     populate: {
@@ -122,9 +121,11 @@ export const fetchMyPhotos = async ({ pageParam }: any) => {
         fields: ['formats', 'name', 'alternativeText'],
       },
     },
-    // filters: {
-    //   author: userDocumentId,
-    // },
+    filters: {
+      author: {
+        documentId: userDocumentId,
+      },
+    },
     sort: 'createdAt:desc',
     pagination,
   });
@@ -132,8 +133,8 @@ export const fetchMyPhotos = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchCount = async () => {
-  const res = await apiClient.get(`/posts/count`);
+export const fetchMyPostCount = async () => {
+  const res = await apiClient.get(`/posts/my-post-count`);
   return res;
 };
 
@@ -190,18 +191,6 @@ export const updatePostLiked = async ({ documentId, postData }: UpdatePostLikedD
         },
       },
     });
-    const res = await apiClient.put(`/posts/${documentId}?${query}`, {
-      data: postData,
-    });
-    return res;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-};
-
-export const updatePostFavorited = async ({ documentId, postData }: UpdatePostFavoritedData) => {
-  try {
-    const query = qs.stringify({});
     const res = await apiClient.put(`/posts/${documentId}?${query}`, {
       data: postData,
     });

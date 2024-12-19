@@ -2,6 +2,7 @@ import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import {
   Bell,
+  ChevronLeft,
   ChevronRightIcon,
   Info,
   KeyRound,
@@ -13,7 +14,7 @@ import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import { useAuth } from '@/components/auth-context';
 import { usePreferences } from '@/components/preferences-provider';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -23,7 +24,6 @@ import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
-import UserInfoHeader from '@/components/user-info-header';
 
 const SettingScreen = () => {
   const toast = useCustomToast();
@@ -80,13 +80,11 @@ const SettingScreen = () => {
 
   const renderHeaderLeft = () => (
     <Button
-      size="md"
-      action="secondary"
       variant="link"
       onPress={() => {
         router.dismiss();
       }}>
-      <ButtonText>返回</ButtonText>
+      <ButtonIcon as={ChevronLeft} />
     </Button>
   );
 
@@ -102,8 +100,6 @@ const SettingScreen = () => {
       <SafeAreaView className="flex-1">
         {user ? (
           <VStack className="flex-1 p-6" space="xl">
-            <UserInfoHeader />
-            <Divider />
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
               <VStack className="flex-1">
                 <HStack className="h-14 items-center justify-between p-3">

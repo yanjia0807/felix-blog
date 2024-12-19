@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { fetchUser } from '@/api';
+import { fetchMe } from '@/api';
 
 import {
   loginUser,
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }: any) => {
 
   const { data, error, isLoading, isSuccess, status } = useQuery({
     queryKey: ['user'],
-    queryFn: fetchUser,
+    queryFn: fetchMe,
     enabled: !!accessToken,
     initialData: null,
   });
@@ -87,6 +87,7 @@ export const AuthProvider = ({ children }: any) => {
     <AuthContext.Provider
       value={{
         user: data,
+        accessToken,
         loginMutation,
         registerMutation,
         forgetPasswordMutation,

@@ -440,6 +440,46 @@ export interface ApiCommentComment extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiFollowFollow extends Struct.CollectionTypeSchema {
+  collectionName: 'follows';
+  info: {
+    description: '';
+    displayName: 'Follow';
+    pluralName: 'follows';
+    singularName: 'follow';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    follower: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    following: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::follow.follow'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    state: Schema.Attribute.Enumeration<
+      ['active', 'blocked', 'pending', 'removed']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
   collectionName: 'globals';
   info: {
@@ -476,7 +516,7 @@ export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
   collectionName: 'messages';
   info: {
     description: '';
-    displayName: 'message';
+    displayName: 'Message';
     pluralName: 'messages';
     singularName: 'message';
   };
@@ -534,10 +574,6 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    favoritedByUsers: Schema.Attribute.Relation<
-      'manyToMany',
-      'plugin::users-permissions.user'
-    >;
     latitude: Schema.Attribute.Decimal;
     likedByUsers: Schema.Attribute.Relation<
       'manyToMany',
@@ -1091,7 +1127,8 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
-    favoritePosts: Schema.Attribute.Relation<'manyToMany', 'api::post.post'>;
+    followers: Schema.Attribute.Relation<'oneToMany', 'api::follow.follow'>;
+    followings: Schema.Attribute.Relation<'oneToMany', 'api::follow.follow'>;
     likePosts: Schema.Attribute.Relation<'manyToMany', 'api::post.post'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1145,6 +1182,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::about.about': ApiAboutAbout;
       'api::comment.comment': ApiCommentComment;
+      'api::follow.follow': ApiFollowFollow;
       'api::global.global': ApiGlobalGlobal;
       'api::message.message': ApiMessageMessage;
       'api::post.post': ApiPostPost;

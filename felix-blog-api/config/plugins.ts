@@ -16,4 +16,11 @@ export default ({ env }) => ({
   upload: {
     config: {},
   },
+  "users-permissions": {
+    config: {
+      me: {
+        allowedFields: ["followers","followings"]
+      }
+    }
+  }
 });

@@ -106,23 +106,6 @@ export const fetchRelatedComments = async ({ topCommentDocumentId, pagination }:
   }
 };
 
-export const fetchPostCommentTotal = async ({ postDocumentId }: any) => {
-  try {
-    const query = qs.stringify(
-      {
-        postDocumentId,
-      },
-      {
-        encodeValuesOnly: true,
-      },
-    );
-    const res: any = await apiClient.get(`/comments/total?${query}`);
-    return res.data.total;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-};
-
 export const createComment = async (commentData: CommentData) => {
   const query = qs.stringify({
     populate: {
