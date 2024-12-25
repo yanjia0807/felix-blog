@@ -48,7 +48,6 @@ const AddFriend = () => {
       filters,
     },
     getNextPageParam: (lastPage: any) => {
-      debugger;
       const {
         meta: {
           pagination: { page, pageSize, pageCount },
@@ -176,7 +175,7 @@ const AddFriend = () => {
             <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${item.profile?.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}/${item.avatar?.formats.thumbnail.url}`,
               }}
             />
           </Avatar>

@@ -1,4 +1,3 @@
-import { FlashList } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
@@ -20,7 +19,6 @@ import { Button, ButtonIcon } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Image } from '@/components/ui/image';
-import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
@@ -57,7 +55,7 @@ const PostDetail = () => {
     data: post,
     error,
   } = useQuery({
-    queryKey: ['posts', documentId],
+    queryKey: ['posts', 'detail', documentId],
     queryFn: () => fetchPost({ documentId }),
   });
 
@@ -73,7 +71,6 @@ const PostDetail = () => {
       alternativeText: item.alternativeText,
       uri: `${apiServerURL}${item.formats.small.url}`,
     }));
-  console.log('@@@', files);
 
   const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
 
@@ -136,6 +133,7 @@ const PostDetail = () => {
         </ScrollView>
       )}
       <PostCommentsSheet
+        commentCount={post?.comments?.count}
         postDocumentId={post?.documentId}
         isOpen={isCommentSheetOpen}
         onClose={() => setIsCommentSheetOpen(false)}

@@ -1,16 +1,14 @@
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { useQuery } from '@tanstack/react-query';
 import { Redirect, router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings2 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
-import { apiServerURL, fetchMyPostCount } from '@/api';
+import { apiServerURL } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import PhotoListView from '@/components/photo-list-view';
 import PostListView from '@/components/post-list-view';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -20,18 +18,14 @@ import { VStack } from '@/components/ui/vstack';
 
 const ProfileScreen = () => {
   const { user } = useAuth();
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   if (!user) {
     return <Redirect href="/anonymous" />;
   }
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const { data: total } = useQuery<any>({
-    queryKey: ['posts', user?.documentId, 'total'],
-    queryFn: () => fetchMyPostCount(),
-    enabled: !!user,
-  });
+  const followersCount = _.filter(user.followers, { state: 'active' }).length;
+  const followingsCount = _.filter(user.followings, { state: 'active' }).length;
 
   return (
     <SafeAreaView className="flex-1">
@@ -46,7 +40,7 @@ const ProfileScreen = () => {
             <Avatar size="lg" className="shadow">
               <AvatarImage
                 source={{
-                  uri: `${apiServerURL}/${user.profile?.avatar?.formats.thumbnail.url}`,
+                  uri: `${apiServerURL}/${user.avatar?.formats.thumbnail.url}`,
                 }}
               />
             </Avatar>
@@ -55,7 +49,7 @@ const ProfileScreen = () => {
                 size="sm"
                 className="rounded-3xl px-6"
                 onPress={() => {
-                  router.push('/profile-edit');
+                  router.push('/user-edit');
                 }}>
                 <ButtonText>编辑</ButtonText>
                 <ButtonIcon as={EditIcon} />
@@ -78,37 +72,37 @@ const ProfileScreen = () => {
             <HStack space="md" className="items-center">
               <HStack className="items-center" space="xs">
                 <Icon size="xs" as={Calendar} />
-                <Text size="xs">{user.profile.birthday}</Text>
+                <Text size="xs">{user.birthday}</Text>
               </HStack>
               <HStack className="items-center" space="xs">
                 <Icon size="xs" as={ScanFace} />
-                <Text size="xs">{user.profile.gender === 'male' ? '男' : '女'}</Text>
+                <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
               </HStack>
               <HStack className="items-center" space="xs">
                 <Icon size="xs" as={MapPin} />
                 <Text size="xs">重庆｜南岸区</Text>
               </HStack>
             </HStack>
-            <Text size="sm">{user.profile?.bio || '个人签名'}</Text>
+            <Text size="sm">{user?.bio || '个人签名'}</Text>
           </VStack>
           <HStack
             space="md"
             className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
             <VStack className="items-center justify-center">
               <Text size="xl" bold={true}>
-                {total?.data || 0}
+                {user.posts.count}
               </Text>
               <Text size="sm">帖子</Text>
             </VStack>
             <VStack className="items-center justify-center">
               <Text size="xl" bold={true}>
-                21
+                {followingsCount}
               </Text>
               <Text size="sm">关注</Text>
             </VStack>
             <VStack className="items-center justify-center">
               <Text size="xl" bold={true}>
-                3
+                {followersCount}
               </Text>
               <Text size="sm">被关注</Text>
             </VStack>
@@ -118,7 +112,7 @@ const ProfileScreen = () => {
             selectedIndex={selectedIndex}
             onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
           />
-          {selectedIndex === 0 ? <PostListView user={user} /> : <PhotoListView user={user} />}
+          {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
         </VStack>
       </ScrollView>
     </SafeAreaView>

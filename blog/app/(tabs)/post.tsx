@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin, Search } from 'lucide-react-native';
 import React from 'react';
@@ -36,9 +36,9 @@ const PostHeader = ({ tags }: any) => {
   };
 
   return (
-    <>
-      <MainHeader className="mb-6 h-16" />
-      <VStack className="mb-8 flex-1" space="3xl">
+    <VStack className="h-[180]">
+      <MainHeader className="mb-6" />
+      <VStack className="flex-1" space="2xl">
         <HStack>
           <Input className="flex-1 bg-primary-100" variant="rounded">
             <InputField />
@@ -57,7 +57,7 @@ const PostHeader = ({ tags }: any) => {
           />
         </HStack>
       </VStack>
-    </>
+    </VStack>
   );
 };
 
@@ -75,12 +75,12 @@ const PostScreen = () => {
     status,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ['posts'],
+    queryKey: ['posts', 'list'],
     queryFn: fetchPosts,
     initialPageParam: {
       pagination: {
         page: 1,
-        pageSize: 5,
+        pageSize: 10,
       },
     },
     getNextPageParam: (lastPage: any) => {
@@ -181,11 +181,6 @@ const PostScreen = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
       {isLoading && <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />}
       <VStack className="flex-1 px-6">
         <FlatList

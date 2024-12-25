@@ -4,30 +4,33 @@
 
 import { factories } from "@strapi/strapi";
 
-export default factories.createCoreService("api::post.post", {
+const modelId = "api::post.post";
+
+export default factories.createCoreService(modelId, {
   async findAdditional(ctx: any) {
     const userDocumentId = ctx.state?.user?.documentId;
     const { populate, filters, pagination, ...rest } = ctx.query;
     const { limit = 10, start = 0 } = pagination;
 
-    const results = await strapi.documents("api::post.post").findMany({
-      start,
-      limit,
-      populate: {
-        likedByUsers: {
-          fields: ["documentId"],
+    const [data, total]: any = await Promise.all([
+      strapi.documents(modelId).findMany({
+        start,
+        limit,
+        populate: {
+          likedByUsers: {
+            fields: ["documentId"],
+          },
+          ...populate,
         },
-        ...populate,
-      },
-      ...filters,
-      ...rest,
-    });
-
-    const total = await strapi.documents("api::post.post").count({ filters });
+        ...filters,
+        ...rest,
+      }),
+      strapi.documents(modelId).count({ filters }),
+    ]);
 
     if (!userDocumentId) {
       return {
-        data: results,
+        data,
         meta: {
           pagination: {
             total,
@@ -38,12 +41,12 @@ export default factories.createCoreService("api::post.post", {
       };
     }
 
-    const likedPosts = await strapi.db.query("api::post.post").findMany({
+    const likedPosts = await strapi.db.query(modelId).findMany({
       where: { likedByUsers: { documentId: userDocumentId } },
       select: ["documentId"],
     });
 
-    const modifiedPosts = results.map((post) => ({
+    const modifiedPosts = data.map((post) => ({
       ...post,
       likedByMe: likedPosts
         .map((post) => post.documentId)
@@ -67,7 +70,7 @@ export default factories.createCoreService("api::post.post", {
     const { documentId } = ctx.params;
     const { populate } = ctx.query;
 
-    const result: any = await strapi.documents("api::post.post").findOne({
+    const data: any = await strapi.documents(modelId).findOne({
       documentId,
       populate: {
         likedByUsers: {
@@ -79,14 +82,14 @@ export default factories.createCoreService("api::post.post", {
 
     if (!userDocumentId) {
       return {
-        data: result,
+        data,
         meta: {},
       };
     }
 
     const modifiedPosts = {
-      ...result,
-      likedByMe: result.likedByUsers
+      ...data,
+      likedByMe: data.likedByUsers
         .map((item) => item.documentId)
         .includes(userDocumentId),
     };
@@ -95,5 +98,5 @@ export default factories.createCoreService("api::post.post", {
       data: modifiedPosts,
       meta: {},
     };
-  }
+  },
 });

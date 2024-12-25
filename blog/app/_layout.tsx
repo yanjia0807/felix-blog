@@ -1,21 +1,21 @@
 import '@/global.css';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider } from '@/components/auth-context';
 import { PreferencesProvider, Theme } from '@/components/preferences-provider';
-import { useColorScheme } from 'react-native';
-import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
-import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
-import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
-import { BottomSheet } from '@/components/ui/bottomsheet';
 import SocketProvider from '@/components/socket-context';
+import { BottomSheet } from '@/components/ui/bottomsheet';
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,22 +75,22 @@ export default function RootLayout() {
         <KeyboardProvider>
           <BottomSheetModalProvider>
             <BottomSheet>
-            <PreferencesProvider theme={theme} updateTheme={updateTheme}>
-              <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
-                <GluestackUIProvider mode={theme}>
-                  <AuthProvider>
-                    <SocketProvider>
-                      <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="(tabs)" options={{}} />
-                        <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
-                        <Stack.Screen name="+not-found" />
-                      </Stack>
-                    </SocketProvider>
-                    <StatusBar style="auto" />
-                  </AuthProvider>
-                </GluestackUIProvider>
-              </NavigationThemeProvider> 
-            </PreferencesProvider>
+              <PreferencesProvider theme={theme} updateTheme={updateTheme}>
+                <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+                  <GluestackUIProvider mode={theme}>
+                    <AuthProvider>
+                      <SocketProvider>
+                        <Stack screenOptions={{ headerShown: false }}>
+                          <Stack.Screen name="(tabs)" options={{}} />
+                          <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+                          <Stack.Screen name="+not-found" />
+                        </Stack>
+                      </SocketProvider>
+                      <StatusBar style="auto" />
+                    </AuthProvider>
+                  </GluestackUIProvider>
+                </NavigationThemeProvider>
+              </PreferencesProvider>
             </BottomSheet>
           </BottomSheetModalProvider>
         </KeyboardProvider>

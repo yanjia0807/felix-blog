@@ -1,14 +1,13 @@
-import { Image } from 'expo-image';
 import { BookImage, CircleX } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Image } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { Grid, GridItem } from '@/components/ui/grid';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Icon } from './ui/icon';
 import { Popover, PopoverBackdrop, PopoverContent } from './ui/popover';
-import { VStack } from './ui/vstack';
+import { Pressable } from './ui/pressable';
 
 const ImageItem = ({
   image,
@@ -19,12 +18,11 @@ const ImageItem = ({
   onRemoveImage,
 }: any) => {
   return (
-    <TouchableOpacity
+    <Pressable
       {...triggerProps}
       onPress={() => onOpenGallery(index)}
       onLongPress={() => onLongPressImage(image.assetId)}
-      key={image.assetId}
-      className="shadow-sm">
+      key={image.assetId}>
       <Image
         alt={image.fileName || image.alternativeText || image.assetId}
         style={{
@@ -36,11 +34,11 @@ const ImageItem = ({
         }}
       />
       {onRemoveImage && (
-        <TouchableOpacity
+        <Pressable
           className="absolute right-0 top-0 m-1"
           onPress={() => onRemoveImage(image.assetId)}>
           <Icon as={CircleX} size="sm" className="text-gray-50" />
-        </TouchableOpacity>
+        </Pressable>
       )}
 
       {image.cover && (
@@ -48,7 +46,7 @@ const ImageItem = ({
           <Icon as={BookImage} size="sm" className="color-gray-50" />
         </Box>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

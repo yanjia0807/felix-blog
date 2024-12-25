@@ -1,17 +1,5 @@
 import { Tabs, TabList, TabTrigger, TabSlot, TabTriggerSlotProps } from 'expo-router/ui';
-import {
-  EthernetPort,
-  Handshake,
-  Home,
-  MessageCircle,
-  MessageCircleDashed,
-  MessageSquareCode,
-  MessageSquareIcon,
-  MessageSquareText,
-  NotebookPen,
-  Tv,
-  User2,
-} from 'lucide-react-native';
+import { BookOpen, House, MessageSquare, User2 } from 'lucide-react-native';
 import React, { forwardRef, Ref } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,16 +42,16 @@ export default function TabLayout() {
     <Tabs>
       <TabSlot />
       <TabList
-        className="bg-background-50"
+        className="bg-background-100"
         style={{ paddingBottom: insets.bottom, paddingTop: 10, paddingHorizontal: 20 }}>
         <TabTrigger name="home" href="/" asChild>
-          <TabButton text="主页" icon={Tv}></TabButton>
+          <TabButton text="主页" icon={House}></TabButton>
         </TabTrigger>
         <TabTrigger name="post" href="/post" asChild>
-          <TabButton text="发现" icon={EthernetPort}></TabButton>
+          <TabButton text="发现" icon={BookOpen}></TabButton>
         </TabTrigger>
-        <TabTrigger name="friends" href="/friends" asChild>
-          <TabButton text="圈子" icon={MessageSquareText}></TabButton>
+        <TabTrigger name="message" href="/message" asChild>
+          <TabButton text="消息" icon={MessageSquare}></TabButton>
         </TabTrigger>
         <TabTrigger name="profile" href="/profile" asChild>
           <TabButton text="我的" icon={User2}></TabButton>

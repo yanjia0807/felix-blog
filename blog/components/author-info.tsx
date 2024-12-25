@@ -11,7 +11,7 @@ const AuthorInfo = ({ author }: any) => {
       <Avatar size="sm">
         <AvatarImage
           source={{
-            uri: `${apiServerURL}/${author?.profile?.avatar.formats.thumbnail.url}`,
+            uri: `${apiServerURL}/${author?.avatar.formats.thumbnail.url}`,
           }}
         />
       </Avatar>

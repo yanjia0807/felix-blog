@@ -1,10 +1,6 @@
 import type { Core } from "@strapi/strapi";
 
-interface AfterCreateEvent {
-    result: any;
-}
-
-function emitEvent(eventName: string, event: AfterCreateEvent) {
+function emitEvent(eventName: string, event: any) {
     const { result } = event;
     const strapi = global.strapi as Core.Strapi;
 
@@ -12,4 +8,4 @@ function emitEvent(eventName: string, event: AfterCreateEvent) {
     (socketService as any).emit(eventName, result);
 }
   
-export { emitEvent, AfterCreateEvent };
+export { emitEvent };

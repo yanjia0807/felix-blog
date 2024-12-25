@@ -7,3 +7,6 @@ export * from './auth';
 export * from './comment';
 export * from './amap';
 export * from './file';
+export * from './notification';
+export * from './follow';
+export * from './feature';

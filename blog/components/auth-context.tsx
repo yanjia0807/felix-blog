@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }: any) => {
   const queryClient = useQueryClient();
 
   const { data, error, isLoading, isSuccess, status } = useQuery({
-    queryKey: ['user'],
+    queryKey: ['users', 'me'],
     queryFn: fetchMe,
     enabled: !!accessToken,
     initialData: null,
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: any) => {
     await SecureStore.deleteItemAsync('accessToken');
     setAccessToken(null);
     await queryClient.resetQueries({
-      queryKey: ['user'],
+      queryKey: ['users'],
     });
   };
 

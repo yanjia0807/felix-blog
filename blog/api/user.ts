@@ -5,27 +5,22 @@ export type UserData = any;
 
 export const fetchMe = async () => {
   try {
-    const query = qs.stringify({
-      populate: {
-        followers: true,
-        followings: true,
-      },
-    });
-
-    const user: any = await apiClient.get(`/users/me?${query}`);
-
-    const query1 = qs.stringify(
+    const query = qs.stringify(
       {
         populate: {
+          followers: {
+            populate: ['follower'],
+            fields: ['id'],
+          },
+          followings: {
+            populate: ['following'],
+            fields: ['id'],
+          },
           avatar: {
             fields: ['formats', 'name', 'alternativeText'],
           },
-        },
-        filters: {
-          user: {
-            id: {
-              $eq: user.id,
-            },
+          posts: {
+            count: true,
           },
         },
       },
@@ -33,13 +28,9 @@ export const fetchMe = async () => {
         encodeValuesOnly: true,
       },
     );
-    const res = await apiClient.get(`/profiles?${query1}`);
-    const profile = res.data[0];
-    const result = {
-      ...user,
-      profile,
-    };
-    return result;
+    const user: any = await apiClient.get(`/users/me?${query}`);
+
+    return user;
   } catch (error: any) {
     if (error.name === 'UnauthorizedError') {
       throw new Error('缺失或无效的凭据，请重新登录');
@@ -49,25 +40,12 @@ export const fetchMe = async () => {
   }
 };
 
-export const updateUser = async ({
-  documentId,
-  profile,
-}: {
-  documentId: string;
-  profile: UserData;
-}) => {
+export const updateUser = async ({ id, userData }: { id: string; userData: UserData }) => {
   try {
-    if (documentId) {
-      const res = await apiClient.put(`/profiles/${documentId}`, {
-        data: profile,
-      });
-      return res;
-    } else {
-      const res = await apiClient.post(`/profiles`, {
-        data: profile,
-      });
-      return res;
-    }
+    const res = await apiClient.put(`/users/${id}`, {
+      data: userData,
+    });
+    return res;
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -86,12 +64,14 @@ export const fetchUsers = async ({ pageParam }: any) => {
   const { pagination, filters } = pageParam;
   const query = qs.stringify({
     populate: {
-      profile: {
-        populate: {
-          avatar: {
-            fields: ['formats', 'name', 'alternativeText'],
-          },
-        },
+      avatar: {
+        fields: ['formats', 'name', 'alternativeText'],
+      },
+      followers: {
+        populate: ['follower'],
+      },
+      followings: {
+        populate: ['following'],
       },
     },
     pagination,

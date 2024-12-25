@@ -11,7 +11,6 @@ import {
   createComment,
   deleteComment,
   fetchPostComments,
-  fetchPostCommentTotal,
   fetchRelatedComments,
 } from '@/api/comment';
 import { useAuth } from './auth-context';
@@ -38,7 +37,7 @@ const commentSchema = z.object({
   }),
 });
 
-const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
+const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any) => {
   const { user } = useAuth();
   const [replyComment, setReplyComment] = useState<any>();
   const [selectCommentDocumentId, setSelectCommentDocumentId] = useState<any>();
@@ -74,7 +73,7 @@ const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
     fetchNextPage: fetchNextCommentsPage,
     hasNextPage: hasNextCommentsPage,
   } = useInfiniteQuery<any>({
-    queryKey: [postDocumentId, 'comments'],
+    queryKey: ['comments', 'list', postDocumentId],
     queryFn: ({ pageParam }) => fetchPostComments(pageParam),
     initialPageParam: {
       postDocumentId,
@@ -186,10 +185,6 @@ const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
     return data;
   }, [postDocumentId, queryClient, topComments, relatedComments]);
 
-  const { data: total } = useQuery<any>({
-    queryKey: [postDocumentId, 'comments', 'total'],
-    queryFn: () => fetchPostCommentTotal({ postDocumentId }),
-  });
 
   const { mutate: createMutate } = useMutation({
     mutationFn: (comment: any) => {
@@ -198,7 +193,7 @@ const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
     onSuccess: (data: any, variables: any, context: unknown) => {
       toast.success({ title: '操作成功', description: '评论已发布' });
       queryClient.invalidateQueries({
-        queryKey: [postDocumentId, 'comments', 'total'],
+        queryKey: ['posts', 'detail', postDocumentId],
       });
       if (variables.topComment) {
         setExpandCommentIds((prev: any) => {
@@ -246,7 +241,7 @@ const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
     onSuccess: (data: any, variables: any, context: unknown) => {
       toast.success({ title: '操作成功', description: '评论已删除' });
       queryClient.invalidateQueries({
-        queryKey: [postDocumentId, 'comments', 'total'],
+        queryKey: ['posts', 'detail', postDocumentId],
       });
       if (variables.topDocumentId) {
         queryClient.invalidateQueries({
@@ -321,7 +316,7 @@ const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
           <Avatar size="sm" className="my-1">
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${section.user.profile.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}/${section.user.avatar?.formats.thumbnail.url}`,
               }}
             />
           </Avatar>
@@ -426,7 +421,7 @@ const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
       <HStack className="my-1 ml-10 items-start" space="sm">
         <Avatar size="xs" className="my-1">
           <AvatarImage
-            source={{ uri: `${apiServerURL}/${item.user.profile.avatar?.formats.thumbnail.url}` }}
+            source={{ uri: `${apiServerURL}/${item.user.avatar?.formats.thumbnail.url}` }}
           />
         </Avatar>
         <VStack className="flex-1 items-start justify-start">
@@ -537,7 +532,7 @@ const PostCommentsSheet = ({ postDocumentId,isOpen,onClose }: any) => {
         </ActionsheetDragIndicatorWrapper>
         <VStack className="w-full flex-1 p-2" space="2xl">
           <Box className="items-center mb-4">
-            <Heading className="p-4">{`${total}条评论`}</Heading>
+            <Heading className="p-4">{`${commentCount}条评论`}</Heading>
             <Divider />
           </Box>
           {isFetchCommentsSuccess && (

@@ -20,7 +20,6 @@ export default {
     if (!socketConfig) {
       strapi.log.error("Invalid Socket.IO configuration");
       return
-      ;
     }
     strapi.server.httpServer.on("listening", () => {
       const io = new SocketServer(strapi.server.httpServer, {

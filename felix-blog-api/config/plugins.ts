@@ -17,10 +17,6 @@ export default ({ env }) => ({
     config: {},
   },
   "users-permissions": {
-    config: {
-      me: {
-        allowedFields: ["followers","followings"]
-      }
-    }
-  }
+    config: {},
+  },
 });

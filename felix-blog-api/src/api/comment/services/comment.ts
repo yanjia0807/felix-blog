@@ -2,17 +2,16 @@
  * comment service
  */
 
-import { factories } from '@strapi/strapi';
+import { factories } from "@strapi/strapi";
 
 export default factories.createCoreService("api::comment.comment", {
-  async findPostCommentTotal(postDocumentId: string) {
-    const total = await strapi.documents("api::comment.comment").count({
+  async count(ctx: any) {
+    return await strapi.documents("api::comment.comment").count({
       filters: {
         post: {
-          documentId: postDocumentId,
+          documentId: ctx.query.postDocumentId,
         },
       },
     });
-    return total;
   },
 });

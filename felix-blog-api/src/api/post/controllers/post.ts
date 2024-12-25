@@ -4,21 +4,14 @@
 
 import { factories } from "@strapi/strapi";
 
-export default factories.createCoreController(
-  "api::post.post",
-  ({ strapi }) => ({
-    async findAdditional(ctx) {
-      const posts = await strapi.service("api::post.post").findAdditional(ctx);
+const modelId = "api::post.post";
 
-      return posts;
-    },
+export default factories.createCoreController(modelId, ({ strapi }) => ({
+  async findAdditional(ctx) {
+    return await strapi.service(modelId).findAdditional(ctx);
+  },
 
-    async findOneAdditional(ctx) {
-      const posts = await strapi
-        .service("api::post.post")
-        .findOneAdditional(ctx);
-
-      return posts;
-    }
-  })
-);
+  async findOneAdditional(ctx) {
+    return await strapi.service(modelId).findOneAdditional(ctx);
+  },
+}));

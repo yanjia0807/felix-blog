@@ -16,23 +16,13 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "followers"
+      "inversedBy": "followings"
     },
     "following": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "followings"
-    },
-    "state": {
-      "type": "enumeration",
-      "enum": [
-        "active",
-        "blocked",
-        "pending",
-        "removed"
-      ],
-      "default": "pending"
+      "inversedBy": "followers"
     }
   }
 }

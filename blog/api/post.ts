@@ -12,8 +12,8 @@ export const fetchPosts = async ({ pageParam }: any) => {
       tags: true,
       author: {
         populate: {
-          profile: {
-            populate: ['avatar'],
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
           },
         },
       },
@@ -44,8 +44,8 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
       tags: true,
       author: {
         populate: {
-          profile: {
-            populate: ['avatar'],
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
           },
         },
       },
@@ -77,8 +77,8 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
       tags: true,
       author: {
         populate: {
-          profile: {
-            populate: ['avatar'],
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
           },
         },
       },
@@ -133,11 +133,6 @@ export const fetchUserPhotos = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchMyPostCount = async () => {
-  const res = await apiClient.get(`/posts/my-post-count`);
-  return res;
-};
-
 export const fetchPost = async ({ documentId }: any) => {
   const query = qs.stringify(
     {
@@ -146,8 +141,8 @@ export const fetchPost = async ({ documentId }: any) => {
         cover: true,
         author: {
           populate: {
-            profile: {
-              populate: ['avatar'],
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
             },
           },
         },
@@ -159,6 +154,9 @@ export const fetchPost = async ({ documentId }: any) => {
               },
             },
           },
+        },
+        comments: {
+          count: true,
         },
       },
     },

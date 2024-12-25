@@ -1,6 +1,7 @@
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import _ from 'lodash';
 import {
   Calendar,
   ChevronLeft,
@@ -28,11 +29,12 @@ import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
 const UserInfo = () => {
-  const { documentId } = useLocalSearchParams();
   const { user: currentUser } = useAuth();
-
+  const { documentId } = useLocalSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const queryClient = useQueryClient();
+  const toast = useCustomToast();
+
   const {
     isPending,
     isError,
@@ -43,7 +45,14 @@ const UserInfo = () => {
     queryKey: ['users', documentId],
     queryFn: () => fetchUser(documentId as string),
   });
-  const toast = useCustomToast();
+
+  const isFollowed = !_.isUndefined(
+    currentUser &&
+      user &&
+      _.find(currentUser.followings, {
+        following: { documentId: user.documentId },
+      }),
+  );
 
   const {
     isSuccess: isFollowSuccess,
@@ -56,10 +65,14 @@ const UserInfo = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['follows', { following: user.documentId, follower: currentUser.documentId }],
+        queryKey: ['users', 'me'],
       });
-      toast.success('关注成功');
-      router.dismiss();
+      queryClient.invalidateQueries({
+        queryKey: ['users', user.documentId],
+      });
+      toast.success({
+        description: isFollowed ? '取消关注成功' : '关注成功',
+      });
     },
     onError(error, variables, context) {
       toast.error(error.message);
@@ -71,7 +84,7 @@ const UserInfo = () => {
     <Button
       variant="link"
       onPress={() => {
-        router.back();
+        router.dismissAll();
       }}>
       <ButtonIcon as={ChevronLeft} />
     </Button>
@@ -83,10 +96,11 @@ const UserInfo = () => {
 
   const onFollowBtnPressed = () => {
     const data = {
-      following: user.documentId,
       follower: currentUser.documentId,
+      following: user.documentId,
+      isFollowed,
     };
-    mutate({ data });
+    mutate(data);
   };
 
   return (
@@ -107,7 +121,7 @@ const UserInfo = () => {
                 <Avatar size="xl" className="shadow">
                   <AvatarImage
                     source={{
-                      uri: `${apiServerURL}/${user.profile?.avatar?.formats.thumbnail.url}`,
+                      uri: `${apiServerURL}/${user.avatar?.formats.thumbnail.url}`,
                     }}
                   />
                 </Avatar>
@@ -118,11 +132,11 @@ const UserInfo = () => {
                   <HStack space="sm">
                     <HStack className="items-center" space="xs">
                       <Icon size="xs" as={Calendar} />
-                      <Text size="xs">{user.profile.birthday}</Text>
+                      <Text size="xs">{user.birthday}</Text>
                     </HStack>
                     <HStack className="items-center" space="xs">
                       <Icon size="xs" as={ScanFace} />
-                      <Text size="xs">{user.profile.gender === 'male' ? '男' : '女'}</Text>
+                      <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
                     </HStack>
                     <HStack className="items-center" space="xs">
                       <Icon size="xs" as={MapPin} />
@@ -132,7 +146,7 @@ const UserInfo = () => {
                 </VStack>
               </HStack>
               <HStack className="items-center justify-center">
-                <Text size="sm">{user.profile?.bio || '个人签名'}</Text>
+                <Text size="sm">{user.bio || '个人签名'}</Text>
               </HStack>
               <HStack className="items-center justify-center" space="2xl">
                 <Pressable
@@ -141,14 +155,12 @@ const UserInfo = () => {
                   <Icon size="md" as={MessageSquareText} />
                 </Pressable>
                 <Button
+                  action={isFollowed ? 'negative' : 'positive'}
                   size="lg"
-                  action="positive"
                   className="rounded-3xl px-16"
                   disabled={isFollowPending}
                   onPress={() => onFollowBtnPressed()}>
-                  <ButtonText>
-                    {currentUser?.followings?.includes(user.documentId) ? '关注' : '取消关注'}
-                  </ButtonText>
+                  <ButtonText>{isFollowed ? '取消关注' : '关注'}</ButtonText>
                   {isPending && <ButtonSpinner />}
                 </Button>
                 <Pressable
@@ -185,7 +197,7 @@ const UserInfo = () => {
               selectedIndex={selectedIndex}
               onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
             />
-            {selectedIndex === 0 ? <PostListView user={user} /> : <PhotoListView user={user} />}
+            {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
           </VStack>
         </ScrollView>
       )}

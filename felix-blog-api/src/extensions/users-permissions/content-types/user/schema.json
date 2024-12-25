@@ -71,12 +71,6 @@
       "target": "api::post.post",
       "mappedBy": "author"
     },
-    "profile": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::profile.profile",
-      "mappedBy": "user"
-    },
     "likePosts": {
       "type": "relation",
       "relation": "manyToMany",
@@ -101,17 +95,46 @@
       "target": "api::message.message",
       "mappedBy": "recipient"
     },
-    "followers": {
+    "followings": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::follow.follow",
       "mappedBy": "follower"
     },
-    "followings": {
+    "followers": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::follow.follow",
       "mappedBy": "following"
+    },
+    "notifications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notification.notification",
+      "mappedBy": "user"
+    },
+    "birthday": {
+      "type": "date"
+    },
+    "phoneNumber": {
+      "type": "string"
+    },
+    "gender": {
+      "type": "enumeration",
+      "enum": [
+        "male",
+        "female"
+      ]
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

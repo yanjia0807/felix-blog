@@ -47,15 +47,14 @@ import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { genderEnum } from '@/constants/enum';
 
-const ProfileEditScreen = () => {
+const UserEditScreen = () => {
   const { user }: any = useAuth();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
-  const profile = { ...user.profile };
 
-  type ProfileSchemaDetails = z.infer<typeof profileSchema>;
+  type UserSchemaDetails = z.infer<typeof userSchema>;
 
-  const profileSchema = z.object({
+  const userSchema = z.object({
     bio: z.string(),
     gender: z.string({
       required_error: '性别是必填项',
@@ -76,21 +75,20 @@ const ProfileEditScreen = () => {
     formState: { errors },
     handleSubmit,
     reset,
-  } = useForm<ProfileSchemaDetails>({
-    resolver: zodResolver(profileSchema),
+  } = useForm<UserSchemaDetails>({
+    resolver: zodResolver(userSchema),
     defaultValues: {
-      bio: profile.bio,
-      gender: profile.gender,
-      birthday: profile.birthday ? new Date(profile.birthday) : new Date(),
-      phoneNumber: profile.phoneNumber,
+      bio: user.bio,
+      gender: user.gender,
+      birthday: user.birthday ? new Date(user.birthday) : new Date(),
+      phoneNumber: user.phoneNumber,
     },
   });
 
   const { isSuccess, isError, isPending, mutate } = useMutation({
-    mutationFn: ({ documentId, profile }: { documentId: string; profile: UserData }) => {
-      return updateUser({ documentId, profile });
+    mutationFn: ({ id, userData }: any) => {
+      return updateUser({ id, userData });
     },
-    onSuccess: () => {},
   });
 
   const renderBio = ({ field: { onChange, onBlur, value } }: any) => (
@@ -180,15 +178,15 @@ const ProfileEditScreen = () => {
     </FormControl>
   );
 
-  const onSubmit = (data: ProfileSchemaDetails) => {
+  const onSubmit = (data: UserSchemaDetails) => {
     mutate(
       {
-        documentId: profile.documentId,
-        profile: profile.documentId ? data : { ...data, user: user.documentId },
+        id: user.id,
+        userData: data,
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['user'] });
+          queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
           toast.success({ title: '操作完成', description: '您的资料已更新' });
           router.navigate('/profile');
         },
@@ -272,4 +270,4 @@ const ProfileEditScreen = () => {
   );
 };
 
-export default ProfileEditScreen;
+export default UserEditScreen;

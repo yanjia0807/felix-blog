@@ -1,13 +1,13 @@
-import { createContext, useContext, useEffect, useMemo } from 'react';
-import { Socket, io } from 'socket.io-client';
+import { createContext, useContext, useEffect } from 'react';
+import { Socket, socket } from '@/utils/socket';
 import { useAuth } from './auth-context';
 
 type SocketContextType = {
-  socket: Socket | null;
+  socket: Socket;
 };
 
 const SocketContext = createContext<SocketContextType>({
-  socket: null,
+  socket,
 });
 
 export const useSocket = () => useContext(SocketContext);
@@ -15,23 +15,38 @@ export const useSocket = () => useContext(SocketContext);
 const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { accessToken } = useAuth();
 
-  const socket = useMemo(() => {
-    if (accessToken) {
-      return io(process.env.EXPO_PUBLIC_API_SERVER_URL as string, {
-        withCredentials: true,
-        auth: { accessToken: accessToken },
-      });
-    }
-    return null;
+  useEffect(() => {
+    const setSocket = async () => {
+      if (accessToken) {
+        socket.auth = { token: accessToken };
+        socket.connect();
+      }
+    };
+
+    setSocket();
+
+    socket.on('session', ({ userId }) => {
+      socket.userId = userId;
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('socket err', err);
+    });
+
+    return () => {
+      if (socket.connected) {
+        socket.disconnect();
+      }
+      socket.off('session');
+      socket.off('connect_error');
+    };
   }, [accessToken]);
 
-  useEffect(() => {
-    return () => {
-      socket?.disconnect();
-    };
-  }, [socket]);
+  const value = {
+    socket,
+  };
 
-  return <SocketContext.Provider value={{ socket }}>{children}</SocketContext.Provider>;
+  return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
 };
 
 export default SocketProvider;

@@ -11,13 +11,8 @@ export const fetchPostComments = async ({ postDocumentId, pagination }: any) => 
         user: {
           fields: ['username'],
           populate: {
-            profile: {
-              populate: {
-                avatar: {
-                  fields: ['alternativeText', 'width', 'height', 'formats'],
-                },
-              },
-              fields: ['id'],
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
             },
           },
         },
@@ -53,13 +48,8 @@ export const fetchRelatedComments = async ({ topCommentDocumentId, pagination }:
         user: {
           fields: ['username'],
           populate: {
-            profile: {
-              populate: {
-                avatar: {
-                  fields: ['alternativeText', 'width', 'height', 'formats'],
-                },
-              },
-              fields: ['id'],
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
             },
           },
         },
@@ -74,13 +64,8 @@ export const fetchRelatedComments = async ({ topCommentDocumentId, pagination }:
             user: {
               fields: ['username'],
               populate: {
-                profile: {
-                  populate: {
-                    avatar: {
-                      fields: ['alternativeText', 'width', 'height', 'formats'],
-                    },
-                  },
-                  fields: ['id'],
+                avatar: {
+                  fields: ['alternativeText', 'width', 'height', 'formats'],
                 },
               },
             },
@@ -112,13 +97,8 @@ export const createComment = async (commentData: CommentData) => {
       user: {
         fields: ['username'],
         populate: {
-          profile: {
-            populate: {
-              avatar: {
-                fields: ['alternativeText', 'width', 'height', 'formats'],
-              },
-            },
-            fields: ['id'],
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
           },
         },
       },
@@ -133,13 +113,8 @@ export const createComment = async (commentData: CommentData) => {
           user: {
             fields: ['username'],
             populate: {
-              profile: {
-                populate: {
-                  avatar: {
-                    fields: ['alternativeText', 'width', 'height', 'formats'],
-                  },
-                },
-                fields: ['id'],
+              avatar: {
+                fields: ['alternativeText', 'width', 'height', 'formats'],
               },
             },
           },

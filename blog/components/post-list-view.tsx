@@ -6,6 +6,7 @@ import { MapPin, Heart, BookMarked, MessageCircle } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, TouchableOpacity } from 'react-native';
 import { fetchUserPosts } from '@/api';
+import { useAuth } from './auth-context';
 import { Box } from './ui/box';
 import { Card } from './ui/card';
 import { Heading } from './ui/heading';
@@ -14,7 +15,9 @@ import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-const PostListView = ({ user }: any) => {
+const PostListView = () => {
+  const { user } = useAuth();
+
   const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
       queryKey: ['posts', { user: user.documentId }],

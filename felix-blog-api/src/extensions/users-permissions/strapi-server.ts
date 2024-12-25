@@ -1,8 +1,10 @@
 const { sanitize, validate } = strapi.contentAPI;
 
+const modelId = "plugin::users-permissions.user";
+
 module.exports = (plugin) => {
   plugin.controllers.user.find = async (ctx) => {
-    const schema = strapi.getModel("plugin::users-permissions.user");
+    const schema = strapi.getModel(modelId);
     const { auth } = ctx.state;
     await validate.query(ctx.query, schema, { auth });
 
@@ -14,7 +16,7 @@ module.exports = (plugin) => {
       ...(sanitizedQueryParams.pagination as Record<string, unknown>),
     };
     const { results, pagination } = await strapi.entityService.findPage(
-      "plugin::users-permissions.user",
+      modelId,
       sanitizedQueryParams
     );
     const users = await Promise.all(
@@ -29,7 +31,7 @@ module.exports = (plugin) => {
   };
 
   plugin.controllers.user.findOne = async (ctx) => {
-    const schema = strapi.contentType('plugin::users-permissions.user')
+    const schema = strapi.contentType(modelId);
     const { auth } = ctx.state;
     const { id: documentId } = ctx.params;
     await validate.query(ctx.query, schema, { auth });
@@ -38,29 +40,17 @@ module.exports = (plugin) => {
     });
 
     const userData = await strapi.documents(schema.uid).findOne({
-        documentId,
-        ...sanitizedQueryParams
+      documentId,
+      ...sanitizedQueryParams,
     });
 
-    const sanitizeUserData:any =  await sanitize.output(userData, schema, { auth });
-
-    const profileData = await strapi.documents("api::profile.profile").findFirst({
-        filters: {
-            user: {
-                documentId
-            }
-        },
-        populate: {
-            avatar: {
-            fields: ['formats', 'name', 'alternativeText'],
-            },
-        },
+    const sanitizeUserData: any = await sanitize.output(userData, schema, {
+      auth,
     });
 
     const result = {
-        ...sanitizeUserData,
-        profile: profileData
-    }
+      ...sanitizeUserData,
+    };
 
     return result;
   };

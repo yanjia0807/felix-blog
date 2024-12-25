@@ -5,13 +5,16 @@ import _ from 'lodash';
 import React, { useMemo } from 'react';
 import { Dimensions, RefreshControl } from 'react-native';
 import { apiServerURL, fetchUserPhotos } from '@/api';
+import { useAuth } from './auth-context';
 import { Box } from './ui/box';
 import { Text } from './ui/text';
 
 const { width } = Dimensions.get('window');
 const numColumns = 2;
 
-const PhotoListView = ({ user }: any) => {
+const PhotoListView = () => {
+  const { user } = useAuth();
+
   const renderEmptyComponent = (props: any) => {
     return (
       <Box className="mt-10 w-full items-center justify-center">
