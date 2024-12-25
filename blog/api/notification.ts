@@ -22,24 +22,10 @@ export const fetchNotificationCount = async () => {
   return res;
 };
 
-export const fetchUnreadNotifications = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId } = pageParam;
-  const query = qs.stringify({
-    filter: {
-      user: userDocumentId,
-      state: 'unread',
-    },
-    pagination,
-  });
-  const res = await apiClient.get(`/notifications?${query}`);
-  return res;
-};
-
-export const updateNotificationState = async ({ documentId, state }: any) => {
+export const updateNotificationState = async ({ documentId, data }: any) => {
+  debugger;
   const res = await apiClient.put(`/notifications/${documentId}`, {
-    data: {
-      state,
-    },
+    data,
   });
   return res.data;
 };

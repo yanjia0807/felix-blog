@@ -1,10 +1,10 @@
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
 import moment from 'moment';
 import React, { useEffect } from 'react';
-import { apiServerURL, fetchNotifications } from '@/api';
+import { apiServerURL, fetchNotifications, updateNotificationState } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
@@ -58,12 +58,26 @@ const NotificationList = () => {
       staleTime: Infinity,
     });
 
+  const { isSuccess, isError, isPending, mutate } = useMutation({
+    mutationFn: updateNotificationState,
+  });
+
   useEffect(() => {
     socket.on('notification:create', ({ data: newNotification }: any) => {
       queryClient.setQueryData(['notifications', 'me'], (oldData: any) => {
-        const updatedPages = [...oldData.pages];
-        updatedPages[0].data.unshift(newNotification);
-        return updatedPages;
+        let newPages = [...oldData.pages];
+        const [firstPage, ...restPages] = newPages;
+
+        return {
+          ...oldData,
+          pages: [
+            {
+              ...firstPage,
+              data: [newNotification, ...firstPage.data],
+            },
+            ...restPages,
+          ],
+        };
       });
     });
     return () => {
@@ -87,14 +101,33 @@ const NotificationList = () => {
     </Button>
   );
 
-  const onFollowNotificationItemPressed = ({ item }: any) => {
+  const onNotificationItemPressed = ({ item }: any) => {
     if (item.state === 'unread') {
+      mutate(
+        { documentId: item.documentId, data: { state: 'read' } },
+        {
+          onSuccess(data, variables, context) {
+            queryClient.setQueryData(['notifications', 'me'], (oldData: any) => {
+              return {
+                ...oldData,
+                pages: _.map(oldData.pages, (page: any) => ({
+                  ...page,
+                  data: page.data.map((item: any) =>
+                    item.documentId === data.documentId ? { ...data } : { ...item },
+                  ),
+                })),
+              };
+            });
+            queryClient.setQueryData(['notifications', 'count'], (oldData: any) => oldData - 1);
+          },
+        },
+      );
     }
   };
 
   const renderFollowNotificationItem = ({ item, index }: any) => {
     return (
-      <Pressable onPress={() => onFollowNotificationItemPressed({ item })}>
+      <Pressable onPress={() => onNotificationItemPressed({ item })}>
         <Card variant="elevated" className="my-6 w-full rounded-lg" size="lg">
           {item.state === 'unread' && (
             <Box className="absolute right-0 top-0 m-4 h-3 w-3 rounded-full bg-green-400" />

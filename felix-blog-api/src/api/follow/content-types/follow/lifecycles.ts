@@ -12,14 +12,14 @@ export default {
           follower: {
             populate: {
               avatar: {
-                fields: ['alternativeText', 'width', 'height', 'formats'],
+                fields: ["alternativeText", "width", "height", "formats"],
               },
             },
             fields: ["username", "bio", "gender", "birthday"],
           },
           following: {
             fields: [],
-          }
+          },
         },
       });
 
@@ -27,21 +27,21 @@ export default {
         type: "follow" as any,
         message: `${result.follower.username} 关注了你`,
         user: result.following.id,
-        metaData: {
+        metaData: JSON.stringify({
           documentId: event.result.documentId,
           follower: result.follower,
-        },
-      }
+        }),
+      };
 
+      const notification = await strapi
+        .documents("api::notification.notification")
+        .create({
+          data,
+        });
 
-      await strapi.documents("api::notification.notification").create({
-        data: {
-          ...data,
-          metaData: JSON.stringify(data.metaData),
-        }
+      io.to(result.following.id).emit("notification:create", {
+        data: notification,
       });
-
-      io.to(result.following.id).emit("notification:create", {data});
     } catch (error) {
       strapi.log.error(error);
     }

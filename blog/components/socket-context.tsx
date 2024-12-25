@@ -25,6 +25,10 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
 
     setSocket();
 
+    socket.onAny((event, ...args) => {
+      console.log('socket', event, args);
+    });
+
     socket.on('session', ({ userId }) => {
       socket.userId = userId;
     });

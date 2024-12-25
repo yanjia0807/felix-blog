@@ -23,10 +23,12 @@ const MainHeader = ({ className }: any) => {
   const { data } = useQuery({
     queryKey: ['notifications', 'count'],
     queryFn: () => fetchNotificationCount(),
+    staleTime: Infinity,
   });
 
   useEffect(() => {
-    socket.on('notification:create', ({ data: newNotification }: any) => {
+    socket.on('notification:create', () => {
+      debugger;
       queryClient.setQueryData(['notifications', 'count'], (oldData: any) => oldData + 1);
     });
     return () => {
@@ -48,7 +50,7 @@ const MainHeader = ({ className }: any) => {
             router.navigate('/notification-list');
           }}>
           <VStack>
-            {data && (
+            {!!data && (
               <Box className="z-10 h-4 w-4 items-center justify-end self-end rounded-full bg-red-600">
                 <Text size="xs" className="text-white">
                   {data as any}
