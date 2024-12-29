@@ -34,7 +34,7 @@ const PostThumbnail = ({ item }: any) => {
               style={{
                 width: '100%',
                 height: '100%',
-                borderRadius: 12,
+                borderRadius: 8,
               }}
             />
           </Box>
@@ -60,7 +60,7 @@ const PostThumbnail = ({ item }: any) => {
                             style={{
                               width: '100%',
                               height: '100%',
-                              borderRadius: 12,
+                              borderRadius: 8,
                             }}
                           />
                         </BlurView>
@@ -78,7 +78,7 @@ const PostThumbnail = ({ item }: any) => {
                         style={{
                           width: '100%',
                           height: '100%',
-                          borderRadius: 12,
+                          borderRadius: 8,
                         }}
                       />
                     </Box>

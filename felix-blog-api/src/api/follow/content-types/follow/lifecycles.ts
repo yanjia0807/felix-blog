@@ -25,7 +25,6 @@ export default {
 
       const data = {
         type: "follow" as any,
-        message: `${result.follower.username} 关注了你`,
         user: result.following.id,
         metaData: JSON.stringify({
           documentId: event.result.documentId,

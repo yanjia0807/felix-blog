@@ -10,3 +10,5 @@ export * from './file';
 export * from './notification';
 export * from './follow';
 export * from './feature';
+export * from './chat';
+export * from './message';

@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "message_statuses",
+  "info": {
+    "singularName": "message-status",
+    "pluralName": "message-statuses",
+    "displayName": "MessageStatus",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "readAt": {
+      "type": "datetime"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "state": {
+      "type": "enumeration",
+      "enum": [
+        "read",
+        "unread"
+      ],
+      "default": "unread"
+    },
+    "message": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::message.message",
+      "inversedBy": "messageStatuses"
+    }
+  }
+}

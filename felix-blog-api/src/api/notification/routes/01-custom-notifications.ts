@@ -2,8 +2,8 @@ export default {
   routes: [
     {
       method: "GET",
-      path: "/notifications/count",
-      handler: "api::notification.notification.count",
+      path: "/notifications/unread-count",
+      handler: "api::notification.notification.unreadCount",
     }
   ],
 };

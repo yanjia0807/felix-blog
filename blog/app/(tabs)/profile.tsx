@@ -37,7 +37,7 @@ const ProfileScreen = () => {
       <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
         <VStack className="flex-1" space="xl">
           <HStack className="items-center justify-between">
-            <Avatar size="lg" className="shadow">
+            <Avatar size="lg">
               <AvatarImage
                 source={{
                   uri: `${apiServerURL}/${user.avatar?.formats.thumbnail.url}`,

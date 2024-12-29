@@ -1,10 +1,17 @@
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetSectionList,
+  BottomSheetTextInput,
+  BottomSheetFooter,
+} from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import moment from 'moment';
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { apiServerURL } from '@/api';
 import {
@@ -21,13 +28,11 @@ import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
+import { Input } from './ui/input';
+import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
-import { Actionsheet, ActionsheetBackdrop, ActionsheetContent, ActionsheetDragIndicator, ActionsheetDragIndicatorWrapper, ActionsheetSectionList } from './ui/actionsheet';
-import { Input, InputField } from './ui/input';
-import { Pressable } from './ui/pressable';
-import { KeyboardAvoidingView } from './ui/keyboard-avoiding-view';
 
 type CommentSchemaDetails = z.infer<typeof commentSchema>;
 
@@ -37,7 +42,10 @@ const commentSchema = z.object({
   }),
 });
 
-const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any) => {
+const PostCommentsSheet = forwardRef(function Sheet(
+  { postDocumentId, commentCount = 0 }: any,
+  ref: any,
+) {
   const { user } = useAuth();
   const [replyComment, setReplyComment] = useState<any>();
   const [selectCommentDocumentId, setSelectCommentDocumentId] = useState<any>();
@@ -45,6 +53,8 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
   const inputRef = useRef<any>(null);
   const queryClient = useQueryClient();
   const toast = useCustomToast();
+  const snapPoints = useMemo(() => ['50%', '90%'], []);
+  const insets = useSafeAreaInsets();
 
   useLayoutEffect(() => {
     if (replyComment && inputRef.current) {
@@ -101,11 +111,9 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
 
   const {
     data: relatedComments,
-    isSuccess: isFetchRelatedCommentsSuccess,
     isFetchingNextPage: isFetchingNextRelatedCommentsPage,
     fetchNextPage: fetchNextRelatedCommentsPage,
     hasNextPage: hasNextRelatedCommentsPage,
-    refetch: refetchRelatedComments,
   } = useInfiniteQuery<any>({
     queryKey: [postDocumentId, selectCommentDocumentId, 'comments'],
     queryFn: ({ pageParam }) => {
@@ -184,7 +192,6 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
 
     return data;
   }, [postDocumentId, queryClient, topComments, relatedComments]);
-
 
   const { mutate: createMutate } = useMutation({
     mutationFn: (comment: any) => {
@@ -344,7 +351,7 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
               {section.user.documentId === user?.documentId && (
                 <Button
                   size="sm"
-                  action='secondary'
+                  action="secondary"
                   variant="link"
                   className="mx-2"
                   onPress={() => onDeleteButtonPress(section.documentId, null)}>
@@ -373,7 +380,7 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
                 <Button
                   size="sm"
                   variant="link"
-                  action='secondary'
+                  action="secondary"
                   className="mx-2"
                   onPress={() => onExpandButtonPressed(section)}>
                   <ButtonText>展开回复</ButtonText>
@@ -394,7 +401,7 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
             <Button
               size="sm"
               variant="link"
-              action='secondary'
+              action="secondary"
               className="mx-2"
               onPress={() => onExpandButtonPressed(section)}>
               <ButtonText>展开更多</ButtonText>
@@ -405,7 +412,7 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
               <Button
                 size="sm"
                 variant="link"
-                action='secondary'
+                action="secondary"
                 className="mx-2"
                 onPress={() => onCollapseButtonPressed(section)}>
                 <ButtonText>收起</ButtonText>
@@ -455,7 +462,7 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
                 <Button
                   size="sm"
                   variant="link"
-                  action='secondary'
+                  action="secondary"
                   className="mx-2"
                   onPress={() => onDeleteButtonPress(item.documentId, item.topComment.documentId)}>
                   <ButtonText>删除</ButtonText>
@@ -505,65 +512,77 @@ const PostCommentsSheet = ({ postDocumentId,commentCount=0,isOpen,onClose }: any
     );
   };
 
-  const renderCommentInput = ({ field: { onChange, onBlur, value } }:any) => {
+  const renderCommentInput = ({ field: { onChange, onBlur, value } }: any) => {
     return (
-      <HStack>
-          <Input className="flex-1 bg-primary-100" variant="rounded">
-            <InputField inputMode="text" 
-              returnKeyType="send" value={value}
-              placeholder={replyComment ? `回复 ${replyComment.username}` : '输入评论...'}
-              onChangeText={onChange}
-              onBlur={onBlur} onSubmitEditing={handleSubmit(onSubmit)} />
-          </Input>
-      </HStack>
-    )
+      <Input className="bg-primary-100" variant="rounded">
+        <BottomSheetTextInput
+          inputMode="text"
+          className="py-auto ios:leading-[0px] h-full flex-1 px-3 text-typography-900 placeholder:text-typography-500"
+          returnKeyType="send"
+          placeholder={replyComment ? `回复 ${replyComment.username}` : '输入评论...'}
+          value={value}
+          onChangeText={onChange}
+          onBlur={onBlur}
+          onSubmitEditing={handleSubmit(onSubmit)}
+        />
+      </Input>
+    );
+  };
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior={'close'}
+      />
+    ),
+    [],
+  );
+
+  const renderFooter = (props: any) => {
+    return (
+      <BottomSheetFooter {...props} bottomInset={insets.bottom} style={{ paddingHorizontal: 16 }}>
+        {user && <Controller name="content" control={control} render={renderCommentInput} />}
+      </BottomSheetFooter>
+    );
   };
 
   return (
-    <Actionsheet isOpen={isOpen} onClose={onClose} snapPoints={[80]}>
-      <KeyboardAvoidingView
-          behavior="position"
-          className='flex-1'
-        >
-      <ActionsheetBackdrop />
-      <ActionsheetContent className="h-full">
-        <ActionsheetDragIndicatorWrapper>
-          <ActionsheetDragIndicator />
-        </ActionsheetDragIndicatorWrapper>
-        <VStack className="w-full flex-1 p-2" space="2xl">
-          <Box className="items-center mb-4">
-            <Heading className="p-4">{`${commentCount}条评论`}</Heading>
-            <Divider />
-          </Box>
-          {isFetchCommentsSuccess && (
-            <ActionsheetSectionList
-              sections={sectionListData}
-              keyExtractor={(item: any) => item.id.toString()}
-              renderItem={renderCommentItem}
-              renderSectionHeader={renderSectionHeader}
-              renderSectionFooter={renderSectionFooter}
-              ListEmptyComponent={renderEmptyComponent}
-              showsVerticalScrollIndicator={false}
-              stickySectionHeadersEnabled={false}
-              onEndReached={() => {
-                if (hasNextCommentsPage && !isFetchingNextCommentsPage) {
-                  fetchNextCommentsPage();
-                }
-              }}
-            />
-          )}
-          {user && (
-              <Controller
-                name="content"
-                control={control}
-                render={renderCommentInput}
-              />
-          )}
-        </VStack>
-      </ActionsheetContent>
-      </KeyboardAvoidingView>
-    </Actionsheet>
+    <BottomSheet
+      ref={ref}
+      snapPoints={snapPoints}
+      enableDynamicSizing={false}
+      enablePanDownToClose={true}
+      index={-1}
+      backdropComponent={renderBackdrop}
+      footerComponent={renderFooter}>
+      <VStack className="flex-1 bg-background-100 p-4" space="2xl">
+        <Box className="mb-4 items-center">
+          <Heading className="p-4">{`${commentCount}条评论`}</Heading>
+          <Divider />
+        </Box>
+        {isFetchCommentsSuccess && (
+          <BottomSheetSectionList
+            sections={sectionListData}
+            keyExtractor={(item: any) => item.id.toString()}
+            renderItem={renderCommentItem}
+            renderSectionHeader={renderSectionHeader}
+            renderSectionFooter={renderSectionFooter}
+            ListEmptyComponent={renderEmptyComponent}
+            showsVerticalScrollIndicator={false}
+            stickySectionHeadersEnabled={false}
+            onEndReached={() => {
+              if (hasNextCommentsPage && !isFetchingNextCommentsPage) {
+                fetchNextCommentsPage();
+              }
+            }}
+          />
+        )}
+      </VStack>
+    </BottomSheet>
   );
-}
+});
 
 export default PostCommentsSheet;

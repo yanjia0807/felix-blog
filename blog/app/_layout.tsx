@@ -13,10 +13,8 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider } from '@/components/auth-context';
 import { PreferencesProvider, Theme } from '@/components/preferences-provider';
 import SocketProvider from '@/components/socket-context';
-import { BottomSheet } from '@/components/ui/bottomsheet';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -74,24 +72,22 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
           <BottomSheetModalProvider>
-            <BottomSheet>
-              <PreferencesProvider theme={theme} updateTheme={updateTheme}>
-                <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
-                  <GluestackUIProvider mode={theme}>
-                    <AuthProvider>
-                      <SocketProvider>
-                        <Stack screenOptions={{ headerShown: false }}>
-                          <Stack.Screen name="(tabs)" options={{}} />
-                          <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
-                          <Stack.Screen name="+not-found" />
-                        </Stack>
-                      </SocketProvider>
-                      <StatusBar style="auto" />
-                    </AuthProvider>
-                  </GluestackUIProvider>
-                </NavigationThemeProvider>
-              </PreferencesProvider>
-            </BottomSheet>
+            <PreferencesProvider theme={theme} updateTheme={updateTheme}>
+              <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+                <GluestackUIProvider mode={theme}>
+                  <AuthProvider>
+                    <SocketProvider>
+                      <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="(tabs)" options={{}} />
+                        <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="+not-found" />
+                      </Stack>
+                    </SocketProvider>
+                    <StatusBar style="auto" />
+                  </AuthProvider>
+                </GluestackUIProvider>
+              </NavigationThemeProvider>
+            </PreferencesProvider>
           </BottomSheetModalProvider>
         </KeyboardProvider>
       </QueryClientProvider>

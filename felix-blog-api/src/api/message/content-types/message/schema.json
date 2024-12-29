@@ -8,27 +8,34 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
     "content": {
       "type": "text"
     },
-    "timestamp": {
-      "type": "datetime"
-    },
     "sender": {
       "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "sendMessages"
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
     },
-    "recipient": {
+    "receiver": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "chat": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "receiveMessages"
+      "target": "api::chat.chat",
+      "inversedBy": "messages"
+    },
+    "messageStatuses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::message-status.message-status",
+      "mappedBy": "message"
     }
   }
 }

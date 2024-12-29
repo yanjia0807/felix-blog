@@ -1,30 +1,26 @@
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetFlatList,
+  BottomSheetFooter,
+} from '@gorhom/bottom-sheet';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import _ from 'lodash';
-import React, { forwardRef, useMemo, useEffect, useState, memo } from 'react';
+import React, { forwardRef, useMemo, useEffect, useState, memo, useCallback } from 'react';
 import { init, Geolocation, Position, PositionError } from 'react-native-amap-geolocation';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { amapIosApiKey } from '@/api';
 import { fetchPositionRound } from '@/api/amap';
 import { Text } from '@/components/ui/text';
-import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicator,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetFlatList,
-} from './ui/actionsheet';
 import { Box } from './ui/box';
 import { Divider } from './ui/divider';
 import { Pressable } from './ui/pressable';
 import { RefreshControl } from './ui/refresh-control';
 import { VStack } from './ui/vstack';
 
-const PostPositionSheet = forwardRef(function PostPositionSheet(
-  { onChange, isOpen, onClose }: any,
-  ref: any,
-) {
+const PostPositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
   const [position, setPosition] = useState<Position | null>(null);
-
+  const snapPoints = useMemo(() => ['50%', '90%'], []);
+  const insets = useSafeAreaInsets();
   const {
     data,
     error,
@@ -33,7 +29,7 @@ const PostPositionSheet = forwardRef(function PostPositionSheet(
     isLoading,
     isFetchingNextPage,
     isSuccess,
-    status,
+    isError,
     refetch,
   } = useInfiniteQuery({
     queryKey: ['position'],
@@ -91,7 +87,7 @@ const PostPositionSheet = forwardRef(function PostPositionSheet(
 
   const onSelectBtnPressed = (item: any) => {
     onChange(item);
-    onClose();
+    ref.current?.close();
   };
 
   const renderPositionItem = ({ item }: any) => (
@@ -104,50 +100,68 @@ const PostPositionSheet = forwardRef(function PostPositionSheet(
     </Pressable>
   );
 
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior={'close'}
+      />
+    ),
+    [],
+  );
+
+  const renderFooter = (props: any) => {
+    return (
+      <BottomSheetFooter
+        {...props}
+        bottomInset={insets.bottom}
+        style={{ paddingHorizontal: 16 }}></BottomSheetFooter>
+    );
+  };
+
   return (
-    <Actionsheet isOpen={isOpen} onClose={onClose} snapPoints={[50]}>
-      <ActionsheetBackdrop />
-      <ActionsheetContent className="h-full">
-        <ActionsheetDragIndicatorWrapper>
-          <ActionsheetDragIndicator />
-        </ActionsheetDragIndicatorWrapper>
-        <VStack className="flex-1 justify-between">
-          <VStack className="flex-1" space="md">
-            {error && (
-              <Box className="flex-1 items-center justify-center">
-                <Text>{error.message}</Text>
-              </Box>
-            )}
-            {isSuccess && (
-              <Box className="flex-1">
-                <ActionsheetFlatList
-                  data={places}
-                  keyExtractor={(item: any) => item.id}
-                  renderItem={renderPositionItem}
-                  ListEmptyComponent={renderEmptyComponent}
-                  showsVerticalScrollIndicator={false}
-                  onEndReached={() => {
-                    if (hasNextPage && !isFetchingNextPage) {
-                      fetchNextPage();
-                    }
-                  }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={isLoading}
-                      onRefresh={() => {
-                        if (!isLoading) {
-                          refetch();
-                        }
-                      }}
-                    />
+    <BottomSheet
+      ref={ref}
+      snapPoints={snapPoints}
+      enableDynamicSizing={false}
+      enablePanDownToClose={true}
+      index={-1}
+      backdropComponent={renderBackdrop}
+      footerComponent={renderFooter}>
+      <VStack className="flex-1 bg-background-100 p-4">
+        {isError && (
+          <Box className="flex-1 items-center">
+            <Text>{error.message}</Text>
+          </Box>
+        )}
+        {isSuccess && (
+          <BottomSheetFlatList
+            data={places}
+            keyExtractor={(item: any) => item.id}
+            renderItem={renderPositionItem}
+            ListEmptyComponent={renderEmptyComponent}
+            showsVerticalScrollIndicator={false}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+            refreshControl={
+              <RefreshControl
+                refreshing={isLoading}
+                onRefresh={() => {
+                  if (!isLoading) {
+                    refetch();
                   }
-                />
-              </Box>
-            )}
-          </VStack>
-        </VStack>
-      </ActionsheetContent>
-    </Actionsheet>
+                }}
+              />
+            }
+          />
+        )}
+      </VStack>
+    </BottomSheet>
   );
 });
 

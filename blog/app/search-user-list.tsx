@@ -2,7 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Search } from 'lucide-react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { apiServerURL, fetchUsers } from '@/api';
@@ -16,7 +16,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const AddFriend = () => {
+const SearchUserList = () => {
   const { user } = useAuth();
   const [filters, setFilters] = useState<any>(null);
 
@@ -86,7 +86,7 @@ const AddFriend = () => {
   };
 
   const onSubmit = (data: any) => {
-    const newFilters = {
+    const filters = {
       $and: [
         {
           id: {
@@ -99,17 +99,17 @@ const AddFriend = () => {
         {
           confirmed: true,
         },
-        data.filter
+        data.keyword
           ? {
               $or: [
                 {
                   username: {
-                    $containsi: data.filter,
+                    $containsi: data.keyword,
                   },
                 },
                 {
                   email: {
-                    $containsi: data.filter,
+                    $containsi: data.keyword,
                   },
                 },
               ],
@@ -118,7 +118,7 @@ const AddFriend = () => {
       ],
     };
 
-    setFilters(newFilters);
+    setFilters(filters);
   };
 
   const renderInput = ({ field: { onBlur, onChange, value } }: any) => {
@@ -144,7 +144,7 @@ const AddFriend = () => {
   const renderListHeader = () => {
     return (
       <HStack className="w-full items-center justify-between" space="md">
-        <Controller name="filter" control={control} render={renderInput} />
+        <Controller name="keyword" control={control} render={renderInput} />
         <HStack>
           <Button onPress={handleSubmit(onSubmit)}>
             <ButtonText>查找</ButtonText>
@@ -154,7 +154,7 @@ const AddFriend = () => {
     );
   };
 
-  const onAddBtnPressed = ({ item }: any) => {
+  const onDetailBtnPressed = ({ item }: any) => {
     router.push({
       pathname: '/users/[documentId]',
       params: {
@@ -168,7 +168,7 @@ const AddFriend = () => {
       <TouchableOpacity
         className={`rounded-lg py-2 ${index === 0 ? 'mt-0' : ''} border-b-hairline border-outline-200`}
         onPress={() => {
-          onAddBtnPressed({ item });
+          onDetailBtnPressed({ item });
         }}>
         <HStack className={`items-center`} space="md">
           <Avatar size="sm">
@@ -192,7 +192,7 @@ const AddFriend = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '添加朋友',
+          title: '查询用户',
           headerShown: true,
           headerLeft: renderHeaderLeft,
         }}
@@ -227,4 +227,4 @@ const AddFriend = () => {
   );
 };
 
-export default AddFriend;
+export default SearchUserList;

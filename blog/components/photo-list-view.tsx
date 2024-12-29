@@ -2,18 +2,22 @@ import { MasonryFlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import _ from 'lodash';
-import React, { useMemo } from 'react';
-import { Dimensions, RefreshControl } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { RefreshControl, useWindowDimensions } from 'react-native';
+import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL, fetchUserPhotos } from '@/api';
 import { useAuth } from './auth-context';
 import { Box } from './ui/box';
+import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 
-const { width } = Dimensions.get('window');
-const numColumns = 2;
+const numColumns = 3;
 
 const PhotoListView = () => {
   const { user } = useAuth();
+  const [imageIndex, setImageIndex] = useState<number>(0);
+  const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
+  const { width } = useWindowDimensions();
 
   const renderEmptyComponent = (props: any) => {
     return (
@@ -52,6 +56,11 @@ const PhotoListView = () => {
       },
     });
 
+  const onOpenGallery = async (index: number) => {
+    setImageIndex(index);
+    setIsGalleryPreviewOpen(true);
+  };
+
   const listData = useMemo(() => {
     let files = [];
 
@@ -64,7 +73,14 @@ const PhotoListView = () => {
             (pageResult: any, item: any) => {
               let temp: any = [];
               if (item.cover) {
-                temp = [...temp, { ...item.cover, type: 'cover' }];
+                temp = [
+                  ...temp,
+                  {
+                    ...item.cover,
+                    uri: `${apiServerURL}${item.cover.formats.small.url}`,
+                    type: 'cover',
+                  },
+                ];
               }
               const attachment = _.find(
                 item.blocks,
@@ -73,7 +89,12 @@ const PhotoListView = () => {
               if (attachment?.files.length > 0) {
                 temp = [
                   ...temp,
-                  ..._.filter(attachment.files, (file: any) => file.mime.startsWith('image/')),
+                  ..._.filter(attachment.files, (file: any) => file.mime.startsWith('image/')).map(
+                    (item: any) => ({
+                      ...item,
+                      uri: `${apiServerURL}${item.formats.small.url}`,
+                    }),
+                  ),
                 ];
               }
               return [...pageResult, ...temp];
@@ -88,19 +109,21 @@ const PhotoListView = () => {
     return files;
   }, [data]);
 
-  const renderItem = ({ item }: any) => {
+  const renderItem = ({ item, index }: any) => {
     return (
-      <Image
-        recyclingKey={item.id}
-        source={{ uri: `${apiServerURL}/${item.formats.small.url}` }}
-        contentFit="cover"
-        style={{
-          flex: 1,
-          aspectRatio: 1,
-          marginLeft: 1,
-        }}
-        alt={`Photo by ${item.author}`}
-      />
+      <Pressable onPress={() => onOpenGallery(index)}>
+        <Image
+          recyclingKey={item.assetId}
+          source={{ uri: item.uri }}
+          contentFit="cover"
+          style={{
+            flex: 1,
+            aspectRatio: 1,
+            marginLeft: 1,
+          }}
+          alt={item.alternativeText}
+        />
+      </Pressable>
     );
   };
 
@@ -133,6 +156,12 @@ const PhotoListView = () => {
         getColumnFlex={(items, index, maxColumns, extraData) => {
           return numColumns;
         }}
+      />
+      <GalleryPreview
+        images={listData || []}
+        initialIndex={imageIndex}
+        isVisible={isGalleryPreviewOpen}
+        onRequestClose={() => setIsGalleryPreviewOpen(false)}
       />
     </Box>
   );

@@ -21,12 +21,12 @@ import { VStack } from '@/components/ui/vstack';
 
 const NotificationList = () => {
   const { user } = useAuth();
-  const { socket } = useSocket();
   const queryClient = useQueryClient();
+  const { notifications: newNotifications, setNotifications } = useSocket();
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['notifications', 'me'],
+      queryKey: ['notifications', 'list'],
       queryFn: fetchNotifications,
       initialPageParam: {
         pagination: {
@@ -34,7 +34,8 @@ const NotificationList = () => {
           pageSize: 5,
         },
         filters: {
-          user: user.documentId,
+          userDocumentId: user.documentId,
+          excludeDocumentIds: _.map(newNotifications, 'documentId'),
         },
       },
       getNextPageParam: (lastPage: any) => {
@@ -48,7 +49,8 @@ const NotificationList = () => {
           return {
             pagination: { page: page + 1, pageSize },
             filters: {
-              user: user.documentId,
+              userDocumentId: user.documentId,
+              excludeDocumentIds: _.map(newNotifications, 'documentId'),
             },
           };
         }
@@ -58,38 +60,34 @@ const NotificationList = () => {
       staleTime: Infinity,
     });
 
-  const { isSuccess, isError, isPending, mutate } = useMutation({
-    mutationFn: updateNotificationState,
-  });
-
-  useEffect(() => {
-    socket.on('notification:create', ({ data: newNotification }: any) => {
-      queryClient.setQueryData(['notifications', 'me'], (oldData: any) => {
-        let newPages = [...oldData.pages];
-        const [firstPage, ...restPages] = newPages;
-
-        return {
-          ...oldData,
-          pages: [
-            {
-              ...firstPage,
-              data: [newNotification, ...firstPage.data],
-            },
-            ...restPages,
-          ],
-        };
-      });
-    });
-    return () => {
-      socket.off('notification:create');
-    };
-  }, [queryClient]);
-
-  const notifications: any = _.reduce(
-    data?.pages,
-    (result: any, item: any) => [...result, ...item.data],
-    [],
+  const notifications: any = _.concat(
+    [...newNotifications],
+    _.reduce(data?.pages, (result: any, page: any) => [...result, ...page.data], []),
   );
+
+  const { mutate } = useMutation({
+    mutationFn: updateNotificationState,
+    onSuccess: (data, variables, context) => {
+      if (_.some(newNotifications, { id: data.id })) {
+        setNotifications((oldValue: any) =>
+          oldValue.map((oldItem: any) => (oldItem.id === data.id ? { ...data } : { ...oldItem })),
+        );
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'count'] });
+        queryClient.setQueryData(['notifications', 'list'], (oldData: any) => {
+          return {
+            ...oldData,
+            pages: _.map(oldData.pages, (page: any) => ({
+              ...page,
+              data: page.data.map((item: any) =>
+                item.documentId === data.documentId ? { ...data } : { ...item },
+              ),
+            })),
+          };
+        });
+      }
+    },
+  });
 
   const renderHeaderLeft = () => (
     <Button
@@ -103,25 +101,7 @@ const NotificationList = () => {
 
   const onNotificationItemPressed = ({ item }: any) => {
     if (item.state === 'unread') {
-      mutate(
-        { documentId: item.documentId, data: { state: 'read' } },
-        {
-          onSuccess(data, variables, context) {
-            queryClient.setQueryData(['notifications', 'me'], (oldData: any) => {
-              return {
-                ...oldData,
-                pages: _.map(oldData.pages, (page: any) => ({
-                  ...page,
-                  data: page.data.map((item: any) =>
-                    item.documentId === data.documentId ? { ...data } : { ...item },
-                  ),
-                })),
-              };
-            });
-            queryClient.setQueryData(['notifications', 'count'], (oldData: any) => oldData - 1);
-          },
-        },
-      );
+      mutate({ documentId: item.documentId, data: { state: 'read' } });
     }
   };
 

@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin, Search } from 'lucide-react-native';
 import React from 'react';
-import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import { FlatList, RefreshControl } from 'react-native';
 import { fetchPosts, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
@@ -20,6 +20,7 @@ import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
@@ -41,7 +42,7 @@ const PostHeader = ({ tags }: any) => {
       <VStack className="flex-1" space="2xl">
         <HStack>
           <Input className="flex-1 bg-primary-100" variant="rounded">
-            <InputField />
+            <InputField placeholder="搜索帖子..." />
             <InputSlot>
               <InputIcon as={Search} className="mx-2"></InputIcon>
             </InputSlot>
@@ -61,7 +62,7 @@ const PostHeader = ({ tags }: any) => {
   );
 };
 
-const PostScreen = () => {
+const PostList = () => {
   const { user } = useAuth();
   const toast = useCustomToast();
 
@@ -113,16 +114,8 @@ const PostScreen = () => {
 
   const renderPostItem = ({ item, index }: any) => {
     return (
-      <Card variant="elevated" className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`}>
-        <TouchableOpacity
-          onPress={() => {
-            router.push({
-              pathname: '/posts/[documentId]',
-              params: {
-                documentId: item.documentId,
-              },
-            });
-          }}>
+      <Pressable onPress={() => onPostItemPressed({ item, index })}>
+        <Card variant="elevated" className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`}>
           <VStack space="md">
             <HStack className="items-center justify-between">
               <AuthorInfo author={item.author} />
@@ -164,13 +157,22 @@ const PostScreen = () => {
               </HStack>
             </HStack>
           </VStack>
-        </TouchableOpacity>
-      </Card>
+        </Card>
+      </Pressable>
     );
   };
 
   const renderListHeader = (props: any) => {
     return <PostHeader tags={tags} {...props}></PostHeader>;
+  };
+
+  const onPostItemPressed = ({ item }: any) => {
+    router.push({
+      pathname: '/posts/[documentId]',
+      params: {
+        documentId: item.documentId,
+      },
+    });
   };
 
   const onCreatePostButtonPressed = () => {
@@ -217,4 +219,4 @@ const PostScreen = () => {
   );
 };
 
-export default PostScreen;
+export default PostList;

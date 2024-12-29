@@ -1,17 +1,12 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import moment from 'moment';
 import React from 'react';
-import {
-  FlatList,
-  ImageBackground,
-  Pressable,
-  RefreshControl,
-  TouchableOpacity,
-} from 'react-native';
+import { FlatList, ImageBackground, Pressable, RefreshControl } from 'react-native';
 import { apiServerURL, fetchFeatures, fetchRecommendPosts } from '@/api';
 import MainHeader from '@/components/main-header';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
@@ -154,30 +149,31 @@ const ListHeader = () => {
   const renderFeatureItem = ({ item }: any) => {
     return (
       <Pressable className="mx-2 h-48 w-80" onPress={() => onFeatureItemPressed(item)}>
-        <ImageBackground
+        <Image
+          recyclingKey={item.assetId}
           source={{
             uri: `${apiServerURL}/${item.image.formats.small.url}`,
           }}
-          imageStyle={{
-            borderRadius: 16,
-          }}
           style={{
-            borderRadius: 16,
+            width: '100%',
+            height: '100%',
+            borderRadius: 8,
           }}
-          className="h-full w-full">
-          <Box className="absolute bottom-0 w-full overflow-hidden rounded-2xl">
-            <BlurView intensity={10} tint="light" className="p-2">
-              <VStack space="md">
-                <VStack>
-                  <Text size="lg" bold={true} className="text-white">
-                    {item.post.title}
-                  </Text>
-                  <Text size="sm" className="text-white">
-                    {moment(item.publishedAt).format('YYYY-MM-DD')}
-                  </Text>
-                </VStack>
-
-                <HStack className="items-center" space="xs">
+          className="h-full w-full"
+        />
+        <Box className="absolute bottom-0 z-10 w-full overflow-hidden rounded-md">
+          <BlurView intensity={10} tint="light" className="p-2">
+            <VStack space="md">
+              <VStack>
+                <Text size="lg" bold={true} className="text-white">
+                  {item.post.title}
+                </Text>
+              </VStack>
+              <HStack className="items-center justify-between">
+                <Text size="sm" className="text-white">
+                  {moment(item.publishedAt).format('YYYY-MM-DD')}
+                </Text>
+                <HStack space="xs" className="items-center">
                   <Avatar size="sm">
                     <AvatarFallbackText>{item.post.author.username}</AvatarFallbackText>
                     <AvatarImage
@@ -190,10 +186,10 @@ const ListHeader = () => {
                     {item.post.author.username}
                   </Text>
                 </HStack>
-              </VStack>
-            </BlurView>
-          </Box>
-        </ImageBackground>
+              </HStack>
+            </VStack>
+          </BlurView>
+        </Box>
       </Pressable>
     );
   };
@@ -281,18 +277,19 @@ const HomeScreen = () => {
     },
   });
 
+  const onRecommentItemPressed = ({ item, index }: any) => {
+    router.push({
+      pathname: '/posts/[documentId]',
+      params: {
+        documentId: item.documentId,
+      },
+    });
+  };
+
   const renderRecommentItem = ({ item, index }: any) => {
     return (
-      <Card variant="elevated" className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`} size="md">
-        <TouchableOpacity
-          onPress={() => {
-            router.push({
-              pathname: '/posts/[documentId]',
-              params: {
-                documentId: item.documentId,
-              },
-            });
-          }}>
+      <Pressable onPress={() => onRecommentItemPressed({ item, index })}>
+        <Card className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`} size="md">
           <VStack space="lg">
             <HStack className="items-center justify-between" space="md">
               <Box className="w-8">
@@ -324,10 +321,10 @@ const HomeScreen = () => {
               <Box className="w-8"></Box>
               <VStack space="md" className="flex-1 justify-between">
                 <VStack>
-                  <Text numberOfLines={1} bold={true} size="md">
+                  <Text numberOfLines={1} ellipsizeMode="tail" bold={true} size="md">
                     {item.title}
                   </Text>
-                  <Text numberOfLines={3} size="sm">
+                  <Text numberOfLines={3} ellipsizeMode="tail" size="sm">
                     {item.content}
                   </Text>
                 </VStack>
@@ -354,8 +351,8 @@ const HomeScreen = () => {
               </VStack>
             </HStack>
           </VStack>
-        </TouchableOpacity>
-      </Card>
+        </Card>
+      </Pressable>
     );
   };
 

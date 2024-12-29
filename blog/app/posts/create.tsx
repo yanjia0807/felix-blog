@@ -1,9 +1,10 @@
+import BottomSheet from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { AlertCircleIcon, ChevronLeft, ImageIcon, MapPinIcon, Mic, Tag } from 'lucide-react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
@@ -49,6 +50,11 @@ const PostCreate = () => {
   const [position, setPosition] = useState<any>();
   const [tags, setTags] = useState<any>([]);
   const insets = useSafeAreaInsets();
+  const recordingSheetRef = useRef<BottomSheet>(null);
+  const tagSheetRef = useRef<BottomSheet>(null);
+  const positionSheetRef = useRef<BottomSheet>(null);
+  const imageSheetRef = useRef<BottomSheet>(null);
+
   const { isSuccess, isError, isPending, mutate } = useMutation({
     mutationFn: (data: PostData) => {
       return createPost(data);
@@ -214,7 +220,7 @@ const PostCreate = () => {
             value={value}
           />
           <InputSlot>
-            <Pressable onPress={() => setIsTagSheetOpen(true)}>
+            <Pressable onPress={() => tagSheetRef.current?.expand()}>
               <InputIcon as={Tag}></InputIcon>
             </Pressable>
           </InputSlot>
@@ -279,7 +285,7 @@ const PostCreate = () => {
               <Button
                 variant="link"
                 action="secondary"
-                onPress={() => setIsPositionSheetOpen(true)}>
+                onPress={() => positionSheetRef.current?.expand()}>
                 <ButtonIcon as={MapPinIcon} />
                 {position ? (
                   <ButtonText>{position.name}</ButtonText>
@@ -304,7 +310,10 @@ const PostCreate = () => {
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
           <HStack space="md" className="w-full px-4">
             <ButtonGroup space="sm">
-              <Button variant="link" action="secondary" onPress={() => setIsImageSheetOpen(true)}>
+              <Button
+                variant="link"
+                action="secondary"
+                onPress={() => imageSheetRef.current?.expand()}>
                 <ButtonIcon as={ImageIcon} />
                 <ButtonText>图片</ButtonText>
               </Button>
@@ -313,38 +322,19 @@ const PostCreate = () => {
               <Button
                 variant="link"
                 action="secondary"
-                onPress={() => setIsRecordingSheetOpen(true)}>
+                onPress={() => recordingSheetRef.current?.expand()}>
                 <ButtonIcon as={Mic} />
                 <ButtonText>录音</ButtonText>
               </Button>
             </ButtonGroup>
           </HStack>
         </KeyboardStickyView>
-        <PostRecordingSheet
-          isOpen={isRecordingSheetOpen}
-          onClose={() => setIsRecordingSheetOpen(false)}
-          onChange={onAddRecording}
-        />
-        <PostTagSheet
-          isOpen={isTagSheetOpen}
-          onClose={() => setIsTagSheetOpen(false)}
-          value={tags}
-          onChange={onAddTags}
-        />
-        <PostPositionSheet
-          isOpen={isPositionSheetOpen}
-          onClose={() => setIsPositionSheetOpen(false)}
-          onChange={onAddPosition}
-        />
-        <PostImageSheet
-          isOpen={isImageSheetOpen}
-          onClose={() => {
-            setIsImageSheetOpen(false);
-          }}
-          onChange={onAddImage}
-        />
+        <PostRecordingSheet ref={recordingSheetRef} onChange={onAddRecording} />
+        <PostTagSheet ref={tagSheetRef} value={tags} onChange={onAddTags} />
+        <PostPositionSheet ref={positionSheetRef} onChange={onAddPosition} />
+        <PostImageSheet ref={imageSheetRef} onChange={onAddImage} />
         <GalleryPreview
-          images={images}
+          images={images || []}
           initialIndex={initialIndex}
           isVisible={galleryPreviewIsOpen}
           onRequestClose={() => setGalleryPreviewIsOpen(false)}

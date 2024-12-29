@@ -12,6 +12,7 @@ import { Card } from './ui/card';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
+import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
@@ -55,7 +56,7 @@ const PostListView = () => {
 
   const renderItem = ({ item }: any) => {
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={() => {
           router.push({
             pathname: '/posts/[documentId]',
@@ -68,7 +69,7 @@ const PostListView = () => {
           <VStack space="lg">
             <HStack className="items-start justify-start" space="md">
               <VStack space="md" className="flex-1">
-                <Heading numberOfLines={1} size="md">
+                <Heading numberOfLines={1} ellipsizeMode="tail" size="md">
                   {item.title}
                 </Heading>
                 <HStack className="items-center justify-between">
@@ -97,7 +98,7 @@ const PostListView = () => {
             </HStack>
           </VStack>
         </Card>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 

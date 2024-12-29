@@ -12,7 +12,7 @@ import {
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
-import { apiServerURL, fetchUser } from '@/api';
+import { apiServerURL, fetchChatByUsers, fetchUser, createChat } from '@/api';
 import { toggleFollow } from '@/api/follow';
 import { useAuth } from '@/components/auth-context';
 import PhotoListView from '@/components/photo-list-view';
@@ -28,12 +28,13 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-const UserInfo = () => {
+const UserDetail = () => {
   const { user: currentUser } = useAuth();
   const { documentId } = useLocalSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const queryClient = useQueryClient();
   const toast = useCustomToast();
+  const userDocumentIds = [currentUser.documentId, documentId];
 
   const {
     isPending,
@@ -45,6 +46,31 @@ const UserInfo = () => {
     queryKey: ['users', documentId],
     queryFn: () => fetchUser(documentId as string),
   });
+
+  const { data: chatData } = useQuery({
+    queryKey: ['chats', { filters: userDocumentIds }],
+    queryFn: () => fetchChatByUsers({ userDocumentIds }),
+  });
+
+  const { mutate: mutateChat } = useMutation({
+    mutationFn: ({ users }: any) =>
+      createChat({
+        users,
+      }),
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: ['chats', { filters: userDocumentIds }],
+      });
+      router.navigate({
+        pathname: '/chats/[documentId]',
+        params: {
+          documentId: data.documentId,
+        },
+      });
+    },
+  });
+
+  const chatDocumentId = chatData && chatData.length > 0 && chatData[0].documentId;
 
   const isFollowed = !_.isUndefined(
     currentUser &&
@@ -58,7 +84,7 @@ const UserInfo = () => {
     isSuccess: isFollowSuccess,
     isError: isFollowError,
     isPending: isFollowPending,
-    mutate,
+    mutate: followMutate,
   } = useMutation({
     mutationFn: (data: any) => {
       return toggleFollow(data);
@@ -92,7 +118,20 @@ const UserInfo = () => {
 
   const onShareButtonPressed = () => {};
 
-  const onChatButtonPressed = () => {};
+  const onChatButtonPressed = () => {
+    if (chatDocumentId) {
+      router.navigate({
+        pathname: '/chats/[documentId]',
+        params: {
+          documentId: chatDocumentId,
+        },
+      });
+    } else {
+      mutateChat({
+        users: [currentUser.documentId, user.documentId],
+      });
+    }
+  };
 
   const onFollowBtnPressed = () => {
     const data = {
@@ -100,7 +139,7 @@ const UserInfo = () => {
       following: user.documentId,
       isFollowed,
     };
-    mutate(data);
+    followMutate(data);
   };
 
   return (
@@ -205,4 +244,4 @@ const UserInfo = () => {
   );
 };
 
-export default UserInfo;
+export default UserDetail;

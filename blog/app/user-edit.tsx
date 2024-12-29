@@ -11,8 +11,9 @@ import {
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-import { UserData, updateUser } from '@/api';
+import { updateUser } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { CustomDatePicker } from '@/components/custom-date-picker';
 import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
@@ -27,6 +28,7 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from '@/components/ui/form-control';
+import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
@@ -42,6 +44,7 @@ import {
   SelectDragIndicator,
   SelectItem,
 } from '@/components/ui/select';
+import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
@@ -51,6 +54,7 @@ const UserEditScreen = () => {
   const { user }: any = useAuth();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
+  const insets = useSafeAreaInsets();
 
   type UserSchemaDetails = z.infer<typeof userSchema>;
 
@@ -92,13 +96,10 @@ const UserEditScreen = () => {
   });
 
   const renderBio = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl size="lg" isInvalid={!!errors.bio}>
-      <FormControlLabel>
-        <FormControlLabelText>我的签名</FormControlLabelText>
-      </FormControlLabel>
+    <FormControl isInvalid={!!errors.bio}>
       <Textarea className="flex-1 border-0 border-b">
         <TextareaInput
-          placeholder="签名...."
+          placeholder="我的签名...."
           onBlur={onBlur}
           onChangeText={onChange}
           value={value}
@@ -113,7 +114,7 @@ const UserEditScreen = () => {
   );
 
   const renderGender = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.gender} size="lg">
+    <FormControl isInvalid={!!errors.gender}>
       <FormControlLabel>
         <FormControlLabelText>性别</FormControlLabelText>
       </FormControlLabel>
@@ -138,14 +139,14 @@ const UserEditScreen = () => {
         </SelectPortal>
       </Select>
       <FormControlError>
-        <FormControlErrorIcon as={AlertCircle} size="lg" />
+        <FormControlErrorIcon as={AlertCircle} />
         <FormControlErrorText>{errors?.gender?.message}</FormControlErrorText>
       </FormControlError>
     </FormControl>
   );
 
   const renderBirthday = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.birthday} size="lg">
+    <FormControl isInvalid={!!errors.birthday}>
       <FormControlLabel>
         <FormControlLabelText>出生日期</FormControlLabelText>
       </FormControlLabel>
@@ -158,7 +159,7 @@ const UserEditScreen = () => {
   );
 
   const renderPhonNumber = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.phoneNumber} size="lg">
+    <FormControl isInvalid={!!errors.phoneNumber}>
       <FormControlLabel>
         <FormControlLabelText>手机号码</FormControlLabelText>
       </FormControlLabel>
@@ -217,14 +218,12 @@ const UserEditScreen = () => {
         }}
       />
       <KeyboardAwareScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-        }}
-        bottomOffset={30}
-        showsVerticalScrollIndicator={false}>
-        <VStack className="flex-1" space="lg">
-          <Box className="h-52">
-            <Center className="absolute top-16 w-full">
+        extraKeyboardSpace={-1 * insets.bottom}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
+        <VStack className="flex-1 p-6" space="lg">
+          <Box className="h-36">
+            <Center className="absolute top-2 w-full">
               <Avatar size="2xl">
                 <AvatarImage source={require('@/assets/images/profile/image.png')} />
                 <AvatarBadge className="items-center justify-center">
@@ -234,22 +233,18 @@ const UserEditScreen = () => {
             </Center>
           </Box>
           <VStack className="flex-1" space="lg">
-            <FormControl size="lg" isDisabled={true}>
-              <FormControlLabel>
-                <FormControlLabelText>邮箱地址</FormControlLabelText>
-              </FormControlLabel>
-              <Input variant="underlined">
-                <InputField inputMode="email" autoCapitalize="none" value={user.email} />
-              </Input>
-            </FormControl>
-            <FormControl size="lg" isDisabled={true}>
-              <FormControlLabel>
-                <FormControlLabelText>用户名</FormControlLabelText>
-              </FormControlLabel>
-              <Input variant="underlined" className="mb-2">
-                <InputField inputMode="text" autoCapitalize="none" value={user.username} />
-              </Input>
-            </FormControl>
+            <HStack
+              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2"
+              space="md">
+              <Text bold={true}>邮箱地址</Text>
+              <Text className="text-typography-400">{user.email}</Text>
+            </HStack>
+            <HStack
+              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2"
+              space="md">
+              <Text bold={true}>用户名</Text>
+              <Text className="text-typography-400">{user.username}</Text>
+            </HStack>
             <Controller name="bio" control={control} render={renderBio} />
             <Controller name="gender" control={control} render={renderGender} />
             <Controller name="birthday" control={control} render={renderBirthday} />
@@ -257,8 +252,7 @@ const UserEditScreen = () => {
             <Button
               disabled={isPending}
               action="primary"
-              size="lg"
-              className="rounded-2xl"
+              className="mt-8 rounded-full"
               onPress={handleSubmit(onSubmit)}>
               <ButtonText>保存</ButtonText>
               {isPending && <ButtonSpinner />}

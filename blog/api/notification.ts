@@ -5,25 +5,29 @@ import { apiClient } from './api-client';
 export type NotificationData = any;
 
 export const fetchNotifications = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId } = pageParam;
+  const { pagination, filters } = pageParam;
   const query = qs.stringify({
-    filter: {
-      user: userDocumentId,
+    filters: {
+      user: {
+        documentId: filters.userDocumentId,
+      },
+      documentId: {
+        $notIn: filters.excludeDocumentIds,
+      },
     },
-    sort: ['state:asc', 'createdAt:desc'],
+    sort: ['createdAt:desc'],
     pagination,
   });
   const res = await apiClient.get(`/notifications?${query}`);
   return res;
 };
 
-export const fetchNotificationCount = async () => {
-  const res = await apiClient.get(`/notifications/count`);
+export const fetchNotificationUnreadCount = async () => {
+  const res = await apiClient.get(`/notifications/unread-count`);
   return res;
 };
 
 export const updateNotificationState = async ({ documentId, data }: any) => {
-  debugger;
   const res = await apiClient.put(`/notifications/${documentId}`, {
     data,
   });

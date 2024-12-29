@@ -1,8 +1,10 @@
+import BottomSheet from '@gorhom/bottom-sheet';
 import { useQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
@@ -15,10 +17,10 @@ import PostImageGrid from '@/components/post-images-grid';
 import PostRecordings from '@/components/post-recordings';
 import PostTags from '@/components/post-tags';
 import ShareButton from '@/components/share-button';
+import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
-import { Image } from '@/components/ui/image';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
@@ -26,13 +28,19 @@ import { VStack } from '@/components/ui/vstack';
 
 const PostCover = ({ cover }: any) => {
   return (
-    <Image
-      source={{
-        uri: `${apiServerURL}/${cover.formats.small.url}`,
-      }}
-      alt={cover.alternativeText}
-      className="h-48 w-full rounded-md"
-    />
+    <Box className="h-36 flex-1">
+      <Image
+        style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: 8,
+        }}
+        source={{
+          uri: `${apiServerURL}/${cover.formats.small.url}`,
+        }}
+        alt={cover.alternativeText}
+      />
+    </Box>
   );
 };
 
@@ -44,9 +52,9 @@ const DateInfo = ({ createdAt }: any) => {
 
 const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
-  const [initialIndex, setInitialIndex] = useState<number>(0);
+  const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
-  const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false);
+  const commentsSheetRef = useRef<BottomSheet>(null);
 
   const {
     isPending,
@@ -75,7 +83,7 @@ const PostDetail = () => {
   const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
 
   const onOpenGallery = async (index: number) => {
-    setInitialIndex(index);
+    setImageIndex(index);
     setIsGalleryPreviewOpen(true);
   };
 
@@ -115,7 +123,7 @@ const PostDetail = () => {
                   <LikePostButton post={post} />
                   <CommentInfo
                     commentCount={post?.comments?.count}
-                    onCommentButtonPressed={() => setIsCommentSheetOpen(true)}
+                    onCommentButtonPressed={() => commentsSheetRef.current?.expand()}
                   />
                 </HStack>
               </HStack>
@@ -133,14 +141,13 @@ const PostDetail = () => {
         </ScrollView>
       )}
       <PostCommentsSheet
+        ref={commentsSheetRef}
         commentCount={post?.comments?.count}
         postDocumentId={post?.documentId}
-        isOpen={isCommentSheetOpen}
-        onClose={() => setIsCommentSheetOpen(false)}
       />
       <GalleryPreview
         images={images || []}
-        initialIndex={initialIndex}
+        initialIndex={imageIndex}
         isVisible={isGalleryPreviewOpen}
         onRequestClose={() => setIsGalleryPreviewOpen(false)}
       />

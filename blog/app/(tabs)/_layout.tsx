@@ -1,3 +1,4 @@
+import { usePathname } from 'expo-router';
 import { Tabs, TabList, TabTrigger, TabSlot, TabTriggerSlotProps } from 'expo-router/ui';
 import { BookOpen, House, MessageSquare, User2 } from 'lucide-react-native';
 import React, { forwardRef, Ref } from 'react';
@@ -38,6 +39,7 @@ export const TabButton = forwardRef(function TabButton(
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+
   return (
     <Tabs>
       <TabSlot />
@@ -47,10 +49,10 @@ export default function TabLayout() {
         <TabTrigger name="home" href="/" asChild>
           <TabButton text="主页" icon={House}></TabButton>
         </TabTrigger>
-        <TabTrigger name="post" href="/post" asChild>
+        <TabTrigger name="post" href="/post-list" asChild>
           <TabButton text="发现" icon={BookOpen}></TabButton>
         </TabTrigger>
-        <TabTrigger name="message" href="/message" asChild>
+        <TabTrigger name="chat" href="/chat-list" asChild>
           <TabButton text="消息" icon={MessageSquare}></TabButton>
         </TabTrigger>
         <TabTrigger name="profile" href="/profile" asChild>

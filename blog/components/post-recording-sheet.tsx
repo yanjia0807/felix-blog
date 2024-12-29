@@ -1,8 +1,9 @@
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw } from 'lucide-react-native';
 import moment from 'moment';
-import React, { forwardRef, memo, useCallback, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useMemo, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -12,13 +13,7 @@ import Animated, {
   BounceIn,
   BounceOut,
 } from 'react-native-reanimated';
-import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicator,
-  ActionsheetDragIndicatorWrapper,
-} from './ui/actionsheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
@@ -49,15 +44,14 @@ const AnimatedRing = ({ metering }: any) => {
   );
 };
 
-const PostRecordingSheet = forwardRef(function RecordingSheet(
-  { onChange, onClose, isOpen }: any,
-  ref: any,
-) {
+const PostRecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
   const metering = useSharedValue<number>(0);
   const [durationMillis, setDurationMillis] = useState<number>(0);
+  const snapPoints = useMemo(() => ['50%'], []);
+  const insets = useSafeAreaInsets();
 
   const stopRecording = useCallback(async () => {
     try {
@@ -192,55 +186,75 @@ const PostRecordingSheet = forwardRef(function RecordingSheet(
     stopRecording,
   ]);
 
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior={'close'}
+      />
+    ),
+    [],
+  );
+
+  const renderFooter = (props: any) => {
+    return (
+      <BottomSheetFooter {...props} bottomInset={insets.bottom} style={{ paddingHorizontal: 16 }}>
+        <HStack className="w-full items-center justify-between">
+          <TouchableOpacity
+            className="h-24 w-24 items-center justify-center rounded-full bg-primary-500"
+            onPress={doRecording}>
+            {recordingStatus?.isRecording ? (
+              <>
+                <AnimatedRing metering={metering} />
+                <MicOff size={32} color="white" />
+              </>
+            ) : (
+              <Mic size={32} color="white" />
+            )}
+          </TouchableOpacity>
+          <Button
+            action="secondary"
+            isDisabled={!recordingStatus || !recordingStatus.isRecording}
+            onPress={pauseRecording}>
+            <ButtonIcon as={PauseCircle} />
+            <ButtonText>暂停</ButtonText>
+          </Button>
+          <Button
+            action="secondary"
+            isDisabled={!recordingStatus || recordingStatus.isRecording}
+            onPress={resetRecording}>
+            <ButtonIcon as={RotateCcw} />
+            <ButtonText>重置</ButtonText>
+          </Button>
+          <Button
+            isDisabled={!recordingStatus || recordingStatus?.isRecording}
+            onPress={commitRecording}
+            action="primary">
+            <ButtonIcon as={Check} />
+            <ButtonText>确定</ButtonText>
+          </Button>
+        </HStack>
+      </BottomSheetFooter>
+    );
+  };
+
   return (
-    <Actionsheet isOpen={isOpen} onClose={onClose} snapPoints={[50]}>
-      <ActionsheetBackdrop />
-      <ActionsheetContent className="h-full">
-        <ActionsheetDragIndicatorWrapper>
-          <ActionsheetDragIndicator />
-        </ActionsheetDragIndicatorWrapper>
-        <VStack className="flex-1 items-center justify-between">
-          <Heading size="4xl" className="mt-12">
-            {moment.utc(durationMillis).format('mm:ss')}
-          </Heading>
-          <HStack className="w-full items-center justify-between">
-            <TouchableOpacity
-              className="h-24 w-24 items-center justify-center rounded-full bg-primary-500"
-              onPress={doRecording}>
-              {recordingStatus?.isRecording ? (
-                <>
-                  <AnimatedRing metering={metering} />
-                  <MicOff size={32} color="white" />
-                </>
-              ) : (
-                <Mic size={32} color="white" />
-              )}
-            </TouchableOpacity>
-            <Button
-              action="secondary"
-              isDisabled={!recordingStatus || !recordingStatus.isRecording}
-              onPress={pauseRecording}>
-              <ButtonIcon as={PauseCircle} />
-              <ButtonText>暂停</ButtonText>
-            </Button>
-            <Button
-              action="secondary"
-              isDisabled={!recordingStatus || recordingStatus.isRecording}
-              onPress={resetRecording}>
-              <ButtonIcon as={RotateCcw} />
-              <ButtonText>重置</ButtonText>
-            </Button>
-            <Button
-              isDisabled={!recordingStatus || recordingStatus?.isRecording}
-              onPress={commitRecording}
-              action="primary">
-              <ButtonIcon as={Check} />
-              <ButtonText>确定</ButtonText>
-            </Button>
-          </HStack>
-        </VStack>
-      </ActionsheetContent>
-    </Actionsheet>
+    <BottomSheet
+      ref={ref}
+      snapPoints={snapPoints}
+      enableDynamicSizing={false}
+      enablePanDownToClose={true}
+      index={-1}
+      backdropComponent={renderBackdrop}
+      footerComponent={renderFooter}>
+      <VStack className="flex-1 items-center justify-between bg-background-100">
+        <Heading size="4xl" className="mt-12">
+          {moment.utc(durationMillis).format('mm:ss')}
+        </Heading>
+      </VStack>
+    </BottomSheet>
   );
 });
 

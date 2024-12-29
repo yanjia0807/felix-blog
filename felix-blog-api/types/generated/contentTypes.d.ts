@@ -398,6 +398,81 @@ export interface ApiAboutAbout extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiChatStatusChatStatus extends Struct.CollectionTypeSchema {
+  collectionName: 'chat_statuses';
+  info: {
+    description: '';
+    displayName: 'ChatStatus';
+    pluralName: 'chat-statuses';
+    singularName: 'chat-status';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    chat: Schema.Attribute.Relation<'manyToOne', 'api::chat.chat'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    isArchived: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isPinned: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::chat-status.chat-status'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    unreadCount: Schema.Attribute.Integer;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiChatChat extends Struct.CollectionTypeSchema {
+  collectionName: 'chats';
+  info: {
+    description: '';
+    displayName: 'Chat';
+    pluralName: 'chats';
+    singularName: 'chat';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    chatStatuses: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::chat-status.chat-status'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    initiator: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    lastMessage: Schema.Attribute.Relation<'oneToOne', 'api::message.message'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::chat.chat'> &
+      Schema.Attribute.Private;
+    messages: Schema.Attribute.Relation<'oneToMany', 'api::message.message'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    users: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiCommentComment extends Struct.CollectionTypeSchema {
   collectionName: 'comments';
   info: {
@@ -540,6 +615,43 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiMessageStatusMessageStatus
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'message_statuses';
+  info: {
+    description: '';
+    displayName: 'MessageStatus';
+    pluralName: 'message-statuses';
+    singularName: 'message-status';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::message-status.message-status'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Relation<'manyToOne', 'api::message.message'>;
+    publishedAt: Schema.Attribute.DateTime;
+    readAt: Schema.Attribute.DateTime;
+    state: Schema.Attribute.Enumeration<['read', 'unread']> &
+      Schema.Attribute.DefaultTo<'unread'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
   collectionName: 'messages';
   info: {
@@ -549,9 +661,10 @@ export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
     singularName: 'message';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
+    chat: Schema.Attribute.Relation<'manyToOne', 'api::chat.chat'>;
     content: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -562,16 +675,19 @@ export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
       'api::message.message'
     > &
       Schema.Attribute.Private;
+    messageStatuses: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::message-status.message-status'
+    >;
     publishedAt: Schema.Attribute.DateTime;
-    recipient: Schema.Attribute.Relation<
-      'manyToOne',
+    receiver: Schema.Attribute.Relation<
+      'oneToOne',
       'plugin::users-permissions.user'
     >;
     sender: Schema.Attribute.Relation<
-      'manyToOne',
+      'oneToOne',
       'plugin::users-permissions.user'
     >;
-    timestamp: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -600,7 +716,6 @@ export interface ApiNotificationNotification
       'api::notification.notification'
     > &
       Schema.Attribute.Private;
-    message: Schema.Attribute.String;
     metaData: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
     state: Schema.Attribute.Enumeration<['read', 'unread']> &
@@ -1182,18 +1297,10 @@ export interface PluginUsersPermissionsUser
     posts: Schema.Attribute.Relation<'oneToMany', 'api::post.post'>;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
-    receiveMessages: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::message.message'
-    >;
     resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;
     role: Schema.Attribute.Relation<
       'manyToOne',
       'plugin::users-permissions.role'
-    >;
-    sendMessages: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::message.message'
     >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1218,10 +1325,13 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::about.about': ApiAboutAbout;
+      'api::chat-status.chat-status': ApiChatStatusChatStatus;
+      'api::chat.chat': ApiChatChat;
       'api::comment.comment': ApiCommentComment;
       'api::feature.feature': ApiFeatureFeature;
       'api::follow.follow': ApiFollowFollow;
       'api::global.global': ApiGlobalGlobal;
+      'api::message-status.message-status': ApiMessageStatusMessageStatus;
       'api::message.message': ApiMessageMessage;
       'api::notification.notification': ApiNotificationNotification;
       'api::post.post': ApiPostPost;
