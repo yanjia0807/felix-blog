@@ -22,6 +22,7 @@ export const fetchMe = async () => {
           posts: {
             count: true,
           },
+          district: true,
         },
       },
       {

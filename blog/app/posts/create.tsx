@@ -1,12 +1,10 @@
-import BottomSheet from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
-import { AlertCircleIcon, ChevronLeft, ImageIcon, MapPinIcon, Mic, Tag } from 'lucide-react-native';
-import React, { useCallback, useRef, useState } from 'react';
+import { AlertCircleIcon, ChevronLeft } from 'lucide-react-native';
+import React, { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,12 +12,12 @@ import { z, ZodType } from 'zod';
 import { upload } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
 import { useAuth } from '@/components/auth-context';
-import PostImageSheet from '@/components/post-image-sheet';
+import { PostImageInput } from '@/components/post-image-input';
 import PostImageGrid from '@/components/post-images-grid';
-import PostPositionSheet from '@/components/post-position-sheet';
-import PostRecordingSheet from '@/components/post-recording-sheet';
+import { PostPositionInput } from '@/components/post-position-input';
+import { PostRecordingInput } from '@/components/post-recording-input';
 import PostRecordings from '@/components/post-recordings';
-import PostTagSheet from '@/components/post-tag-sheet';
+import { PostTagInput } from '@/components/post-tag-input';
 import PostTags from '@/components/post-tags';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
 import {
@@ -31,7 +29,7 @@ import {
   FormControlErrorText,
 } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
@@ -50,10 +48,6 @@ const PostCreate = () => {
   const [position, setPosition] = useState<any>();
   const [tags, setTags] = useState<any>([]);
   const insets = useSafeAreaInsets();
-  const recordingSheetRef = useRef<BottomSheet>(null);
-  const tagSheetRef = useRef<BottomSheet>(null);
-  const positionSheetRef = useRef<BottomSheet>(null);
-  const imageSheetRef = useRef<BottomSheet>(null);
 
   const { isSuccess, isError, isPending, mutate } = useMutation({
     mutationFn: (data: PostData) => {
@@ -92,10 +86,6 @@ const PostCreate = () => {
   });
 
   const [initialIndex, setInitialIndex] = useState<number>(0);
-  const [isRecordingSheetOpen, setIsRecordingSheetOpen] = useState<boolean>(false);
-  const [isImageSheetOpen, setIsImageSheetOpen] = useState(false);
-  const [isTagSheetOpen, setIsTagSheetOpen] = useState<boolean>(false);
-  const [isPositionSheetOpen, setIsPositionSheetOpen] = useState<boolean>(false);
   const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
 
   const onSubmit = async (formData: PostFormData) => {
@@ -141,11 +131,11 @@ const PostCreate = () => {
     mutate(postData);
   };
 
-  const onAddImage = async (images: any) => {
+  const onImageChange = async (images: any) => {
     setImages((pre: any) => _.unionBy(pre, images, 'assetId'));
   };
 
-  const onRemoveImage = async (assetId: string) => {
+  const onImageRemove = async (assetId: string) => {
     setImages((pre: any) => _.filter(pre, (item) => item.assetId !== assetId));
   };
 
@@ -161,23 +151,23 @@ const PostCreate = () => {
     );
   };
 
-  const onAddRecording = useCallback((recording: any) => {
+  const onRecordingChange = useCallback((recording: any) => {
     setRecordings((pre: any) => [...pre, recording]);
   }, []);
 
-  const onRemoveRecording = async (uri: string) => {
+  const onRecordingRemove = async (uri: string) => {
     setRecordings((pre: any) => _.filter(pre, (item) => item._uri !== uri));
   };
 
-  const onAddTags = useCallback(({ selectedTags }: any) => {
-    setTags(selectedTags);
-  }, []);
-
-  const onRemoveTag = (tag: any) => {
-    setTags((prev: any) => _.filter(prev, (item: any) => item.id !== tag.id));
+  const onTagsChange = (newTags: any) => {
+    setTags([...newTags]);
   };
 
-  const onAddPosition = useCallback((position: any) => {
+  const onTagRemove = (tagId: any) => {
+    setTags((prev: any) => _.filter(prev, (item: any) => item.id !== tagId));
+  };
+
+  const onPositionChange = useCallback((position: any) => {
     setPosition(position);
   }, []);
 
@@ -207,31 +197,26 @@ const PostCreate = () => {
     </HStack>
   );
 
-  const renderTitle = useCallback(
-    ({ field: { onChange, onBlur, value } }: any) => (
-      <FormControl isInvalid={!!errors.title} size="md">
-        <Input variant="underlined" className="border-0 border-b p-2">
-          <InputField
-            placeholder="请输入标题"
-            inputMode="text"
-            autoCapitalize="none"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-          />
-          <InputSlot>
-            <Pressable onPress={() => tagSheetRef.current?.expand()}>
-              <InputIcon as={Tag}></InputIcon>
-            </Pressable>
-          </InputSlot>
-        </Input>
-        <FormControlError>
-          <FormControlErrorIcon as={AlertCircleIcon} />
-          <FormControlErrorText>{errors?.title?.message}</FormControlErrorText>
-        </FormControlError>
-      </FormControl>
-    ),
-    [errors.title],
+  const renderTitle = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.title} size="md">
+      <Input variant="underlined" className="border-0 border-b p-2">
+        <InputField
+          placeholder="请输入标题"
+          inputMode="text"
+          autoCapitalize="none"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+        />
+        <InputSlot>
+          <PostTagInput value={tags} onChange={onTagsChange} />
+        </InputSlot>
+      </Input>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{errors?.title?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
   );
 
   const renderContent = useCallback(
@@ -279,29 +264,19 @@ const PostCreate = () => {
               <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />
             )}
             <Controller control={control} name="title" render={renderTitle} />
-            {tags.length > 0 && <PostTags tags={tags} onRemoveTag={onRemoveTag} />}
+            {tags.length > 0 && <PostTags tags={tags} onTagRemove={onTagRemove} />}
             <Controller control={control} name="content" render={renderContent} />
             <HStack className="justify-end">
-              <Button
-                variant="link"
-                action="secondary"
-                onPress={() => positionSheetRef.current?.expand()}>
-                <ButtonIcon as={MapPinIcon} />
-                {position ? (
-                  <ButtonText>{position.name}</ButtonText>
-                ) : (
-                  <ButtonText>位置</ButtonText>
-                )}
-              </Button>
+              <PostPositionInput value={position} onChange={onPositionChange} />
             </HStack>
             {recordings.length > 0 && (
-              <PostRecordings recordings={recordings} onRemoveRecording={onRemoveRecording} />
+              <PostRecordings recordings={recordings} onRecordingRemove={onRecordingRemove} />
             )}
             {images.length > 0 && (
               <PostImageGrid
                 images={images}
                 onOpenGallery={onOpenGallery}
-                onRemoveImage={onRemoveImage}
+                onImageRemove={onImageRemove}
                 onSetCover={onSetCover}
               />
             )}
@@ -310,29 +285,13 @@ const PostCreate = () => {
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
           <HStack space="md" className="w-full px-4">
             <ButtonGroup space="sm">
-              <Button
-                variant="link"
-                action="secondary"
-                onPress={() => imageSheetRef.current?.expand()}>
-                <ButtonIcon as={ImageIcon} />
-                <ButtonText>图片</ButtonText>
-              </Button>
+              <PostImageInput onChange={onImageChange} />
             </ButtonGroup>
             <ButtonGroup space="sm">
-              <Button
-                variant="link"
-                action="secondary"
-                onPress={() => recordingSheetRef.current?.expand()}>
-                <ButtonIcon as={Mic} />
-                <ButtonText>录音</ButtonText>
-              </Button>
+              <PostRecordingInput onChange={onRecordingChange} />
             </ButtonGroup>
           </HStack>
         </KeyboardStickyView>
-        <PostRecordingSheet ref={recordingSheetRef} onChange={onAddRecording} />
-        <PostTagSheet ref={tagSheetRef} value={tags} onChange={onAddTags} />
-        <PostPositionSheet ref={positionSheetRef} onChange={onAddPosition} />
-        <PostImageSheet ref={imageSheetRef} onChange={onAddImage} />
         <GalleryPreview
           images={images || []}
           initialIndex={initialIndex}

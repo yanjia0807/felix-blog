@@ -2,20 +2,42 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetFooter,
+  BottomSheetModal,
 } from '@gorhom/bottom-sheet';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import _ from 'lodash';
-import React, { forwardRef, useMemo, useEffect, useState, memo, useCallback } from 'react';
+import { MapPinIcon } from 'lucide-react-native';
+import React, { forwardRef, useMemo, useEffect, useState, memo, useCallback, useRef } from 'react';
 import { init, Geolocation, Position, PositionError } from 'react-native-amap-geolocation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { amapIosApiKey } from '@/api';
-import { fetchPositionRound } from '@/api/amap';
+import { fetchAround } from '@/api/amap';
 import { Text } from '@/components/ui/text';
 import { Box } from './ui/box';
+import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
+import { Heading } from './ui/heading';
 import { Pressable } from './ui/pressable';
 import { RefreshControl } from './ui/refresh-control';
 import { VStack } from './ui/vstack';
+
+export const PostPositionInput = ({ value, onChange }: any) => {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+  const onInputButtonPressed = () => {
+    bottomSheetRef.current?.present();
+  };
+
+  return (
+    <>
+      <Button variant="link" action="secondary" onPress={() => onInputButtonPressed()}>
+        <ButtonIcon as={MapPinIcon} />
+        {value ? <ButtonText>{value.name}</ButtonText> : <ButtonText>位置</ButtonText>}
+      </Button>
+      <PostPositionSheet onChange={onChange} ref={bottomSheetRef} />
+    </>
+  );
+};
 
 const PostPositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
   const [position, setPosition] = useState<Position | null>(null);
@@ -33,7 +55,7 @@ const PostPositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any)
     refetch,
   } = useInfiniteQuery({
     queryKey: ['position'],
-    queryFn: fetchPositionRound,
+    queryFn: fetchAround,
     initialPageParam: {
       location: `${position?.coords.latitude},${position?.coords.longitude}`,
       page_num: 1,
@@ -113,24 +135,22 @@ const PostPositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any)
   );
 
   const renderFooter = (props: any) => {
-    return (
-      <BottomSheetFooter
-        {...props}
-        bottomInset={insets.bottom}
-        style={{ paddingHorizontal: 16 }}></BottomSheetFooter>
-    );
+    return <BottomSheetFooter {...props} bottomInset={insets.bottom}></BottomSheetFooter>;
   };
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose={true}
-      index={-1}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
-      <VStack className="flex-1 bg-background-100 p-4">
+      <VStack className="flex-1 bg-background-100 p-4" space="md">
+        <VStack className="mb-4 items-center">
+          <Heading className="p-2">请选择位置</Heading>
+          <Divider />
+        </VStack>
         {isError && (
           <Box className="flex-1 items-center">
             <Text>{error.message}</Text>
@@ -161,7 +181,7 @@ const PostPositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any)
           />
         )}
       </VStack>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 });
 

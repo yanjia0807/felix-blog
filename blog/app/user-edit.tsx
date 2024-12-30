@@ -8,14 +8,15 @@ import {
   AlertCircleIcon,
   ChevronLeft,
 } from 'lucide-react-native';
-import React from 'react';
+import React, { useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { updateUser } from '@/api';
 import { useAuth } from '@/components/auth-context';
-import { CustomDatePicker } from '@/components/custom-date-picker';
+import { CustomDateInput } from '@/components/custom-date-input';
+import { CustomDistrictInput } from '@/components/custom-district-input';
 import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
@@ -59,19 +60,41 @@ const UserEditScreen = () => {
   type UserSchemaDetails = z.infer<typeof userSchema>;
 
   const userSchema = z.object({
-    bio: z.string(),
-    gender: z.string({
-      required_error: '性别是必填项',
-    }),
-    birthday: z.date({
-      required_error: '出生日期是必填项',
-      invalid_type_error: '出生日期格式不正确',
-    }),
-    phoneNumber: z
-      .string({
-        required_error: '电话号码是必填项',
-      })
-      .regex(/^1[3-9]\d{9}$/, '电话号码格式不正确'),
+    bio: z.union([z.null(), z.string().max(200, '简介不能超过 200 个字符').optional()]),
+    gender: z.union([
+      z.null(),
+      z
+        .enum(['male', 'female'], {
+          invalid_type_error: '性别是必填项',
+        })
+        .optional(),
+    ]),
+    birthday: z.union([
+      z.null(),
+      z.undefined(),
+      z.date({
+        required_error: '出生日期是必填项',
+        invalid_type_error: '出生日期格式不正确',
+      }),
+    ]),
+    phoneNumber: z.union([
+      z.null(),
+      z
+        .string()
+        .regex(/^1[3-9]\d{9}$/, '电话号码格式不正确')
+        .optional(),
+    ]),
+    district: z.union([
+      z.null(),
+      z.undefined(),
+      z.array(
+        z.object({
+          name: z.string(),
+          adcode: z.string(),
+          level: z.string(),
+        }),
+      ),
+    ]),
   });
 
   const {
@@ -86,6 +109,7 @@ const UserEditScreen = () => {
       gender: user.gender,
       birthday: user.birthday ? new Date(user.birthday) : new Date(),
       phoneNumber: user.phoneNumber,
+      district: user.district,
     },
   });
 
@@ -150,7 +174,7 @@ const UserEditScreen = () => {
       <FormControlLabel>
         <FormControlLabelText>出生日期</FormControlLabelText>
       </FormControlLabel>
-      <CustomDatePicker value={value} onChange={onChange} variant="rounded" />
+      <CustomDateInput value={value} onChange={onChange} variant="rounded" />
       <FormControlError>
         <FormControlErrorIcon as={AlertCircle} />
         <FormControlErrorText>{errors?.birthday?.message}</FormControlErrorText>
@@ -158,7 +182,20 @@ const UserEditScreen = () => {
     </FormControl>
   );
 
-  const renderPhonNumber = ({ field: { onChange, onBlur, value } }: any) => (
+  const renderDistrict = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.district}>
+      <FormControlLabel>
+        <FormControlLabelText>所在地区</FormControlLabelText>
+      </FormControlLabel>
+      <CustomDistrictInput value={value} onChange={onChange} />
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircle} />
+        <FormControlErrorText>{errors?.district?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
+  );
+
+  const renderPhoneNumber = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.phoneNumber}>
       <FormControlLabel>
         <FormControlLabelText>手机号码</FormControlLabelText>
@@ -234,13 +271,13 @@ const UserEditScreen = () => {
           </Box>
           <VStack className="flex-1" space="lg">
             <HStack
-              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2"
+              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2 px-4"
               space="md">
               <Text bold={true}>邮箱地址</Text>
               <Text className="text-typography-400">{user.email}</Text>
             </HStack>
             <HStack
-              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2"
+              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2 px-4"
               space="md">
               <Text bold={true}>用户名</Text>
               <Text className="text-typography-400">{user.username}</Text>
@@ -248,7 +285,8 @@ const UserEditScreen = () => {
             <Controller name="bio" control={control} render={renderBio} />
             <Controller name="gender" control={control} render={renderGender} />
             <Controller name="birthday" control={control} render={renderBirthday} />
-            <Controller name="phoneNumber" control={control} render={renderPhonNumber} />
+            <Controller name="phoneNumber" control={control} render={renderPhoneNumber} />
+            <Controller name="district" control={control} render={renderDistrict} />
             <Button
               disabled={isPending}
               action="primary"

@@ -7,7 +7,7 @@ import { FlatList, RefreshControl } from 'react-native';
 import { fetchPosts, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
-import CommentInfo from '@/components/comment-info';
+import CommentInfo from '@/components/post-comment-input';
 import LikePostButton from '@/components/like-post-button';
 import MainHeader from '@/components/main-header';
 import PostMenuPopover from '@/components/post-menu-popover';

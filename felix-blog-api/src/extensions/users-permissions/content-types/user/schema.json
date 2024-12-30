@@ -118,11 +118,17 @@
       "type": "string"
     },
     "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "district": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.district-item"
     }
   }
 }

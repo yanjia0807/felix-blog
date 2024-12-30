@@ -1,12 +1,14 @@
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
   BottomSheetSectionList,
   BottomSheetTextInput,
   BottomSheetFooter,
+  BottomSheetModal,
 } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
+import { MessageSquare } from 'lucide-react-native';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import moment from 'moment';
 import React, { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -33,6 +35,29 @@ import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
+
+export const PostCommentInput = ({ postDocumentId, commentCount = 0 }: any) => {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const onInputIconPressed = () => {
+    bottomSheetRef.current?.present();
+  };
+
+  return (
+    <>
+      <Pressable onPress={() => onInputIconPressed()}>
+        <HStack space="xs" className="items-center">
+          <Icon as={MessageSquare} />
+          <Text size="xs">{commentCount}</Text>
+        </HStack>
+      </Pressable>
+      <PostCommentsSheet
+        ref={bottomSheetRef}
+        postDocumentId={postDocumentId}
+        commentCount={commentCount}
+      />
+    </>
+  );
+};
 
 type CommentSchemaDetails = z.infer<typeof commentSchema>;
 
@@ -514,7 +539,7 @@ const PostCommentsSheet = forwardRef(function Sheet(
 
   const renderCommentInput = ({ field: { onChange, onBlur, value } }: any) => {
     return (
-      <Input className="bg-primary-100" variant="rounded">
+      <Input className="flex-1 bg-primary-100" variant="rounded">
         <BottomSheetTextInput
           inputMode="text"
           className="py-auto ios:leading-[0px] h-full flex-1 px-3 text-typography-900 placeholder:text-typography-500"
@@ -543,26 +568,27 @@ const PostCommentsSheet = forwardRef(function Sheet(
 
   const renderFooter = (props: any) => {
     return (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom} style={{ paddingHorizontal: 16 }}>
-        {user && <Controller name="content" control={control} render={renderCommentInput} />}
+      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+        <HStack className="bg-background-50 p-2">
+          {user && <Controller name="content" control={control} render={renderCommentInput} />}
+        </HStack>
       </BottomSheetFooter>
     );
   };
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose={true}
-      index={-1}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
-      <VStack className="flex-1 bg-background-100 p-4" space="2xl">
-        <Box className="mb-4 items-center">
-          <Heading className="p-4">{`${commentCount}条评论`}</Heading>
+      <VStack className="flex-1 bg-background-100 p-4" space="md">
+        <VStack className="mb-4 items-center">
+          <Heading className="p-2">{`${commentCount}条评论`}</Heading>
           <Divider />
-        </Box>
+        </VStack>
         {isFetchCommentsSuccess && (
           <BottomSheetSectionList
             sections={sectionListData}
@@ -581,8 +607,6 @@ const PostCommentsSheet = forwardRef(function Sheet(
           />
         )}
       </VStack>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 });
-
-export default PostCommentsSheet;

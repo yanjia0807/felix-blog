@@ -1,12 +1,14 @@
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetFooter,
+  BottomSheetModal,
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import { Tag } from 'lucide-react-native';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchTags } from '@/api/tag';
@@ -14,16 +16,37 @@ import PostTags from './post-tags';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
+import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
-import { Input } from './ui/input';
+import { Input, InputIcon } from './ui/input';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref: any) {
+export const PostTagInput = ({ value, onChange }: any) => {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const onInputIconPressed = () => {
+    bottomSheetRef.current?.present();
+  };
+
+  return (
+    <>
+      <Pressable onPress={() => onInputIconPressed()}>
+        <InputIcon as={Tag}></InputIcon>
+      </Pressable>
+      <PostTagSheet onChange={onChange} value={value} ref={bottomSheetRef} />
+    </>
+  );
+};
+
+export const PostTagSheet = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    setSelectedTags([...value]);
+  }, [value]);
 
   const {
     control,
@@ -34,7 +57,7 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
   } = useForm({});
 
   const {
-    data: tags,
+    data: tagData,
     error,
     isError,
     isSuccess,
@@ -56,12 +79,12 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
     setSelectedTags((prev: any) => [...prev, tag]);
   };
 
-  const onRemoveTag = (tag: any) => {
-    setSelectedTags((prev: any) => _.reject(prev, ['id', tag.id]));
+  const onRemoveTag = (tagId: any) => {
+    setSelectedTags((prev: any) => _.filter(prev, (item: any) => item.id !== tagId));
   };
 
   const onCommitBtnPressed = useCallback(() => {
-    onChange({ selectedTags });
+    onChange(selectedTags);
     ref.current?.close();
   }, [onChange, ref, selectedTags]);
 
@@ -95,8 +118,8 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
 
   const renderFooter = (props: any) => {
     return (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom} style={{ paddingHorizontal: 16 }}>
-        <HStack className="items-center justify-around p-2">
+      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+        <HStack className="items-center justify-around bg-background-50 p-2">
           <Button className="flex-1" variant="link" onPress={() => onCloseBtnPressed()}>
             <ButtonText>取消</ButtonText>
           </Button>
@@ -127,15 +150,18 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
   );
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose={true}
-      index={-1}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
-      <VStack className="flex-1 bg-background-100 p-4">
+      <VStack className="flex-1 bg-background-100 p-4" space="md">
+        <VStack className="mb-4 items-center">
+          <Heading className="p-2">请选择标签</Heading>
+          <Divider />
+        </VStack>
         {isError && (
           <Box className="items-center">
             <Text>{error.message}</Text>
@@ -146,17 +172,15 @@ const PostTagSheet = forwardRef(function TagSheet({ value, onChange }: any, ref:
             <Controller name="name" control={control} render={renderInput} />
             <PostTags tags={selectedTags} onRemoveTag={onRemoveTag} />
             <BottomSheetFlatList
-              data={tags}
-              renderItem={renderItem}
+              data={tagData}
               keyExtractor={(item: any) => item.id.toString()}
+              renderItem={renderItem}
               showsVerticalScrollIndicator={false}
               extraData={{ selectedTags }}
             />
           </>
         )}
       </VStack>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 });
-
-export default PostTagSheet;

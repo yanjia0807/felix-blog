@@ -1,18 +1,16 @@
-import BottomSheet from '@gorhom/bottom-sheet';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import moment from 'moment';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
 import { fetchPost } from '@/api/post';
 import AuthorInfo from '@/components/author-info';
-import CommentInfo from '@/components/comment-info';
 import LikePostButton from '@/components/like-post-button';
-import PostCommentsSheet from '@/components/post-comments-sheet';
+import { PostCommentInput } from '@/components/post-comment-input';
 import PostImageGrid from '@/components/post-images-grid';
 import PostRecordings from '@/components/post-recordings';
 import PostTags from '@/components/post-tags';
@@ -54,7 +52,6 @@ const PostDetail = () => {
   const { documentId } = useLocalSearchParams();
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
-  const commentsSheetRef = useRef<BottomSheet>(null);
 
   const {
     isPending,
@@ -121,9 +118,9 @@ const PostDetail = () => {
                 <AuthorInfo author={post?.author} />
                 <HStack space="lg" className="items-center justify-end">
                   <LikePostButton post={post} />
-                  <CommentInfo
+                  <PostCommentInput
                     commentCount={post?.comments?.count}
-                    onCommentButtonPressed={() => commentsSheetRef.current?.expand()}
+                    postDocumentId={post?.documentId}
                   />
                 </HStack>
               </HStack>
@@ -140,11 +137,6 @@ const PostDetail = () => {
           </VStack>
         </ScrollView>
       )}
-      <PostCommentsSheet
-        ref={commentsSheetRef}
-        commentCount={post?.comments?.count}
-        postDocumentId={post?.documentId}
-      />
       <GalleryPreview
         images={images || []}
         initialIndex={imageIndex}

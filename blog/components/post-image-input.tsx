@@ -1,15 +1,17 @@
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetFooter,
+  BottomSheetModal,
 } from '@gorhom/bottom-sheet';
 import { useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import _ from 'lodash';
 import { CameraIcon, ImageIcon, XIcon } from 'lucide-react-native';
-import React, { forwardRef, useCallback, useState } from 'react';
+import React, { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ImageCamera from './Image-camera';
+import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
@@ -17,10 +19,31 @@ import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-const PostImageSheet = forwardRef(function Sheet({ onChange, value }: any, ref: any) {
+export const PostImageInput = ({ onChange }: any) => {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const onInputIconPressed = () => {
+    bottomSheetRef.current?.present();
+  };
+
+  return (
+    <>
+      <ButtonGroup space="sm">
+        <Button variant="link" action="secondary" onPress={() => onInputIconPressed()}>
+          <ButtonIcon as={ImageIcon} />
+          <ButtonText>图片</ButtonText>
+        </Button>
+      </ButtonGroup>
+      <PostImageSheet ref={bottomSheetRef} onChange={onChange} />
+    </>
+  );
+};
+
+export const PostImageSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [cameraIsOpen, setCameraIsOpen] = useState(false);
   const insets = useSafeAreaInsets();
+  const snapPoints = useMemo(() => [200], []);
+
   const onPressImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -85,6 +108,7 @@ const PostImageSheet = forwardRef(function Sheet({ onChange, value }: any, ref: 
     ),
     [],
   );
+
   const renderFooter = (props: any) => {
     return (
       <BottomSheetFooter
@@ -97,22 +121,23 @@ const PostImageSheet = forwardRef(function Sheet({ onChange, value }: any, ref: 
   const renderItemSeparator = (props: any) => <Divider {...props} className="my-2" />;
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={ref}
-      enableDynamicSizing={true}
+      snapPoints={snapPoints}
+      enableDynamicSizing={false}
       enablePanDownToClose={true}
-      index={-1}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
-      <BottomSheetFlatList
-        contentContainerClassName="p-4 bg-background-100"
-        data={options}
-        keyExtractor={(item: any, index: number) => index.toString()}
-        ItemSeparatorComponent={renderItemSeparator}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
-    </BottomSheet>
+      <VStack className="flex-1 bg-background-100 p-4" space="md">
+        <BottomSheetFlatList
+          data={options}
+          keyExtractor={(item: any, index: number) => index.toString()}
+          ItemSeparatorComponent={renderItemSeparator}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+        />
+      </VStack>
+    </BottomSheetModal>
   );
 });
 

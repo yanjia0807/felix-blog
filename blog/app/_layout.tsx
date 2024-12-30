@@ -71,11 +71,11 @@ export default function RootLayout() {
     <GestureHandlerRootView className="flex-1">
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
-          <BottomSheetModalProvider>
-            <PreferencesProvider theme={theme} updateTheme={updateTheme}>
-              <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
-                <GluestackUIProvider mode={theme}>
-                  <AuthProvider>
+          <PreferencesProvider theme={theme} updateTheme={updateTheme}>
+            <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+              <GluestackUIProvider mode={theme}>
+                <AuthProvider>
+                  <BottomSheetModalProvider>
                     <SocketProvider>
                       <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="(tabs)" options={{}} />
@@ -83,12 +83,12 @@ export default function RootLayout() {
                         <Stack.Screen name="+not-found" />
                       </Stack>
                     </SocketProvider>
-                    <StatusBar style="auto" />
-                  </AuthProvider>
-                </GluestackUIProvider>
-              </NavigationThemeProvider>
-            </PreferencesProvider>
-          </BottomSheetModalProvider>
+                  </BottomSheetModalProvider>
+                  <StatusBar style="auto" />
+                </AuthProvider>
+              </GluestackUIProvider>
+            </NavigationThemeProvider>
+          </PreferencesProvider>
         </KeyboardProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

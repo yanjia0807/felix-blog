@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_shared_district_items",
+  "info": {
+    "displayName": "DistrictItem",
+    "icon": "pinMap"
+  },
+  "options": {},
+  "attributes": {
+    "adcode": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "level": {
+      "type": "enumeration",
+      "enum": [
+        "province",
+        "city",
+        "district"
+      ]
+    }
+  }
+}

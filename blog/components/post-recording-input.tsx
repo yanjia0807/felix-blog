@@ -1,9 +1,13 @@
-import BottomSheet, { BottomSheetBackdrop, BottomSheetFooter } from '@gorhom/bottom-sheet';
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetFooter,
+  BottomSheetModal,
+} from '@gorhom/bottom-sheet';
 import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw } from 'lucide-react-native';
 import moment from 'moment';
-import React, { forwardRef, memo, useCallback, useMemo, useState } from 'react';
+import React, { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -15,6 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
+import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { VStack } from './ui/vstack';
@@ -44,7 +49,24 @@ const AnimatedRing = ({ metering }: any) => {
   );
 };
 
-const PostRecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
+export const PostRecordingInput = ({ onChange }: any) => {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const onInputIconPressed = () => {
+    bottomSheetRef.current?.present();
+  };
+
+  return (
+    <>
+      <Button variant="link" action="secondary" onPress={() => onInputIconPressed()}>
+        <ButtonIcon as={Mic} />
+        <ButtonText>录音</ButtonText>
+      </Button>
+      <PostRecordingSheet onChange={onChange} ref={bottomSheetRef} />
+    </>
+  );
+};
+
+export const PostRecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
@@ -200,8 +222,8 @@ const PostRecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: any
 
   const renderFooter = (props: any) => {
     return (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom} style={{ paddingHorizontal: 16 }}>
-        <HStack className="w-full items-center justify-between">
+      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+        <HStack className="items-center justify-around bg-background-50 p-2">
           <TouchableOpacity
             className="h-24 w-24 items-center justify-center rounded-full bg-primary-500"
             onPress={doRecording}>
@@ -241,21 +263,22 @@ const PostRecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: any
   };
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose={true}
-      index={-1}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
-      <VStack className="flex-1 items-center justify-between bg-background-100">
-        <Heading size="4xl" className="mt-12">
+      <VStack className="flex-1 bg-background-100 p-4" space="md">
+        <VStack className="mb-4 items-center">
+          <Heading className="p-2">录音</Heading>
+          <Divider />
+        </VStack>
+        <Heading size="4xl" className="self-center">
           {moment.utc(durationMillis).format('mm:ss')}
         </Heading>
       </VStack>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 });
-
-export default memo(PostRecordingSheet);
