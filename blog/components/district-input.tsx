@@ -1,21 +1,13 @@
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetFooter,
   BottomSheetModal,
 } from '@gorhom/bottom-sheet';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { Locate } from 'lucide-react-native';
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchDistrict } from '@/api';
 import { Button, ButtonText } from './ui/button';
@@ -27,37 +19,14 @@ import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-export const CustomDistrictInput = ({ value, onChange, placeholder }: any) => {
+export const DistrictInput = ({ value, onChange, placeholder }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const onInputPressed = () => {
     bottomSheetRef.current?.present();
   };
 
-  const defaultValue = [
-    {
-      title: '选择省份/地区',
-      level: 'province',
-      adcode: null,
-      name: null,
-    },
-    {
-      title: '选择城市',
-      level: 'city',
-      adcode: null,
-      name: null,
-    },
-    {
-      title: '选择区/县',
-      level: 'district',
-      adcode: null,
-      name: null,
-    },
-  ];
-
-  const district = value && value.length > 0 ? value : defaultValue;
-
-  const displayValue = _.trim(_.join(_.map(value, 'name'), ' '));
+  const displayValue = value ? `${value.provinceName} ${value.cityName} ${value.districtName}` : '';
 
   return (
     <>
@@ -71,36 +40,16 @@ export const CustomDistrictInput = ({ value, onChange, placeholder }: any) => {
           <InputIcon as={Locate}></InputIcon>
         </InputSlot>
       </Input>
-      <CustomDistrictPicker ref={bottomSheetRef} onChange={onChange} value={district} />
+      <DistrictPicker ref={bottomSheetRef} onChange={onChange} value={value} />
     </>
   );
 };
 
-export const CustomDistrictPicker = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
+export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
   const snapPoints = useMemo(() => ['50%', '90%'], []);
-
   const insets = useSafeAreaInsets();
   const [keywords, setKeywords] = useState('');
-  const [district, setDistrict] = useState<any>([
-    {
-      title: '选择省份/地区',
-      level: 'province',
-      adcode: null,
-      name: null,
-    },
-    {
-      title: '选择城市',
-      level: 'city',
-      adcode: null,
-      name: null,
-    },
-    {
-      title: '选择区/县',
-      level: 'district',
-      adcode: null,
-      name: null,
-    },
-  ]);
+  const [district, setDistrict] = useState<any>();
   const [currentLevel, setCurrentLevel] = useState<string>('province');
   const currentDistrict = _.find(district, { level: currentLevel });
 
@@ -154,7 +103,26 @@ export const CustomDistrictPicker = forwardRef(function Sheet({ value, onChange 
   };
 
   const onConfirmBtnPressed = () => {
-    onChange(district);
+    const provinceData = _.find(district, (item: any) => item.level === 'province');
+    const provinceCode = provinceData?.adcode;
+    const provinceName = provinceData?.name;
+    const cityData = _.find(district, (item: any) => item.level === 'city');
+    const cityCode = cityData?.adcode;
+    const cityName = cityData?.name;
+    const districtData = _.find(district, (item: any) => item.level === 'district');
+    const districtCode = districtData?.adcode;
+    const districtName = districtData?.name;
+
+    onChange({
+      ...value,
+      provinceCode,
+      provinceName,
+      cityCode,
+      cityName,
+      districtCode,
+      districtName,
+    });
+    ref.current?.close();
   };
 
   const renderBackdrop = useCallback(
@@ -186,7 +154,52 @@ export const CustomDistrictPicker = forwardRef(function Sheet({ value, onChange 
   };
 
   useEffect(() => {
-    setDistrict([...value]);
+    if (value) {
+      const { provinceCode, provinceName, cityCode, cityName, districtCode, districtName } = value;
+      const val = [
+        {
+          title: '选择省份/地区',
+          level: 'province',
+          adcode: provinceCode,
+          name: provinceName,
+        },
+        {
+          title: '选择城市',
+          level: 'city',
+          adcode: cityCode,
+          name: cityName,
+        },
+        {
+          title: '选择区/县',
+          level: 'district',
+          adcode: districtCode,
+          name: districtName,
+        },
+      ];
+      setDistrict(val);
+    } else {
+      const val = [
+        {
+          title: '选择省份/地区',
+          level: 'province',
+          adcode: null,
+          name: null,
+        },
+        {
+          title: '选择城市',
+          level: 'city',
+          adcode: null,
+          name: null,
+        },
+        {
+          title: '选择区/县',
+          level: 'district',
+          adcode: null,
+          name: null,
+        },
+      ];
+      setDistrict(val);
+    }
   }, [value]);
 
   return (
@@ -204,13 +217,13 @@ export const CustomDistrictPicker = forwardRef(function Sheet({ value, onChange 
             <Divider />
           </VStack>
           <HStack space="md">
-            {district.map((item: any, index: number) => (
+            {district?.map((item: any, index: number) => (
               <Pressable onPress={() => onSelectedBtnPressed({ item })} key={index.toString()}>
                 <Text bold={item.level === currentLevel}>{item.name}</Text>
               </Pressable>
             ))}
           </HStack>
-          <Text bold={true}>{currentDistrict.title}</Text>
+          <Text bold={true}>{currentDistrict?.title}</Text>
           <BottomSheetFlatList
             contentContainerClassName="p-4 bg-background-100"
             data={listData}

@@ -12,7 +12,7 @@ import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } 
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchTags } from '@/api/tag';
-import PostTags from './post-tags';
+import { TagList } from './tag-list';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
@@ -23,7 +23,7 @@ import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-export const PostTagInput = ({ value, onChange }: any) => {
+export const TagInput = ({ value, onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const onInputIconPressed = () => {
     bottomSheetRef.current?.present();
@@ -34,12 +34,12 @@ export const PostTagInput = ({ value, onChange }: any) => {
       <Pressable onPress={() => onInputIconPressed()}>
         <InputIcon as={Tag}></InputIcon>
       </Pressable>
-      <PostTagSheet onChange={onChange} value={value} ref={bottomSheetRef} />
+      <TagSheet onChange={onChange} value={value} ref={bottomSheetRef} />
     </>
   );
 };
 
-export const PostTagSheet = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
+export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const insets = useSafeAreaInsets();
@@ -170,7 +170,7 @@ export const PostTagSheet = forwardRef(function Sheet({ value, onChange }: any, 
         {isSuccess && (
           <>
             <Controller name="name" control={control} render={renderInput} />
-            <PostTags tags={selectedTags} onRemoveTag={onRemoveTag} />
+            <TagList tags={selectedTags} onRemove={onRemoveTag} />
             <BottomSheetFlatList
               data={tagData}
               keyExtractor={(item: any) => item.id.toString()}

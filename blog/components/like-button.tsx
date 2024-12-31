@@ -10,7 +10,7 @@ import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 
-const LikePostButton = ({ post, className }: any) => {
+export const LikeButton = ({ post, className }: any) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -79,5 +79,3 @@ const LikePostButton = ({ post, className }: any) => {
     </TouchableOpacity>
   );
 };
-
-export default LikePostButton;

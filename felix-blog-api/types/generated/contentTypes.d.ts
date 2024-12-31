@@ -515,6 +515,43 @@ export interface ApiCommentComment extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiDistrictDistrict extends Struct.CollectionTypeSchema {
+  collectionName: 'districts';
+  info: {
+    displayName: 'District';
+    pluralName: 'districts';
+    singularName: 'district';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    cityCode: Schema.Attribute.String;
+    cityName: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    districtCode: Schema.Attribute.String;
+    districtName: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::district.district'
+    > &
+      Schema.Attribute.Private;
+    provinceCode: Schema.Attribute.String;
+    provinceName: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiFeatureFeature extends Struct.CollectionTypeSchema {
   collectionName: 'features';
   info: {
@@ -1269,7 +1306,7 @@ export interface PluginUsersPermissionsUser
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    district: Schema.Attribute.Component<'shared.district-item', true>;
+    district: Schema.Attribute.Relation<'oneToOne', 'api::district.district'>;
     email: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -1329,6 +1366,7 @@ declare module '@strapi/strapi' {
       'api::chat-status.chat-status': ApiChatStatusChatStatus;
       'api::chat.chat': ApiChatChat;
       'api::comment.comment': ApiCommentComment;
+      'api::district.district': ApiDistrictDistrict;
       'api::feature.feature': ApiFeatureFeature;
       'api::follow.follow': ApiFollowFollow;
       'api::global.global': ApiGlobalGlobal;

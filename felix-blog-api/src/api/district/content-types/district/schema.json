@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "districts",
+  "info": {
+    "singularName": "district",
+    "pluralName": "districts",
+    "displayName": "District"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "district"
+    },
+    "provinceCode": {
+      "type": "string"
+    },
+    "provinceName": {
+      "type": "string"
+    },
+    "cityCode": {
+      "type": "string"
+    },
+    "cityName": {
+      "type": "string"
+    },
+    "districtCode": {
+      "type": "string"
+    },
+    "districtName": {
+      "type": "string"
+    }
+  }
+}

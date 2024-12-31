@@ -41,11 +41,10 @@ export const fetchMe = async () => {
   }
 };
 
-export const updateUser = async ({ id, userData }: { id: string; userData: UserData }) => {
+export const updateUser = async ({ id, data }: { id: string; data: UserData }) => {
   try {
-    const res = await apiClient.put(`/users/${id}`, {
-      data: userData,
-    });
+    debugger;
+    const res = await apiClient.put(`/users/${id}`, data);
     return res;
   } catch (error: any) {
     throw new Error(error.message);

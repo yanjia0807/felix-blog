@@ -13,19 +13,6 @@ export interface SharedAttachment extends Struct.ComponentSchema {
   };
 }
 
-export interface SharedDistrictItem extends Struct.ComponentSchema {
-  collectionName: 'components_shared_district_items';
-  info: {
-    displayName: 'DistrictItem';
-    icon: 'pinMap';
-  };
-  attributes: {
-    adcode: Schema.Attribute.String;
-    level: Schema.Attribute.Enumeration<['province', 'city', 'district']>;
-    name: Schema.Attribute.String;
-  };
-}
-
 export interface SharedQuote extends Struct.ComponentSchema {
   collectionName: 'components_shared_quotes';
   info: {
@@ -81,7 +68,6 @@ declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'shared.attachment': SharedAttachment;
-      'shared.district-item': SharedDistrictItem;
       'shared.quote': SharedQuote;
       'shared.rich-text': SharedRichText;
       'shared.seo': SharedSeo;

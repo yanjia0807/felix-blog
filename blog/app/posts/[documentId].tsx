@@ -9,12 +9,12 @@ import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
 import { fetchPost } from '@/api/post';
 import AuthorInfo from '@/components/author-info';
-import LikePostButton from '@/components/like-post-button';
-import { PostCommentInput } from '@/components/post-comment-input';
-import PostImageGrid from '@/components/post-images-grid';
-import PostRecordings from '@/components/post-recordings';
-import PostTags from '@/components/post-tags';
-import ShareButton from '@/components/share-button';
+import { CommentInput } from '@/components/comment-input';
+import { ImageGrid } from '@/components/image-grid';
+import { LikeButton } from '@/components/like-button';
+import { RecordingList } from '@/components/recording-list';
+import { ShareButton } from '@/components/share-button';
+import { TagList } from '@/components/tag-list';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
@@ -117,11 +117,8 @@ const PostDetail = () => {
               <HStack className="items-center justify-between">
                 <AuthorInfo author={post?.author} />
                 <HStack space="lg" className="items-center justify-end">
-                  <LikePostButton post={post} />
-                  <PostCommentInput
-                    commentCount={post?.comments?.count}
-                    postDocumentId={post?.documentId}
-                  />
+                  <LikeButton post={post} />
+                  <CommentInput postDocumentId={post?.documentId} count={post?.comments?.count} />
                 </HStack>
               </HStack>
               <HStack className="items-center" space="sm">
@@ -130,10 +127,10 @@ const PostDetail = () => {
               </HStack>
             </VStack>
             {post?.cover && <PostCover cover={post.cover} />}
-            {post?.tags?.length > 0 && <PostTags tags={post?.tags} />}
+            {post?.tags?.length > 0 && <TagList tags={post?.tags} />}
             {post?.content && <Text>{post?.content}</Text>}
-            {recordings?.length > 0 && <PostRecordings recordings={recordings} />}
-            {images?.length > 0 && <PostImageGrid images={images} onOpenGallery={onOpenGallery} />}
+            {recordings?.length > 0 && <RecordingList recordings={recordings} />}
+            {images?.length > 0 && <ImageGrid images={images} onOpenGallery={onOpenGallery} />}
           </VStack>
         </ScrollView>
       )}

@@ -29,6 +29,9 @@ export const fetchPosts = async ({ pageParam }: any) => {
           },
         },
       },
+      comments: {
+        count: true,
+      },
     },
     sort: 'createdAt:desc',
     pagination,

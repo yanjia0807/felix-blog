@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import moment from 'moment';
 import React from 'react';
-import { FlatList, ImageBackground, Pressable, RefreshControl } from 'react-native';
+import { FlatList, Pressable, RefreshControl } from 'react-native';
 import { apiServerURL, fetchFeatures, fetchRecommendPosts } from '@/api';
 import MainHeader from '@/components/main-header';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';

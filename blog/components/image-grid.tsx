@@ -9,7 +9,7 @@ import { Icon } from './ui/icon';
 import { Popover, PopoverBackdrop, PopoverContent } from './ui/popover';
 import { Pressable } from './ui/pressable';
 
-const ImageItem = ({
+export const ImageItem = ({
   image,
   index,
   handleSetCover,
@@ -66,7 +66,7 @@ const ImageItem = ({
   );
 };
 
-const PostImageGrid = ({ images, onOpenGallery, onRemoveImage, className, onSetCover }: any) => {
+export const ImageGrid = ({ images, onOpenGallery, onRemoveImage, className, onSetCover }: any) => {
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const { width: screenWidth } = useWindowDimensions();
   const numColumns = 4;
@@ -113,5 +113,3 @@ const PostImageGrid = ({ images, onOpenGallery, onRemoveImage, className, onSetC
     </HStack>
   );
 };
-
-export default PostImageGrid;

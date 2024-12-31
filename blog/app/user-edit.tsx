@@ -8,15 +8,15 @@ import {
   AlertCircleIcon,
   ChevronLeft,
 } from 'lucide-react-native';
-import React, { useRef } from 'react';
+import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { updateUser } from '@/api';
 import { useAuth } from '@/components/auth-context';
-import { CustomDateInput } from '@/components/custom-date-input';
-import { CustomDistrictInput } from '@/components/custom-district-input';
+import { DateInput } from '@/components/date-input';
+import { DistrictInput } from '@/components/district-input';
 import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
@@ -60,41 +60,38 @@ const UserEditScreen = () => {
   type UserSchemaDetails = z.infer<typeof userSchema>;
 
   const userSchema = z.object({
-    bio: z.union([z.null(), z.string().max(200, '简介不能超过 200 个字符').optional()]),
+    bio: z.union([z.null(), z.string().max(200, '简介不能超过 200 个字符')]),
     gender: z.union([
       z.null(),
-      z
-        .enum(['male', 'female'], {
-          invalid_type_error: '性别是必填项',
-        })
-        .optional(),
+      z.enum(['male', 'female'], {
+        invalid_type_error: '性别是必填项',
+      }),
     ]),
     birthday: z.union([
       z.null(),
-      z.undefined(),
       z.date({
         required_error: '出生日期是必填项',
         invalid_type_error: '出生日期格式不正确',
       }),
     ]),
-    phoneNumber: z.union([
-      z.null(),
-      z
-        .string()
-        .regex(/^1[3-9]\d{9}$/, '电话号码格式不正确')
-        .optional(),
-    ]),
-    district: z.union([
-      z.null(),
-      z.undefined(),
-      z.array(
-        z.object({
-          name: z.string(),
-          adcode: z.string(),
-          level: z.string(),
-        }),
+    phoneNumber: z
+      .string()
+      .nullable()
+      .refine((val) => val === null || val === '' || /^1[3-9]\d{9}$/.test(val), {
+        message: '电话号码格式不正确',
+      })
+      .transform((val) => (val === '' ? null : val)),
+    district: z
+      .union([z.null(), z.object({})])
+      .nullable()
+      .refine(
+        (val) => {
+          return val === null || (typeof val === 'object' && !Array.isArray(val));
+        },
+        {
+          message: '所在区域格式不正确',
+        },
       ),
-    ]),
   });
 
   const {
@@ -107,15 +104,22 @@ const UserEditScreen = () => {
     defaultValues: {
       bio: user.bio,
       gender: user.gender,
-      birthday: user.birthday ? new Date(user.birthday) : new Date(),
+      birthday: user.birthday ? new Date(user.birthday) : null,
       phoneNumber: user.phoneNumber,
       district: user.district,
     },
   });
-
   const { isSuccess, isError, isPending, mutate } = useMutation({
-    mutationFn: ({ id, userData }: any) => {
-      return updateUser({ id, userData });
+    mutationFn: ({ id, data }: any) => {
+      return updateUser({ id, data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
+      toast.success({ title: '操作完成', description: '您的资料已更新' });
+      router.navigate('/profile');
+    },
+    onError(error, variables, context) {
+      toast.error(error.message);
     },
   });
 
@@ -174,7 +178,7 @@ const UserEditScreen = () => {
       <FormControlLabel>
         <FormControlLabelText>出生日期</FormControlLabelText>
       </FormControlLabel>
-      <CustomDateInput value={value} onChange={onChange} variant="rounded" />
+      <DateInput value={value} onChange={onChange} placeholder="请选择日期" />
       <FormControlError>
         <FormControlErrorIcon as={AlertCircle} />
         <FormControlErrorText>{errors?.birthday?.message}</FormControlErrorText>
@@ -187,7 +191,7 @@ const UserEditScreen = () => {
       <FormControlLabel>
         <FormControlLabelText>所在地区</FormControlLabelText>
       </FormControlLabel>
-      <CustomDistrictInput value={value} onChange={onChange} />
+      <DistrictInput value={value} onChange={onChange} placeholder="请选择所在地区" />
       <FormControlError>
         <FormControlErrorIcon as={AlertCircle} />
         <FormControlErrorText>{errors?.district?.message}</FormControlErrorText>
@@ -207,6 +211,7 @@ const UserEditScreen = () => {
           inputMode="tel"
           onChangeText={onChange}
           onBlur={onBlur}
+          placeholder="请输入手机号码"
         />
       </Input>
       <FormControlError>
@@ -217,22 +222,10 @@ const UserEditScreen = () => {
   );
 
   const onSubmit = (data: UserSchemaDetails) => {
-    mutate(
-      {
-        id: user.id,
-        userData: data,
-      },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
-          toast.success({ title: '操作完成', description: '您的资料已更新' });
-          router.navigate('/profile');
-        },
-        onError(error, variables, context) {
-          toast.error(error.message);
-        },
-      },
-    );
+    mutate({
+      id: user.id,
+      data,
+    });
   };
 
   const renderHeaderLeft = () => (

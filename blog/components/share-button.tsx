@@ -6,7 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { useAuth } from './auth-context';
 import { Icon } from './ui/icon';
 
-const ShareButton = ({ className, ...props }: any) => {
+export const ShareButton = ({ className, ...props }: any) => {
   const { user } = useAuth();
 
   const onShareButtonPressed = () => {
@@ -19,5 +19,3 @@ const ShareButton = ({ className, ...props }: any) => {
     </TouchableOpacity>
   );
 };
-
-export default ShareButton;

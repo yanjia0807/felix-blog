@@ -1,7 +1,7 @@
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Calendar } from 'lucide-react-native';
 import moment from 'moment';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -21,38 +21,42 @@ type MyComponentProps = {
   variant: string;
 };
 
-export const CustomDateInput: React.FC<MyComponentProps> = ({
-  placeholder,
-  onChange,
-  value,
-  variant,
-}: any) => {
-  const [date, setDate] = useState<Date | undefined>(value);
-  const [displayValue, setDisplayValue] = useState<string | undefined>();
+export const DateInput: React.FC<MyComponentProps> = ({ placeholder, onChange, value }: any) => {
+  const [date, setDate] = useState<Date | null>();
+  const [displayValue, setDisplayValue] = useState<string>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  console.log('@@', value);
 
   const onDateTimeChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
+    console.log('@@2', value);
     setDate(selectedDate);
-    setDisplayValue(moment(selectedDate).format('YYYY-MM-DD'));
   };
 
-  const onCancel = () => {
+  const onClear = () => {
+    onChange(null);
+    setDisplayValue('');
     setIsOpen(false);
   };
 
   const onCommit = () => {
     onChange(date);
+    setDisplayValue(moment(date).format('YYYY-MM-DD'));
     setIsOpen(false);
   };
 
   useEffect(() => {
-    setDate(value);
-    setDisplayValue(moment(date).format('YYYY-MM-DD'));
-  }, []);
+    if (value) {
+      setDate(value);
+      setDisplayValue(moment(value).format('YYYY-MM-DD'));
+    } else {
+      setDate(new Date('1990-01-01'));
+      setDisplayValue('');
+    }
+  }, [value]);
 
   return (
     <>
-      <Input variant={variant} isReadOnly={true}>
+      <Input variant="rounded" isReadOnly={true}>
         <InputField
           placeholder={placeholder}
           value={displayValue}
@@ -70,19 +74,15 @@ export const CustomDateInput: React.FC<MyComponentProps> = ({
           </ActionsheetDragIndicatorWrapper>
           <VStack className="flex-1 items-center justify-between">
             <DateTimePicker
-              value={date || new Date()}
+              value={date}
               mode="date"
               display="spinner"
               onChange={onDateTimeChange}
+              locale="zh-CN"
             />
             <HStack className="items-center justify-around p-2">
-              <Button
-                className="flex-1"
-                variant="link"
-                onPress={() => {
-                  onCancel();
-                }}>
-                <ButtonText>取消</ButtonText>
+              <Button className="flex-1" action="negative" variant="link" onPress={() => onClear()}>
+                <ButtonText>清除</ButtonText>
               </Button>
               <Divider orientation="vertical"></Divider>
               <Button

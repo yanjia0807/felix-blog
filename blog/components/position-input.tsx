@@ -1,4 +1,4 @@
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetFooter,
@@ -7,7 +7,7 @@ import BottomSheet, {
 import { useInfiniteQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { MapPinIcon } from 'lucide-react-native';
-import React, { forwardRef, useMemo, useEffect, useState, memo, useCallback, useRef } from 'react';
+import React, { forwardRef, useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import { init, Geolocation, Position, PositionError } from 'react-native-amap-geolocation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { amapIosApiKey } from '@/api';
@@ -17,29 +17,47 @@ import { Box } from './ui/box';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
+import { HStack } from './ui/hstack';
 import { Pressable } from './ui/pressable';
 import { RefreshControl } from './ui/refresh-control';
 import { VStack } from './ui/vstack';
 
-export const PostPositionInput = ({ value, onChange }: any) => {
+export const PositionInput = ({ value, onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const onInputButtonPressed = () => {
     bottomSheetRef.current?.present();
   };
 
+  const onClearButtonPressed = () => {
+    onChange(null);
+  };
+
   return (
     <>
-      <Button variant="link" action="secondary" onPress={() => onInputButtonPressed()}>
-        <ButtonIcon as={MapPinIcon} />
-        {value ? <ButtonText>{value.name}</ButtonText> : <ButtonText>位置</ButtonText>}
-      </Button>
-      <PostPositionSheet onChange={onChange} ref={bottomSheetRef} />
+      {value ? (
+        <HStack space="lg">
+          <Button variant="link" action="secondary" onPress={() => onInputButtonPressed()}>
+            <ButtonIcon as={MapPinIcon} />
+            <ButtonText>{value.name}</ButtonText>
+          </Button>
+          <Button variant="link" action="secondary" onPress={() => onClearButtonPressed()}>
+            <ButtonText>[清除]</ButtonText>
+          </Button>
+        </HStack>
+      ) : (
+        <Button variant="link" action="secondary" onPress={() => onInputButtonPressed()}>
+          <ButtonIcon as={MapPinIcon} />
+          <ButtonText>位置</ButtonText>
+        </Button>
+      )}
+
+      <PositionSheet onChange={onChange} ref={bottomSheetRef} />
     </>
   );
 };
 
-const PostPositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
+export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
   const [position, setPosition] = useState<Position | null>(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const insets = useSafeAreaInsets();
@@ -184,5 +202,3 @@ const PostPositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any)
     </BottomSheetModal>
   );
 });
-
-export default memo(PostPositionSheet);

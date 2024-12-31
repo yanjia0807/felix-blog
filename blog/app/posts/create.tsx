@@ -12,13 +12,13 @@ import { z, ZodType } from 'zod';
 import { upload } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
 import { useAuth } from '@/components/auth-context';
-import { PostImageInput } from '@/components/post-image-input';
-import PostImageGrid from '@/components/post-images-grid';
-import { PostPositionInput } from '@/components/post-position-input';
-import { PostRecordingInput } from '@/components/post-recording-input';
-import PostRecordings from '@/components/post-recordings';
-import { PostTagInput } from '@/components/post-tag-input';
-import PostTags from '@/components/post-tags';
+import { ImageGrid } from '@/components/image-grid';
+import { ImageInput } from '@/components/image-input';
+import { PositionInput } from '@/components/position-input';
+import { RecordingInput } from '@/components/recording-input';
+import { RecordingList } from '@/components/recording-list';
+import { TagInput } from '@/components/tag-input';
+import { TagList } from '@/components/tag-list';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -159,7 +159,7 @@ const PostCreate = () => {
     setRecordings((pre: any) => _.filter(pre, (item) => item._uri !== uri));
   };
 
-  const onTagsChange = (newTags: any) => {
+  const onTagChange = (newTags: any) => {
     setTags([...newTags]);
   };
 
@@ -167,9 +167,9 @@ const PostCreate = () => {
     setTags((prev: any) => _.filter(prev, (item: any) => item.id !== tagId));
   };
 
-  const onPositionChange = useCallback((position: any) => {
+  const onPositionChange = (position: any) => {
     setPosition(position);
-  }, []);
+  };
 
   const onOpenGallery = async (index: number) => {
     setInitialIndex(index);
@@ -209,7 +209,7 @@ const PostCreate = () => {
           value={value}
         />
         <InputSlot>
-          <PostTagInput value={tags} onChange={onTagsChange} />
+          <TagInput value={tags} onChange={onTagChange} />
         </InputSlot>
       </Input>
       <FormControlError>
@@ -264,16 +264,16 @@ const PostCreate = () => {
               <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />
             )}
             <Controller control={control} name="title" render={renderTitle} />
-            {tags.length > 0 && <PostTags tags={tags} onTagRemove={onTagRemove} />}
+            {tags.length > 0 && <TagList tags={tags} onRemove={onTagRemove} />}
             <Controller control={control} name="content" render={renderContent} />
             <HStack className="justify-end">
-              <PostPositionInput value={position} onChange={onPositionChange} />
+              <PositionInput value={position} onChange={onPositionChange} />
             </HStack>
             {recordings.length > 0 && (
-              <PostRecordings recordings={recordings} onRecordingRemove={onRecordingRemove} />
+              <RecordingList recordings={recordings} onRecordingRemove={onRecordingRemove} />
             )}
             {images.length > 0 && (
-              <PostImageGrid
+              <ImageGrid
                 images={images}
                 onOpenGallery={onOpenGallery}
                 onImageRemove={onImageRemove}
@@ -285,10 +285,10 @@ const PostCreate = () => {
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
           <HStack space="md" className="w-full px-4">
             <ButtonGroup space="sm">
-              <PostImageInput onChange={onImageChange} />
+              <ImageInput onChange={onImageChange} />
             </ButtonGroup>
             <ButtonGroup space="sm">
-              <PostRecordingInput onChange={onRecordingChange} />
+              <RecordingInput onChange={onRecordingChange} />
             </ButtonGroup>
           </HStack>
         </KeyboardStickyView>

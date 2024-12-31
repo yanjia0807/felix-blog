@@ -2,23 +2,24 @@ import { Audio, AVPlaybackStatus } from 'expo-av';
 import { CircleX, Volume2 } from 'lucide-react-native';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
+import { Pressable } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { apiServerURL } from '@/api';
 import { ButtonGroup, Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 
-const PostRecordings = ({ recordings = [], onRemoveRecording, className = '' }: any) => {
+export const RecordingList = ({ recordings = [], onRemoveRecording, className = '' }: any) => {
   return (
     <HStack space="sm" className={twMerge('flex-wrap', className)}>
       {recordings.map((item: any) => {
         const key = item._uri || item.url;
-        return <PostRecordingIcon key={key} item={item} onRemove={onRemoveRecording} />;
+        return <RecordingIcon key={key} item={item} onRemove={onRemoveRecording} />;
       })}
     </HStack>
   );
 };
 
-const PostRecordingIcon = ({ item, onRemove, className }: any) => {
+export const RecordingIcon = ({ item, onRemove, className }: any) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [durationMillis, setDurationMillis] = useState(0);
   const soundObj = useRef<any>({ sound: null, isPlaying: false });
@@ -77,15 +78,14 @@ const PostRecordingIcon = ({ item, onRemove, className }: any) => {
         <ButtonText>{moment.utc(durationMillis).format('mm:ss')}</ButtonText>
         <ButtonSpinner style={isPlaying ? { display: 'flex' } : { display: 'none' }} />
         {onRemove && (
-          <ButtonIcon
-            as={CircleX}
-            style={isPlaying ? { display: 'none' } : { display: 'flex' }}
-            onPress={() => removeSound()}
-          />
+          <Pressable onPress={() => removeSound()}>
+            <ButtonIcon
+              as={CircleX}
+              style={isPlaying ? { display: 'none' } : { display: 'flex' }}
+            />
+          </Pressable>
         )}
       </Button>
     </ButtonGroup>
   );
 };
-
-export default PostRecordings;

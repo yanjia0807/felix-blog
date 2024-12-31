@@ -36,7 +36,15 @@ import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
 
-export const PostCommentInput = ({ postDocumentId, commentCount = 0 }: any) => {
+type CommentSchemaDetails = z.infer<typeof commentSchema>;
+
+const commentSchema = z.object({
+  content: z.string({
+    required_error: '请填写内容',
+  }),
+});
+
+export const CommentInput = ({ postDocumentId, count = 0 }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const onInputIconPressed = () => {
     bottomSheetRef.current?.present();
@@ -47,30 +55,15 @@ export const PostCommentInput = ({ postDocumentId, commentCount = 0 }: any) => {
       <Pressable onPress={() => onInputIconPressed()}>
         <HStack space="xs" className="items-center">
           <Icon as={MessageSquare} />
-          <Text size="xs">{commentCount}</Text>
+          <Text size="xs">{count}</Text>
         </HStack>
       </Pressable>
-      <PostCommentsSheet
-        ref={bottomSheetRef}
-        postDocumentId={postDocumentId}
-        commentCount={commentCount}
-      />
+      <CommentSheet ref={bottomSheetRef} postDocumentId={postDocumentId} count={count} />
     </>
   );
 };
 
-type CommentSchemaDetails = z.infer<typeof commentSchema>;
-
-const commentSchema = z.object({
-  content: z.string({
-    required_error: '请填写内容',
-  }),
-});
-
-const PostCommentsSheet = forwardRef(function Sheet(
-  { postDocumentId, commentCount = 0 }: any,
-  ref: any,
-) {
+const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: any, ref: any) {
   const { user } = useAuth();
   const [replyComment, setReplyComment] = useState<any>();
   const [selectCommentDocumentId, setSelectCommentDocumentId] = useState<any>();
@@ -586,7 +579,7 @@ const PostCommentsSheet = forwardRef(function Sheet(
       footerComponent={renderFooter}>
       <VStack className="flex-1 bg-background-100 p-4" space="md">
         <VStack className="mb-4 items-center">
-          <Heading className="p-2">{`${commentCount}条评论`}</Heading>
+          <Heading className="p-2">{`${count}条评论`}</Heading>
           <Divider />
         </VStack>
         {isFetchCommentsSuccess && (

@@ -7,8 +7,8 @@ import { FlatList, RefreshControl } from 'react-native';
 import { fetchPosts, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
-import CommentInfo from '@/components/post-comment-input';
-import LikePostButton from '@/components/like-post-button';
+import { CommentInput } from '@/components/comment-input';
+import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
@@ -25,7 +25,6 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
 
 const PostHeader = ({ tags }: any) => {
   const renderTagsItem = ({ item }: any) => {
@@ -64,7 +63,6 @@ const PostHeader = ({ tags }: any) => {
 
 const PostList = () => {
   const { user } = useAuth();
-  const toast = useCustomToast();
 
   const {
     data: postData,
@@ -108,7 +106,7 @@ const PostList = () => {
   );
 
   const { isLoading: isLoadingTag, data: tags } = useQuery({
-    queryKey: ['tags'],
+    queryKey: ['tags', 'list'],
     queryFn: fetchTags,
   });
 
@@ -133,8 +131,8 @@ const PostList = () => {
             <PostThumbnail item={item} />
             <HStack className="items-center justify-between">
               <HStack space="lg" className="flex-row items-center">
-                <LikePostButton post={item} />
-                <CommentInfo post={item} />
+                <LikeButton post={item} />
+                <CommentInput postDocumentId={item.documentId} count={item.comments.count} />
               </HStack>
               <HStack className="items-center">
                 {Array(5)
@@ -162,7 +160,7 @@ const PostList = () => {
     );
   };
 
-  const renderListHeader = (props: any) => {
+  const renderPostHeader = (props: any) => {
     return <PostHeader tags={tags} {...props}></PostHeader>;
   };
 
@@ -187,7 +185,7 @@ const PostList = () => {
       <VStack className="flex-1 px-6">
         <FlatList
           data={posts}
-          ListHeaderComponent={renderListHeader}
+          ListHeaderComponent={renderPostHeader}
           renderItem={renderPostItem}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}

@@ -1,8 +1,4 @@
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetFooter,
-  BottomSheetModal,
-} from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw } from 'lucide-react-native';
@@ -49,7 +45,7 @@ const AnimatedRing = ({ metering }: any) => {
   );
 };
 
-export const PostRecordingInput = ({ onChange }: any) => {
+export const RecordingInput = ({ onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const onInputIconPressed = () => {
     bottomSheetRef.current?.present();
@@ -61,12 +57,12 @@ export const PostRecordingInput = ({ onChange }: any) => {
         <ButtonIcon as={Mic} />
         <ButtonText>录音</ButtonText>
       </Button>
-      <PostRecordingSheet onChange={onChange} ref={bottomSheetRef} />
+      <RecordingSheet onChange={onChange} ref={bottomSheetRef} />
     </>
   );
 };
 
-export const PostRecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
+export const RecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
