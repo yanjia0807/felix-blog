@@ -25,10 +25,8 @@ export const DateInput: React.FC<MyComponentProps> = ({ placeholder, onChange, v
   const [date, setDate] = useState<Date | null>();
   const [displayValue, setDisplayValue] = useState<string>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  console.log('@@', value);
 
   const onDateTimeChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
-    console.log('@@2', value);
     setDate(selectedDate);
   };
 

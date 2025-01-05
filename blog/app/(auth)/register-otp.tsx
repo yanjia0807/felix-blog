@@ -1,13 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack } from 'expo-router';
-import { AlertCircleIcon } from 'lucide-react-native';
+import { AlertCircleIcon, ChevronLeft } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
+import AuthHeader from '@/components/auth-header';
 import PrivacyPolicyDialog from '@/components/privacy-policy-dialog';
 import TermsOfServiceDialog from '@/components/terms-of-service-dialog';
-import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
   FormControlError,
@@ -51,8 +53,8 @@ const registerSchema = z.object({
 });
 
 const RegisterScreen = () => {
-  const { registerMutation } = useAuth();
-  const { reset, error, mutate, isSuccess, isError, isPending } = registerMutation;
+  const { registerOtpMutation } = useAuth();
+  const { reset, error, mutate, isSuccess, isError, isPending } = registerOtpMutation;
   const toast = useCustomToast();
   const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
   const [isPrivacyDialogOpen, setIsPrivacyDialogOpen] = useState(false);
@@ -69,10 +71,13 @@ const RegisterScreen = () => {
     mutate(data, {
       onSuccess: () => {
         toast.success({
-          title: '注册成功',
-          description: '我们已向您的邮箱发送了一封验证邮件，请点击验证',
+          title: '提交成功',
+          description: '我们已向您的邮箱发送了一封验证邮件，请前往查看',
         });
-        router.replace('/login');
+        router.replace({
+          pathname: '/otp-confirmation',
+          params: { email: data.email },
+        });
       },
       onError: (error: any) => {
         toast.error({
@@ -84,7 +89,7 @@ const RegisterScreen = () => {
   };
 
   const renderUsername = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.username} size="lg">
+    <FormControl isInvalid={!!errors.username}>
       <FormControlLabel>
         <FormControlLabelText>用户名</FormControlLabelText>
       </FormControlLabel>
@@ -109,7 +114,7 @@ const RegisterScreen = () => {
   );
 
   const renderEmail = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.email} size="lg">
+    <FormControl isInvalid={!!errors.email}>
       <FormControlLabel>
         <FormControlLabelText>邮箱地址</FormControlLabelText>
       </FormControlLabel>
@@ -131,7 +136,7 @@ const RegisterScreen = () => {
   );
 
   const renderPassword = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.password} size="lg">
+    <FormControl isInvalid={!!errors.password}>
       <FormControlLabel>
         <FormControlLabelText>密码</FormControlLabelText>
       </FormControlLabel>
@@ -158,7 +163,7 @@ const RegisterScreen = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '用户注册',
+          headerShown: false,
         }}
       />
       <TermsOfServiceDialog
@@ -169,14 +174,15 @@ const RegisterScreen = () => {
         isOpen={isPrivacyDialogOpen}
         onClose={() => setIsPrivacyDialogOpen(false)}
       />
-      <VStack className="flex-1 items-center justify-between p-6">
-        <VStack className="flex-1" space="lg">
-          <VStack space="lg">
+      <VStack className="flex-1 p-4">
+        <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
+          <AuthHeader title="用户注册" />
+          <VStack space="md">
             <Controller control={control} name="username" render={renderUsername} />
             <Controller control={control} name="email" render={renderEmail} />
             <Controller control={control} name="password" render={renderPassword} />
           </VStack>
-          <HStack className="mt-6 flex-wrap">
+          <HStack className="my-10 flex-wrap">
             <Text bold={true}>同意服务条款：</Text>
             <Text>在点击“注册”按钮前，请阅读并同意我们的</Text>
             <Link onPress={() => setIsTermsDialogOpen(true)}>
@@ -187,17 +193,12 @@ const RegisterScreen = () => {
               <LinkText className="no-underline">隐私政策</LinkText>
             </Link>
           </HStack>
-          <VStack className="mt-12">
-            <Button
-              className="rounded-2xl"
-              size="lg"
-              onPress={handleSubmit(onSubmit)}
-              disabled={isPending}>
+          <VStack>
+            <Button className="rounded" onPress={handleSubmit(onSubmit)} disabled={isPending}>
               <ButtonText>注册</ButtonText>
               {isPending && <ButtonSpinner />}
             </Button>
             <Button
-              size="lg"
               variant="link"
               action="secondary"
               onPress={() => {
@@ -206,7 +207,7 @@ const RegisterScreen = () => {
               <ButtonText>取消</ButtonText>
             </Button>
           </VStack>
-        </VStack>
+        </KeyboardAwareScrollView>
       </VStack>
     </SafeAreaView>
   );

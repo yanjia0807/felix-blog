@@ -216,7 +216,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
       return createComment(comment);
     },
     onSuccess: (data: any, variables: any, context: unknown) => {
-      toast.success({ title: '操作成功', description: '评论已发布' });
+      toast.success({ description: '评论已发布' });
       queryClient.invalidateQueries({
         queryKey: ['posts', 'detail', postDocumentId],
       });
@@ -254,8 +254,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
       }
     },
     onError(error, variables, context) {
-      console.log(error);
-      toast.error(error.message);
+      toast.error({ description: error.message });
     },
   });
 
@@ -264,7 +263,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
       return deleteComment(documentId);
     },
     onSuccess: (data: any, variables: any, context: unknown) => {
-      toast.success({ title: '操作成功', description: '评论已删除' });
+      toast.success({ description: '评论已删除' });
       queryClient.invalidateQueries({
         queryKey: ['posts', 'detail', postDocumentId],
       });
@@ -293,8 +292,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
       }
     },
     onError(error, variables, context) {
-      console.log(error);
-      toast.error(error.message);
+      toast.error({ description: error.message });
     },
   });
 

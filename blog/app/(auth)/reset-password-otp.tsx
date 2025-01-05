@@ -3,8 +3,10 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
+import AuthHeader from '@/components/auth-header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -26,21 +28,21 @@ type ResetPasswordSchemaDetails = z.infer<typeof resetPasswordSchema>;
 const resetPasswordSchema = z.object({
   password: z
     .string({
-      required_error: '密码是必填项',
+      required_error: '新密码是必填项',
     })
-    .min(6, '密码长度至少为6位'),
+    .min(6, '新密码长度至少为6位'),
   passwordConfirmation: z
     .string({
-      required_error: '密码是必填项',
+      required_error: '确认密码是必填项',
     })
-    .min(6, '密码长度至少为6位'),
+    .min(6, '确认密码长度至少为6位'),
 });
 
 const ResetPasswordScreen = () => {
   const toast = useCustomToast();
-  const { resetPasswordMutation } = useAuth();
-  const { reset, error, mutate, isSuccess, isError, isPending } = resetPasswordMutation;
-  const { code } = useLocalSearchParams();
+  const { resetPasswordOtpMutation } = useAuth();
+  const { reset, error, mutate, isSuccess, isError, isPending } = resetPasswordOtpMutation;
+  const { email, code }: any = useLocalSearchParams();
 
   const {
     control,
@@ -52,9 +54,10 @@ const ResetPasswordScreen = () => {
 
   const onSubmit = ({ password, passwordConfirmation }: any) => {
     const data = {
+      email,
+      code,
       password,
       passwordConfirmation,
-      code,
     };
 
     mutate(data, {
@@ -62,7 +65,7 @@ const ResetPasswordScreen = () => {
         toast.success({
           description: '设置密码成功',
         });
-        router.dismissAll();
+        router.replace('/login');
       },
       onError: (error: any) => {
         toast.error({
@@ -73,9 +76,9 @@ const ResetPasswordScreen = () => {
   };
 
   const renderPassword = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.password} size="lg">
+    <FormControl isInvalid={!!errors.password}>
       <FormControlLabel>
-        <FormControlLabelText>密码</FormControlLabelText>
+        <FormControlLabelText>新密码</FormControlLabelText>
       </FormControlLabel>
       <Input variant="rounded">
         <InputField
@@ -87,7 +90,7 @@ const ResetPasswordScreen = () => {
         />
       </Input>
       <FormControlHelper className="justify-end">
-        <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
+        <FormControlHelperText>新密码长度至少为6个字符</FormControlHelperText>
       </FormControlHelper>
       <FormControlError>
         <FormControlErrorIcon as={AlertCircleIcon} />
@@ -97,21 +100,21 @@ const ResetPasswordScreen = () => {
   );
 
   const renderPasswordConfirmation = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.passwordConfirmation} size="lg">
+    <FormControl isInvalid={!!errors.passwordConfirmation}>
       <FormControlLabel>
         <FormControlLabelText>确认密码</FormControlLabelText>
       </FormControlLabel>
       <Input variant="rounded">
         <InputField
           type="password"
-          placeholder="请再次输入密码"
+          placeholder="请输入确认密码"
           onBlur={onBlur}
           onChangeText={onChange}
           value={value}
         />
       </Input>
       <FormControlHelper className="justify-end">
-        <FormControlHelperText></FormControlHelperText>
+        <FormControlHelperText>确认密码长度至少为6个字符</FormControlHelperText>
       </FormControlHelper>
       <FormControlError>
         <FormControlErrorIcon as={AlertCircleIcon} />
@@ -124,37 +127,33 @@ const ResetPasswordScreen = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '设置密码',
+          headerShown: false,
         }}
       />
-      <VStack className="w-full flex-1 justify-between p-6">
-        <VStack className="flex-1" space="lg">
-          <Controller control={control} name="password" render={renderPassword} />
-          <Controller
-            control={control}
-            name="passwordConfirmation"
-            render={renderPasswordConfirmation}
-          />
-          <Button className="rounded-3xl" size="lg">
-            <ButtonText
-              className="rounded-3xl"
-              size="lg"
-              onPress={handleSubmit(onSubmit)}
-              disabled={isPending}>
-              设置密码
-            </ButtonText>
+      <VStack className="flex-1 p-4">
+        <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
+          <AuthHeader title="设置密码" />
+          <VStack space="md" className="mb-10">
+            <Controller control={control} name="password" render={renderPassword} />
+            <Controller
+              control={control}
+              name="passwordConfirmation"
+              render={renderPasswordConfirmation}
+            />
+          </VStack>
+          <Button className="rounded" onPress={handleSubmit(onSubmit)} disabled={isPending}>
+            <ButtonText>确定</ButtonText>
             {isPending && <ButtonSpinner />}
           </Button>
           <Button
-            className=""
-            size="lg"
             variant="link"
+            action="secondary"
             onPress={() => {
               router.dismiss();
             }}>
             <ButtonText>取消</ButtonText>
           </Button>
-        </VStack>
+        </KeyboardAwareScrollView>
       </VStack>
     </SafeAreaView>
   );

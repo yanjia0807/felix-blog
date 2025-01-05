@@ -10,5 +10,10 @@ export default {
       path: "/posts/:documentId/additional",
       handler: "api::post.post.findOneAdditional",
     },
+    {
+      method: "GET",
+      path: "/posts/recent-authors",
+      handler: "api::post.post.findRecentAuthors",
+    },
   ],
 };

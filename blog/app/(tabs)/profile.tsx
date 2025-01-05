@@ -20,102 +20,104 @@ const ProfileScreen = () => {
   const { user } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  if (!user) {
-    return <Redirect href="/anonymous" />;
-  }
-
-  const followersCount = _.filter(user.followers, { state: 'active' }).length;
-  const followingsCount = _.filter(user.followings, { state: 'active' }).length;
+  const followersCount = user && _.filter(user.followers, { state: 'active' }).length;
+  const followingsCount = user && _.filter(user.followings, { state: 'active' }).length;
 
   return (
-    <SafeAreaView className="flex-1">
-      <Stack.Screen
-        options={{
-          title: '我的',
-        }}
-      />
-      <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
-        <VStack className="flex-1" space="xl">
-          <HStack className="items-center justify-between">
-            <Avatar size="lg">
-              <AvatarImage
-                source={{
-                  uri: `${apiServerURL}/${user.avatar?.formats.thumbnail.url}`,
-                }}
-              />
-            </Avatar>
-            <HStack className="items-center" space="sm">
-              <Button
-                size="sm"
-                className="rounded-3xl px-6"
-                onPress={() => {
-                  router.push('/user-edit');
-                }}>
-                <ButtonText>编辑</ButtonText>
-                <ButtonIcon as={EditIcon} />
-              </Button>
-              <Button
-                size="sm"
-                className="rounded-3xl px-6"
-                onPress={() => {
-                  router.push('/setting');
-                }}>
-                <ButtonText>设置</ButtonText>
-                <ButtonIcon as={Settings2} />
-              </Button>
-            </HStack>
-          </HStack>
-          <VStack space="md">
-            <Text size="3xl" bold={true}>
-              {user.username}
-            </Text>
-            <HStack space="md" className="items-center">
-              <HStack className="items-center" space="xs">
-                <Icon size="xs" as={Calendar} />
-                <Text size="xs">{user.birthday}</Text>
-              </HStack>
-              <HStack className="items-center" space="xs">
-                <Icon size="xs" as={ScanFace} />
-                <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
-              </HStack>
-              <HStack className="items-center" space="xs">
-                <Icon size="xs" as={MapPin} />
-                <Text size="xs">重庆｜南岸区</Text>
-              </HStack>
-            </HStack>
-            <Text size="sm">{user?.bio || '个人签名'}</Text>
-          </VStack>
-          <HStack
-            space="md"
-            className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
-            <VStack className="items-center justify-center">
-              <Text size="xl" bold={true}>
-                {user.posts.count}
-              </Text>
-              <Text size="sm">帖子</Text>
-            </VStack>
-            <VStack className="items-center justify-center">
-              <Text size="xl" bold={true}>
-                {followingsCount}
-              </Text>
-              <Text size="sm">关注</Text>
-            </VStack>
-            <VStack className="items-center justify-center">
-              <Text size="xl" bold={true}>
-                {followersCount}
-              </Text>
-              <Text size="sm">被关注</Text>
-            </VStack>
-          </HStack>
-          <SegmentedControl
-            values={['我的帖子', '照片墙']}
-            selectedIndex={selectedIndex}
-            onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
+    <>
+      {user ? (
+        <SafeAreaView className="flex-1">
+          <Stack.Screen
+            options={{
+              title: '我的',
+            }}
           />
-          {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
-        </VStack>
-      </ScrollView>
-    </SafeAreaView>
+          <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+            <VStack className="flex-1" space="xl">
+              <HStack className="items-center justify-between">
+                <Avatar size="lg">
+                  <AvatarImage
+                    source={{
+                      uri: `${apiServerURL}/${user.avatar?.formats.thumbnail.url}`,
+                    }}
+                  />
+                </Avatar>
+                <HStack className="items-center" space="sm">
+                  <Button
+                    size="sm"
+                    className="rounded-3xl px-6"
+                    onPress={() => {
+                      router.push('/user-edit');
+                    }}>
+                    <ButtonText>编辑</ButtonText>
+                    <ButtonIcon as={EditIcon} />
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="rounded-3xl px-6"
+                    onPress={() => {
+                      router.push('/setting');
+                    }}>
+                    <ButtonText>设置</ButtonText>
+                    <ButtonIcon as={Settings2} />
+                  </Button>
+                </HStack>
+              </HStack>
+              <VStack space="md">
+                <Text size="3xl" bold={true}>
+                  {user.username}
+                </Text>
+                <HStack space="md" className="items-center">
+                  <HStack className="items-center" space="xs">
+                    <Icon size="xs" as={Calendar} />
+                    <Text size="xs">{user.birthday}</Text>
+                  </HStack>
+                  <HStack className="items-center" space="xs">
+                    <Icon size="xs" as={ScanFace} />
+                    <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
+                  </HStack>
+                  <HStack className="items-center" space="xs">
+                    <Icon size="xs" as={MapPin} />
+                    <Text size="xs">重庆｜南岸区</Text>
+                  </HStack>
+                </HStack>
+                <Text size="sm">{user?.bio || '个人签名'}</Text>
+              </VStack>
+              <HStack
+                space="md"
+                className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
+                <VStack className="items-center justify-center">
+                  <Text size="xl" bold={true}>
+                    {user.posts.count}
+                  </Text>
+                  <Text size="sm">帖子</Text>
+                </VStack>
+                <VStack className="items-center justify-center">
+                  <Text size="xl" bold={true}>
+                    {followingsCount}
+                  </Text>
+                  <Text size="sm">关注</Text>
+                </VStack>
+                <VStack className="items-center justify-center">
+                  <Text size="xl" bold={true}>
+                    {followersCount}
+                  </Text>
+                  <Text size="sm">被关注</Text>
+                </VStack>
+              </HStack>
+              <SegmentedControl
+                values={['我的帖子', '照片墙']}
+                selectedIndex={selectedIndex}
+                onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
+              />
+              {selectedIndex === 0 ? <PostListView /> : <PhotoListView />}
+            </VStack>
+          </ScrollView>
+        </SafeAreaView>
+      ) : (
+        <Redirect href="/anonymous" />
+      )}
+    </>
   );
 };
 

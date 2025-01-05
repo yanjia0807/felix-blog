@@ -15,7 +15,7 @@ import { createMessage, fetchMessages, updateChatStatus } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Button, ButtonIcon } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FormControl } from '@/components/ui/form-control';
 import { Heading } from '@/components/ui/heading';
@@ -59,7 +59,7 @@ const Chat = () => {
       });
     },
     onError(error, variables, context) {
-      toast.error(error.message);
+      toast.error({ description: error.message });
     },
     onSettled(data, error, variables, context) {
       reset();
@@ -92,7 +92,7 @@ const Chat = () => {
       });
     },
     onError(error, variables, context) {
-      toast.error(error.message);
+      toast.error({ description: error.message });
     },
   });
 
@@ -154,11 +154,13 @@ const Chat = () => {
   const renderHeaderLeft = () => (
     <HStack className="items-center" space="xl">
       <Button
+        action="secondary"
         variant="link"
         onPress={() => {
-          router.dismissAll();
+          router.back();
         }}>
         <ButtonIcon as={ChevronLeft} />
+        <ButtonText>返回</ButtonText>
       </Button>
       <HStack className="items-center" space="sm">
         <Avatar size="md">
@@ -244,7 +246,7 @@ const Chat = () => {
         }}
       />
       <KeyboardAvoidingView className="flex-1" behavior={'padding'} keyboardVerticalOffset={100}>
-        <VStack className="flex-1 justify-between px-6">
+        <VStack className="flex-1 justify-between px-4">
           <FlatList
             data={messages}
             inverted={true}

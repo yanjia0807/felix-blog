@@ -4,7 +4,7 @@ import {
   BottomSheetFooter,
   BottomSheetModal,
 } from '@gorhom/bottom-sheet';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import { Locate } from 'lucide-react-native';
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -26,7 +26,9 @@ export const DistrictInput = ({ value, onChange, placeholder }: any) => {
     bottomSheetRef.current?.present();
   };
 
-  const displayValue = value ? `${value.provinceName} ${value.cityName} ${value.districtName}` : '';
+  const displayValue = value
+    ? `${value.provinceName || ''} ${value.cityName || ''} ${value.districtName || ''}`
+    : '';
 
   return (
     <>
@@ -40,7 +42,7 @@ export const DistrictInput = ({ value, onChange, placeholder }: any) => {
           <InputIcon as={Locate}></InputIcon>
         </InputSlot>
       </Input>
-      <DistrictPicker ref={bottomSheetRef} onChange={onChange} value={value} />
+      <DistrictPicker ref={bottomSheetRef} onChange={(val: any) => onChange(val)} value={value} />
     </>
   );
 };
@@ -51,14 +53,44 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
   const [keywords, setKeywords] = useState('');
   const [district, setDistrict] = useState<any>();
   const [currentLevel, setCurrentLevel] = useState<string>('province');
-  const currentDistrict = _.find(district, { level: currentLevel });
+  const levelLabels = [
+    {
+      level: 'province',
+      label: '选择省份/地区',
+    },
+    {
+      level: 'city',
+      label: '选择城市',
+    },
+    {
+      level: 'district',
+      label: '选择区/县',
+    },
+  ];
+  const queryClient = useQueryClient();
 
   const { data, error, isLoading, isSuccess, isError, refetch } = useQuery({
     queryKey: ['district', keywords],
     queryFn: () => fetchDistrict({ keywords }),
   });
 
-  const listData = isSuccess ? data.districts[0].districts : [];
+  let level,
+    currentLabel: any = '',
+    listData: any = [];
+
+  if (isSuccess) {
+    level = data.districts[0].districts[0]?.level;
+    if (level !== 'street') {
+      currentLabel = _.find(levelLabels, { level: currentLevel });
+      listData = data.districts[0].districts;
+    } else {
+      const cacheData: any = queryClient.getQueryData([
+        'district',
+        _.find(district, { level: 'province' }).adcode,
+      ]);
+      listData = cacheData?.districts[0].districts;
+    }
+  }
 
   const onListItemPressed = ({ item }: any) => {
     setDistrict((oldValue: any) => {
@@ -98,8 +130,9 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
 
   const renderItemSeparator = (props: any) => <Divider {...props} className="my-2" />;
 
-  const onCloseBtnPressed = () => {
+  const onClearBtnPressed = () => {
     ref.current?.close();
+    onChange(null);
   };
 
   const onConfirmBtnPressed = () => {
@@ -114,7 +147,8 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
     const districtName = districtData?.name;
 
     onChange({
-      ...value,
+      id: value?.id,
+      documentId: value?.documentId,
       provinceCode,
       provinceName,
       cityCode,
@@ -141,8 +175,8 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
     return (
       <BottomSheetFooter {...props} bottomInset={insets.bottom}>
         <HStack className="items-center justify-around bg-background-50 p-2">
-          <Button className="flex-1" variant="link" onPress={() => onCloseBtnPressed()}>
-            <ButtonText>取消</ButtonText>
+          <Button className="flex-1" variant="link" onPress={() => onClearBtnPressed()}>
+            <ButtonText>清除</ButtonText>
           </Button>
           <Divider orientation="vertical"></Divider>
           <Button className="flex-1" onPress={() => onConfirmBtnPressed()} action="positive">
@@ -158,19 +192,16 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
       const { provinceCode, provinceName, cityCode, cityName, districtCode, districtName } = value;
       const val = [
         {
-          title: '选择省份/地区',
           level: 'province',
           adcode: provinceCode,
           name: provinceName,
         },
         {
-          title: '选择城市',
           level: 'city',
           adcode: cityCode,
           name: cityName,
         },
         {
-          title: '选择区/县',
           level: 'district',
           adcode: districtCode,
           name: districtName,
@@ -180,19 +211,16 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
     } else {
       const val = [
         {
-          title: '选择省份/地区',
           level: 'province',
           adcode: null,
           name: null,
         },
         {
-          title: '选择城市',
           level: 'city',
           adcode: null,
           name: null,
         },
         {
-          title: '选择区/县',
           level: 'district',
           adcode: null,
           name: null,
@@ -223,11 +251,11 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
               </Pressable>
             ))}
           </HStack>
-          <Text bold={true}>{currentDistrict?.title}</Text>
+          <Text bold={true}>{currentLabel?.label}</Text>
           <BottomSheetFlatList
             contentContainerClassName="p-4 bg-background-100"
             data={listData}
-            keyExtractor={(item: any) => item.adcode}
+            keyExtractor={(item: any) => `${item.name}_${item.adcode}`}
             renderItem={renderItem}
             ItemSeparatorComponent={renderItemSeparator}
             showsVerticalScrollIndicator={false}

@@ -20,9 +20,6 @@ import { VStack } from '@/components/ui/vstack';
 const ChatListHeader = () => {
   const { user }: any = useAuth();
   const router = useRouter();
-  if (!user) {
-    return <Redirect href="/anonymous" />;
-  }
 
   const onSearchUserBtnPressed = () => router.push('/search-user-list');
 
@@ -47,7 +44,6 @@ const ChatListHeader = () => {
 
 const ChatList = () => {
   const { user }: any = useAuth();
-  const queryClient = useQueryClient();
   const { messages: newMessages } = useSocket();
   const router = useRouter();
 
@@ -168,44 +164,42 @@ const ChatList = () => {
 
   const renderItemSeparator = (props: any) => <Divider {...props} className="my-2" />;
 
-  if (!user) {
-    return <Redirect href="/anonymous" />;
-  }
-
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
       {user ? (
-        <SafeAreaView className="flex-1">
-          <VStack className="flex-1 p-6">
-            <FlatList
-              data={chats}
-              ListHeaderComponent={renderListHeader}
-              renderItem={renderItem}
-              ItemSeparatorComponent={renderItemSeparator}
-              showsVerticalScrollIndicator={false}
-              onEndReached={() => {
-                if (hasNextPage && !isFetchingNextPage) {
-                  fetchNextPage();
+        <>
+          <Stack.Screen
+            options={{
+              headerShown: false,
+            }}
+          />
+          <SafeAreaView className="flex-1">
+            <VStack className="flex-1 px-4">
+              <FlatList
+                data={chats}
+                ListHeaderComponent={renderListHeader}
+                renderItem={renderItem}
+                ItemSeparatorComponent={renderItemSeparator}
+                showsVerticalScrollIndicator={false}
+                onEndReached={() => {
+                  if (hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                  }
+                }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isLoading}
+                    onRefresh={() => {
+                      if (!isLoading) {
+                        refetch();
+                      }
+                    }}
+                  />
                 }
-              }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isLoading}
-                  onRefresh={() => {
-                    if (!isLoading) {
-                      refetch();
-                    }
-                  }}
-                />
-              }
-            />
-          </VStack>
-        </SafeAreaView>
+              />
+            </VStack>
+          </SafeAreaView>
+        </>
       ) : (
         <Redirect href="/anonymous" />
       )}

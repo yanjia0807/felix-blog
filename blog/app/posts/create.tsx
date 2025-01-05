@@ -9,11 +9,10 @@ import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z, ZodType } from 'zod';
-import { upload } from '@/api/file';
+import { uploadFiles } from '@/api/file';
 import { createPost, PostData } from '@/api/post';
 import { useAuth } from '@/components/auth-context';
-import { ImageGrid } from '@/components/image-grid';
-import { ImageInput } from '@/components/image-input';
+import { ImageGrid, ImageInput } from '@/components/image-input';
 import { PositionInput } from '@/components/position-input';
 import { RecordingInput } from '@/components/recording-input';
 import { RecordingList } from '@/components/recording-list';
@@ -55,12 +54,13 @@ const PostCreate = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      toast.success('保存成功');
+      toast.success({
+        description: '保存成功',
+      });
       router.dismiss();
     },
     onError(error, variables, context) {
-      toast.error(error.message);
-      console.error(error);
+      toast.error({ description: error.message });
     },
   });
   const queryClient = useQueryClient();
@@ -93,7 +93,7 @@ const PostCreate = () => {
     let fileIds: string[] = [];
 
     if (images.length > 0) {
-      const ids = await upload(_.map(images, (item: any) => item.uri));
+      const ids = await uploadFiles(_.map(images, (item: any) => item.uri));
       let coverIndex = _.findIndex(images, (item: any) => item.cover);
       if (coverIndex < 0) coverIndex = 0;
       fileIds = _.concat(fileIds, ids);
@@ -101,7 +101,7 @@ const PostCreate = () => {
     }
 
     if (recordings.length > 0) {
-      const ids = await upload(_.map(recordings, (item: any) => item._uri));
+      const ids = await uploadFiles(_.map(recordings, (item: any) => item._uri));
       fileIds = _.concat(fileIds, ids);
     }
 
@@ -132,17 +132,20 @@ const PostCreate = () => {
   };
 
   const onImageChange = async (images: any) => {
-    setImages((pre: any) => _.unionBy(pre, images, 'assetId'));
+    const uris = _.isArray(images)
+      ? images.map((item) => ({ uri: item.uri }))
+      : [{ uri: images.uri }];
+    setImages((pre: any) => _.unionBy(pre, uris, 'uri'));
   };
 
-  const onImageRemove = async (assetId: string) => {
-    setImages((pre: any) => _.filter(pre, (item) => item.assetId !== assetId));
+  const onImageRemove = async (uri: string) => {
+    setImages((pre: any) => _.filter(pre, (item) => item.uri !== uri));
   };
 
-  const onSetCover = async (assetId: string) => {
+  const onSetCover = async (uri: string) => {
     setImages((pre: any) =>
       _.map(pre, (item) => {
-        if (item.assetId === assetId) {
+        if (item.uri === uri) {
           return { ...item, cover: true };
         } else {
           return { ...item, cover: false };
@@ -178,11 +181,13 @@ const PostCreate = () => {
 
   const renderHeaderLeft = () => (
     <Button
+      action="secondary"
       variant="link"
       onPress={() => {
-        router.dismiss();
+        router.back();
       }}>
       <ButtonIcon as={ChevronLeft} />
+      <ButtonText>返回</ButtonText>
     </Button>
   );
 
@@ -276,7 +281,7 @@ const PostCreate = () => {
               <ImageGrid
                 images={images}
                 onOpenGallery={onOpenGallery}
-                onImageRemove={onImageRemove}
+                onRemove={onImageRemove}
                 onSetCover={onSetCover}
               />
             )}

@@ -1,7 +1,6 @@
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import {
-  Bell,
   ChevronLeft,
   ChevronRightIcon,
   Info,
@@ -27,34 +26,13 @@ import useCustomToast from '@/components/use-custom-toast';
 
 const SettingScreen = () => {
   const toast = useCustomToast();
-  const { user, forgetPasswordMutation, logoutMutation } = useAuth();
-  const { mutate } = forgetPasswordMutation;
-  const passwordToastId = _.random(0, 10000).toString();
+  const { user, logoutMutation } = useAuth();
   const logoutToastId = _.random(0, 10000).toString();
   const { theme, updateTheme } = usePreferences();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(theme === 'dark');
 
-  const onResetPasswordConfirm = () => {
-    const data = { email: user.email };
-    mutate(data, {
-      onSuccess: () => {
-        toast.close(passwordToastId);
-        toast.success({ description: '发送重置密码邮件成功' });
-      },
-      onError: (error: any) => {
-        toast.error({ description: '发送重置密码邮件失败' });
-        console.error(error);
-      },
-    });
-  };
-
-  const onResetPasswordBtnPress = () => {
-    toast.confirm({
-      toastId: passwordToastId,
-      title: '发送重置密码邮件',
-      description: `我们会向您的注册邮箱[${user.email}]发送一封重置密码邮件，请用手机打开此链接进行密码重置`,
-      onConfirm: onResetPasswordConfirm,
-    });
+  const onChangePasswordBtnPress = () => {
+    router.push('/change-password');
   };
 
   const onLogoutBtnPress = () => {
@@ -80,11 +58,13 @@ const SettingScreen = () => {
 
   const renderHeaderLeft = () => (
     <Button
+      action="secondary"
       variant="link"
       onPress={() => {
-        router.dismiss();
+        router.back();
       }}>
       <ButtonIcon as={ChevronLeft} />
+      <ButtonText>返回</ButtonText>
     </Button>
   );
 
@@ -99,17 +79,9 @@ const SettingScreen = () => {
       />
       <SafeAreaView className="flex-1">
         {user ? (
-          <VStack className="flex-1 p-6" space="xl">
+          <VStack className="flex-1 px-4" space="xl">
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
               <VStack className="flex-1">
-                <HStack className="h-14 items-center justify-between p-3">
-                  <HStack className="items-center" space="md">
-                    <Icon as={Bell} size="lg" />
-                    <Text>通知</Text>
-                  </HStack>
-                  <Switch size="sm" />
-                </HStack>
-                <Divider />
                 <HStack className="h-14 items-center justify-between p-3">
                   <HStack className="items-center" space="md">
                     <Icon as={Moon} size="lg" />
@@ -118,11 +90,11 @@ const SettingScreen = () => {
                   <Switch size="sm" value={isDarkMode} onValueChange={onThemeSwitch} />
                 </HStack>
                 <Divider />
-                <Pressable onPress={() => onResetPasswordBtnPress()}>
+                <Pressable onPress={() => onChangePasswordBtnPress()}>
                   <HStack className="h-14 items-center justify-between p-3">
                     <HStack className="items-center" space="md">
                       <Icon as={KeyRound} size="lg" />
-                      <Text>设置密码</Text>
+                      <Text>修改密码</Text>
                     </HStack>
                     <Icon as={ChevronRightIcon} size="lg" />
                   </HStack>

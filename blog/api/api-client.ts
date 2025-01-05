@@ -6,10 +6,6 @@ export const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER_URL;
 const config = {
   baseURL: `${apiServerURL}/api`,
   timeout: 300000,
-  headers: {
-    'Content-Type': 'application/json',
-    'access-control-allow-origin': '*',
-  },
 };
 
 const apiClient = axios.create(config);
@@ -50,17 +46,25 @@ apiClient.interceptors.response.use(
       `[api response] ${response.config.method?.toUpperCase()} ${response.config.url} - status: ${response.status}`,
       {
         data: response.data,
-        headers: response.headers,
       },
     );
     return response.data;
   },
   (error: Error) => {
     if (axios.isAxiosError(error)) {
-      console.error(`[api axios error]`, error.response?.data.error || error);
-      return Promise.reject(error.response?.data.error || error);
+      if (error.response) {
+        console.log('@@', JSON.stringify(error));
+        console.error(
+          `[api error] ${error.response.config.method?.toUpperCase()} ${error.response.config.url} - status: ${error.response.status}`,
+          error.response?.data.error || error,
+        );
+        return Promise.reject(error.response?.data.error || error);
+      } else {
+        console.error('[api error]', error);
+        return Promise.reject(error);
+      }
     } else {
-      console.error('[api error]', error.message);
+      console.error('[api error]', error);
       return Promise.reject(error);
     }
   },

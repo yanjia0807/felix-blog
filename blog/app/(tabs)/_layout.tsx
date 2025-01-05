@@ -1,4 +1,3 @@
-import { usePathname } from 'expo-router';
 import { Tabs, TabList, TabTrigger, TabSlot, TabTriggerSlotProps } from 'expo-router/ui';
 import { BookOpen, House, MessageSquare, User2 } from 'lucide-react-native';
 import React, { forwardRef, Ref } from 'react';

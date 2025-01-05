@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -7,7 +7,7 @@ import { MapPin } from 'lucide-react-native';
 import moment from 'moment';
 import React from 'react';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
-import { apiServerURL, fetchFeatures, fetchRecommendPosts } from '@/api';
+import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchRecentAuthors } from '@/api';
 import MainHeader from '@/components/main-header';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
@@ -18,84 +18,6 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-
-const users = [
-  {
-    id: 1,
-    name: 'Alice',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-  },
-  {
-    id: 2,
-    name: 'Bob',
-    avatar: 'https://i.pravatar.cc/150?img=2',
-  },
-  {
-    id: 3,
-    name: 'Charlie',
-    avatar: 'https://i.pravatar.cc/150?img=3',
-  },
-  {
-    id: 4,
-    name: 'David',
-    avatar: 'https://i.pravatar.cc/150?img=4',
-  },
-  {
-    id: 5,
-    name: 'Eve',
-    avatar: 'https://i.pravatar.cc/150?img=5',
-  },
-  {
-    id: 6,
-    name: 'Frank',
-    avatar: 'https://i.pravatar.cc/150?img=6',
-  },
-  {
-    id: 7,
-    name: 'Grace',
-    avatar: 'https://i.pravatar.cc/150?img=7',
-  },
-  {
-    id: 8,
-    name: 'Hannah',
-    avatar: 'https://i.pravatar.cc/150?img=8',
-  },
-  {
-    id: 9,
-    name: 'Ivan',
-    avatar: 'https://i.pravatar.cc/150?img=9',
-  },
-  {
-    id: 10,
-    name: 'Jack',
-    avatar: 'https://i.pravatar.cc/150?img=10',
-  },
-  {
-    id: 11,
-    name: 'Kim',
-    avatar: 'https://i.pravatar.cc/150?img=11',
-  },
-  {
-    id: 12,
-    name: 'Laura',
-    avatar: 'https://i.pravatar.cc/150?img=12',
-  },
-  {
-    id: 13,
-    name: 'Mike',
-    avatar: 'https://i.pravatar.cc/150?img=13',
-  },
-  {
-    id: 14,
-    name: 'Nina',
-    avatar: 'https://i.pravatar.cc/150?img=14',
-  },
-  {
-    id: 15,
-    name: 'Oscar',
-    avatar: 'https://i.pravatar.cc/150?img=15',
-  },
-];
 
 const ListHeader = () => {
   const {
@@ -136,6 +58,11 @@ const ListHeader = () => {
     (result: any, item: any) => [...result, ...item.data],
     [],
   );
+
+  const { data: recentAuthors, isLoading: isLoadingRecentAuthors } = useQuery({
+    queryKey: ['authors', 'recent'],
+    queryFn: fetchRecentAuthors,
+  });
 
   const onFeatureItemPressed = ({ post: { documentId } }: any) => {
     router.push({
@@ -178,7 +105,7 @@ const ListHeader = () => {
                     <AvatarFallbackText>{item.post.author.username}</AvatarFallbackText>
                     <AvatarImage
                       source={{
-                        uri: `${apiServerURL}/${item.post.author.avatar.formats.thumbnail.url}`,
+                        uri: `${apiServerURL}/${item.post.author.avatar?.formats.thumbnail.url}`,
                       }}
                     />
                   </Avatar>
@@ -194,18 +121,18 @@ const ListHeader = () => {
     );
   };
 
-  const renderUserItem = ({ item }: any) => {
+  const renderRecentAuthorItem = ({ item }: any) => {
     return (
       <VStack className="items-center" space="sm">
         <Avatar key={item.id} size="md" className="mx-4">
-          <AvatarFallbackText>{item.name}</AvatarFallbackText>
+          <AvatarFallbackText>{item.username}</AvatarFallbackText>
           <AvatarImage
             source={{
-              uri: item.avatar,
+              uri: `${apiServerURL}/${item.formats?.thumbnail.url}`,
             }}
           />
         </Avatar>
-        <Text size="sm">{item.name}</Text>
+        <Text size="sm">{item.username}</Text>
       </VStack>
     );
   };
@@ -232,8 +159,9 @@ const ListHeader = () => {
             </Text>
           </HStack>
           <FlatList
-            data={users}
-            renderItem={renderUserItem}
+            data={recentAuthors}
+            loading={isLoadingRecentAuthors}
+            renderItem={renderRecentAuthorItem}
             horizontal={true}
             showsHorizontalScrollIndicator={false}
           />
@@ -297,7 +225,7 @@ const HomeScreen = () => {
                   <AvatarFallbackText>{item.author.username}</AvatarFallbackText>
                   <AvatarImage
                     source={{
-                      uri: `${apiServerURL}/${item.author.avatar.formats.thumbnail.url}`,
+                      uri: `${apiServerURL}/${item.author.avatar?.formats.thumbnail.url}`,
                     }}
                   />
                 </Avatar>
@@ -374,7 +302,7 @@ const HomeScreen = () => {
         {isLoading && (
           <Spinner size="small" className="bg-background absolute bottom-0 left-0 right-0 top-0" />
         )}
-        <VStack className="flex-1 px-6">
+        <VStack className="flex-1 px-4">
           <FlatList
             data={recomments}
             ListHeaderComponent={renderListHeader}

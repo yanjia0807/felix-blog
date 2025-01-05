@@ -11,6 +11,10 @@ export default ({ env }) => ({
           pass: env("SMTP_PASS"),
         },
       },
+      settings: {
+        defaultFrom: env('SMTP_USER'),
+        defaultReplyTo: env('SMTP_USER'),
+      },
     },
   },
   upload: {

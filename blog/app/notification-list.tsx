@@ -3,13 +3,13 @@ import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
 import moment from 'moment';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { apiServerURL, fetchNotifications, updateNotificationState } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FlatList } from '@/components/ui/flat-list';
 import { HStack } from '@/components/ui/hstack';
@@ -91,11 +91,13 @@ const NotificationList = () => {
 
   const renderHeaderLeft = () => (
     <Button
+      action="secondary"
       variant="link"
       onPress={() => {
         router.back();
       }}>
       <ButtonIcon as={ChevronLeft} />
+      <ButtonText>返回</ButtonText>
     </Button>
   );
 
@@ -165,7 +167,7 @@ const NotificationList = () => {
         }}
       />
       <SafeAreaView className="flex-1">
-        <VStack className="flex-1 px-6">
+        <VStack className="flex-1 px-4">
           <FlatList
             data={notifications}
             renderItem={renderItem}

@@ -1,13 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Stack, router } from 'expo-router';
-import {
-  CameraIcon,
-  ChevronDownIcon,
-  AlertCircle,
-  AlertCircleIcon,
-  ChevronLeft,
-} from 'lucide-react-native';
+import { ChevronDownIcon, AlertCircle, AlertCircleIcon, ChevronLeft } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -17,7 +11,7 @@ import { updateUser } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { DateInput } from '@/components/date-input';
 import { DistrictInput } from '@/components/district-input';
-import { Avatar, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
+import { AvatarImageInput } from '@/components/image-input';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { Center } from '@/components/ui/center';
@@ -30,7 +24,6 @@ import {
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import {
@@ -81,17 +74,8 @@ const UserEditScreen = () => {
         message: '电话号码格式不正确',
       })
       .transform((val) => (val === '' ? null : val)),
-    district: z
-      .union([z.null(), z.object({})])
-      .nullable()
-      .refine(
-        (val) => {
-          return val === null || (typeof val === 'object' && !Array.isArray(val));
-        },
-        {
-          message: '所在区域格式不正确',
-        },
-      ),
+    district: z.any(),
+    avatar: z.any(),
   });
 
   const {
@@ -99,6 +83,7 @@ const UserEditScreen = () => {
     formState: { errors },
     handleSubmit,
     reset,
+    getValues,
   } = useForm<UserSchemaDetails>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -107,11 +92,13 @@ const UserEditScreen = () => {
       birthday: user.birthday ? new Date(user.birthday) : null,
       phoneNumber: user.phoneNumber,
       district: user.district,
+      avatar: user.avatar,
     },
   });
+
   const { isSuccess, isError, isPending, mutate } = useMutation({
-    mutationFn: ({ id, data }: any) => {
-      return updateUser({ id, data });
+    mutationFn: ({ user, data }: any) => {
+      return updateUser({ user, data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
@@ -119,9 +106,15 @@ const UserEditScreen = () => {
       router.navigate('/profile');
     },
     onError(error, variables, context) {
-      toast.error(error.message);
+      toast.error({ description: error.message });
     },
   });
+
+  const renderAvatar = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.avatar}>
+      <AvatarImageInput onChange={onChange} value={value} />
+    </FormControl>
+  );
 
   const renderBio = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.bio}>
@@ -222,19 +215,22 @@ const UserEditScreen = () => {
   );
 
   const onSubmit = (data: UserSchemaDetails) => {
+    debugger;
     mutate({
-      id: user.id,
+      user,
       data,
     });
   };
 
   const renderHeaderLeft = () => (
     <Button
+      action="secondary"
       variant="link"
       onPress={() => {
         router.back();
       }}>
       <ButtonIcon as={ChevronLeft} />
+      <ButtonText>返回</ButtonText>
     </Button>
   );
 
@@ -251,17 +247,10 @@ const UserEditScreen = () => {
         extraKeyboardSpace={-1 * insets.bottom}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
-        <VStack className="flex-1 p-6" space="lg">
-          <Box className="h-36">
-            <Center className="absolute top-2 w-full">
-              <Avatar size="2xl">
-                <AvatarImage source={require('@/assets/images/profile/image.png')} />
-                <AvatarBadge className="items-center justify-center">
-                  <Icon as={CameraIcon} />
-                </AvatarBadge>
-              </Avatar>
-            </Center>
-          </Box>
+        <VStack className="flex-1 px-4" space="lg">
+          <HStack className="h-36 items-center justify-center p-10">
+            <Controller name="avatar" control={control} render={renderAvatar} />
+          </HStack>
           <VStack className="flex-1" space="lg">
             <HStack
               className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2 px-4"

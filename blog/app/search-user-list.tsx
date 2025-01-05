@@ -71,19 +71,17 @@ const SearchUserList = () => {
     [],
   );
 
-  const renderHeaderLeft = () => {
-    return (
-      <Button
-        size="md"
-        action="secondary"
-        variant="link"
-        onPress={() => {
-          router.back();
-        }}>
-        <ButtonIcon as={ChevronLeft} />
-      </Button>
-    );
-  };
+  const renderHeaderLeft = () => (
+    <Button
+      action="secondary"
+      variant="link"
+      onPress={() => {
+        router.back();
+      }}>
+      <ButtonIcon as={ChevronLeft} />
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
 
   const onSubmit = (data: any) => {
     const filters = {
@@ -197,7 +195,7 @@ const SearchUserList = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <VStack className="flex-1 px-6">
+      <VStack className="flex-1 px-4">
         <FlatList
           data={users}
           ListHeaderComponent={renderListHeader}

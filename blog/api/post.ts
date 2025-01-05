@@ -200,3 +200,8 @@ export const updatePostLiked = async ({ documentId, postData }: UpdatePostLikedD
     throw new Error(error.message);
   }
 };
+
+export const fetchRecentAuthors = async () => {
+  const res = await apiClient.get(`/posts/recent-authors`);
+  return res.data;
+};

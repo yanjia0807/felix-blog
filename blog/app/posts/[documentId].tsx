@@ -10,13 +10,13 @@ import { apiServerURL } from '@/api';
 import { fetchPost } from '@/api/post';
 import AuthorInfo from '@/components/author-info';
 import { CommentInput } from '@/components/comment-input';
-import { ImageGrid } from '@/components/image-grid';
+import { ImageGrid } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import { RecordingList } from '@/components/recording-list';
 import { ShareButton } from '@/components/share-button';
 import { TagList } from '@/components/tag-list';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
@@ -86,11 +86,13 @@ const PostDetail = () => {
 
   const renderHeaderLeft = () => (
     <Button
+      action="secondary"
       variant="link"
       onPress={() => {
         router.back();
       }}>
       <ButtonIcon as={ChevronLeft} />
+      <ButtonText>返回</ButtonText>
     </Button>
   );
 

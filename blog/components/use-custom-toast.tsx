@@ -121,19 +121,19 @@ const useCustomToast = () => {
     }
   };
 
-  const success = ({ toastId, title = '成功', description, ...props }: any) => {
+  const success = ({ toastId, title = '操作成功', description, ...props }: any) => {
     showAlertToast({ toastId, title, description, action: 'success', ...props });
   };
 
-  const info = ({ toastId, title = '提示', description, ...props }: any) => {
+  const info = ({ toastId, title = '操作提示', description, ...props }: any) => {
     showAlertToast({ toastId, title, description, action: 'info', ...props });
   };
 
-  const error = ({ toastId, title = '失败', description, ...props }: any) => {
+  const error = ({ toastId, title = '操作失败', description, ...props }: any) => {
     showAlertToast({ toastId, title, description, action: 'error', ...props });
   };
 
-  const confirm = ({ toastId, title = '确认', description, onConfirm, props }: any) => {
+  const confirm = ({ toastId, title = '请确认', description, onConfirm, props }: any) => {
     const id = toastId || _.random(0, 10000).toString();
     if (!toast.isActive(id)) {
       toast.show({

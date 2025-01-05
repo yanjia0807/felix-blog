@@ -1,10 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-context';
+import AuthHeader from '@/components/auth-header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -19,29 +21,35 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-type ForgetPasswordSchemaDetails = z.infer<typeof forgetPasswordSchema>;
+type SendOtpSchemaDetails = z.infer<typeof sendOtpSchema>;
 
-const forgetPasswordSchema = z.object({
-  email: z.string({
-    required_error: '邮箱地址是必填项',
-  }),
+const sendOtpSchema = z.object({
+  email: z
+    .string({
+      required_error: '邮箱地址是必填项',
+    })
+    .regex(
+      /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/i,
+      '邮箱地址格式不正确',
+    ),
 });
 
-const ForgetPasswordScreen = () => {
+const SendOtp = () => {
   const toast = useCustomToast();
-  const { forgetPasswordMutation } = useAuth();
-  const { reset, error, mutate, isSuccess, isError, isPending } = forgetPasswordMutation;
+  const { sendOtpMutation } = useAuth();
+  const { reset, error, mutate, isSuccess, isError, isPending } = sendOtpMutation;
+  const { purpose }: any = useLocalSearchParams();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<ForgetPasswordSchemaDetails>({
-    resolver: zodResolver(forgetPasswordSchema),
+  } = useForm<SendOtpSchemaDetails>({
+    resolver: zodResolver(sendOtpSchema),
   });
 
   const renderEmail = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.email} size="lg">
+    <FormControl isInvalid={!!errors.email} size="md">
       <FormControlLabel>
         <FormControlLabelText>邮箱地址</FormControlLabelText>
       </FormControlLabel>
@@ -62,15 +70,31 @@ const ForgetPasswordScreen = () => {
     </FormControl>
   );
 
-  const onSubmit = (data: any) => {
+  const onSubmit = ({ email }: any) => {
+    const data = { email, purpose };
+
     mutate(data, {
       onSuccess: () => {
-        toast.success('发送重置密码邮件成功');
-        router.replace('/');
+        toast.success({
+          description: '验证码已发送',
+        });
+        if (purpose) {
+          router.replace({
+            pathname: '/otp-confirmation',
+            params: {
+              email,
+              purpose,
+            },
+          });
+        } else {
+          router.replace('/');
+        }
       },
       onError: (error: any) => {
-        toast.error(`发送重置密码邮件失败`);
-        console.error(error);
+        toast.error({
+          title: '发送失败',
+          description: error.message,
+        });
       },
     });
   };
@@ -79,37 +103,33 @@ const ForgetPasswordScreen = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '忘记密码',
+          headerShown: false,
         }}
       />
-      <VStack className="w-full flex-1 justify-between p-6">
-        <VStack className="flex-1">
-          <VStack space="lg">
+      <VStack className="flex-1 p-4">
+        <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
+          <AuthHeader title="发送验证码" />
+          <VStack space="md" className="mb-10">
             <Controller control={control} name="email" render={renderEmail} />
           </VStack>
-          <VStack className="mt-12">
-            <Button
-              className="rounded-2xl"
-              size="lg"
-              disabled={isPending}
-              onPress={handleSubmit(onSubmit)}>
-              <ButtonText>发送验证邮件</ButtonText>
+          <VStack>
+            <Button className="rounded" disabled={isPending} onPress={handleSubmit(onSubmit)}>
+              <ButtonText>发送</ButtonText>
               {isPending && <ButtonSpinner />}
             </Button>
             <Button
-              size="lg"
-              action="secondary"
               variant="link"
+              action="secondary"
               onPress={() => {
                 router.dismiss();
               }}>
               <ButtonText>取消</ButtonText>
             </Button>
           </VStack>
-        </VStack>
+        </KeyboardAwareScrollView>
       </VStack>
     </SafeAreaView>
   );
 };
 
-export default ForgetPasswordScreen;
+export default SendOtp;
