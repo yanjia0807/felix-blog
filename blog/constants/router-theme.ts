@@ -4,11 +4,11 @@ import { fonts } from '@react-navigation/native/src/theming/fonts';
 export const DefaultTheme: Theme = {
   dark: false,
   colors: {
-    primary: 'rgb(0, 122, 255)',
-    background: 'rgb(242, 242, 242)',
-    card: 'rgb(255, 255, 255)',
-    text: 'rgb(28, 28, 30)',
-    border: 'rgb(216, 216, 216)',
+    primary: '#68a67d',
+    background: '#F6F6F6',
+    card: '#F2F1F1',
+    text: '#262627',
+    border: '#E6E6E6',
     notification: 'rgb(255, 59, 48)',
   },
   fonts,
@@ -17,11 +17,11 @@ export const DefaultTheme: Theme = {
 export const DarkTheme: Theme = {
   dark: true,
   colors: {
-    primary: 'rgb(10, 132, 255)',
-    background: 'rgb(1, 1, 1)',
-    card: 'rgb(18, 18, 18)',
-    text: 'rgb(229, 229, 231)',
-    border: 'rgb(39, 39, 41)',
+    primary: '#348352',
+    background: '#272625',
+    card: '#414040',
+    text: '#F5F5F5',
+    border: 'rgb(65 65 65)',
     notification: 'rgb(255, 69, 58)',
   },
   fonts,

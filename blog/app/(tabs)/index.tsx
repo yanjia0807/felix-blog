@@ -171,7 +171,7 @@ const ListHeader = () => {
   );
 };
 
-const HomeScreen = () => {
+const Home = () => {
   const {
     data: recommentData,
     fetchNextPage,
@@ -297,11 +297,10 @@ const HomeScreen = () => {
   };
 
   return (
-    <>
-      <SafeAreaView className="flex-1">
-        {isLoading && (
-          <Spinner size="small" className="bg-background absolute bottom-0 left-0 right-0 top-0" />
-        )}
+    <SafeAreaView className="flex-1">
+      {isLoading ? (
+        <Spinner size="small" className="bg-background absolute bottom-0 left-0 right-0 top-0" />
+      ) : (
         <VStack className="flex-1 px-4">
           <FlatList
             data={recomments}
@@ -325,9 +324,9 @@ const HomeScreen = () => {
             }
           />
         </VStack>
-      </SafeAreaView>
-    </>
+      )}
+    </SafeAreaView>
   );
 };
 
-export default HomeScreen;
+export default Home;

@@ -96,13 +96,13 @@
     "react-native-gesture-handler": "~2.20.2",
     "react-native-keyboard-controller": "^1.14.5",
     "react-native-reanimated": "~3.16.1",
-    "react-native-safe-area-context": "4.12.0",
+    "react-native-safe-area-context": "^5.0.0",
     "react-native-screens": "~4.1.0",
-    "react-native-svg": "15.8.0",
+    "react-native-svg": "^15.2.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "socket.io-client": "^4.8.1",
-    "tailwindcss": "^3.4.16",
+    "tailwindcss": "^3.4.17",
     "zod": "^3.23.8"
   },
   "devDependencies": {

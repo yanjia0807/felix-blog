@@ -14,6 +14,7 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
@@ -174,30 +175,34 @@ const ChatList = () => {
             }}
           />
           <SafeAreaView className="flex-1">
-            <VStack className="flex-1 px-4">
-              <FlatList
-                data={chats}
-                ListHeaderComponent={renderListHeader}
-                renderItem={renderItem}
-                ItemSeparatorComponent={renderItemSeparator}
-                showsVerticalScrollIndicator={false}
-                onEndReached={() => {
-                  if (hasNextPage && !isFetchingNextPage) {
-                    fetchNextPage();
+            {isLoading ? (
+              <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />
+            ) : (
+              <VStack className="flex-1 px-4">
+                <FlatList
+                  data={chats}
+                  ListHeaderComponent={renderListHeader}
+                  renderItem={renderItem}
+                  ItemSeparatorComponent={renderItemSeparator}
+                  showsVerticalScrollIndicator={false}
+                  onEndReached={() => {
+                    if (hasNextPage && !isFetchingNextPage) {
+                      fetchNextPage();
+                    }
+                  }}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={isLoading}
+                      onRefresh={() => {
+                        if (!isLoading) {
+                          refetch();
+                        }
+                      }}
+                    />
                   }
-                }}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={isLoading}
-                    onRefresh={() => {
-                      if (!isLoading) {
-                        refetch();
-                      }
-                    }}
-                  />
-                }
-              />
-            </VStack>
+                />
+              </VStack>
+            )}
           </SafeAreaView>
         </>
       ) : (

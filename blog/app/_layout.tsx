@@ -15,6 +15,7 @@ import { PreferencesProvider, Theme } from '@/components/preferences-provider';
 import SocketProvider from '@/components/socket-context';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -78,7 +79,7 @@ export default function RootLayout() {
                   <BottomSheetModalProvider>
                     <SocketProvider>
                       <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="(tabs)" options={{}} />
+                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                         <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
                         <Stack.Screen name="+not-found" />
                       </Stack>

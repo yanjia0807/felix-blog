@@ -2,24 +2,25 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin, Search } from 'lucide-react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { fetchPosts, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
-import { CommentIcon, CommentInput } from '@/components/comment-input';
+import { CommentIcon } from '@/components/comment-input';
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Divider } from '@/components/ui/divider';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { Link, LinkText } from '@/components/ui/link';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
@@ -27,18 +28,23 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 const PostHeader = ({ tags }: any) => {
+  const [filters, setFilters] = useState<any>({
+    text: null,
+    tags: [],
+  });
+
   const renderTagsItem = ({ item }: any) => {
     return (
-      <Button action="secondary" className="mx-2">
-        <ButtonText>{item.name}</ButtonText>
-      </Button>
+      <Link className="mx-2 p-2">
+        <LinkText className="no-underline">{item.name}</LinkText>
+      </Link>
     );
   };
 
   return (
-    <VStack className="h-[180]">
+    <VStack className="mb-4">
       <MainHeader className="mb-6" />
-      <VStack className="flex-1" space="2xl">
+      <VStack className="flex-1" space="md">
         <HStack>
           <Input className="flex-1 bg-primary-100" variant="rounded">
             <InputField placeholder="搜索帖子..." />
@@ -47,7 +53,7 @@ const PostHeader = ({ tags }: any) => {
             </InputSlot>
           </Input>
         </HStack>
-        <HStack className="h-12 w-full">
+        <HStack className="items-center" space="md">
           <FlatList
             data={tags}
             renderItem={renderTagsItem}
@@ -55,6 +61,15 @@ const PostHeader = ({ tags }: any) => {
             keyExtractor={(item: any) => item.documentId}
             showsHorizontalScrollIndicator={false}
           />
+          <Divider orientation="vertical" />
+          <HStack space="sm">
+            <Link>
+              <LinkText>全部标签</LinkText>
+            </Link>
+            <Link>
+              <LinkText>清空</LinkText>
+            </Link>
+          </HStack>
         </HStack>
       </VStack>
     </VStack>
@@ -181,37 +196,43 @@ const PostList = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      {isLoading && <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />}
-      <VStack className="flex-1 px-4">
-        <FlatList
-          data={posts}
-          ListHeaderComponent={renderPostHeader}
-          renderItem={renderPostItem}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item: any) => item.documentId}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoadingPost}
-              onRefresh={() => {
-                if (!isLoading) {
-                  refetch();
+      {isLoading ? (
+        <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />
+      ) : (
+        <>
+          <VStack className="flex-1 px-4">
+            <FlatList
+              data={posts}
+              initialNumToRender={5}
+              ListHeaderComponent={renderPostHeader}
+              renderItem={renderPostItem}
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item: any) => item.documentId}
+              onEndReached={() => {
+                if (hasNextPage && !isFetchingNextPage) {
+                  fetchNextPage();
                 }
               }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isLoadingPost}
+                  onRefresh={() => {
+                    if (!isLoading) {
+                      refetch();
+                    }
+                  }}
+                />
+              }
             />
-          }
-        />
-      </VStack>
-      {user && (
-        <Fab size="md" placement="bottom right" onPress={() => onCreatePostButtonPressed()}>
-          <FabIcon as={AddIcon} />
-          <FabLabel>帖子</FabLabel>
-        </Fab>
+          </VStack>
+          {user && (
+            <Fab size="md" placement="bottom right" onPress={() => onCreatePostButtonPressed()}>
+              <FabIcon as={AddIcon} />
+              <FabLabel>帖子</FabLabel>
+            </Fab>
+          )}
+        </>
       )}
     </SafeAreaView>
   );
