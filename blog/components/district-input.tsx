@@ -6,7 +6,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Locate } from 'lucide-react-native';
+import { Locate, MapPin, Pin } from 'lucide-react-native';
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchDistrict } from '@/api';
@@ -39,7 +39,7 @@ export const DistrictInput = ({ value, onChange, placeholder }: any) => {
           onPress={() => onInputPressed()}
         />
         <InputSlot className="mr-2">
-          <InputIcon as={Locate}></InputIcon>
+          <InputIcon as={MapPin}></InputIcon>
         </InputSlot>
       </Input>
       <DistrictPicker ref={bottomSheetRef} onChange={(val: any) => onChange(val)} value={value} />

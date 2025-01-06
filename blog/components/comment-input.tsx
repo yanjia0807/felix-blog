@@ -44,6 +44,15 @@ const commentSchema = z.object({
   }),
 });
 
+export const CommentIcon = ({ count = 0 }: any) => {
+  return (
+    <HStack space="xs" className="items-center">
+      <Icon as={MessageSquare} />
+      <Text size="xs">{count}</Text>
+    </HStack>
+  );
+};
+
 export const CommentInput = ({ postDocumentId, count = 0 }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const onInputIconPressed = () => {
@@ -53,10 +62,7 @@ export const CommentInput = ({ postDocumentId, count = 0 }: any) => {
   return (
     <>
       <Pressable onPress={() => onInputIconPressed()}>
-        <HStack space="xs" className="items-center">
-          <Icon as={MessageSquare} />
-          <Text size="xs">{count}</Text>
-        </HStack>
+        <CommentIcon count={count} />
       </Pressable>
       <CommentSheet ref={bottomSheetRef} postDocumentId={postDocumentId} count={count} />
     </>

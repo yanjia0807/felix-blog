@@ -7,7 +7,7 @@ import { FlatList, RefreshControl } from 'react-native';
 import { fetchPosts, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
-import { CommentInput } from '@/components/comment-input';
+import { CommentIcon, CommentInput } from '@/components/comment-input';
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
 import PostMenuPopover from '@/components/post-menu-popover';
@@ -132,7 +132,7 @@ const PostList = () => {
             <HStack className="items-center justify-between">
               <HStack space="lg" className="flex-row items-center">
                 <LikeButton post={item} />
-                <CommentInput postDocumentId={item.documentId} count={item.comments.count} />
+                <CommentIcon count={item.comments.count} />
               </HStack>
               <HStack className="items-center">
                 {Array(5)
