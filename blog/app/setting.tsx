@@ -87,7 +87,7 @@ const SettingScreen = () => {
                     <Icon as={Moon} size="lg" />
                     <Text>暗模式</Text>
                   </HStack>
-                  <Switch size="sm" value={isDarkMode} onValueChange={onThemeSwitch} />
+                  <Switch size="md" value={isDarkMode} onValueChange={onThemeSwitch} />
                 </HStack>
                 <Divider />
                 <Pressable onPress={() => onChangePasswordBtnPress()}>

@@ -12,7 +12,7 @@ export default factories.createCoreService(modelId, {
     const userDocumentId = ctx.state?.user?.documentId;
     const { populate, filters, pagination, ...rest } = ctx.query;
     const { limit = 10, start = 0 } = pagination;
-
+    console.log("@@", filters)
     const [data, total]: any = await Promise.all([
       strapi.documents(modelId).findMany({
         start,
@@ -23,7 +23,7 @@ export default factories.createCoreService(modelId, {
           },
           ...populate,
         },
-        ...filters,
+        filters,
         ...rest,
       }),
       strapi.documents(modelId).count({ filters }),

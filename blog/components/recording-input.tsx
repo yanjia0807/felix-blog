@@ -1,8 +1,8 @@
 import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { format, intervalToDuration } from 'date-fns';
 import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw } from 'lucide-react-native';
-import moment from 'moment';
 import React, { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import Animated, {
@@ -70,6 +70,9 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: 
   const [durationMillis, setDurationMillis] = useState<number>(0);
   const snapPoints = useMemo(() => ['50%'], []);
   const insets = useSafeAreaInsets();
+
+  const duration = intervalToDuration({ start: 0, end: durationMillis });
+  const formattedTime = `${String(duration.minutes).padStart(2, '0')}:${String(duration.seconds).padStart(2, '0')}`;
 
   const stopRecording = useCallback(async () => {
     try {
@@ -272,7 +275,7 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: 
           <Divider />
         </VStack>
         <Heading size="4xl" className="self-center">
-          {moment.utc(durationMillis).format('mm:ss')}
+          {formattedTime}
         </Heading>
       </VStack>
     </BottomSheetModal>

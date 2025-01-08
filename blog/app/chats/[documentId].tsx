@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Ellipsis } from 'lucide-react-native';
-import moment from 'moment';
 import React, { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList } from 'react-native';
@@ -188,7 +188,7 @@ const Chat = () => {
   const renderSenderItem = ({ item }: any) => {
     return (
       <HStack className="items-center justify-between">
-        <Text size="sm">{moment(item.createdAt).format('YYYY-MM-DD hh:mm')}</Text>
+        <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
         <Card size="md" variant="elevated" className="m-3 w-2/3 rounded-md bg-primary-300 p-4">
           <Text>{item.content}</Text>
         </Card>
@@ -209,7 +209,7 @@ const Chat = () => {
             <Text>{item.content}</Text>
           </Card>
           <Text size="sm" className="flex-1">
-            {moment(item.createdAt).format('YYYY-MM-DD hh:mm')}
+            {format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}
           </Text>
         </HStack>
       </HStack>

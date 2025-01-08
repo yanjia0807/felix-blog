@@ -1,7 +1,8 @@
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
 import { Calendar } from 'lucide-react-native';
-import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -16,12 +17,22 @@ import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { VStack } from './ui/vstack';
 
 type MyComponentProps = {
+  placeholder: string;
   value: any;
   onChange: (value: any) => void;
   variant: string;
+  className?: any;
+  defaultDate?: any;
 };
 
-export const DateInput: React.FC<MyComponentProps> = ({ placeholder, onChange, value }: any) => {
+export const DateInput: React.FC<MyComponentProps> = ({
+  placeholder,
+  onChange,
+  value,
+  variant,
+  className,
+  defaultDate,
+}: any) => {
   const [date, setDate] = useState<Date | null>();
   const [displayValue, setDisplayValue] = useState<string>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -38,23 +49,23 @@ export const DateInput: React.FC<MyComponentProps> = ({ placeholder, onChange, v
 
   const onCommit = () => {
     onChange(date);
-    setDisplayValue(moment(date).format('YYYY-MM-DD'));
+    setDisplayValue(format(date as Date, 'yyyy-MM-dd'));
     setIsOpen(false);
   };
 
   useEffect(() => {
     if (value) {
       setDate(value);
-      setDisplayValue(moment(value).format('YYYY-MM-DD'));
+      setDisplayValue(format(value, 'yyyy-MM-dd'));
     } else {
-      setDate(new Date('1990-01-01'));
+      setDate(defaultDate || new Date('1990-01-01'));
       setDisplayValue('');
     }
   }, [value]);
 
   return (
     <>
-      <Input variant="rounded" isReadOnly={true}>
+      <Input variant={variant} isReadOnly={true} className={twMerge(className)}>
         <InputField
           placeholder={placeholder}
           value={displayValue}
@@ -72,7 +83,7 @@ export const DateInput: React.FC<MyComponentProps> = ({ placeholder, onChange, v
           </ActionsheetDragIndicatorWrapper>
           <VStack className="flex-1 items-center justify-between">
             <DateTimePicker
-              value={date}
+              value={date as Date}
               mode="date"
               display="spinner"
               onChange={onDateTimeChange}

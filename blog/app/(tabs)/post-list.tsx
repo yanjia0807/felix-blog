@@ -1,43 +1,66 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import _ from 'lodash';
-import { MapPin, Search } from 'lucide-react-native';
-import React, { useState } from 'react';
+import { Check, Eraser, MapPin } from 'lucide-react-native';
+import React from 'react';
 import { FlatList, RefreshControl } from 'react-native';
-import { fetchPosts, fetchTags } from '@/api';
+import { Drawer } from 'react-native-drawer-layout';
+import { fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
 import { CommentIcon } from '@/components/comment-input';
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
+import {
+  PostFilter,
+  PostFilterContent,
+  PostFilterDrawerProvider,
+  usePostFilterDrawerContext,
+} from '@/components/post-filter';
 import PostMenuPopover from '@/components/post-menu-popover';
 import PostThumbnail from '@/components/post-thumbnail';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Badge, BadgeIcon, BadgeText } from '@/components/ui/badge';
+import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { Link, LinkText } from '@/components/ui/link';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const PostHeader = ({ tags }: any) => {
-  const [filters, setFilters] = useState<any>({
-    text: null,
-    tags: [],
+const PostHeader = () => {
+  const { isLoading, data } = useQuery({
+    queryKey: ['tags', 'list'],
+    queryFn: fetchTags,
   });
+
+  const { filters, setFilters, clearFilters } = usePostFilterDrawerContext();
+
+  const onTagItemPress = (item: any) => {
+    if (_.includes(filters.tags, item.documentId)) {
+      setFilters((val: any) => ({
+        ...val,
+        tags: _.filter([...val.tags], (val: any) => val !== item.documentId),
+      }));
+    } else {
+      setFilters((val: any) => ({ ...val, tags: [...val.tags, item.documentId] }));
+    }
+  };
 
   const renderTagsItem = ({ item }: any) => {
     return (
-      <Link className="mx-2 p-2">
-        <LinkText className="no-underline">{item.name}</LinkText>
-      </Link>
+      <Pressable onPress={() => onTagItemPress(item)}>
+        <Badge size="lg" variant="outline" className="mx-2 rounded">
+          <BadgeText>{item.name}</BadgeText>
+          {_.includes(filters.tags, item.documentId) && <BadgeIcon as={Check} className="ml-2" />}
+        </Badge>
+      </Pressable>
     );
   };
 
@@ -45,17 +68,9 @@ const PostHeader = ({ tags }: any) => {
     <VStack className="mb-4">
       <MainHeader className="mb-6" />
       <VStack className="flex-1" space="md">
-        <HStack>
-          <Input className="flex-1 bg-primary-100" variant="rounded">
-            <InputField placeholder="搜索帖子..." />
-            <InputSlot>
-              <InputIcon as={Search} className="mx-2"></InputIcon>
-            </InputSlot>
-          </Input>
-        </HStack>
         <HStack className="items-center" space="md">
           <FlatList
-            data={tags}
+            data={data}
             renderItem={renderTagsItem}
             horizontal={true}
             keyExtractor={(item: any) => item.documentId}
@@ -63,12 +78,10 @@ const PostHeader = ({ tags }: any) => {
           />
           <Divider orientation="vertical" />
           <HStack space="sm">
-            <Link>
-              <LinkText>全部标签</LinkText>
-            </Link>
-            <Link>
-              <LinkText>清空</LinkText>
-            </Link>
+            <PostFilter />
+            <Button variant="link" action="secondary" onPress={() => clearFilters()}>
+              <ButtonIcon as={Eraser} />
+            </Button>
           </HStack>
         </HStack>
       </VStack>
@@ -78,52 +91,22 @@ const PostHeader = ({ tags }: any) => {
 
 const PostList = () => {
   const { user } = useAuth();
-
   const {
+    filters,
+    setFilters,
     data: postData,
-    error,
     fetchNextPage,
     hasNextPage,
-    isLoading: isLoadingPost,
+    isLoading,
     isFetchingNextPage,
-    status,
     refetch,
-  } = useInfiniteQuery({
-    queryKey: ['posts', 'list'],
-    queryFn: fetchPosts,
-    initialPageParam: {
-      pagination: {
-        page: 1,
-        pageSize: 10,
-      },
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { page, pageSize, pageCount },
-        },
-      } = lastPage;
-
-      if (page < pageCount) {
-        return {
-          pagination: { page: page + 1, pageSize },
-        };
-      }
-
-      return null;
-    },
-  });
+  } = usePostFilterDrawerContext();
 
   const posts: any = _.reduce(
     postData?.pages,
     (result: any, item: any) => [...result, ...item.data],
     [],
   );
-
-  const { isLoading: isLoadingTag, data: tags } = useQuery({
-    queryKey: ['tags', 'list'],
-    queryFn: fetchTags,
-  });
 
   const renderPostItem = ({ item, index }: any) => {
     return (
@@ -176,7 +159,7 @@ const PostList = () => {
   };
 
   const renderPostHeader = (props: any) => {
-    return <PostHeader tags={tags} {...props}></PostHeader>;
+    return <PostHeader {...props}></PostHeader>;
   };
 
   const onPostItemPressed = ({ item }: any) => {
@@ -192,50 +175,68 @@ const PostList = () => {
     router.push('/posts/create');
   };
 
-  const isLoading = isLoadingPost || isLoadingTag;
-
   return (
-    <SafeAreaView className="flex-1">
+    <>
       {isLoading ? (
         <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />
       ) : (
-        <>
-          <VStack className="flex-1 px-4">
-            <FlatList
-              data={posts}
-              initialNumToRender={5}
-              ListHeaderComponent={renderPostHeader}
-              renderItem={renderPostItem}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item: any) => item.documentId}
-              onEndReached={() => {
-                if (hasNextPage && !isFetchingNextPage) {
-                  fetchNextPage();
-                }
-              }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isLoadingPost}
-                  onRefresh={() => {
-                    if (!isLoading) {
-                      refetch();
-                    }
-                  }}
-                />
+        <VStack className="flex-1 px-4">
+          <FlatList
+            data={posts}
+            initialNumToRender={5}
+            ListHeaderComponent={renderPostHeader}
+            renderItem={renderPostItem}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item: any) => item.documentId}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
               }
-            />
-          </VStack>
+            }}
+            refreshControl={
+              <RefreshControl
+                refreshing={isLoading}
+                onRefresh={() => {
+                  if (!isLoading) {
+                    refetch();
+                  }
+                }}
+              />
+            }
+          />
           {user && (
             <Fab size="md" placement="bottom right" onPress={() => onCreatePostButtonPressed()}>
               <FabIcon as={AddIcon} />
               <FabLabel>帖子</FabLabel>
             </Fab>
           )}
-        </>
+        </VStack>
       )}
-    </SafeAreaView>
+    </>
   );
 };
 
-export default PostList;
+const PostListDrawer = () => {
+  const { isDrawerOpen, setIsDrawerOpen } = usePostFilterDrawerContext();
+
+  return (
+    <Drawer
+      open={isDrawerOpen}
+      onOpen={() => setIsDrawerOpen(true)}
+      onClose={() => setIsDrawerOpen(false)}
+      renderDrawerContent={() => <PostFilterContent />}>
+      <PostList />
+    </Drawer>
+  );
+};
+
+const PostListPage = () => (
+  <SafeAreaView className="flex-1">
+    <PostFilterDrawerProvider>
+      <PostListDrawer />
+    </PostFilterDrawerProvider>
+  </SafeAreaView>
+);
+
+export default PostListPage;

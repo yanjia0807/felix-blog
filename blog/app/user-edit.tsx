@@ -12,9 +12,7 @@ import { useAuth } from '@/components/auth-context';
 import { DateInput } from '@/components/date-input';
 import { DistrictInput } from '@/components/district-input';
 import { AvatarImageInput } from '@/components/image-input';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
-import { Center } from '@/components/ui/center';
 import {
   FormControl,
   FormControlError,
@@ -44,52 +42,48 @@ import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { genderEnum } from '@/constants/enum';
 
+type UserSchemaDetails = z.infer<typeof userSchema>;
+
+const userSchema = z.object({
+  bio: z.string().max(200, '简介不能超过 200 个字符').optional(),
+  gender: z
+    .enum(['male', 'female'], {
+      invalid_type_error: '性别是必填项',
+    })
+    .optional(),
+  birthday: z
+    .date({
+      required_error: '出生日期是必填项',
+      invalid_type_error: '出生日期格式不正确',
+    })
+    .optional(),
+  phoneNumber: z
+    .string()
+    .optional()
+    .refine((val: any) => val === null || val === '' || /^1[3-9]\d{9}$/.test(val), {
+      message: '电话号码格式不正确',
+    })
+    .transform((val) => (val === '' ? null : val)),
+  district: z.array(z.any()).optional(),
+  avatar: z.string().optional(),
+});
+
 const UserEditScreen = () => {
   const { user }: any = useAuth();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const insets = useSafeAreaInsets();
 
-  type UserSchemaDetails = z.infer<typeof userSchema>;
-
-  const userSchema = z.object({
-    bio: z.union([z.null(), z.string().max(200, '简介不能超过 200 个字符')]),
-    gender: z.union([
-      z.null(),
-      z.enum(['male', 'female'], {
-        invalid_type_error: '性别是必填项',
-      }),
-    ]),
-    birthday: z.union([
-      z.null(),
-      z.date({
-        required_error: '出生日期是必填项',
-        invalid_type_error: '出生日期格式不正确',
-      }),
-    ]),
-    phoneNumber: z
-      .string()
-      .nullable()
-      .refine((val) => val === null || val === '' || /^1[3-9]\d{9}$/.test(val), {
-        message: '电话号码格式不正确',
-      })
-      .transform((val) => (val === '' ? null : val)),
-    district: z.any(),
-    avatar: z.any(),
-  });
-
   const {
     control,
     formState: { errors },
     handleSubmit,
-    reset,
-    getValues,
   } = useForm<UserSchemaDetails>({
     resolver: zodResolver(userSchema),
     defaultValues: {
       bio: user.bio,
       gender: user.gender,
-      birthday: user.birthday ? new Date(user.birthday) : null,
+      birthday: user.birthday ? new Date(user.birthday) : undefined,
       phoneNumber: user.phoneNumber,
       district: user.district,
       avatar: user.avatar,
@@ -171,7 +165,7 @@ const UserEditScreen = () => {
       <FormControlLabel>
         <FormControlLabelText>出生日期</FormControlLabelText>
       </FormControlLabel>
-      <DateInput value={value} onChange={onChange} placeholder="请选择日期" />
+      <DateInput value={value} onChange={onChange} placeholder="请选择日期" variant="rounded" />
       <FormControlError>
         <FormControlErrorIcon as={AlertCircle} />
         <FormControlErrorText>{errors?.birthday?.message}</FormControlErrorText>
@@ -215,7 +209,6 @@ const UserEditScreen = () => {
   );
 
   const onSubmit = (data: UserSchemaDetails) => {
-    debugger;
     mutate({
       user,
       data,

@@ -6,7 +6,7 @@ import {
   Calendar,
   ChevronLeft,
   MapPin,
-  MessageSquareText,
+  MessageCircle,
   ScanFace,
   Share2,
 } from 'lucide-react-native';
@@ -190,25 +190,29 @@ const UserDetail = () => {
                 <Text size="sm">{user.bio || '个人签名'}</Text>
               </HStack>
               <HStack className="items-center justify-center" space="2xl">
-                <Pressable
+                <Button
+                  size="md"
+                  action="secondary"
                   onPress={() => onChatButtonPressed()}
-                  className="items-center justify-center rounded-full bg-secondary-500 p-3">
-                  <Icon size="md" as={MessageSquareText} />
-                </Pressable>
+                  className="items-center justify-center rounded-3xl p-2.5">
+                  <ButtonIcon as={MessageCircle} />
+                </Button>
                 <Button
                   action={isFollowed ? 'negative' : 'positive'}
-                  size="lg"
-                  className="rounded-3xl px-16"
+                  size="md"
+                  className="rounded-3xl px-12"
                   disabled={isFollowPending}
                   onPress={() => onFollowBtnPressed()}>
                   <ButtonText>{isFollowed ? '取消关注' : '关注'}</ButtonText>
                   {isPending && <ButtonSpinner />}
                 </Button>
-                <Pressable
+                <Button
+                  action="secondary"
+                  size="md"
                   onPress={() => onShareButtonPressed()}
-                  className="items-center justify-center rounded-full bg-secondary-500 p-3">
-                  <Icon size="md" as={Share2} />
-                </Pressable>
+                  className="items-center justify-center rounded-3xl p-2.5">
+                  <ButtonIcon as={Share2} />
+                </Button>
               </HStack>
               <HStack
                 space="md"

@@ -7,6 +7,7 @@ import { fetchNotificationUnreadCount } from '@/api';
 import { useAuth } from './auth-context';
 import { useSocket } from './socket-context';
 import { Box } from './ui/box';
+import { Button, ButtonIcon } from './ui/button';
 import { Icon } from './ui/icon';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
@@ -29,25 +30,24 @@ const Notification = () => {
   return (
     <>
       {user && (
-        <Pressable
-          className="m-3"
-          onPress={() => {
-            router.navigate('/notification-list');
-          }}>
-          <VStack>
-            {count > 0 && (
-              <Box className="absolute right-[-6] top-[-6] h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
-                <Text
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                  className="text-[8px] leading-none text-white">
-                  {count}
-                </Text>
-              </Box>
-            )}
-            <Icon as={Bell} size="xl" className="text-typography-900" />
-          </VStack>
-        </Pressable>
+        <VStack>
+          {count > 0 && (
+            <Box className="absolute right-[-6] top-[-6] h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                className="text-[8px] leading-none text-white">
+                {count}
+              </Text>
+            </Box>
+          )}
+          <Button
+            variant="link"
+            action="secondary"
+            onPress={() => router.navigate('/notification-list')}>
+            <ButtonIcon as={Bell} size="xl" />
+          </Button>
+        </VStack>
       )}
     </>
   );

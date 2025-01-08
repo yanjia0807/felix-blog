@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { BookOpen, House, MessageSquare, User2 } from 'lucide-react-native';
+import { BookOpen, House, MessageCircle, User2 } from 'lucide-react-native';
 import { Icon } from '@/components/ui/icon';
 
 export default function TabLayout() {
@@ -32,7 +32,7 @@ export default function TabLayout() {
           title: '消息',
           tabBarIcon: ({ color, focused }) => (
             <Icon
-              as={MessageSquare}
+              as={MessageCircle}
               size={26 as any}
               className={`${focused && 'color-primary-400'}`}
             />

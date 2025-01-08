@@ -1,8 +1,8 @@
-import { useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import _ from 'lodash';
-import moment from 'moment';
-import React, { useState } from 'react';
+import React from 'react';
 import { FlatList, RefreshControl, SafeAreaView } from 'react-native';
 import { apiServerURL, fetchChats } from '@/api';
 import { useAuth } from '@/components/auth-context';
@@ -126,7 +126,8 @@ const ChatList = () => {
                   {otherUser.username}
                 </Text>
                 <Text size="xs">
-                  {moment(item.lastMessage.sendTime).format('YYYY-MM-DD hh:mm:ss')}
+                  {item.lastMessage.sendTime &&
+                    format(item.lastMessage.sendTime, 'yyyy-MM-dd HH:mm:ss')}
                 </Text>
               </HStack>
               <HStack className="items-center justify-between">

@@ -14,7 +14,9 @@ const MainHeader = ({ className }: any) => {
         source={require('/assets/images/icon.png')}
         style={{ width: 40, height: 40, borderRadius: 8 }}
       />
-      {user && <Notification />}
+      <HStack className="items-center" space="md">
+        {user && <Notification />}
+      </HStack>
     </HStack>
   );
 };

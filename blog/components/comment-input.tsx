@@ -7,10 +7,10 @@ import {
 } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import _ from 'lodash';
-import { MessageSquare } from 'lucide-react-native';
+import { MessageCircle } from 'lucide-react-native';
 import { Heart, HeartCrack } from 'lucide-react-native';
-import moment from 'moment';
 import React, { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -47,7 +47,7 @@ const commentSchema = z.object({
 export const CommentIcon = ({ count = 0 }: any) => {
   return (
     <HStack space="xs" className="items-center">
-      <Icon as={MessageSquare} />
+      <Icon as={MessageCircle} />
       <Text size="xs">{count}</Text>
     </HStack>
   );
@@ -355,7 +355,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
           <Text size="sm">{section.content}</Text>
           <HStack className="items-center justify-between">
             <HStack className="items-center">
-              <Text size="sm">{moment(section.createdAt).format('YYYY-MM-DD HH:mm')}</Text>
+              <Text size="sm">{format(section.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
               <Button
                 size="sm"
                 variant="link"
@@ -466,7 +466,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
           <Text size="sm">{item.content}</Text>
           <HStack className="items-center justify-between">
             <HStack className="items-center">
-              <Text size="sm">{moment(item.createdAt).format('YYYY-MM-DD HH:mm')}</Text>
+              <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
               <Button
                 size="sm"
                 variant="link"

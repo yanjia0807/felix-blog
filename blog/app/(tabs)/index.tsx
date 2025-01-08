@@ -1,10 +1,10 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
-import moment from 'moment';
 import React from 'react';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
 import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchRecentAuthors } from '@/api';
@@ -98,7 +98,7 @@ const ListHeader = () => {
               </VStack>
               <HStack className="items-center justify-between">
                 <Text size="sm" className="text-white">
-                  {moment(item.publishedAt).format('YYYY-MM-DD')}
+                  {format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}
                 </Text>
                 <HStack space="xs" className="items-center">
                   <Avatar size="sm">
@@ -160,7 +160,6 @@ const ListHeader = () => {
           </HStack>
           <FlatList
             data={recentAuthors}
-            loading={isLoadingRecentAuthors}
             renderItem={renderRecentAuthorItem}
             horizontal={true}
             showsHorizontalScrollIndicator={false}

@@ -6,7 +6,52 @@ export type PostData = any;
 export type UpdatePostLikedData = any;
 
 export const fetchPosts = async ({ pageParam }: any) => {
-  const { pagination } = pageParam;
+  const {
+    pagination,
+    filters: {
+      title,
+      authorName,
+      createdAtFrom,
+      createdAtTo,
+      isIncludeImage,
+      isIncludeRecording,
+      tags,
+    },
+  } = pageParam;
+
+  const filters: any = {};
+  if (!_.isNil(title) && !_.isEmpty(title)) {
+    filters.title = {
+      $containsi: title,
+    };
+  }
+
+  if (!_.isNil(authorName) && !_.isEmpty(authorName)) {
+    filters.author = {
+      username: {
+        $containsi: authorName,
+      },
+    };
+  }
+
+  if (!_.isNil(createdAtFrom)) {
+    filters.createdAt = {
+      $gte: createdAtFrom,
+    };
+  }
+
+  if (!_.isNil(createdAtTo)) {
+    filters.createdAt = {
+      $lte: createdAtTo,
+    };
+  }
+
+  if (!_.isNil(tags) && !_.isEmpty(tags)) {
+    filters.tags = {
+      $in: tags,
+    };
+  }
+
   const query = qs.stringify({
     populate: {
       tags: true,
@@ -33,6 +78,7 @@ export const fetchPosts = async ({ pageParam }: any) => {
         count: true,
       },
     },
+    filters,
     sort: 'createdAt:desc',
     pagination,
   });

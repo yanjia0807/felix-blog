@@ -1,6 +1,6 @@
+import { format, intervalToDuration } from 'date-fns';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { CircleX, Volume2 } from 'lucide-react-native';
-import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable } from 'react-native';
 import { twMerge } from 'tailwind-merge';
@@ -23,6 +23,9 @@ export const RecordingIcon = ({ item, onRemove, className }: any) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [durationMillis, setDurationMillis] = useState(0);
   const soundObj = useRef<any>({ sound: null, isPlaying: false });
+
+  const duration = intervalToDuration({ start: 0, end: durationMillis });
+  const formattedTime = `${String(duration.minutes).padStart(2, '0')}:${String(duration.seconds).padStart(2, '0')}`;
 
   const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
     if (status.isLoaded) {
@@ -75,7 +78,7 @@ export const RecordingIcon = ({ item, onRemove, className }: any) => {
         onPress={() => playSound()}
         className="items-center justify-start rounded-xl">
         <ButtonIcon as={Volume2} />
-        <ButtonText>{moment.utc(durationMillis).format('mm:ss')}</ButtonText>
+        <ButtonText>{formattedTime}</ButtonText>
         <ButtonSpinner style={isPlaying ? { display: 'flex' } : { display: 'none' }} />
         {onRemove && (
           <Pressable onPress={() => removeSound()}>

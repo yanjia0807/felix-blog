@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import moment from 'moment';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
@@ -40,12 +40,6 @@ const PostCover = ({ cover }: any) => {
       />
     </Box>
   );
-};
-
-const DateInfo = ({ createdAt }: any) => {
-  const format = 'YYYY-MM-DD hh:mm:ss';
-  const content = `${moment(createdAt).format(format)}`;
-  return <Text size="sm">{content}</Text>;
 };
 
 const PostDetail = () => {
@@ -124,7 +118,7 @@ const PostDetail = () => {
                 </HStack>
               </HStack>
               <HStack className="items-center" space="sm">
-                <DateInfo createdAt={post?.createdAt} />
+                <Text size="sm">{`${format(post?.createdAt, 'yyyy-MM-dd HH:mm:ss')}`}</Text>
                 <Text size="sm">重庆财富中心</Text>
               </HStack>
             </VStack>

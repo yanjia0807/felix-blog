@@ -1,8 +1,8 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
-import moment from 'moment';
 import React from 'react';
 import { apiServerURL, fetchNotifications, updateNotificationState } from '@/api';
 import { useAuth } from '@/components/auth-context';
@@ -115,7 +115,7 @@ const NotificationList = () => {
             <Box className="absolute right-0 top-0 m-4 h-3 w-3 rounded-full bg-green-400" />
           )}
           <VStack space="md">
-            <Text size="sm">{moment(item.createdAt).format('YYYY-MM-DD HH:mm')}</Text>
+            <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
             <HStack className="w-full items-center" space="4xl">
               <HStack className="flex-1 items-center" space="md">
                 <Avatar size="lg">
