@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { Check, Eraser, MapPin } from 'lucide-react-native';
 import React from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
-import { fetchTags } from '@/api';
+import { apiServerURL, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
 import { CommentIcon } from '@/components/comment-input';
+import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
 import {
@@ -18,9 +20,10 @@ import {
   usePostFilterDrawerContext,
 } from '@/components/post-filter';
 import PostMenuPopover from '@/components/post-menu-popover';
-import PostThumbnail from '@/components/post-thumbnail';
+import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Badge, BadgeIcon, BadgeText } from '@/components/ui/badge';
+import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
@@ -33,6 +36,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { formatDistance } from '@/utils/date';
 
 const PostHeader = () => {
   const { isLoading, data } = useQuery({
@@ -43,13 +47,13 @@ const PostHeader = () => {
   const { filters, setFilters, clearFilters } = usePostFilterDrawerContext();
 
   const onTagItemPress = (item: any) => {
-    if (_.includes(filters.tags, item.documentId)) {
+    if (_.includes(filters.tags, item.id)) {
       setFilters((val: any) => ({
         ...val,
-        tags: _.filter([...val.tags], (val: any) => val !== item.documentId),
+        tags: _.filter([...val.tags], (val: any) => val !== item.id),
       }));
     } else {
-      setFilters((val: any) => ({ ...val, tags: [...val.tags, item.documentId] }));
+      setFilters((val: any) => ({ ...val, tags: [...val.tags, item.id] }));
     }
   };
 
@@ -58,7 +62,7 @@ const PostHeader = () => {
       <Pressable onPress={() => onTagItemPress(item)}>
         <Badge size="lg" variant="outline" className="mx-2 rounded">
           <BadgeText>{item.name}</BadgeText>
-          {_.includes(filters.tags, item.documentId) && <BadgeIcon as={Check} className="ml-2" />}
+          {_.includes(filters.tags, item.id) && <BadgeIcon as={Check} className="ml-2" />}
         </Badge>
       </Pressable>
     );
@@ -109,52 +113,88 @@ const PostList = () => {
   );
 
   const renderPostItem = ({ item, index }: any) => {
+    const images = _.map(
+      _.find(item.attachments || [], { type: 'image' })?.files || [],
+      (item: any) => ({
+        id: item.id,
+        assetId: item.documentId,
+        alternativeText: item.alternativeText,
+        thumbnailUri: `${apiServerURL}${item.formats?.thumbnail.url}`,
+        uri: `${apiServerURL}${item.formats?.medium.url}`,
+      }),
+    );
+
     return (
-      <Pressable onPress={() => onPostItemPressed({ item, index })}>
-        <Card variant="elevated" className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`}>
-          <VStack space="md">
+      <Card variant="elevated" className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`}>
+        <VStack space="xl">
+          <VStack space="sm">
             <HStack className="items-center justify-between">
               <AuthorInfo author={item.author} />
               <PostMenuPopover post={item} />
             </HStack>
             <HStack className="items-center justify-between">
-              <Text size="xs">30分钟之前</Text>
+              <Text size="xs">{formatDistance(item.createdAt)}</Text>
               <HStack space="xs" className="items-center">
-                <Icon as={MapPin} size="xs" />
-                <Text size="xs">重庆市，渝北区</Text>
+                {item.poi?.address && (
+                  <HStack className="items-center">
+                    <Icon as={MapPin} size="xs" />
+                    <Text size="xs">{item.poi.address}</Text>
+                  </HStack>
+                )}
               </HStack>
             </HStack>
-            <Heading numberOfLines={2}>{item.title}</Heading>
-            <Text numberOfLines={3}>{item.content}</Text>
-            <PostThumbnail item={item} />
-            <HStack className="items-center justify-between">
-              <HStack space="lg" className="flex-row items-center">
-                <LikeButton post={item} />
-                <CommentIcon count={item.comments.count} />
-              </HStack>
-              <HStack className="items-center">
-                {Array(5)
-                  .fill('https://i.pravatar.cc/150')
-                  .map((item, index) => (
-                    <Avatar
-                      key={index}
-                      size="xs"
-                      style={{
-                        position: 'absolute',
-                        right: index * 14,
-                      }}>
-                      <AvatarImage
-                        source={{
-                          uri: item,
-                        }}
-                      />
-                    </Avatar>
-                  ))}
-              </HStack>
-            </HStack>
+            <TagList tags={item.tags || []}></TagList>
           </VStack>
-        </Card>
-      </Pressable>
+          <Pressable onPress={() => onPostItemPressed({ item, index })}>
+            <VStack space="sm">
+              <Heading numberOfLines={2}>{item.title}</Heading>
+              {item.cover && (
+                <Box className="h-36 flex-1">
+                  <Image
+                    source={{
+                      uri: `${apiServerURL}${item.cover.formats?.medium.url}`,
+                    }}
+                    contentFit="cover"
+                    alt={item.cover.alternativeText}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: 8,
+                    }}
+                  />
+                </Box>
+              )}
+              <Text numberOfLines={3}>{item.content}</Text>
+            </VStack>
+          </Pressable>
+          <ImageList images={images} />
+          <HStack className="items-center justify-between">
+            <HStack space="lg" className="flex-row items-center">
+              <LikeButton post={item} />
+              <CommentIcon count={item.comments.count} />
+            </HStack>
+            <HStack className="items-center">
+              {Array(5)
+                .fill('https://i.pravatar.cc/150')
+                .map((item, index) => (
+                  <Avatar
+                    key={index}
+                    size="xs"
+                    style={{
+                      position: 'absolute',
+                      right: index * 14,
+                    }}>
+                    <AvatarImage
+                      source={{
+                        uri: item,
+                      }}
+                    />
+                  </Avatar>
+                ))}
+            </HStack>
+          </HStack>
+        </VStack>
+      </Card>
     );
   };
 

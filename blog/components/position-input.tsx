@@ -30,7 +30,7 @@ export const PositionInput = ({ value, onChange }: any) => {
   };
 
   const onClearButtonPressed = () => {
-    onChange(null);
+    onChange(undefined);
   };
 
   return (

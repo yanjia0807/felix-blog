@@ -2,9 +2,9 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import _ from 'lodash';
-import { Camera, CircleX, SwitchCamera, ImageIcon, BookImage, X } from 'lucide-react-native';
+import { Camera, CircleX, SwitchCamera, ImageIcon, X, Plus, Trash2 } from 'lucide-react-native';
 import React, { forwardRef, useState } from 'react';
-import { SafeAreaView, useWindowDimensions } from 'react-native';
+import { FlatList, SafeAreaView, useWindowDimensions } from 'react-native';
 import { apiServerURL } from '@/api';
 import {
   Actionsheet,
@@ -26,7 +26,7 @@ import { Portal } from './ui/portal';
 import { Pressable } from './ui/pressable';
 import { VStack } from './ui/vstack';
 
-export const ImageCamera = ({ isOpen, onClose, onChange }: any) => {
+export const ImageCamera = ({ isOpen, onClose, onChange, value, imagePickerOptions }: any) => {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = React.useRef<any>(null);
@@ -39,7 +39,13 @@ export const ImageCamera = ({ isOpen, onClose, onChange }: any) => {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync();
-        onChange(photo);
+        let val;
+        if (imagePickerOptions.allowsMultipleSelection) {
+          val = [...value, photo];
+        } else {
+          val = photo;
+        }
+        onChange(val);
         onClose();
       } catch (error) {
         console.error(error);
@@ -91,11 +97,11 @@ export const ImageCamera = ({ isOpen, onClose, onChange }: any) => {
 };
 
 export const ImageInput = ({ onChange, value }: any) => {
-  const [showActionsheet, setShowActionsheet] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const onInputIconPressed = () => setShowActionsheet(true);
+  const onInputIconPressed = () => setIsOpen(true);
 
-  const onClose = () => setShowActionsheet(false);
+  const onClose = () => setIsOpen(false);
 
   const imagePickerOptions = {
     mediaTypes: ['images', 'videos', 'livePhotos'],
@@ -112,11 +118,78 @@ export const ImageInput = ({ onChange, value }: any) => {
         </Button>
       </ButtonGroup>
       <ImageSheet
-        isOpen={showActionsheet}
+        isOpen={isOpen}
         onClose={onClose}
+        value={value}
         onChange={onChange}
         imagePickerOptions={imagePickerOptions}
       />
+    </>
+  );
+};
+
+export const CoverInput = ({ onChange, value }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onInputIconPressed = () => {
+    setIsOpen(true);
+  };
+
+  const onClose = () => setIsOpen(false);
+
+  const imagePickerOptions = {
+    mediaTypes: ['images'],
+    allowsMultipleSelection: false,
+  };
+
+  const onClearBtnPress = () => {
+    onChange(undefined);
+  };
+
+  return (
+    <>
+      {value ? (
+        <VStack className="my-2 h-32">
+          <Image
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: 8,
+            }}
+            contentFit="cover"
+            contentPosition="center"
+            source={{
+              uri: value.uri,
+            }}
+          />
+          <Button
+            size="xs"
+            action="negative"
+            className="absolute bottom-0 right-0 p-1"
+            onPress={() => onClearBtnPress()}>
+            <ButtonIcon as={Trash2} />
+          </Button>
+        </VStack>
+      ) : (
+        <>
+          <Button
+            onPress={() => onInputIconPressed()}
+            variant="link"
+            className="my-2 h-32 items-center justify-center border border-dashed border-background-300 data-[focus=true]:border-primary-700 data-[hover=true]:border-outline-400 data-[disabled=true]:opacity-40 data-[disabled=true]:hover:border-background-300 data-[focus=true]:hover:border-primary-700">
+            <HStack space="xs" className="items-center">
+              <ButtonIcon as={Plus} size="xs" />
+              <ButtonText size="md">封面</ButtonText>
+            </HStack>
+          </Button>
+          <ImageSheet
+            isOpen={isOpen}
+            onClose={onClose}
+            value={value}
+            onChange={onChange}
+            imagePickerOptions={imagePickerOptions}
+          />
+        </>
+      )}
     </>
   );
 };
@@ -174,7 +247,7 @@ export const AvatarImageInput = ({ onChange, value }: any) => {
 };
 
 export const ImageSheet = forwardRef(function Sheet(
-  { onChange, isOpen, onClose, imagePickerOptions }: any,
+  { onChange, value, isOpen, onClose, imagePickerOptions }: any,
   ref: any,
 ) {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -183,7 +256,14 @@ export const ImageSheet = forwardRef(function Sheet(
   const onPressImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync(imagePickerOptions);
     if (!result.canceled) {
-      onChange(result.assets);
+      let val;
+      if (imagePickerOptions.allowsMultipleSelection) {
+        val = _.uniqBy([...value, ...result.assets], 'uri');
+      } else {
+        val = result.assets[0];
+      }
+
+      onChange(val);
     }
     onClose();
   };
@@ -220,9 +300,11 @@ export const ImageSheet = forwardRef(function Sheet(
         </ActionsheetContent>
       </Actionsheet>
       <ImageCamera
+        value={value}
         onChange={onChange}
         isOpen={cameraIsOpen}
         onClose={() => setCameraIsOpen(false)}
+        imagePickerOptions={imagePickerOptions}
       />
     </>
   );
@@ -233,22 +315,22 @@ export const ImageItem = ({
   index,
   handleSetCover,
   onOpenGallery,
-  onLongPressImage,
   onRemove,
-  selectedImageUri,
-  setSelectedImageUri,
+  setCover,
+  selectedImage,
+  setSelectedImage,
 }: any) => {
   return (
     <Popover
-      isOpen={selectedImageUri === image.uri}
-      onClose={() => setSelectedImageUri(null)}
+      key={image.uri}
+      isOpen={selectedImage?.uri === image.uri}
+      onClose={() => setSelectedImage(null)}
       shouldOverlapWithTrigger={true}
       trigger={(triggerProps: any) => (
         <Pressable
           {...triggerProps}
           onPress={() => onOpenGallery(index)}
-          onLongPress={() => onLongPressImage(image.uri)}
-          key={image.uri}>
+          onLongPress={() => setSelectedImage(image)}>
           <Image
             style={{
               width: '100%',
@@ -261,21 +343,19 @@ export const ImageItem = ({
             }}
           />
           {onRemove && (
-            <Pressable className="absolute right-0 top-0 m-1" onPress={() => onRemove(image.uri)}>
-              <Icon as={CircleX} size="sm" className="text-gray-50" />
-            </Pressable>
-          )}
-
-          {image.cover && (
-            <Box className="absolute bottom-0 right-0 m-1">
-              <Icon as={BookImage} size="sm" className="color-gray-50" />
-            </Box>
+            <Button
+              size="xs"
+              action="negative"
+              className="absolute bottom-0 right-0 p-1"
+              onPress={() => onRemove(image.uri)}>
+              <ButtonIcon as={Trash2} />
+            </Button>
           )}
         </Pressable>
       )}>
       <PopoverBackdrop />
       <PopoverContent size="xs" className="p-1">
-        <Button size="xs" variant="link" onPress={() => handleSetCover(image.uri)}>
+        <Button size="xs" variant="link" onPress={() => setCover(image)}>
           <ButtonText>设为封面</ButtonText>
         </Button>
       </PopoverContent>
@@ -284,49 +364,79 @@ export const ImageItem = ({
 };
 
 export const ImageGrid = ({ images, onOpenGallery, onRemove, className, onSetCover }: any) => {
-  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<any>(null);
   const { width: screenWidth } = useWindowDimensions();
   const numColumns = 4;
   const spacing = 10;
-  const padding = 21;
+  const padding = 16;
   const imageSize = (screenWidth - padding * 2 - (numColumns - 1) * spacing) / numColumns;
 
-  const handleSetCover = (uri: string | null) => {
-    setSelectedImageUri(null);
-    onSetCover(uri);
+  const setCover = (image: any) => {
+    setSelectedImage(null);
+    onSetCover(image);
   };
 
-  const onLongPressImage = (uri: string) => {
-    if (onSetCover) {
-      setSelectedImageUri(uri);
-    }
-  };
+  if (images.length > 0) {
+    return (
+      <HStack className="flex-wrap">
+        {images.map((image: any, index: number) => (
+          <Box
+            key={image.uri}
+            className="my-2"
+            style={{
+              width: imageSize,
+              height: imageSize,
+              marginRight: (index + 1) % numColumns === 0 ? 0 : spacing,
+              aspectRatio: 1,
+              borderRadius: 8,
+            }}>
+            <ImageItem
+              image={image}
+              index={index}
+              onOpenGallery={onOpenGallery}
+              onRemove={onRemove}
+              setCover={setCover}
+              selectedImage={selectedImage}
+              setSelectedImage={setSelectedImage}
+            />
+          </Box>
+        ))}
+      </HStack>
+    );
+  }
+};
 
-  return (
-    <HStack className="flex-wrap">
-      {images.map((image: any, index: number) => (
-        <Box
-          key={image.uri}
-          className="mb-2"
+export const ImageList = ({ images, onOpenGallery }: any) => {
+  const renderItem = ({ item, index }: any) => {
+    return (
+      <Pressable
+        onPress={() => {
+          onOpenGallery && onOpenGallery(index);
+        }}
+        className={`mx-1 h-14 w-14 ${index === 0 ? 'ml-0' : ''} ${index === images.length - 1 ? 'mr-0' : ''}`}>
+        <Image
+          source={{
+            uri: item.thumbnailUri,
+          }}
+          alt={item.alternativeText}
           style={{
-            width: imageSize,
-            height: imageSize,
-            marginRight: (index + 1) % numColumns === 0 ? 0 : spacing,
-            aspectRatio: 1,
+            width: '100%',
+            height: '100%',
             borderRadius: 8,
-          }}>
-          <ImageItem
-            image={image}
-            index={index}
-            onOpenGallery={onOpenGallery}
-            onRemove={onRemove}
-            onLongPressImage={onLongPressImage}
-            handleSetCover={handleSetCover}
-            selectedImageUri={selectedImageUri}
-            setSelectedImageUri={setSelectedImageUri}
-          />
-        </Box>
-      ))}
-    </HStack>
+          }}
+        />
+      </Pressable>
+    );
+  };
+
+  return images?.length > 0 ? (
+    <FlatList
+      data={images}
+      horizontal={true}
+      renderItem={renderItem}
+      showsHorizontalScrollIndicator={false}
+    />
+  ) : (
+    <></>
   );
 };

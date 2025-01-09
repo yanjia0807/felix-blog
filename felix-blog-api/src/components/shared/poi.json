@@ -1,0 +1,44 @@
+{
+  "collectionName": "components_shared_pois",
+  "info": {
+    "displayName": "Poi",
+    "icon": "pinMap",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "typecode": {
+      "type": "string"
+    },
+    "pname": {
+      "type": "string"
+    },
+    "cityname": {
+      "type": "string"
+    },
+    "adname": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "pcode": {
+      "type": "string"
+    },
+    "adcode": {
+      "type": "string"
+    },
+    "citycode": {
+      "type": "string"
+    }
+  }
+}

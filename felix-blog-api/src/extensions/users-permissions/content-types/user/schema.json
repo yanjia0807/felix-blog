@@ -126,10 +126,9 @@
       ]
     },
     "district": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::district.district",
-      "mappedBy": "user"
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.district"
     }
   }
 }

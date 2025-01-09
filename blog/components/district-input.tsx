@@ -147,8 +147,6 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
     const districtName = districtData?.name;
 
     onChange({
-      id: value?.id,
-      documentId: value?.documentId,
       provinceCode,
       provinceName,
       cityCode,

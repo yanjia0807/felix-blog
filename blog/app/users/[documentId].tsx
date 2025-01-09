@@ -21,7 +21,6 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
@@ -219,19 +218,19 @@ const UserDetail = () => {
                 className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
                 <VStack className="flex-1 items-center justify-center border-r border-primary-50">
                   <Text size="xl" bold={true}>
-                    10
+                    {user.posts.count}
                   </Text>
                   <Text size="sm">帖子</Text>
                 </VStack>
                 <VStack className="flex-1 items-center justify-center border-r border-primary-50">
                   <Text size="xl" bold={true}>
-                    21
+                    {user.followings.count}
                   </Text>
                   <Text size="sm">关注</Text>
                 </VStack>
                 <VStack className="flex-1 items-center justify-center border-r border-transparent">
                   <Text size="xl" bold={true}>
-                    3
+                    {user.followers.count}
                   </Text>
                   <Text size="sm">被关注</Text>
                 </VStack>

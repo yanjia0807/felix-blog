@@ -53,7 +53,6 @@ apiClient.interceptors.response.use(
   (error: Error) => {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        console.log('@@', JSON.stringify(error));
         console.error(
           `[api error] ${error.response.config.method?.toUpperCase()} ${error.response.config.url} - status: ${error.response.status}`,
           error.response?.data.error || error,

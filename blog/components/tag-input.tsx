@@ -7,14 +7,15 @@ import {
 } from '@gorhom/bottom-sheet';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Tag } from 'lucide-react-native';
+import { Check, Tag, X } from 'lucide-react-native';
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { twMerge } from 'tailwind-merge';
 import { fetchTags } from '@/api/tag';
-import { TagList } from './tag-list';
+import { Badge, BadgeIcon, BadgeText } from './ui/badge';
 import { Box } from './ui/box';
-import { Button, ButtonText } from './ui/button';
+import { Button, ButtonGroup, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
@@ -22,6 +23,53 @@ import { Input, InputIcon } from './ui/input';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
+
+export const TagSelect = ({ value = [], onChange }: any) => {
+  const { isLoading, data } = useQuery({
+    queryKey: ['tags', 'list'],
+    queryFn: fetchTags,
+  });
+
+  const onTagItemPress = (item: any) => {
+    if (_.includes(value, item.id)) {
+      onChange(_.filter(value, (val: any) => val !== item.id));
+    } else {
+      onChange([...value, item.id]);
+    }
+  };
+
+  return (
+    <HStack space="sm" className="flex-wrap">
+      {data?.map((item: any) => (
+        <Pressable onPress={() => onTagItemPress(item)} key={item.id}>
+          <Badge size="lg" variant="solid" className="rounded p-1">
+            <BadgeText className="pr-4">{item.name}</BadgeText>
+            {_.includes(value, item.id) && (
+              <BadgeIcon size="sm" as={Check} className="absolute right-1" />
+            )}
+          </Badge>
+        </Pressable>
+      ))}
+    </HStack>
+  );
+};
+
+export const TagList = ({ tags, onRemove, className }: any) => {
+  if (tags?.length > 0) {
+    return (
+      <HStack space="sm" className={twMerge('my-1 flex-wrap', className)}>
+        {tags.map((item: any) => (
+          <Pressable onPress={() => onRemove && onRemove(item.documentId)} key={item.documentId}>
+            <Badge size="lg" variant="solid" className="rounded px-2">
+              <BadgeText className={`${onRemove && 'pr-4'}`}>{item.name}</BadgeText>
+              {onRemove && <BadgeIcon as={X} size="md" className="absolute right-1" />}
+            </Badge>
+          </Pressable>
+        ))}
+      </HStack>
+    );
+  }
+};
 
 export const TagInput = ({ value, onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -56,14 +104,7 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
     getValues,
   } = useForm({});
 
-  const {
-    data: tagData,
-    error,
-    isError,
-    isSuccess,
-    isLoading,
-    refetch,
-  } = useQuery({
+  const { data, error, isError, isSuccess, isLoading, refetch } = useQuery({
     queryKey: ['tags', { name: getValues() }],
     queryFn: () => fetchTags(getValues()),
   });
@@ -75,18 +116,20 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
     [handleSubmit, onSubmit],
   );
 
-  const onAddTag = (tag: any) => {
+  const onAdd = (tag: any) => {
     setSelectedTags((prev: any) => [...prev, tag]);
   };
 
-  const onRemoveTag = (tagId: any) => {
-    setSelectedTags((prev: any) => _.filter(prev, (item: any) => item.id !== tagId));
+  const onRemove = (tagDocumentId: any) => {
+    setSelectedTags((prev: any) =>
+      _.filter(prev, (item: any) => item.documentId !== tagDocumentId),
+    );
   };
 
-  const onCommitBtnPressed = useCallback(() => {
+  const onCommitBtnPressed = () => {
     onChange(selectedTags);
     ref.current?.close();
-  }, [onChange, ref, selectedTags]);
+  };
 
   const onCloseBtnPressed = () => {
     setSelectedTags([...value]);
@@ -96,9 +139,9 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
   const renderItem = ({ item }: any) => {
     return (
       <Pressable
-        disabled={_.some(selectedTags, ['id', item.id])}
+        disabled={_.some(selectedTags, ['documentId', item.documentId])}
         className="w-full justify-start py-2"
-        onPress={() => onAddTag(item)}>
+        onPress={() => onAdd(item)}>
         <Text className="w-full">{item.name}</Text>
       </Pressable>
     );
@@ -170,9 +213,9 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
         {isSuccess && (
           <>
             <Controller name="name" control={control} render={renderInput} />
-            <TagList tags={selectedTags} onRemove={onRemoveTag} />
+            <TagList tags={selectedTags} onRemove={onRemove} />
             <BottomSheetFlatList
-              data={tagData}
+              data={data}
               keyExtractor={(item: any) => item.id.toString()}
               renderItem={renderItem}
               showsVerticalScrollIndicator={false}

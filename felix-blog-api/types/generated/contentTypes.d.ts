@@ -515,43 +515,6 @@ export interface ApiCommentComment extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiDistrictDistrict extends Struct.CollectionTypeSchema {
-  collectionName: 'districts';
-  info: {
-    displayName: 'District';
-    pluralName: 'districts';
-    singularName: 'district';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    cityCode: Schema.Attribute.String;
-    cityName: Schema.Attribute.String;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    districtCode: Schema.Attribute.String;
-    districtName: Schema.Attribute.String;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::district.district'
-    > &
-      Schema.Attribute.Private;
-    provinceCode: Schema.Attribute.String;
-    provinceName: Schema.Attribute.String;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    user: Schema.Attribute.Relation<
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
-  };
-}
-
 export interface ApiFeatureFeature extends Struct.CollectionTypeSchema {
   collectionName: 'features';
   info: {
@@ -812,19 +775,17 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    address: Schema.Attribute.String;
+    attachments: Schema.Attribute.Component<'shared.attachment', true>;
     author: Schema.Attribute.Relation<
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    blocks: Schema.Attribute.DynamicZone<['shared.attachment']>;
     comments: Schema.Attribute.Relation<'oneToMany', 'api::comment.comment'>;
     content: Schema.Attribute.Text;
     cover: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    latitude: Schema.Attribute.Decimal;
     likedByUsers: Schema.Attribute.Relation<
       'manyToMany',
       'plugin::users-permissions.user'
@@ -832,7 +793,7 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::post.post'> &
       Schema.Attribute.Private;
-    longitude: Schema.Attribute.Decimal;
+    poi: Schema.Attribute.Component<'shared.poi', false>;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'title'>;
     tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
@@ -1338,7 +1299,7 @@ export interface PluginUsersPermissionsUser
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    district: Schema.Attribute.Relation<'oneToOne', 'api::district.district'>;
+    district: Schema.Attribute.Component<'shared.district', false>;
     email: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -1398,7 +1359,6 @@ declare module '@strapi/strapi' {
       'api::chat-status.chat-status': ApiChatStatusChatStatus;
       'api::chat.chat': ApiChatChat;
       'api::comment.comment': ApiCommentComment;
-      'api::district.district': ApiDistrictDistrict;
       'api::feature.feature': ApiFeatureFeature;
       'api::follow.follow': ApiFollowFollow;
       'api::global.global': ApiGlobalGlobal;

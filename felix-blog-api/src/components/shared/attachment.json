@@ -1,19 +1,30 @@
 {
   "collectionName": "components_shared_attachments",
   "info": {
-    "displayName": "attachment"
+    "displayName": "attachment",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "files": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": true
+      ]
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "image",
+        "video",
+        "audio",
+        "file"
+      ]
     }
   }
 }

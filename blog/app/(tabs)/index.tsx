@@ -8,6 +8,7 @@ import { MapPin } from 'lucide-react-native';
 import React from 'react';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
 import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchRecentAuthors } from '@/api';
+import { useAuth } from '@/components/auth-context';
 import MainHeader from '@/components/main-header';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
@@ -18,8 +19,11 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { formatDistance } from '@/utils/date';
 
 const ListHeader = () => {
+  const { user } = useAuth();
+
   const {
     data: featureData,
     fetchNextPage,
@@ -73,6 +77,14 @@ const ListHeader = () => {
     });
   };
 
+  const onAvatarPress = (documentId: string) => {
+    if (user?.documentId === documentId) {
+      router.push('/profile');
+    } else {
+      router.push(`/users/${documentId}`);
+    }
+  };
+
   const renderFeatureItem = ({ item }: any) => {
     return (
       <Pressable className="mx-2 h-48 w-80" onPress={() => onFeatureItemPressed(item)}>
@@ -93,7 +105,7 @@ const ListHeader = () => {
             <VStack space="md">
               <VStack>
                 <Text size="lg" bold={true} className="text-white">
-                  {item.post.title}
+                  {item.post?.title}
                 </Text>
               </VStack>
               <HStack className="items-center justify-between">
@@ -102,15 +114,15 @@ const ListHeader = () => {
                 </Text>
                 <HStack space="xs" className="items-center">
                   <Avatar size="sm">
-                    <AvatarFallbackText>{item.post.author.username}</AvatarFallbackText>
+                    <AvatarFallbackText>{item.post?.author.username}</AvatarFallbackText>
                     <AvatarImage
                       source={{
-                        uri: `${apiServerURL}/${item.post.author.avatar?.formats.thumbnail.url}`,
+                        uri: `${apiServerURL}/${item.post?.author.avatar?.formats.thumbnail.url}`,
                       }}
                     />
                   </Avatar>
                   <Text size="sm" className="text-white">
-                    {item.post.author.username}
+                    {item.post?.author.username}
                   </Text>
                 </HStack>
               </HStack>
@@ -123,17 +135,19 @@ const ListHeader = () => {
 
   const renderRecentAuthorItem = ({ item }: any) => {
     return (
-      <VStack className="items-center" space="sm">
-        <Avatar key={item.id} size="md" className="mx-4">
-          <AvatarFallbackText>{item.username}</AvatarFallbackText>
-          <AvatarImage
-            source={{
-              uri: `${apiServerURL}/${item.formats?.thumbnail.url}`,
-            }}
-          />
-        </Avatar>
-        <Text size="sm">{item.username}</Text>
-      </VStack>
+      <Pressable onPress={() => onAvatarPress(item.documentId)}>
+        <VStack className="items-center" space="sm">
+          <Avatar key={item.id} size="md" className="mx-4">
+            <AvatarFallbackText>{item.username}</AvatarFallbackText>
+            <AvatarImage
+              source={{
+                uri: `${apiServerURL}/${item.formats?.thumbnail.url}`,
+              }}
+            />
+          </Avatar>
+          <Text size="sm">{item.username}</Text>
+        </VStack>
+      </Pressable>
     );
   };
 
@@ -171,6 +185,8 @@ const ListHeader = () => {
 };
 
 const Home = () => {
+  const { user } = useAuth();
+
   const {
     data: recommentData,
     fetchNextPage,
@@ -204,6 +220,14 @@ const Home = () => {
     },
   });
 
+  const onAvatarPress = (documentId: string) => {
+    if (user?.documentId === documentId) {
+      router.push('/profile');
+    } else {
+      router.push(`/users/${documentId}`);
+    }
+  };
+
   const onRecommentItemPressed = ({ item, index }: any) => {
     router.push({
       pathname: '/posts/[documentId]',
@@ -219,7 +243,7 @@ const Home = () => {
         <Card className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`} size="md">
           <VStack space="lg">
             <HStack className="items-center justify-between" space="md">
-              <Box className="w-8">
+              <Pressable className="w-8" onPress={() => onAvatarPress(item.author.documentId)}>
                 <Avatar size="sm">
                   <AvatarFallbackText>{item.author.username}</AvatarFallbackText>
                   <AvatarImage
@@ -228,19 +252,21 @@ const Home = () => {
                     }}
                   />
                 </Avatar>
-              </Box>
+              </Pressable>
               <VStack className="flex-1">
                 <HStack className="items-center justify-between">
                   <Text size="sm" bold={true}>
                     {item.author.username}
                   </Text>
-                  <Text size="xs">30分钟之前</Text>
+                  <Text size="xs">{formatDistance(item.createdAt)}</Text>
                 </HStack>
-                <HStack className="items-center justify-between">
-                  <HStack space="xs" className="items-center">
-                    <Icon as={MapPin} size="xs" />
-                    <Text size="xs">重庆市，渝北区</Text>
-                  </HStack>
+                <HStack space="xs" className="items-center">
+                  {item.poi?.address && (
+                    <>
+                      <Icon as={MapPin} size="xs" />
+                      <Text size="xs">{item.poi.address}</Text>
+                    </>
+                  )}
                 </HStack>
               </VStack>
             </HStack>
@@ -255,7 +281,6 @@ const Home = () => {
                     {item.content}
                   </Text>
                 </VStack>
-
                 <Box className="my-6 w-full">
                   {Array(5)
                     .fill('https://i.pravatar.cc/150')

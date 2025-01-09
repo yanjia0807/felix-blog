@@ -1,26 +1,41 @@
+import { router } from 'expo-router';
 import React from 'react';
 import { apiServerURL } from '@/api';
-import { Avatar, AvatarImage } from './ui/avatar';
+import { useAuth } from './auth-context';
+import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { HStack } from './ui/hstack';
+import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
 const AuthorInfo = ({ author }: any) => {
+  const { user } = useAuth();
+
+  const onAvatarPress = (documentId: string) => {
+    if (user?.documentId === documentId) {
+      router.push('/profile');
+    } else {
+      router.push(`/users/${documentId}`);
+    }
+  };
   return (
-    <HStack className="items-center" space="sm">
-      <Avatar size="sm">
-        <AvatarImage
-          source={{
-            uri: `${apiServerURL}/${author?.avatar.formats.thumbnail.url}`,
-          }}
-        />
-      </Avatar>
-      <VStack>
-        <Text size="sm" bold={true}>
-          {author?.username}
-        </Text>
-      </VStack>
-    </HStack>
+    <Pressable onPress={() => onAvatarPress(author.documentId)}>
+      <HStack className="items-center" space="sm">
+        <Avatar size="sm">
+          <AvatarFallbackText>{author.username}</AvatarFallbackText>
+          <AvatarImage
+            source={{
+              uri: `${apiServerURL}/${author.avatar?.formats.thumbnail.url}`,
+            }}
+          />
+        </Avatar>
+        <VStack>
+          <Text size="sm" bold={true}>
+            {author.username}
+          </Text>
+        </VStack>
+      </HStack>
+    </Pressable>
   );
 };
 

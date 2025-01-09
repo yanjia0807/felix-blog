@@ -1,5 +1,5 @@
 import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal } from '@gorhom/bottom-sheet';
-import { format, intervalToDuration } from 'date-fns';
+import { format, intervalToDuration, formatDuration } from 'date-fns';
 import { Audio } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw } from 'lucide-react-native';
@@ -45,7 +45,7 @@ const AnimatedRing = ({ metering }: any) => {
   );
 };
 
-export const RecordingInput = ({ onChange }: any) => {
+export const RecordingInput = ({ onChange, value }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const onInputIconPressed = () => {
     bottomSheetRef.current?.present();
@@ -57,12 +57,12 @@ export const RecordingInput = ({ onChange }: any) => {
         <ButtonIcon as={Mic} />
         <ButtonText>录音</ButtonText>
       </Button>
-      <RecordingSheet onChange={onChange} ref={bottomSheetRef} />
+      <RecordingSheet onChange={onChange} value={value} ref={bottomSheetRef} />
     </>
   );
 };
 
-export const RecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
+export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any, ref: any) {
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
@@ -71,8 +71,8 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: 
   const snapPoints = useMemo(() => ['50%'], []);
   const insets = useSafeAreaInsets();
 
-  const duration = intervalToDuration({ start: 0, end: durationMillis });
-  const formattedTime = `${String(duration.minutes).padStart(2, '0')}:${String(duration.seconds).padStart(2, '0')}`;
+  const duration: any = intervalToDuration({ start: 0, end: durationMillis });
+  const formattedTime = `${String(duration?.minutes || '').padStart(2, '0')}:${String(duration?.seconds || '').padStart(2, '0')}`;
 
   const stopRecording = useCallback(async () => {
     try {
@@ -140,7 +140,7 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange }: any, ref: 
   }, [metering, recordingStatus, stopRecording]);
 
   const commitRecording = useCallback(async () => {
-    onChange(recording);
+    onChange([...value, recording]);
     ref.current?.close();
   }, [onChange, recording, ref]);
 

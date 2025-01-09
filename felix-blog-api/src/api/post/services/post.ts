@@ -107,10 +107,10 @@ export default factories.createCoreService(modelId, {
     await validate.query(ctx.query, schema, { auth });
 
     let data = await strapi.db.connection.raw(
-      `SELECT t1.id,t1.document_id,t1.username,t2.formats FROM (
+      `SELECT t1.id,t1.document_id AS 'documentId',t1.username,t2.formats FROM (
         SELECT*FROM (
         SELECT t3.id,t3.document_id,t3.username FROM posts t1 INNER JOIN posts_author_lnk t2 ON t1.id=t2.post_id INNER JOIN up_users t3 ON t2.user_id=t3.id ORDER BY t1.created_at DESC) t1 GROUP BY t1.id,t1.document_id,t1.username) t1 LEFT JOIN (
-        SELECT t1.related_id,t2.formats FROM files_related_mph t1 INNER JOIN files t2 ON t1.file_id=t2.id WHERE t1.related_type='api::author.author') t2 ON t1.id=t2.related_id LIMIT 0, 20`
+        SELECT t1.related_id,t2.formats FROM files_related_mph t1 INNER JOIN files t2 ON t1.file_id=t2.id WHERE t1.related_type='plugin::users-permissions.user') t2 ON t1.id=t2.related_id LIMIT 0, 20`
     );
 
     return {

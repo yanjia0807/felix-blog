@@ -8,17 +8,16 @@ import { Controller, useForm } from 'react-hook-form';
 import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { z, ZodType } from 'zod';
-import { uploadFiles } from '@/api/file';
+import { z } from 'zod';
+import { uploadFiles } from '@/api';
 import { createPost, PostData } from '@/api/post';
 import { useAuth } from '@/components/auth-context';
-import { ImageGrid, ImageInput } from '@/components/image-input';
+import { CoverInput, ImageGrid, ImageInput } from '@/components/image-input';
 import { PositionInput } from '@/components/position-input';
 import { RecordingInput } from '@/components/recording-input';
 import { RecordingList } from '@/components/recording-list';
-import { TagInput } from '@/components/tag-input';
-import { TagList } from '@/components/tag-list';
-import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { TagInput, TagList } from '@/components/tag-input';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
   FormControlHelper,
@@ -35,18 +34,54 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-type PostFormData = {
-  title: string;
-  content?: string;
-};
+const maxCharCount = 5000;
+
+type PostSchema = z.infer<typeof postSchema>;
+
+const postSchema = z.object({
+  title: z
+    .string({
+      required_error: '标题是必填项',
+    })
+    .min(6, '标题不能少于6个字符')
+    .max(100, '标题不能多余100个字符'),
+  content: z.string().max(maxCharCount, `内容最多不能超过${maxCharCount}个字符`).optional(),
+  author: z.string(),
+  poi: z.any(),
+  cover: z.any(),
+  images: z.array(z.any()),
+  audios: z.array(z.any()),
+  tags: z.array(z.any()),
+});
 
 const PostCreate = () => {
   const { user } = useAuth();
-  const [images, setImages] = useState<any>([]);
-  const [recordings, setRecordings] = useState<any>([]);
-  const [position, setPosition] = useState<any>();
-  const [tags, setTags] = useState<any>([]);
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+  const toast = useCustomToast();
+  const [charCount, setCharCount] = useState(0);
+  const [initialIndex, setInitialIndex] = useState<number>(0);
+  const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<PostSchema>({
+    resolver: zodResolver(postSchema),
+    defaultValues: {
+      title: undefined,
+      content: undefined,
+      author: user.documentId,
+      poi: undefined,
+      cover: undefined,
+      images: [],
+      audios: [],
+      tags: [],
+    },
+  });
 
   const { isSuccess, isError, isPending, mutate } = useMutation({
     mutationFn: (data: PostData) => {
@@ -63,115 +98,84 @@ const PostCreate = () => {
       toast.error({ description: error.message });
     },
   });
-  const queryClient = useQueryClient();
-  const toast = useCustomToast();
-  const maxCharCount = 5000;
-  const [charCount, setCharCount] = useState(0);
-  const PostSchema: ZodType<PostFormData> = z.object({
-    title: z
-      .string({
-        required_error: '标题是必填项',
-      })
-      .min(6, '标题不能少于6个字符')
-      .max(50, '标题不能多余501个字符'),
-    content: z.string().max(maxCharCount, `内容最多不能超过${maxCharCount}个字符`).optional(),
-  });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<PostFormData>({
-    resolver: zodResolver(PostSchema),
-  });
+  const onSubmit = async (formData: PostSchema) => {
+    let imageIds = [],
+      coverId = undefined,
+      audioIds = [];
 
-  const [initialIndex, setInitialIndex] = useState<number>(0);
-  const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
-
-  const onSubmit = async (formData: PostFormData) => {
-    let coverId = null;
-    let fileIds: string[] = [];
-
-    if (images.length > 0) {
-      const ids = await uploadFiles(_.map(images, (item: any) => item.uri));
-      let coverIndex = _.findIndex(images, (item: any) => item.cover);
-      if (coverIndex < 0) coverIndex = 0;
-      fileIds = _.concat(fileIds, ids);
-      coverId = ids[coverIndex];
+    if (formData.cover) {
+      coverId = await uploadFiles(formData.cover.uri);
     }
 
-    if (recordings.length > 0) {
-      const ids = await uploadFiles(_.map(recordings, (item: any) => item._uri));
-      fileIds = _.concat(fileIds, ids);
+    const attachments = [];
+    if (formData.images.length > 0) {
+      imageIds = await uploadFiles(_.map(formData.images, (item: any) => item.uri));
+      attachments.push({
+        type: 'image',
+        files: imageIds,
+      });
     }
 
-    const postData: PostData = {
+    if (formData.audios.length > 0) {
+      audioIds = await uploadFiles(_.map(formData.audios, (item: any) => item._uri));
+      attachments.push({
+        type: 'audio',
+        files: audioIds,
+      });
+    }
+
+    const data = {
       title: formData.title,
+      cover: coverId,
       content: formData.content,
-      author: user.documentId,
+      author: formData.author,
+      poi:
+        formData.poi &&
+        _.pick(formData.poi, [
+          'name',
+          'location',
+          'type',
+          'typecode',
+          'pname',
+          'cityname',
+          'adname',
+          'address',
+          'pcode',
+          'adcode',
+          'citycode',
+        ]),
+      tags: formData.tags.map((item: any) => item.documentId),
+      attachments,
     };
-
-    if (coverId !== null) {
-      postData.cover = coverId;
-    }
-
-    if (fileIds.length > 0) {
-      postData.blocks = [
-        {
-          __component: 'shared.attachment',
-          files: fileIds,
-        },
-      ];
-    }
-
-    if (tags.length > 0) {
-      postData.tags = _.map(tags, 'id');
-    }
-
-    mutate(postData);
+    mutate(data);
   };
 
-  const onImageChange = async (images: any) => {
-    const uris = _.isArray(images)
-      ? images.map((item) => ({ uri: item.uri }))
-      : [{ uri: images.uri }];
-    setImages((pre: any) => _.unionBy(pre, uris, 'uri'));
-  };
+  const formData: any = watch();
 
-  const onImageRemove = async (uri: string) => {
-    setImages((pre: any) => _.filter(pre, (item) => item.uri !== uri));
-  };
-
-  const onSetCover = async (uri: string) => {
-    setImages((pre: any) =>
-      _.map(pre, (item) => {
-        if (item.uri === uri) {
-          return { ...item, cover: true };
-        } else {
-          return { ...item, cover: false };
-        }
-      }),
+  const onRemoveRecording = async (uri: string) => {
+    setValue(
+      'audios',
+      _.filter(formData.audios, (item: any) => item._uri !== uri),
     );
   };
 
-  const onRecordingChange = useCallback((recording: any) => {
-    setRecordings((pre: any) => [...pre, recording]);
-  }, []);
-
-  const onRecordingRemove = async (uri: string) => {
-    setRecordings((pre: any) => _.filter(pre, (item) => item._uri !== uri));
+  const onRemoveTag = (documentId: any) => {
+    setValue(
+      'tags',
+      _.filter(formData.tags, (item: any) => item.documentId !== documentId),
+    );
   };
 
-  const onTagChange = (newTags: any) => {
-    setTags([...newTags]);
+  const onRemoveImage = async (uri: string) => {
+    setValue(
+      'images',
+      _.filter(formData.images, (item: any) => item.uri !== uri),
+    );
   };
 
-  const onTagRemove = (tagId: any) => {
-    setTags((prev: any) => _.filter(prev, (item: any) => item.id !== tagId));
-  };
-
-  const onPositionChange = (position: any) => {
-    setPosition(position);
+  const onSetCover = async (image: any) => {
+    setValue('cover', image);
   };
 
   const onOpenGallery = async (index: number) => {
@@ -206,7 +210,7 @@ const PostCreate = () => {
     <FormControl isInvalid={!!errors.title} size="md">
       <Input variant="underlined" className="border-0 border-b p-2">
         <InputField
-          placeholder="请输入标题"
+          placeholder="请输入标题...."
           inputMode="text"
           autoCapitalize="none"
           onBlur={onBlur}
@@ -214,7 +218,7 @@ const PostCreate = () => {
           value={value}
         />
         <InputSlot>
-          <TagInput value={tags} onChange={onTagChange} />
+          <Controller control={control} name="tags" render={renderTagInput} />
         </InputSlot>
       </Input>
       <FormControlError>
@@ -224,10 +228,16 @@ const PostCreate = () => {
     </FormControl>
   );
 
+  const renderCover = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.cover} size="md">
+      <CoverInput value={value} onChange={onChange} />
+    </FormControl>
+  );
+
   const renderContent = useCallback(
     ({ field: { onChange, onBlur, value } }: any) => (
       <FormControl size="md" isInvalid={!!errors.content}>
-        <Textarea className="h-32 border-l-0 border-r-0 border-t-0" size="md" variant="default">
+        <Textarea className="h-48 border-l-0 border-r-0 border-t-0" size="md" variant="default">
           <TextareaInput
             placeholder="你此时的感想..."
             inputMode="text"
@@ -252,6 +262,28 @@ const PostCreate = () => {
     [charCount, errors.content],
   );
 
+  const renderTagInput = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.tags} size="md">
+      <TagInput value={value} onChange={onChange} />
+    </FormControl>
+  );
+
+  const renderImagesInput = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.images} size="md">
+      <ImageInput value={value} onChange={onChange} />
+    </FormControl>
+  );
+
+  const renderAudiosInput = ({ field: { onChange, onBlur, value } }: any) => (
+    <FormControl isInvalid={!!errors.audios} size="md">
+      <RecordingInput value={value} onChange={onChange} />
+    </FormControl>
+  );
+
+  const renderPosition = ({ field: { onChange, onBlur, value } }: any) => (
+    <PositionInput value={value} onChange={onChange} />
+  );
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -264,41 +296,34 @@ const PostCreate = () => {
       />
       <>
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1, padding: 16 }}>
-          <VStack className="flex-1" space="xl">
+          <VStack className="flex-1">
             {isPending && (
               <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />
             )}
             <Controller control={control} name="title" render={renderTitle} />
-            {tags.length > 0 && <TagList tags={tags} onRemove={onTagRemove} />}
+            <TagList tags={formData.tags} onRemove={onRemoveTag} />
+            <Controller control={control} name="cover" render={renderCover} />
             <Controller control={control} name="content" render={renderContent} />
             <HStack className="justify-end">
-              <PositionInput value={position} onChange={onPositionChange} />
+              <Controller control={control} name="poi" render={renderPosition} />
             </HStack>
-            {recordings.length > 0 && (
-              <RecordingList recordings={recordings} onRecordingRemove={onRecordingRemove} />
-            )}
-            {images.length > 0 && (
-              <ImageGrid
-                images={images}
-                onOpenGallery={onOpenGallery}
-                onRemove={onImageRemove}
-                onSetCover={onSetCover}
-              />
-            )}
+            <RecordingList recordings={formData.audios} onRemove={onRemoveRecording} />
+            <ImageGrid
+              images={formData.images}
+              onOpenGallery={onOpenGallery}
+              onRemove={onRemoveImage}
+              onSetCover={onSetCover}
+            />
           </VStack>
         </KeyboardAwareScrollView>
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
           <HStack space="md" className="w-full px-4">
-            <ButtonGroup space="sm">
-              <ImageInput onChange={onImageChange} />
-            </ButtonGroup>
-            <ButtonGroup space="sm">
-              <RecordingInput onChange={onRecordingChange} />
-            </ButtonGroup>
+            <Controller control={control} name="images" render={renderImagesInput} />
+            <Controller control={control} name="audios" render={renderAudiosInput} />
           </HStack>
         </KeyboardStickyView>
         <GalleryPreview
-          images={images || []}
+          images={formData.images || []}
           initialIndex={initialIndex}
           isVisible={galleryPreviewIsOpen}
           onRequestClose={() => setGalleryPreviewIsOpen(false)}

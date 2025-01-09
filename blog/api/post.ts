@@ -14,7 +14,7 @@ export const fetchPosts = async ({ pageParam }: any) => {
       createdAtFrom,
       createdAtTo,
       isIncludeImage,
-      isIncludeRecording,
+      isIncludeAudio,
       tags,
     },
   } = pageParam;
@@ -52,9 +52,24 @@ export const fetchPosts = async ({ pageParam }: any) => {
     };
   }
 
+  if (isIncludeImage) {
+    filters.attachments = {
+      type: {
+        $contains: 'image',
+      },
+    };
+  }
+
+  if (isIncludeAudio) {
+    filters.attachments = {
+      type: {
+        $contains: 'audio',
+      },
+    };
+  }
+
   const query = qs.stringify({
     populate: {
-      tags: true,
       author: {
         populate: {
           avatar: {
@@ -62,16 +77,14 @@ export const fetchPosts = async ({ pageParam }: any) => {
           },
         },
       },
+      tags: true,
+      poi: true,
       cover: {
-        fields: ['formats', 'name', 'alternativeText'],
+        fields: ['alternativeText', 'width', 'height', 'formats'],
       },
-      blocks: {
-        on: {
-          'shared.attachment': {
-            populate: {
-              files: true,
-            },
-          },
+      attachments: {
+        populate: {
+          files: true,
         },
       },
       comments: {
@@ -90,7 +103,6 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
   const { pagination } = pageParam;
   const query = qs.stringify({
     populate: {
-      tags: true,
       author: {
         populate: {
           avatar: {
@@ -98,16 +110,14 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
           },
         },
       },
+      tags: true,
+      poi: true,
       cover: {
         fields: ['formats', 'name', 'alternativeText'],
       },
-      blocks: {
-        on: {
-          'shared.attachment': {
-            populate: {
-              files: true,
-            },
-          },
+      attachments: {
+        populate: {
+          files: true,
         },
       },
     },
@@ -187,6 +197,7 @@ export const fetchPost = async ({ documentId }: any) => {
     {
       populate: {
         tags: true,
+        poi: true,
         cover: true,
         author: {
           populate: {
@@ -195,13 +206,9 @@ export const fetchPost = async ({ documentId }: any) => {
             },
           },
         },
-        blocks: {
-          on: {
-            'shared.attachment': {
-              populate: {
-                files: true,
-              },
-            },
+        attachments: {
+          populate: {
+            files: true,
           },
         },
         comments: {
@@ -217,11 +224,9 @@ export const fetchPost = async ({ documentId }: any) => {
   return res.data;
 };
 
-export const createPost = async (postData: PostData) => {
+export const createPost = async (data: PostData) => {
   try {
-    const res = await apiClient.post(`/posts`, {
-      data: postData,
-    });
+    const res = await apiClient.post(`/posts`, { data });
 
     return res.data;
   } catch (error: any) {

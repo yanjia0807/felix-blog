@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { fetchPosts } from '@/api';
 import { DateInput } from './date-input';
-import TagSelect from './tag-select';
+import { TagSelect } from './tag-input';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import {
   FormControl,
@@ -143,7 +143,7 @@ const postFilterSchema = z.object({
   createdAtTo: z.date().optional(),
   isIncludeImage: z.boolean(),
   isIncludeRecording: z.boolean(),
-  tags: z.array(z.string()),
+  tags: z.array(z.any()),
 });
 
 export const PostFilterContent = () => {

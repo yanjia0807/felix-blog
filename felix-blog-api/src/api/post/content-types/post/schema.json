@@ -29,21 +29,6 @@
       "target": "api::tag.tag",
       "mappedBy": "posts"
     },
-    "blocks": {
-      "type": "dynamiczone",
-      "components": [
-        "shared.attachment"
-      ]
-    },
-    "address": {
-      "type": "string"
-    },
-    "longitude": {
-      "type": "decimal"
-    },
-    "latitude": {
-      "type": "decimal"
-    },
     "cover": {
       "type": "media",
       "multiple": false,
@@ -69,6 +54,16 @@
       "relation": "oneToMany",
       "target": "api::comment.comment",
       "mappedBy": "post"
+    },
+    "poi": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.poi"
+    },
+    "attachments": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.attachment"
     }
   }
 }

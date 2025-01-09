@@ -2,27 +2,30 @@ import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import _ from 'lodash';
+import { ChevronLeft, MapPin } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
+import { FlatList, ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
 import { fetchPost } from '@/api/post';
 import AuthorInfo from '@/components/author-info';
 import { CommentInput } from '@/components/comment-input';
-import { ImageGrid } from '@/components/image-input';
+import { ImageGrid, ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import { RecordingList } from '@/components/recording-list';
 import { ShareButton } from '@/components/share-button';
-import { TagList } from '@/components/tag-list';
+import { TagList } from '@/components/tag-input';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { formatDistance } from '@/utils/date';
 
 const PostCover = ({ cover }: any) => {
   return (
@@ -58,20 +61,18 @@ const PostDetail = () => {
     queryFn: () => fetchPost({ documentId }),
   });
 
-  const files = post?.blocks?.find(
-    (item: any) => item['__component'] === 'shared.attachment',
-  )?.files;
-
-  const images = files
-    ?.filter((item: any) => item.mime.startsWith('image/'))
-    .map((item: any) => ({
+  const images = _.map(
+    _.find(post?.attachments || [], { type: 'image' })?.files || [],
+    (item: any) => ({
       id: item.id,
       assetId: item.documentId,
       alternativeText: item.alternativeText,
-      uri: `${apiServerURL}${item.formats.small.url}`,
-    }));
+      thumbnailUri: `${apiServerURL}${item.formats?.small.url || item.url}`,
+      uri: `${apiServerURL}${item.formats?.medium.url || item.url}`,
+    }),
+  );
 
-  const recordings = files?.filter((item: any) => item.mime.startsWith('audio/'));
+  const recordings = _.find(post?.attachments || [], { type: 'audio' })?.files || [];
 
   const onOpenGallery = async (index: number) => {
     setImageIndex(index);
@@ -107,31 +108,54 @@ const PostDetail = () => {
       {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       {isSuccess && (
         <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
-          <VStack className="flex-1" space="md">
-            <Heading className="mb-4">{post.title}</Heading>
+          <VStack className="flex-1" space="xl">
             <VStack space="sm">
+              <Heading>{post.title}</Heading>
+              <TagList tags={post?.tags} />
               <HStack className="items-center justify-between">
                 <AuthorInfo author={post?.author} />
-                <HStack space="lg" className="items-center justify-end">
+                <HStack space="md" className="items-center justify-end">
                   <LikeButton post={post} />
                   <CommentInput postDocumentId={post?.documentId} count={post?.comments?.count} />
                 </HStack>
               </HStack>
-              <HStack className="items-center" space="sm">
-                <Text size="sm">{`${format(post?.createdAt, 'yyyy-MM-dd HH:mm:ss')}`}</Text>
-                <Text size="sm">重庆财富中心</Text>
+              <HStack className="items-center justify-between">
+                <Text size="sm">{formatDistance(post?.createdAt)}</Text>
+                {post.poi?.address && (
+                  <HStack className="items-center">
+                    <Icon as={MapPin} size="xs" />
+                    <Text size="xs" className="flex-wrap">
+                      {post.poi.address}
+                    </Text>
+                  </HStack>
+                )}
               </HStack>
             </VStack>
-            {post?.cover && <PostCover cover={post.cover} />}
-            {post?.tags?.length > 0 && <TagList tags={post?.tags} />}
-            {post?.content && <Text>{post?.content}</Text>}
-            {recordings?.length > 0 && <RecordingList recordings={recordings} />}
-            {images?.length > 0 && <ImageGrid images={images} onOpenGallery={onOpenGallery} />}
+            <VStack space="sm">
+              {post?.cover && (
+                <Box className="h-36 flex-1">
+                  <Image
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: 8,
+                    }}
+                    source={{
+                      uri: `${apiServerURL}/${post.cover.formats.medium.url || post.cover.url}`,
+                    }}
+                    alt={post.cover.alternativeText}
+                  />
+                </Box>
+              )}
+              <ImageList images={images} onOpenGallery={(index: number) => onOpenGallery(index)} />
+              <RecordingList recordings={recordings} />
+            </VStack>
+            <Text>{post?.content}</Text>
           </VStack>
         </ScrollView>
       )}
       <GalleryPreview
-        images={images || []}
+        images={images}
         initialIndex={imageIndex}
         isVisible={isGalleryPreviewOpen}
         onRequestClose={() => setIsGalleryPreviewOpen(false)}

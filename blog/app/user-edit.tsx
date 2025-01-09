@@ -64,8 +64,8 @@ const userSchema = z.object({
       message: '电话号码格式不正确',
     })
     .transform((val) => (val === '' ? null : val)),
-  district: z.array(z.any()).optional(),
-  avatar: z.string().optional(),
+  district: z.any().optional(),
+  avatar: z.any().optional(),
 });
 
 const UserEditScreen = () => {
@@ -89,6 +89,8 @@ const UserEditScreen = () => {
       avatar: user.avatar,
     },
   });
+
+  console.log('@@', errors);
 
   const { isSuccess, isError, isPending, mutate } = useMutation({
     mutationFn: ({ user, data }: any) => {
