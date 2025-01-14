@@ -60,6 +60,7 @@ const UserDetail = () => {
 
   const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
     queryKey: ['chats', 'detail', { userDocumentIds }],
+    enabled: !!currentUser,
     queryFn: () => {
       return fetchChatByUsers({ userDocumentIds });
     },
