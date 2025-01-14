@@ -12,7 +12,7 @@ import {
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
-import { apiServerURL, fetchChatByUsers, fetchUser, createChat } from '@/api';
+import { apiServerURL, fetchUser } from '@/api';
 import { toggleFollow } from '@/api/follow';
 import { useAuth } from '@/components/auth-context';
 import PhotoListView from '@/components/photo-list-view';
@@ -21,6 +21,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
@@ -29,47 +30,19 @@ import useCustomToast from '@/components/use-custom-toast';
 
 const UserDetail = () => {
   const { user: currentUser } = useAuth();
-  const { documentId } = useLocalSearchParams();
+  const { documentId }: any = useLocalSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const queryClient = useQueryClient();
   const toast = useCustomToast();
-  const userDocumentIds = [currentUser.documentId, documentId];
 
   const {
     isPending,
-    isError,
     isSuccess,
     data: user,
-    error,
   } = useQuery({
     queryKey: ['users', documentId],
-    queryFn: () => fetchUser(documentId as string),
+    queryFn: () => fetchUser(documentId),
   });
-
-  const { data: chatData } = useQuery({
-    queryKey: ['chats', { filters: userDocumentIds }],
-    queryFn: () => fetchChatByUsers({ userDocumentIds }),
-  });
-
-  const { mutate: mutateChat } = useMutation({
-    mutationFn: ({ users }: any) =>
-      createChat({
-        users,
-      }),
-    onSuccess: async (data, variables, context) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['chats', { filters: userDocumentIds }],
-      });
-      router.navigate({
-        pathname: '/chats/[documentId]',
-        params: {
-          documentId: data.documentId,
-        },
-      });
-    },
-  });
-
-  const chatDocumentId = chatData && chatData.length > 0 && chatData[0].documentId;
 
   const isFollowed = !_.isUndefined(
     currentUser &&
@@ -93,7 +66,7 @@ const UserDetail = () => {
         queryKey: ['users', 'me'],
       });
       queryClient.invalidateQueries({
-        queryKey: ['users', user.documentId],
+        queryKey: ['users', documentId],
       });
       toast.success({
         description: isFollowed ? '取消关注成功' : '关注成功',
@@ -120,18 +93,12 @@ const UserDetail = () => {
   const onShareButtonPressed = () => {};
 
   const onChatButtonPressed = () => {
-    if (chatDocumentId) {
-      router.navigate({
-        pathname: '/chats/[documentId]',
-        params: {
-          documentId: chatDocumentId,
-        },
-      });
-    } else {
-      mutateChat({
-        users: [currentUser.documentId, user.documentId],
-      });
-    }
+    router.navigate({
+      pathname: '/chat',
+      params: {
+        userDocumentIds: [currentUser.documentId, documentId],
+      },
+    });
   };
 
   const onFollowBtnPressed = () => {
@@ -141,6 +108,26 @@ const UserDetail = () => {
       isFollowed,
     };
     followMutate(data);
+  };
+
+  const onFollowingsBtnPress = () => {
+    router.push({
+      pathname: '/following-list',
+      params: {
+        documentId: user.documentId,
+        username: user.username,
+      },
+    });
+  };
+
+  const onFollowersBtnPress = () => {
+    router.push({
+      pathname: '/follower-list',
+      params: {
+        documentId: user.documentId,
+        username: user.username,
+      },
+    });
   };
 
   return (
@@ -178,10 +165,12 @@ const UserDetail = () => {
                       <Icon size="xs" as={ScanFace} />
                       <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
                     </HStack>
-                    <HStack className="items-center" space="xs">
-                      <Icon size="xs" as={MapPin} />
-                      <Text size="xs">重庆｜南岸区</Text>
-                    </HStack>
+                    {user.district && (
+                      <HStack className="items-center" space="xs">
+                        <Icon size="xs" as={MapPin} />
+                        <Text size="xs">{`${user.district.provinceName}|${user.district.cityName}|${user.district.districtName}`}</Text>
+                      </HStack>
+                    )}
                   </HStack>
                 </VStack>
               </HStack>
@@ -216,24 +205,28 @@ const UserDetail = () => {
               <HStack
                 space="md"
                 className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
-                <VStack className="flex-1 items-center justify-center border-r border-primary-50">
+                <VStack className="items-center justify-center">
                   <Text size="xl" bold={true}>
-                    {user.posts.count}
+                    {user.posts?.count}
                   </Text>
                   <Text size="sm">帖子</Text>
                 </VStack>
-                <VStack className="flex-1 items-center justify-center border-r border-primary-50">
-                  <Text size="xl" bold={true}>
-                    {user.followings.count}
-                  </Text>
-                  <Text size="sm">关注</Text>
-                </VStack>
-                <VStack className="flex-1 items-center justify-center border-r border-transparent">
-                  <Text size="xl" bold={true}>
-                    {user.followers.count}
-                  </Text>
-                  <Text size="sm">被关注</Text>
-                </VStack>
+                <Pressable onPress={() => onFollowingsBtnPress()}>
+                  <VStack className="items-center justify-center">
+                    <Text size="xl" bold={true}>
+                      {user.followings.count}
+                    </Text>
+                    <Text size="sm">关注</Text>
+                  </VStack>
+                </Pressable>
+                <Pressable onPress={() => onFollowersBtnPress()}>
+                  <VStack className="items-center justify-center">
+                    <Text size="xl" bold={true}>
+                      {user.followers.count}
+                    </Text>
+                    <Text size="sm">被关注</Text>
+                  </VStack>
+                </Pressable>
               </HStack>
             </VStack>
             <SegmentedControl

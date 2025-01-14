@@ -29,14 +29,14 @@ const PhotoListView = () => {
 
   const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['posts', { user: user.documentId }],
+      queryKey: ['posts', user.id, 'photos'],
       queryFn: fetchUserPhotos,
       initialPageParam: {
         pagination: {
           page: 1,
           pageSize: 5,
         },
-        userDocumentId: user.documentId,
+        userId: user.id,
       },
       getNextPageParam: (lastPage: any) => {
         const {
@@ -48,7 +48,7 @@ const PhotoListView = () => {
         if (page < pageCount) {
           return {
             pagination: { page: page + 1, pageSize },
-            userDocumentId: user.documentId,
+            userId: user.id,
           };
         }
 
@@ -61,53 +61,34 @@ const PhotoListView = () => {
     setIsGalleryPreviewOpen(true);
   };
 
-  const listData = useMemo(() => {
-    let files = [];
+  const photos: any = _.reduce(
+    data?.pages,
+    (result: any, page: any) => {
+      return [
+        ...result,
+        ...page.data.map((item: any) => ({
+          ...item,
+          uri: `${apiServerURL}${item.formats.thumbnail.url}`,
+          originUrl: `${apiServerURL}${item.url}`,
+        })),
+      ];
+    },
+    [],
+  );
 
-    if (data) {
-      files = _.reduce(
-        data.pages,
-        (result: any, page: any) => {
-          const pageFiles = _.reduce(
-            page.data,
-            (pageResult: any, item: any) => {
-              let temp: any = [];
-              if (item.cover) {
-                temp = [
-                  ...temp,
-                  {
-                    ...item.cover,
-                    uri: `${apiServerURL}${item.cover.formats.small.url}`,
-                    type: 'cover',
-                  },
-                ];
-              }
-              const attachment = _.find(
-                item.blocks,
-                (block: any) => block['__component'] === 'shared.attachment',
-              );
-              if (attachment?.files.length > 0) {
-                temp = [
-                  ...temp,
-                  ..._.filter(attachment.files, (file: any) => file.mime.startsWith('image/')).map(
-                    (item: any) => ({
-                      ...item,
-                      uri: `${apiServerURL}${item.formats.small.url}`,
-                    }),
-                  ),
-                ];
-              }
-              return [...pageResult, ...temp];
-            },
-            [],
-          );
-          return [...result, ...pageFiles];
-        },
-        [],
-      );
-    }
-    return files;
-  }, [data]);
+  const originPhotos: any = _.reduce(
+    data?.pages,
+    (result: any, page: any) => {
+      return [
+        ...result,
+        ...page.data.map((item: any) => ({
+          ...item,
+          uri: `${apiServerURL}${item.url}`,
+        })),
+      ];
+    },
+    [],
+  );
 
   const renderItem = ({ item, index }: any) => {
     return (
@@ -130,7 +111,7 @@ const PhotoListView = () => {
   return (
     <Box className="mr-1/4 flex-1">
       <MasonryFlashList
-        data={listData}
+        data={photos}
         getItemType={() => 'image'}
         renderItem={renderItem}
         numColumns={numColumns}
@@ -158,7 +139,7 @@ const PhotoListView = () => {
         }}
       />
       <GalleryPreview
-        images={listData || []}
+        images={originPhotos || []}
         initialIndex={imageIndex}
         isVisible={isGalleryPreviewOpen}
         onRequestClose={() => setIsGalleryPreviewOpen(false)}

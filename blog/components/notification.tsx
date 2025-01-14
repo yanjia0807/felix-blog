@@ -30,9 +30,9 @@ const Notification = () => {
   return (
     <>
       {user && (
-        <VStack>
+        <Pressable onPress={() => router.navigate('/notification-list')}>
           {count > 0 && (
-            <Box className="absolute right-[-6] top-[-6] h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
+            <Box className="absolute right-0 top-[-8] h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
@@ -41,13 +41,8 @@ const Notification = () => {
               </Text>
             </Box>
           )}
-          <Button
-            variant="link"
-            action="secondary"
-            onPress={() => router.navigate('/notification-list')}>
-            <ButtonIcon as={Bell} size="xl" />
-          </Button>
-        </VStack>
+          <Icon as={Bell} size={22 as any} />
+        </Pressable>
       )}
     </>
   );

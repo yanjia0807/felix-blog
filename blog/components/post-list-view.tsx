@@ -2,10 +2,11 @@ import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import _ from 'lodash';
-import { MapPin, Heart, BookMarked, MessageCircle } from 'lucide-react-native';
+import { MapPin, Heart, MessageCircle } from 'lucide-react-native';
 import React from 'react';
-import { RefreshControl, TouchableOpacity } from 'react-native';
+import { RefreshControl } from 'react-native';
 import { fetchUserPosts } from '@/api';
+import { formatDistance } from '@/utils/date';
 import { useAuth } from './auth-context';
 import { Box } from './ui/box';
 import { Card } from './ui/card';
@@ -69,19 +70,21 @@ const PostListView = () => {
           <VStack space="lg">
             <HStack className="items-start justify-start" space="md">
               <VStack space="md" className="flex-1">
-                <Heading numberOfLines={1} ellipsizeMode="tail" size="md">
+                <Heading numberOfLines={1} ellipsizeMode="tail">
                   {item.title}
                 </Heading>
                 <HStack className="items-center justify-between">
-                  <Text size="xs">30分钟之前</Text>
+                  <Text size="xs">{formatDistance(item.createdAt)}</Text>
                   <HStack space="xs" className="items-center">
-                    <Icon as={MapPin} size="xs" />
-                    <Text size="xs">重庆市，渝北区</Text>
+                    {item.poi?.address && (
+                      <>
+                        <Icon as={MapPin} size="xs" />
+                        <Text size="xs">{item.poi.address}</Text>
+                      </>
+                    )}
                   </HStack>
                 </HStack>
-                <Text numberOfLines={3} size="sm">
-                  {item.content}
-                </Text>
+                <Text numberOfLines={3}>{item.content}</Text>
               </VStack>
             </HStack>
             <HStack className="items-center justify-end" space="md">

@@ -56,9 +56,9 @@ const ChatList = () => {
       initialPageParam: {
         pagination: {
           page: 1,
-          pageSize: 5,
+          pageSize: 20,
         },
-        userDocumentId: user?.documentId,
+        documentId: user?.documentId,
       },
       getNextPageParam: (lastPage: any) => {
         const {
@@ -70,13 +70,13 @@ const ChatList = () => {
         if (page < pageCount) {
           return {
             pagination: { page: page + 1, pageSize },
-            userDocumentId: user.documentId,
+            documentId: user.documentId,
           };
         }
 
         return null;
       },
-      staleTime: Infinity,
+      staleTime: 0,
     });
 
   const chats: any = _.reduce(
@@ -101,7 +101,7 @@ const ChatList = () => {
 
   const onChatItemPressed = ({ item }: any) => {
     router.push({
-      pathname: '/chats/[documentId]',
+      pathname: '/chat',
       params: {
         documentId: item.documentId,
       },
@@ -122,12 +122,10 @@ const ChatList = () => {
             </Avatar>
             <VStack space="xs" className="flex-1">
               <HStack className="items-center justify-between">
-                <Text size="md" bold={true}>
-                  {otherUser.username}
-                </Text>
+                <Text bold={true}>{otherUser.username}</Text>
                 <Text size="xs">
-                  {item.lastMessage.sendTime &&
-                    format(item.lastMessage.sendTime, 'yyyy-MM-dd HH:mm:ss')}
+                  {item.lastMessage.createdAt &&
+                    format(item.lastMessage.createdAt, 'yyyy-MM-dd HH:mm:ss')}
                 </Text>
               </HStack>
               <HStack className="items-center justify-between">

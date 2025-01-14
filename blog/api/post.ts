@@ -134,6 +134,7 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
   const query = qs.stringify({
     populate: {
       tags: true,
+      poi: true,
       author: {
         populate: {
           avatar: {
@@ -164,31 +165,12 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
 };
 
 export const fetchUserPhotos = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId } = pageParam;
+  const { pagination, userId } = pageParam;
   const query = qs.stringify({
-    populate: {
-      blocks: {
-        on: {
-          'shared.attachment': {
-            populate: {
-              files: true,
-            },
-          },
-        },
-      },
-      cover: {
-        fields: ['formats', 'name', 'alternativeText'],
-      },
-    },
-    filters: {
-      author: {
-        documentId: userDocumentId,
-      },
-    },
-    sort: 'createdAt:desc',
+    userId,
     pagination,
   });
-  const res = await apiClient.get(`/posts?${query}`);
+  const res = await apiClient.get(`/posts/photos?${query}`);
   return res;
 };
 

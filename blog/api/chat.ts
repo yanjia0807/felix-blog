@@ -5,22 +5,25 @@ import { apiClient } from './api-client';
 export type ChatData = any;
 
 export const fetchChats = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId } = pageParam;
+  const { pagination, documentId } = pageParam;
 
   const query = qs.stringify({
     populate: {
       users: {
         populate: {
+          fields: ['username', 'email'],
           avatar: {
             fields: ['alternativeText', 'width', 'height', 'formats'],
           },
         },
       },
-      lastMessage: true,
+      lastMessage: {
+        fields: ['createdAt', 'content'],
+      },
       chatStatuses: {
         filters: {
           user: {
-            documentId: userDocumentId,
+            documentId,
           },
         },
       },
@@ -28,7 +31,7 @@ export const fetchChats = async ({ pageParam }: any) => {
     filters: {
       users: {
         documentId: {
-          $contains: userDocumentId,
+          $contains: documentId,
         },
       },
     },
@@ -44,6 +47,7 @@ export const fetchChat = async ({ documentId, userDocumentId }: any) => {
     {
       populate: {
         users: {
+          fields: ['username', 'email'],
           populate: {
             avatar: {
               fields: ['alternativeText', 'width', 'height', 'formats'],
@@ -51,6 +55,11 @@ export const fetchChat = async ({ documentId, userDocumentId }: any) => {
           },
         },
         chatStatuses: {
+          populate: {
+            user: {
+              fields: ['username', 'email'],
+            },
+          },
           filters: {
             user: {
               documentId: userDocumentId,
@@ -73,6 +82,28 @@ export const fetchChat = async ({ documentId, userDocumentId }: any) => {
 export const fetchChatByUsers = async ({ userDocumentIds }: any) => {
   const query = qs.stringify(
     {
+      populate: {
+        users: {
+          fields: ['username', 'email'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+        },
+        chatStatuses: {
+          populate: {
+            user: {
+              fields: ['username', 'email'],
+            },
+          },
+          filters: {
+            user: {
+              documentId: userDocumentIds[0],
+            },
+          },
+        },
+      },
       filters: {
         $and: [
           {
@@ -97,15 +128,12 @@ export const fetchChatByUsers = async ({ userDocumentIds }: any) => {
     },
   );
   const res = await apiClient.get(`/chats?${query}`);
-  return res.data;
+  return (res.data && res.data[0]) || null;
 };
 
 export const createChat = async ({ users }: any) => {
-  const query = qs.stringify({});
-  const res = await apiClient.post(`/chats/init?${query}`, {
-    data: {
-      users,
-    },
+  const res = await apiClient.post(`/chats/init`, {
+    users,
   });
   return res.data;
 };

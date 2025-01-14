@@ -3,7 +3,7 @@ import { Redirect, router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings2 } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
+import { Pressable, ScrollView } from 'react-native';
 import { apiServerURL } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import PhotoListView from '@/components/photo-list-view';
@@ -20,8 +20,23 @@ const ProfileScreen = () => {
   const { user } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const followersCount = user && _.filter(user.followers, { state: 'active' }).length;
-  const followingsCount = user && _.filter(user.followings, { state: 'active' }).length;
+  const onFollowingsBtnPress = () => {
+    router.push({
+      pathname: '/following-list',
+      params: {
+        documentId: user.documentId,
+      },
+    });
+  };
+
+  const onFollowersBtnPress = () => {
+    router.push({
+      pathname: '/follower-list',
+      params: {
+        documentId: user.documentId,
+      },
+    });
+  };
 
   return (
     <>
@@ -76,10 +91,12 @@ const ProfileScreen = () => {
                     <Icon size="xs" as={ScanFace} />
                     <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
                   </HStack>
-                  <HStack className="items-center" space="xs">
-                    <Icon size="xs" as={MapPin} />
-                    <Text size="xs">重庆｜南岸区</Text>
-                  </HStack>
+                  {user.district && (
+                    <HStack className="items-center" space="xs">
+                      <Icon size="xs" as={MapPin} />
+                      <Text size="xs">{`${user.district?.provinceName}|${user.district?.cityName}|${user.district?.districtName}`}</Text>
+                    </HStack>
+                  )}
                 </HStack>
                 <Text size="sm">{user?.bio || '个人签名'}</Text>
               </VStack>
@@ -92,18 +109,22 @@ const ProfileScreen = () => {
                   </Text>
                   <Text size="sm">帖子</Text>
                 </VStack>
-                <VStack className="items-center justify-center">
-                  <Text size="xl" bold={true}>
-                    {followingsCount}
-                  </Text>
-                  <Text size="sm">关注</Text>
-                </VStack>
-                <VStack className="items-center justify-center">
-                  <Text size="xl" bold={true}>
-                    {followersCount}
-                  </Text>
-                  <Text size="sm">被关注</Text>
-                </VStack>
+                <Pressable onPress={() => onFollowingsBtnPress()}>
+                  <VStack className="items-center justify-center">
+                    <Text size="xl" bold={true}>
+                      {user.followings.count}
+                    </Text>
+                    <Text size="sm">关注</Text>
+                  </VStack>
+                </Pressable>
+                <Pressable onPress={() => onFollowersBtnPress()}>
+                  <VStack className="items-center justify-center">
+                    <Text size="xl" bold={true}>
+                      {user.followers.count}
+                    </Text>
+                    <Text size="sm">被关注</Text>
+                  </VStack>
+                </Pressable>
               </HStack>
               <SegmentedControl
                 values={['我的帖子', '照片墙']}

@@ -17,5 +17,9 @@ export default factories.createCoreController(modelId, ({ strapi }) => ({
 
   async findRecentAuthors(ctx) {
     return strapi.service(modelId).findRecentAuthors(ctx);
+  },
+
+  async findPhotos(ctx) {
+    return strapi.service(modelId).findPhotos(ctx);
   }
 }));

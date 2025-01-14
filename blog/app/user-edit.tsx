@@ -7,7 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-import { updateUser } from '@/api';
+import { updateMe } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { DateInput } from '@/components/date-input';
 import { DistrictInput } from '@/components/district-input';
@@ -42,30 +42,36 @@ import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { genderEnum } from '@/constants/enum';
 
-type UserSchemaDetails = z.infer<typeof userSchema>;
+type UserFormSchema = z.infer<typeof userFormSchema>;
 
-const userSchema = z.object({
-  bio: z.string().max(200, '简介不能超过 200 个字符').optional(),
+const userFormSchema = z.object({
+  bio: z
+    .string()
+    .max(200, '简介不能超过 200 个字符')
+    .optional()
+    .transform((val) => (val === '' ? undefined : val)),
   gender: z
     .enum(['male', 'female'], {
-      invalid_type_error: '性别是必填项',
+      invalid_type_error: '性别格式不正确',
     })
     .optional(),
   birthday: z
     .date({
-      required_error: '出生日期是必填项',
       invalid_type_error: '出生日期格式不正确',
     })
     .optional(),
   phoneNumber: z
     .string()
-    .optional()
-    .refine((val: any) => val === null || val === '' || /^1[3-9]\d{9}$/.test(val), {
-      message: '电话号码格式不正确',
-    })
-    .transform((val) => (val === '' ? null : val)),
-  district: z.any().optional(),
-  avatar: z.any().optional(),
+    .refine(
+      (val: any) =>
+        val === null || val === '' || typeof val === 'undefined' || /^1[3-9]\d{9}$/.test(val),
+      {
+        message: '电话号码格式不正确',
+      },
+    )
+    .transform((val) => (val === '' ? undefined : val)),
+  district: z.any(),
+  avatar: z.any(),
 });
 
 const UserEditScreen = () => {
@@ -78,8 +84,8 @@ const UserEditScreen = () => {
     control,
     formState: { errors },
     handleSubmit,
-  } = useForm<UserSchemaDetails>({
-    resolver: zodResolver(userSchema),
+  } = useForm<UserFormSchema>({
+    resolver: zodResolver(userFormSchema),
     defaultValues: {
       bio: user.bio,
       gender: user.gender,
@@ -90,14 +96,12 @@ const UserEditScreen = () => {
     },
   });
 
-  console.log('@@', errors);
-
   const { isSuccess, isError, isPending, mutate } = useMutation({
-    mutationFn: ({ user, data }: any) => {
-      return updateUser({ user, data });
+    mutationFn: ({ formData }: any) => {
+      return updateMe(formData);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
+    onSuccess: (data: any) => {
+      queryClient.setQueryData(['users', 'me'], data);
       toast.success({ title: '操作完成', description: '您的资料已更新' });
       router.navigate('/profile');
     },
@@ -210,10 +214,9 @@ const UserEditScreen = () => {
     </FormControl>
   );
 
-  const onSubmit = (data: UserSchemaDetails) => {
+  const onSubmit = (formData: UserFormSchema) => {
     mutate({
-      user,
-      data,
+      formData,
     });
   };
 

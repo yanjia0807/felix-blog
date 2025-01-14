@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import qs from 'qs';
 import { apiClient } from './api-client';
-import { destoryFile, uploadFiles } from './file';
+import { uploadFiles } from './file';
 
 export type UserData = any;
 
@@ -10,21 +10,19 @@ export const fetchMe = async () => {
     const query = qs.stringify(
       {
         populate: {
-          followers: {
-            populate: ['follower'],
-            fields: ['id'],
-          },
-          followings: {
-            populate: ['following'],
-            fields: ['id'],
-          },
           avatar: {
             fields: ['formats', 'name', 'alternativeText'],
+          },
+          district: true,
+          followers: {
+            count: true,
+          },
+          followings: {
+            count: true,
           },
           posts: {
             count: true,
           },
-          district: true,
         },
       },
       {
@@ -43,41 +41,54 @@ export const fetchMe = async () => {
   }
 };
 
-export const updateUser = async ({ user, data }: any) => {
-  const { avatar, ...rest } = data;
-  let newAvatarId = null;
-  const { avatar: oldAvatar } = user;
+export const updateMe = async (formData: any) => {
+  const query = qs.stringify(
+    {
+      populate: {
+        followers: {
+          populate: ['follower'],
+          fields: ['id'],
+        },
+        followings: {
+          populate: ['following'],
+          fields: ['id'],
+        },
+        avatar: {
+          fields: ['formats', 'name', 'alternativeText'],
+        },
+        posts: {
+          count: true,
+        },
+        district: true,
+      },
+    },
+    {
+      encodeValuesOnly: true,
+    },
+  );
 
-  if (avatar) {
-    const avatarUri = avatar && (avatar.uri || avatar[0]?.uri);
-    if (avatarUri) {
-      newAvatarId = await uploadFiles(avatarUri);
-      if (oldAvatar) {
-        try {
-          await destoryFile(oldAvatar.id);
-        } catch (error) {
-          console.warn(error);
-        }
-      }
-    } else {
-      newAvatarId = avatar.id;
+  const data: any = {
+    bio: formData.bio,
+    birthday: formData.birthday,
+    gender: formData.gender,
+    phoneNumber: formData.phoneNumber,
+    district: formData.district,
+  };
+
+  if (formData.avatar) {
+    if (!formData.avatar.documentId) {
+      const uri = formData.avatar.uri || formData.avatar[0]?.uri;
+      data.avatar = await uploadFiles(uri);
     }
   } else {
-    newAvatarId = null;
-    if (oldAvatar) {
-      await destoryFile(oldAvatar.id);
-    }
+    data.avatar = null;
   }
-  debugger;
-  const res = await apiClient.put(`/users/${user.id}`, {
-    ...rest,
-    avatar: newAvatarId,
-  });
 
+  const res = await apiClient.put(`/users/custom/me?${query}`, data);
   return res;
 };
 
-export const fetchUser = async (documentId: string): Promise<any> => {
+export const fetchUser = async (id: string): Promise<any> => {
   try {
     const query = qs.stringify({
       populate: {
@@ -96,7 +107,7 @@ export const fetchUser = async (documentId: string): Promise<any> => {
       },
     });
 
-    const res = await apiClient.get(`/users/${documentId}?${query}`);
+    const res = await apiClient.get(`/users/custom/${id}?${query}`);
     return res;
   } catch (error: any) {
     throw new Error(error.message);
@@ -104,22 +115,146 @@ export const fetchUser = async (documentId: string): Promise<any> => {
 };
 
 export const fetchUsers = async ({ pageParam }: any) => {
-  const { pagination, filters } = pageParam;
+  const { pagination, keyword, documentId } = pageParam;
+  const filters = {
+    $and: [
+      {
+        documentId: {
+          $ne: documentId,
+        },
+      },
+      {
+        blocked: false,
+      },
+      {
+        confirmed: true,
+      },
+      keyword
+        ? {
+            $or: [
+              {
+                username: {
+                  $containsi: keyword,
+                },
+              },
+              {
+                email: {
+                  $containsi: keyword,
+                },
+              },
+            ],
+          }
+        : {},
+    ],
+  };
   const query = qs.stringify({
     populate: {
       avatar: {
         fields: ['formats', 'name', 'alternativeText'],
       },
-      followers: {
-        populate: ['follower'],
+    },
+    filters,
+    pagination,
+  });
+  const res = await apiClient.get(`/users/custom?${query}`);
+  return res;
+};
+
+export const fetchFollowingUsers = async ({ pageParam }: any) => {
+  const { pagination, documentId, keyword } = pageParam;
+  const filters = {
+    $and: [
+      {
+        follower: {
+          documentId,
+        },
       },
-      followings: {
-        populate: ['following'],
+      keyword
+        ? {
+            follower: {
+              $or: [
+                {
+                  username: {
+                    $containsi: keyword,
+                  },
+                },
+                {
+                  email: {
+                    $containsi: keyword,
+                  },
+                },
+              ],
+            },
+          }
+        : {},
+    ],
+  };
+
+  const populate = {
+    following: {
+      populate: {
+        avatar: {
+          fields: ['formats', 'name', 'alternativeText'],
+        },
       },
     },
-    pagination,
+  };
+
+  const query = qs.stringify({
+    populate,
     filters,
+    pagination,
   });
-  const res = await apiClient.get(`/users?${query}`);
+  const res = await apiClient.get(`/follows?${query}`);
+
+  return res;
+};
+
+export const fetchFollowerUsers = async ({ pageParam }: any) => {
+  const { pagination, documentId, keyword } = pageParam;
+  const filters = {
+    $and: [
+      {
+        following: {
+          documentId,
+        },
+      },
+      keyword
+        ? {
+            follower: {
+              $or: [
+                {
+                  username: {
+                    $containsi: keyword,
+                  },
+                },
+                {
+                  email: {
+                    $containsi: keyword,
+                  },
+                },
+              ],
+            },
+          }
+        : {},
+    ],
+  };
+
+  const populate = {
+    follower: {
+      populate: {
+        avatar: {
+          fields: ['formats', 'name', 'alternativeText'],
+        },
+      },
+    },
+  };
+
+  const query = qs.stringify({
+    populate,
+    filters,
+    pagination,
+  });
+  const res = await apiClient.get(`/follows?${query}`);
   return res;
 };

@@ -1,13 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Search } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
-import { apiServerURL, fetchUsers } from '@/api';
+import { apiServerURL, fetchFollowerUsers } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -24,11 +25,10 @@ const filterFormSchema = z.object({
   keyword: z.string().optional(),
 });
 
-const SearchUserList = () => {
-  const { user } = useAuth();
-  const documentId = user.documentId;
+const FollowerList = () => {
+  const { user: currentUser } = useAuth();
+  const { documentId, username } = useLocalSearchParams();
   const [keyword, setKeyword] = useState();
-
   const { control, handleSubmit } = useForm<FilterFormSchema>({
     resolver: zodResolver(filterFormSchema),
     defaultValues: {
@@ -36,18 +36,20 @@ const SearchUserList = () => {
     },
   });
 
+  const isMe = currentUser.documentId === documentId;
+
   const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['users', documentId, 'list', { keyword }],
-      queryFn: fetchUsers,
+      queryKey: ['users', documentId, 'followers', { keyword }],
+      queryFn: fetchFollowerUsers,
       enabled: !!documentId,
       initialPageParam: {
         pagination: {
           page: 1,
           pageSize: 10,
         },
-        keyword,
         documentId,
+        keyword,
       },
       getNextPageParam: (lastPage: any) => {
         const {
@@ -59,8 +61,8 @@ const SearchUserList = () => {
         if (page < pageCount) {
           return {
             pagination: { page: page + 1, pageSize },
-            keyword,
             documentId,
+            keyword,
           };
         }
 
@@ -121,7 +123,7 @@ const SearchUserList = () => {
   };
 
   const onItemPress = (item: any) => {
-    router.push(`/users/${item.documentId}`);
+    router.push(`/users/${item.follower.documentId}`);
   };
 
   const renderItem = ({ item, index }: any) => {
@@ -133,16 +135,16 @@ const SearchUserList = () => {
         }}>
         <HStack className={`items-center`} space="md">
           <Avatar size="sm">
-            <AvatarFallbackText>{item.username}</AvatarFallbackText>
+            <AvatarFallbackText>{item.follower.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${item.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}/${item.follower.avatar?.formats.thumbnail.url}`,
               }}
             />
           </Avatar>
           <VStack>
-            <Text bold={true}>{item.username}</Text>
-            <Text size="sm">{item.email}</Text>
+            <Text bold={true}>{item.follower.username}</Text>
+            <Text size="sm">{item.follower.email}</Text>
           </VStack>
         </HStack>
       </TouchableOpacity>
@@ -153,7 +155,7 @@ const SearchUserList = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '查询用户',
+          title: `关注${isMe ? '我' : username}的人`,
           headerShown: true,
           headerLeft: renderHeaderLeft,
         }}
@@ -181,11 +183,10 @@ const SearchUserList = () => {
               }}
             />
           }
-          contentContainerClassName="flex-1"
         />
       </VStack>
     </SafeAreaView>
   );
 };
 
-export default SearchUserList;
+export default FollowerList;

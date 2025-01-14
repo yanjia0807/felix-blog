@@ -24,9 +24,9 @@ export const useSocket = () => useContext(SocketContext);
 
 const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { accessToken } = useAuth();
+  const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState<any>([]);
   const [messages, setMessages] = useState<any>([]);
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     const setSocket = async () => {

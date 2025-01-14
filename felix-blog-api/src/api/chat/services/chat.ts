@@ -3,36 +3,46 @@
  */
 
 import { factories } from "@strapi/strapi";
+import _ from "lodash";
+const { sanitize, validate } = strapi.contentAPI;
 
 const modelId = "api::chat.chat";
 export default factories.createCoreService(modelId, ({ strapi }) => ({
-  async init(ctx, params: any) {
-    const chat = await strapi.documents(modelId).create({
+  async init(ctx) {
+    const schema = strapi.contentType(modelId);
+    const { auth, user } = ctx.state;
+    await validate.query(ctx.query, schema, { auth });
+
+    const params = _.pick(ctx.request.body, ["users"]);
+    console.log("@@", ctx.request.body)
+    const data: any = await strapi.documents(modelId).create({
       data: {
-        ...ctx.request.body.data,
-        initiator: ctx.state.user.id,
-      },
-      populate: {
-        users: true,
-        initiator: true,
+        ...params,
+        initiator: user.id,
       },
     });
 
     await Promise.all([
       strapi.documents("api::chat-status.chat-status").create({
         data: {
-          chat: chat.id,
-          user: chat.users[0].id,
+          chat: data.id,
+          user: {
+            documentId: params.users[0]
+          }
         },
       }),
       strapi.documents("api::chat-status.chat-status").create({
         data: {
-          chat: chat.id,
-          user: chat.users[1].id,
+          chat: data.id,
+          user: {
+            documentId: params.users[1]
+          }
         },
       }),
     ]);
 
-    return chat;
+    return {
+      data,
+    };
   },
 }));

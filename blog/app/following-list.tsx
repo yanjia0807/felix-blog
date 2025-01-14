@@ -1,13 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Search } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
-import { apiServerURL, fetchUsers } from '@/api';
+import { apiServerURL, fetchFollowingUsers } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -24,10 +25,11 @@ const filterFormSchema = z.object({
   keyword: z.string().optional(),
 });
 
-const SearchUserList = () => {
-  const { user } = useAuth();
-  const documentId = user.documentId;
+const FollowingList = () => {
+  const { user: currentUser } = useAuth();
+  const { documentId, username } = useLocalSearchParams();
   const [keyword, setKeyword] = useState();
+  const isMe = currentUser.documentId === documentId;
 
   const { control, handleSubmit } = useForm<FilterFormSchema>({
     resolver: zodResolver(filterFormSchema),
@@ -36,40 +38,47 @@ const SearchUserList = () => {
     },
   });
 
-  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
-    useInfiniteQuery({
-      queryKey: ['users', documentId, 'list', { keyword }],
-      queryFn: fetchUsers,
-      enabled: !!documentId,
-      initialPageParam: {
-        pagination: {
-          page: 1,
-          pageSize: 10,
+  const {
+    data: usersData,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ['users', documentId, 'followings', { keyword }],
+    queryFn: fetchFollowingUsers,
+    enabled: !!documentId,
+    initialPageParam: {
+      pagination: {
+        page: 1,
+        pageSize: 10,
+      },
+      documentId,
+      keyword,
+    },
+    getNextPageParam: (lastPage: any) => {
+      const {
+        meta: {
+          pagination: { page, pageSize, pageCount },
         },
-        keyword,
-        documentId,
-      },
-      getNextPageParam: (lastPage: any) => {
-        const {
-          meta: {
-            pagination: { page, pageSize, pageCount },
-          },
-        } = lastPage;
+      } = lastPage;
 
-        if (page < pageCount) {
-          return {
-            pagination: { page: page + 1, pageSize },
-            keyword,
-            documentId,
-          };
-        }
+      if (page < pageCount) {
+        return {
+          pagination: { page: page + 1, pageSize },
+          documentId,
+          keyword,
+        };
+      }
 
-        return null;
-      },
-    });
+      return null;
+    },
+  });
 
   const users: any = _.reduce(
-    data?.pages,
+    usersData?.pages,
     (result: any, item: any) => [...result, ...item.data],
     [],
   );
@@ -121,7 +130,7 @@ const SearchUserList = () => {
   };
 
   const onItemPress = (item: any) => {
-    router.push(`/users/${item.documentId}`);
+    router.push(`/users/${item.following.documentId}`);
   };
 
   const renderItem = ({ item, index }: any) => {
@@ -133,16 +142,16 @@ const SearchUserList = () => {
         }}>
         <HStack className={`items-center`} space="md">
           <Avatar size="sm">
-            <AvatarFallbackText>{item.username}</AvatarFallbackText>
+            <AvatarFallbackText>{item.following.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${item.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}/${item.following.avatar?.formats.thumbnail.url}`,
               }}
             />
           </Avatar>
           <VStack>
-            <Text bold={true}>{item.username}</Text>
-            <Text size="sm">{item.email}</Text>
+            <Text bold={true}>{item.following.username}</Text>
+            <Text size="sm">{item.following.email}</Text>
           </VStack>
         </HStack>
       </TouchableOpacity>
@@ -153,7 +162,7 @@ const SearchUserList = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '查询用户',
+          title: `${isMe ? '我' : username}关注的人`,
           headerShown: true,
           headerLeft: renderHeaderLeft,
         }}
@@ -181,11 +190,10 @@ const SearchUserList = () => {
               }}
             />
           }
-          contentContainerClassName="flex-1"
         />
       </VStack>
     </SafeAreaView>
   );
 };
 
-export default SearchUserList;
+export default FollowingList;

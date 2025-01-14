@@ -84,6 +84,36 @@ module.exports = (plugin: any) => {
     },
   });
 
+  plugin.routes["content-api"].routes.unshift({
+    method: "PUT",
+    path: "/users/custom/me",
+    handler: "custom.updateMe",
+    config: {
+      middlewares: ["plugin::users-permissions.rateLimit"],
+      prefix: "",
+    },
+  });
+
+  plugin.routes["content-api"].routes.unshift({
+    method: "GET",
+    path: "/users/custom",
+    handler: "custom.findUsers",
+    config: {
+      middlewares: ["plugin::users-permissions.rateLimit"],
+      prefix: "",
+    },
+  });
+
+  plugin.routes["content-api"].routes.unshift({
+    method: "GET",
+    path: "/users/custom/:documentId",
+    handler: "custom.findUser",
+    config: {
+      middlewares: ["plugin::users-permissions.rateLimit"],
+      prefix: "",
+    },
+  });
+
   plugin.controllers.custom = {
     registerOtp: async (ctx) => {
       const pluginStore = await strapi.store({
@@ -287,63 +317,103 @@ module.exports = (plugin: any) => {
         user: await sanitizeUser(user, ctx),
       });
     },
-  };
 
-  plugin.controllers.user.find = async (ctx: any) => {
-    const schema = strapi.getModel(modelId);
-    const { auth } = ctx.state;
-    await validate.query(ctx.query, schema, { auth });
+    updateMe: async (ctx: any) => {
+      const schema = strapi.contentType(modelId);
+      const { auth } = ctx.state;
+      await validate.query(ctx.query, schema, { auth });
 
-    let sanitizedQueryParams = await sanitize.query(ctx.query, schema, {
-      auth,
-    });
+      const data: any = {
+        ..._.pick(ctx.request.body, [
+          "avatar",
+          "email",
+          "bio",
+          "birthday",
+          "gender",
+          "district",
+          "phoneNumber",
+        ]),
+      };
 
-    sanitizedQueryParams = {
-      ...sanitizedQueryParams,
-      ...(sanitizedQueryParams.pagination as Record<string, unknown>),
-    };
+      const sanitizedQueryParams = await sanitize.query(ctx.query, schema, {
+        auth,
+      });
 
-    const { results, pagination } = await strapi.entityService.findPage(
-      modelId,
-      sanitizedQueryParams
-    );
+      const userData = await strapi
+        .documents("plugin::users-permissions.user")
+        .update({
+          documentId: ctx.state.user.documentId,
+          data,
+          ...sanitizedQueryParams,
+        });
 
-    const users = await Promise.all(
-      results.map((user) => sanitize.output(user, schema, { auth }))
-    );
+      const sanitizeUserData: any = await sanitize.output(userData, schema, {
+        auth,
+      });
 
-    ctx.body = {
-      data: users,
-      meta: {
-        pagination: pagination,
-      },
-    };
-  };
+      const result = {
+        ...sanitizeUserData,
+      };
 
-  plugin.controllers.user.findOne = async (ctx: any) => {
-    const schema = strapi.contentType(modelId);
-    const { auth } = ctx.state;
-    const { id: documentId } = ctx.params;
-    await validate.query(ctx.query, schema, { auth });
+      return result;
+    },
 
-    const sanitizedQueryParams = await sanitize.query(ctx.query, schema, {
-      auth,
-    });
+    findUsers: async (ctx: any) => {
+      const schema = strapi.getModel(modelId);
+      const { auth } = ctx.state;
+      await validate.query(ctx.query, schema, { auth });
 
-    const userData = await strapi.documents(schema.uid).findOne({
-      documentId,
-      ...sanitizedQueryParams,
-    });
+      let sanitizedQueryParams = await sanitize.query(ctx.query, schema, {
+        auth,
+      });
 
-    const sanitizeUserData: any = await sanitize.output(userData, schema, {
-      auth,
-    });
+      sanitizedQueryParams = {
+        ...sanitizedQueryParams,
+        ...(sanitizedQueryParams.pagination as Record<string, unknown>),
+      };
 
-    const result = {
-      ...sanitizeUserData,
-    };
+      const { results, pagination } = await strapi.entityService.findPage(
+        modelId,
+        sanitizedQueryParams
+      );
 
-    return result;
+      const users = await Promise.all(
+        results.map((user) => sanitize.output(user, schema, { auth }))
+      );
+
+      ctx.body = {
+        data: users,
+        meta: {
+          pagination: pagination,
+        },
+      };
+    },
+
+    findUser: async (ctx: any) => {
+      const schema = strapi.contentType(modelId);
+      const { auth } = ctx.state;
+      const { documentId } = ctx.params;
+      await validate.query(ctx.query, schema, { auth });
+
+      const sanitizedQueryParams = await sanitize.query(ctx.query, schema, {
+        auth,
+      });
+
+      const userData = await strapi.documents(schema.uid).findOne({
+        documentId,
+        ...sanitizedQueryParams,
+      });
+
+      const sanitizeUserData: any = await sanitize.output(userData, schema, {
+        auth,
+      });
+
+      const result = {
+        ...sanitizeUserData,
+      };
+
+      return result;
+    },
   };
 
   return plugin;

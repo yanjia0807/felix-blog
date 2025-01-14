@@ -146,7 +146,7 @@ const PostList = () => {
             <TagList tags={item.tags || []}></TagList>
           </VStack>
           <Pressable onPress={() => onPostItemPressed({ item, index })}>
-            <VStack space="sm">
+            <VStack space="md">
               <Heading numberOfLines={2}>{item.title}</Heading>
               {item.cover && (
                 <Box className="h-36 flex-1">

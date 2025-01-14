@@ -24,7 +24,8 @@
       "target": "plugin::users-permissions.user"
     },
     "unreadCount": {
-      "type": "integer"
+      "type": "integer",
+      "default": 0
     },
     "isArchived": {
       "type": "boolean",

@@ -1,17 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, MapPin } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { FlatList, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
 import { fetchPost } from '@/api/post';
 import AuthorInfo from '@/components/author-info';
 import { CommentInput } from '@/components/comment-input';
-import { ImageGrid, ImageList } from '@/components/image-input';
+import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import { RecordingList } from '@/components/recording-list';
 import { ShareButton } from '@/components/share-button';
@@ -67,8 +66,17 @@ const PostDetail = () => {
       id: item.id,
       assetId: item.documentId,
       alternativeText: item.alternativeText,
-      thumbnailUri: `${apiServerURL}${item.formats?.small.url || item.url}`,
-      uri: `${apiServerURL}${item.formats?.medium.url || item.url}`,
+      uri: `${apiServerURL}${item.formats?.thumbnail.url || item.url}`,
+    }),
+  );
+
+  const originImages: any = _.map(
+    _.find(post?.attachments || [], { type: 'image' })?.files || [],
+    (item: any) => ({
+      id: item.id,
+      assetId: item.documentId,
+      alternativeText: item.alternativeText,
+      uri: `${apiServerURL}${item.url}`,
     }),
   );
 
@@ -110,7 +118,7 @@ const PostDetail = () => {
         <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
           <VStack className="flex-1" space="xl">
             <VStack space="sm">
-              <Heading>{post.title}</Heading>
+              <Heading size="lg">{post.title}</Heading>
               <TagList tags={post?.tags} />
               <HStack className="items-center justify-between">
                 <AuthorInfo author={post?.author} />
@@ -150,12 +158,12 @@ const PostDetail = () => {
               <ImageList images={images} onOpenGallery={(index: number) => onOpenGallery(index)} />
               <RecordingList recordings={recordings} />
             </VStack>
-            <Text>{post?.content}</Text>
+            <Text size="lg">{post?.content}</Text>
           </VStack>
         </ScrollView>
       )}
       <GalleryPreview
-        images={images}
+        images={originImages}
         initialIndex={imageIndex}
         isVisible={isGalleryPreviewOpen}
         onRequestClose={() => setIsGalleryPreviewOpen(false)}

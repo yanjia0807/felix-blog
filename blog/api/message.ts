@@ -4,7 +4,7 @@ import { apiClient } from './api-client';
 
 export type MessageData = any;
 
-export const fetchMessages = async ({ pageParam }: any) => {
+export const fetchMessagesByChat = async ({ pageParam }: any) => {
   const { pagination, filters } = pageParam;
   const query = qs.stringify({
     populate: {
@@ -42,6 +42,7 @@ export const fetchMessages = async ({ pageParam }: any) => {
 export const createMessage = async (data: any) => {
   const query = qs.stringify({
     populate: {
+      fields: ['createdAt'],
       chat: {
         fields: ['id', 'documentId'],
       },

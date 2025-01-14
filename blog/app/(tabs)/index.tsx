@@ -13,6 +13,7 @@ import MainHeader from '@/components/main-header';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
+import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
@@ -272,12 +273,12 @@ const Home = () => {
             </HStack>
             <HStack className="items-start justify-start" space="md">
               <Box className="w-8"></Box>
-              <VStack space="md" className="flex-1 justify-between">
+              <VStack space="lg" className="flex-1 justify-between">
                 <VStack>
-                  <Text numberOfLines={1} ellipsizeMode="tail" bold={true} size="md">
+                  <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
                     {item.title}
-                  </Text>
-                  <Text numberOfLines={3} ellipsizeMode="tail" size="sm">
+                  </Heading>
+                  <Text numberOfLines={3} ellipsizeMode="tail">
                     {item.content}
                   </Text>
                 </VStack>
