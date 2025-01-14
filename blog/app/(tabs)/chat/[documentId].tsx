@@ -4,12 +4,12 @@ import { format } from 'date-fns';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Ellipsis } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { apiServerURL, createChat, fetchChat, fetchChatByUsers, fetchMessagesByChat } from '@/api';
+import { apiServerURL, fetchChat, fetchMessagesByChat } from '@/api';
 import { createMessage, updateChatStatus } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
@@ -34,13 +34,7 @@ const messageFormSchema = z.object({
 
 const Chat = () => {
   const { user: currentUser } = useAuth();
-  const { userDocumentIds: userDocumentIdsStr, documentId }: any = useLocalSearchParams();
-  const userDocumentIds = _.split(userDocumentIdsStr, ',');
-  const otherDocumentId: any = _.find(
-    userDocumentIds,
-    (item: any) => item !== currentUser.documentId,
-  );
-  const [chatData, setChatData] = useState<any>();
+  const { documentId }: any = useLocalSearchParams();
   const flatListRef = useRef<FlatList>(null);
   const toast = useCustomToast();
   const { messages, setMessages } = useSocket();
@@ -58,16 +52,33 @@ const Chat = () => {
     },
   });
 
-  const { mutate: createChatMutate } = useMutation({
-    mutationFn: ({ users }: any) =>
-      createChat({
-        users,
-      }),
-    onSuccess: async (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ['chats', 'detail', { userDocumentIds }] });
-      await queryClient.invalidateQueries({
-        queryKey: ['chats', 'list'],
+  const { mutate: chatStatusMutate } = useMutation({
+    mutationFn: (data: any) => updateChatStatus(data),
+    onSuccess: async (data: any) => {
+      queryClient.setQueryData(['chats', 'list'], (oldData: any) => {
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            data: page.data.map((item: any) =>
+              item.id === chatData.id
+                ? {
+                    ...item,
+                    chatStatuses: [
+                      {
+                        ...item.chatStatuses[0],
+                        unreadCount: 0,
+                      },
+                    ],
+                  }
+                : { ...item },
+            ),
+          })),
+        };
       });
+    },
+    onError(error, variables, context) {
+      toast.error({ description: error.message });
     },
   });
 
@@ -110,34 +121,9 @@ const Chat = () => {
     },
   });
 
-  const { mutate: chatStatusMutate } = useMutation({
-    mutationFn: (data: any) => updateChatStatus(data),
-    onSuccess: async (data: any) => {
-      queryClient.setQueryData(['chats', 'list'], (oldData: any) => {
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page: any) => ({
-            ...page,
-            data: page.data.map((item: any) =>
-              item.id === chatData.id
-                ? {
-                    ...item,
-                    chatStatuses: [
-                      {
-                        ...item.chatStatuses[0],
-                        unreadCount: 0,
-                      },
-                    ],
-                  }
-                : { ...item },
-            ),
-          })),
-        };
-      });
-    },
-    onError(error, variables, context) {
-      toast.error({ description: error.message });
-    },
+  const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
+    queryKey: ['chats', 'detail', documentId],
+    queryFn: () => fetchChat({ documentId, userDocumentId: currentUser.documentId }),
   });
 
   const {
@@ -145,6 +131,7 @@ const Chat = () => {
     fetchNextPage,
     hasNextPage,
     isLoading: isLoadingMessage,
+    isSuccess: isQueryMessageSuccess,
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ['chats', 'detail', chatData?.documentId, 'messsages'],
@@ -182,36 +169,6 @@ const Chat = () => {
     staleTime: Infinity,
   });
 
-  const { data: userChat, isSuccess: isQueryUserChatSuccess } = useQuery({
-    queryKey: ['chats', 'detail', { userDocumentIds }],
-    enabled: !documentId,
-    queryFn: () => {
-      return fetchChatByUsers({ userDocumentIds });
-    },
-  });
-
-  const { data: currentChat, isSuccess: isQueryChatSuccess } = useQuery({
-    queryKey: ['chats', 'detail', documentId],
-    enabled: !!documentId,
-    queryFn: () => fetchChat({ documentId, userDocumentId: currentUser.documentId }),
-  });
-
-  useEffect(() => {
-    if (documentId) {
-      if (currentChat) {
-        setChatData({ ...currentChat });
-      }
-    } else {
-      if (isQueryUserChatSuccess) {
-        if (userChat) {
-          setChatData({ ...userChat });
-        } else {
-          createChatMutate({ users: [currentUser.documentId, otherDocumentId] });
-        }
-      }
-    }
-  }, [documentId, isQueryUserChatSuccess, currentChat, userChat, currentUser, otherDocumentId]);
-
   useEffect(() => {
     return () => {
       if (chatData) {
@@ -222,37 +179,32 @@ const Chat = () => {
     };
   }, [chatData]);
 
-  let otherUser: any = null,
-    messageData: any = [];
-  if (chatData) {
-    otherUser = _.find(chatData.users, (item: any) => item.documentId !== currentUser.documentId);
-    const incomeMessages = _.filter(
-      messages,
-      (item: any) =>
-        (item.sender.documentId === currentUser.documentId &&
-          item.receiver.documentId === otherUser.documentId) ||
-        (item.sender.documentId === otherUser.documentId &&
-          item.receiver.documentId === currentUser.documentId),
-    );
-    const cacheMessages = _.reduce(
-      messageRes?.pages,
-      (result: any, page: any) => [...result, ...page.data],
-      [],
-    );
+  const otherUser = isQueryChatSuccess
+    ? _.find(chatData.users, (item: any) => item.documentId !== currentUser.documentId)
+    : null;
 
-    messageData = _.concat(incomeMessages, cacheMessages);
-  }
+  const incomeMessages = isQueryChatSuccess
+    ? _.filter(
+        messages,
+        (item: any) =>
+          (item.sender.documentId === currentUser.documentId &&
+            item.receiver.documentId === otherUser.documentId) ||
+          (item.sender.documentId === otherUser.documentId &&
+            item.receiver.documentId === currentUser.documentId),
+      )
+    : [];
+
+  const cacheMessages = isQueryMessageSuccess
+    ? _.reduce(messageRes?.pages, (result: any, page: any) => [...result, ...page.data], [])
+    : [];
+
+  const messageData = _.concat(incomeMessages, cacheMessages);
 
   const renderHeaderLeft = () => (
     <HStack className="items-center" space="xl">
-      <Button
-        action="secondary"
-        variant="link"
-        onPress={() => {
-          router.back();
-        }}>
+      <Button action="secondary" variant="link" onPress={() => router.navigate('/chat')}>
         <ButtonIcon as={ChevronLeft} />
-        <ButtonText>返回</ButtonText>
+        <ButtonText>聊天列表</ButtonText>
       </Button>
       <HStack className="items-center" space="sm">
         <Avatar size="md">
@@ -347,23 +299,26 @@ const Chat = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      <KeyboardAvoidingView className="flex-1" behavior={'padding'} keyboardVerticalOffset={100}>
-        <VStack className="flex-1 justify-between px-4">
-          <FlatList
-            ref={flatListRef}
-            data={messageData}
-            inverted={true}
-            keyExtractor={(item: any) => item.documentId}
-            renderItem={renderMessageItem}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
-          />
+      <VStack className="flex-1 justify-between px-4">
+        <FlatList
+          className="py-2"
+          contentContainerClassName="flex-grow justify-end"
+          ref={flatListRef}
+          data={messageData}
+          inverted={true}
+          initialNumToRender={10}
+          keyExtractor={(item: any) => item.documentId}
+          renderItem={renderMessageItem}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+        />
+        <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={100}>
           <Controller name="content" control={control} render={renderInput} />
-        </VStack>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </VStack>
     </SafeAreaView>
   );
 };

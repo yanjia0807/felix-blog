@@ -22,7 +22,7 @@ const ChatListHeader = () => {
   const { user }: any = useAuth();
   const router = useRouter();
 
-  const onSearchUserBtnPressed = () => router.push('/search-user-list');
+  const onSearchUserBtnPressed = () => router.push('/chat/search-user-list');
 
   return (
     <HStack className="mb-4 items-center justify-between">
@@ -100,12 +100,7 @@ const ChatList = () => {
   };
 
   const onChatItemPressed = ({ item }: any) => {
-    router.push({
-      pathname: '/chat',
-      params: {
-        documentId: item.documentId,
-      },
-    });
+    router.push(`/chat/${item.documentId}`);
   };
 
   const renderItem = ({ item, index }: any) => {
@@ -133,11 +128,11 @@ const ChatList = () => {
                   {item.lastMessage?.content}
                 </Text>
                 {item.chatStatuses[0]?.unreadCount > 0 && (
-                  <Box className="h-5 w-5 items-center justify-center rounded-full bg-success-600">
+                  <Box className="h-4 w-4 items-center justify-center self-end rounded-full bg-success-600 p-[0.5]">
                     <Text
                       numberOfLines={1}
                       ellipsizeMode="tail"
-                      className="text-xs leading-none text-white">
+                      className="text-[8px] leading-none text-white">
                       {item.chatStatuses[0]?.unreadCount}
                     </Text>
                   </Box>

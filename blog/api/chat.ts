@@ -131,9 +131,9 @@ export const fetchChatByUsers = async ({ userDocumentIds }: any) => {
   return (res.data && res.data[0]) || null;
 };
 
-export const createChat = async ({ users }: any) => {
+export const createChat = async ({ userDocumentIds }: any) => {
   const res = await apiClient.post(`/chats/init`, {
-    users,
+    users: userDocumentIds,
   });
   return res.data;
 };

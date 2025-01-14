@@ -12,7 +12,7 @@ import {
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
-import { apiServerURL, fetchUser } from '@/api';
+import { apiServerURL, createChat, fetchChatByUsers, fetchUser } from '@/api';
 import { toggleFollow } from '@/api/follow';
 import { useAuth } from '@/components/auth-context';
 import PhotoListView from '@/components/photo-list-view';
@@ -34,6 +34,7 @@ const UserDetail = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const queryClient = useQueryClient();
   const toast = useCustomToast();
+  const userDocumentIds = [currentUser.documentId, documentId];
 
   const {
     isPending,
@@ -42,6 +43,26 @@ const UserDetail = () => {
   } = useQuery({
     queryKey: ['users', documentId],
     queryFn: () => fetchUser(documentId),
+  });
+
+  const { mutate: createChatMutate } = useMutation({
+    mutationFn: () =>
+      createChat({
+        userDocumentIds,
+      }),
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({ queryKey: ['chats', 'detail', { userDocumentIds }] });
+      await queryClient.invalidateQueries({
+        queryKey: ['chats', 'list'],
+      });
+    },
+  });
+
+  const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
+    queryKey: ['chats', 'detail', { userDocumentIds }],
+    queryFn: () => {
+      return fetchChatByUsers({ userDocumentIds });
+    },
   });
 
   const isFollowed = !_.isUndefined(
@@ -93,12 +114,17 @@ const UserDetail = () => {
   const onShareButtonPressed = () => {};
 
   const onChatButtonPressed = () => {
-    router.navigate({
-      pathname: '/chat',
-      params: {
-        userDocumentIds: [currentUser.documentId, documentId],
-      },
-    });
+    if (isQueryChatSuccess) {
+      if (chatData) {
+        router.push(`/chat/${chatData.documentId}`);
+      } else {
+        createChatMutate(undefined, {
+          onSuccess: (data: any) => {
+            router.push(`/chat/${data.documentId}`);
+          },
+        });
+      }
+    }
   };
 
   const onFollowBtnPressed = () => {
