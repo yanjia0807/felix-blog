@@ -9,7 +9,13 @@ import { Drawer } from 'react-native-drawer-layout';
 import { apiServerURL, fetchTags } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
-import { CommentIcon } from '@/components/comment-input';
+import {
+  CommentInput,
+  CommentListInput,
+  CommentProvider,
+  CommentSheet,
+  useCommentContext,
+} from '@/components/comment-input';
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
@@ -38,7 +44,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { formatDistance } from '@/utils/date';
 
-const PostHeader = () => {
+const PostHeader: React.FC = () => {
   const { isLoading, data } = useQuery({
     queryKey: ['tags', 'list'],
     queryFn: fetchTags,
@@ -93,11 +99,9 @@ const PostHeader = () => {
   );
 };
 
-const PostList = () => {
+const PostList: React.FC = () => {
   const { user } = useAuth();
   const {
-    filters,
-    setFilters,
     data: postData,
     fetchNextPage,
     hasNextPage,
@@ -105,6 +109,7 @@ const PostList = () => {
     isFetchingNextPage,
     refetch,
   } = usePostFilterDrawerContext();
+  const { setPostDocumentId, setCommentCount } = useCommentContext();
 
   const posts: any = _.reduce(
     postData?.pages,
@@ -120,7 +125,7 @@ const PostList = () => {
         assetId: item.documentId,
         alternativeText: item.alternativeText,
         thumbnailUri: `${apiServerURL}${item.formats?.thumbnail.url}`,
-        uri: `${apiServerURL}${item.formats?.medium.url}`,
+        uri: `${apiServerURL}${item.url}`,
       }),
     );
 
@@ -171,7 +176,10 @@ const PostList = () => {
           <HStack className="items-center justify-between">
             <HStack space="lg" className="flex-row items-center">
               <LikeButton post={item} />
-              <CommentIcon count={item.comments.count} />
+              <CommentListInput
+                onPress={() => onCommentInputPress({ item })}
+                commentCount={item.comments.count}
+              />
             </HStack>
             <HStack className="items-center">
               {Array(5)
@@ -209,6 +217,11 @@ const PostList = () => {
         documentId: item.documentId,
       },
     });
+  };
+
+  const onCommentInputPress = ({ item }: any) => {
+    setPostDocumentId(item.documentId);
+    setCommentCount(item.comments.count);
   };
 
   const onCreatePostButtonPressed = () => {
@@ -257,7 +270,7 @@ const PostList = () => {
   );
 };
 
-const PostListDrawer = () => {
+const PostListDrawer: React.FC = () => {
   const { isDrawerOpen, setIsDrawerOpen } = usePostFilterDrawerContext();
 
   return (
@@ -266,12 +279,15 @@ const PostListDrawer = () => {
       onOpen={() => setIsDrawerOpen(true)}
       onClose={() => setIsDrawerOpen(false)}
       renderDrawerContent={() => <PostFilterContent />}>
-      <PostList />
+      <CommentProvider>
+        <PostList />
+        <CommentSheet />
+      </CommentProvider>
     </Drawer>
   );
 };
 
-const PostListPage = () => (
+const PostListPage: React.FC = () => (
   <SafeAreaView className="flex-1">
     <PostFilterDrawerProvider>
       <PostListDrawer />

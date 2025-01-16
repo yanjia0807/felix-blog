@@ -8,7 +8,7 @@ import { apiServerURL } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import PhotoListView from '@/components/photo-list-view';
 import PostListView from '@/components/post-list-view';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -16,7 +16,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const ProfileScreen = () => {
+const Profile: React.FC = () => {
   const { user } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -53,9 +53,10 @@ const ProfileScreen = () => {
                 <Avatar size="lg">
                   <AvatarImage
                     source={{
-                      uri: `${apiServerURL}/${user.avatar?.formats.thumbnail.url}`,
+                      uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
                     }}
                   />
+                  <AvatarFallbackText>{user.username}</AvatarFallbackText>
                 </Avatar>
                 <HStack className="items-center" space="sm">
                   <Button
@@ -142,4 +143,4 @@ const ProfileScreen = () => {
   );
 };
 
-export default ProfileScreen;
+export default Profile;

@@ -13,21 +13,10 @@
   "pluginOptions": {},
   "attributes": {
     "title": {
-      "type": "string",
-      "required": false
-    },
-    "slug": {
-      "type": "uid",
-      "targetField": "title"
+      "type": "string"
     },
     "content": {
       "type": "text"
-    },
-    "tags": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::tag.tag",
-      "mappedBy": "posts"
     },
     "cover": {
       "type": "media",
@@ -49,10 +38,16 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "likePosts"
     },
-    "comments": {
+    "tags": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::comment.comment",
+      "relation": "manyToMany",
+      "target": "api::tag.tag",
+      "mappedBy": "posts"
+    },
+    "feature": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::feature.feature",
       "mappedBy": "post"
     },
     "poi": {
@@ -64,6 +59,12 @@
       "type": "component",
       "repeatable": true,
       "component": "shared.attachment"
+    },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comment.comment",
+      "mappedBy": "post"
     }
   }
 }

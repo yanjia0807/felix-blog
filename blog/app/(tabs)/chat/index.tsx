@@ -7,7 +7,7 @@ import { FlatList, RefreshControl, SafeAreaView } from 'react-native';
 import { apiServerURL, fetchChats } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
@@ -18,7 +18,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const ChatListHeader = () => {
+const ChatListHeader: React.FC = () => {
   const { user }: any = useAuth();
   const router = useRouter();
 
@@ -30,9 +30,10 @@ const ChatListHeader = () => {
         <Avatar>
           <AvatarImage
             source={{
-              uri: `${apiServerURL}/${user.avatar?.formats.thumbnail.url}`,
+              uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
             }}
           />
+          <AvatarFallbackText>{user.username}</AvatarFallbackText>
         </Avatar>
         <Heading>我的消息</Heading>
       </HStack>
@@ -43,7 +44,7 @@ const ChatListHeader = () => {
   );
 };
 
-const ChatList = () => {
+const ChatList: React.FC = () => {
   const { user }: any = useAuth();
   const { messages: newMessages } = useSocket();
   const router = useRouter();
@@ -112,8 +113,10 @@ const ChatList = () => {
             <Avatar>
               <AvatarImage
                 source={{
-                  uri: `${apiServerURL}/${otherUser.avatar?.formats.thumbnail.url}`,
-                }}></AvatarImage>
+                  uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
+                }}
+              />
+              <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
             </Avatar>
             <VStack space="xs" className="flex-1">
               <HStack className="items-center justify-between">
@@ -145,8 +148,10 @@ const ChatList = () => {
             <Avatar>
               <AvatarImage
                 source={{
-                  uri: `${apiServerURL}/${otherUser.avatar?.formats.thumbnail.url}`,
-                }}></AvatarImage>
+                  uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
+                }}
+              />
+              <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
             </Avatar>
             <Text size="md" bold={true}>
               {otherUser.username}

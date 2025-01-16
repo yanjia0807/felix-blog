@@ -12,12 +12,18 @@ import {
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
-import { apiServerURL, createChat, fetchChatByUsers, fetchUser } from '@/api';
-import { toggleFollow } from '@/api/follow';
+import {
+  apiServerURL,
+  createChat,
+  fetchChatByUsers,
+  fetchUser,
+  isFollowingUser,
+  updateFollowings,
+} from '@/api';
 import { useAuth } from '@/components/auth-context';
 import PhotoListView from '@/components/photo-list-view';
 import PostListView from '@/components/post-list-view';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -28,7 +34,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-const UserDetail = () => {
+const UserDetail: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId }: any = useLocalSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -66,32 +72,23 @@ const UserDetail = () => {
     },
   });
 
-  const isFollowed = !_.isUndefined(
-    currentUser &&
-      user &&
-      _.find(currentUser.followings, {
-        following: { documentId: user.documentId },
-      }),
-  );
+  const { data: isFollowing } = useQuery({
+    queryKey: ['users', 'me', 'followings', documentId],
+    enabled: !!currentUser,
+    queryFn: () => isFollowingUser({ following: documentId }),
+  });
 
-  const {
-    isSuccess: isFollowSuccess,
-    isError: isFollowError,
-    isPending: isFollowPending,
-    mutate: followMutate,
-  } = useMutation({
-    mutationFn: (data: any) => {
-      return toggleFollow(data);
+  const { isPending: isFollowPending, mutate: followMutate } = useMutation({
+    mutationFn: () => {
+      const params = { following: user.documentId };
+      return updateFollowings(params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['users', 'me'],
       });
-      queryClient.invalidateQueries({
-        queryKey: ['users', documentId],
-      });
       toast.success({
-        description: isFollowed ? '取消关注成功' : '关注成功',
+        description: isFollowing ? '取消关注成功' : '关注成功',
       });
     },
     onError(error, variables, context) {
@@ -128,14 +125,7 @@ const UserDetail = () => {
     }
   };
 
-  const onFollowBtnPressed = () => {
-    const data = {
-      follower: currentUser.documentId,
-      following: user.documentId,
-      isFollowed,
-    };
-    followMutate(data);
-  };
+  const onFollowBtnPressed = () => followMutate();
 
   const onFollowingsBtnPress = () => {
     router.push({
@@ -175,9 +165,10 @@ const UserDetail = () => {
                 <Avatar size="xl" className="shadow">
                   <AvatarImage
                     source={{
-                      uri: `${apiServerURL}/${user.avatar?.formats.thumbnail.url}`,
+                      uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
                     }}
                   />
+                  <AvatarFallbackText>{user.username}</AvatarFallbackText>
                 </Avatar>
                 <VStack space="sm">
                   <Text size="2xl" bold={true}>
@@ -213,12 +204,12 @@ const UserDetail = () => {
                   <ButtonIcon as={MessageCircle} />
                 </Button>
                 <Button
-                  action={isFollowed ? 'negative' : 'positive'}
+                  action={isFollowing ? 'negative' : 'positive'}
                   size="md"
                   className="rounded-3xl px-12"
                   disabled={isFollowPending}
                   onPress={() => onFollowBtnPressed()}>
-                  <ButtonText>{isFollowed ? '取消关注' : '关注'}</ButtonText>
+                  <ButtonText>{isFollowing ? '取消关注' : '关注'}</ButtonText>
                   {isPending && <ButtonSpinner />}
                 </Button>
                 <Button

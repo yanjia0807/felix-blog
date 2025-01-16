@@ -8,6 +8,7 @@ export type UpdatePostLikedData = any;
 export const fetchPosts = async ({ pageParam }: any) => {
   const {
     pagination,
+    userDocumentId,
     filters: {
       title,
       authorName,
@@ -77,6 +78,12 @@ export const fetchPosts = async ({ pageParam }: any) => {
           },
         },
       },
+      likedByUsers: {
+        fields: ['id', 'documentId'],
+        filters: {
+          documentId: userDocumentId,
+        },
+      },
       tags: true,
       poi: true,
       cover: {
@@ -95,7 +102,7 @@ export const fetchPosts = async ({ pageParam }: any) => {
     sort: 'createdAt:desc',
     pagination,
   });
-  const res = await apiClient.get(`/posts/additional?${query}`);
+  const res = await apiClient.get(`/posts?${query}`);
   return res;
 };
 
@@ -124,7 +131,7 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
     sort: 'createdAt:desc',
     pagination,
   });
-  const res = await apiClient.get(`/posts/additional?${query}`);
+  const res = await apiClient.get(`/posts?${query}`);
   return res;
 };
 
@@ -143,9 +150,6 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
         },
       },
       likedByUsers: {
-        count: true,
-      },
-      comments: {
         count: true,
       },
       cover: {
@@ -174,13 +178,19 @@ export const fetchUserPhotos = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchPost = async ({ documentId }: any) => {
+export const fetchPost = async ({ documentId, userDocumentId }: any) => {
   const query = qs.stringify(
     {
       populate: {
         tags: true,
         poi: true,
         cover: true,
+        likedByUsers: {
+          fields: ['id', 'documentId'],
+          filters: {
+            documentId: userDocumentId,
+          },
+        },
         author: {
           populate: {
             avatar: {
@@ -202,7 +212,7 @@ export const fetchPost = async ({ documentId }: any) => {
       encodeValuesOnly: true,
     },
   );
-  const res = await apiClient.get(`/posts/${documentId}/additional?${query}`);
+  const res = await apiClient.get(`/posts/${documentId}?${query}`);
   return res.data;
 };
 
@@ -228,7 +238,7 @@ export const updatePostLiked = async ({ documentId, postData }: UpdatePostLikedD
     const res = await apiClient.put(`/posts/${documentId}?${query}`, {
       data: postData,
     });
-    return res;
+    return res.data;
   } catch (error: any) {
     throw new Error(error.message);
   }

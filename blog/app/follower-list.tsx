@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
-import { apiServerURL, fetchFollowerUsers } from '@/api';
+import { apiServerURL, fetchFollowers } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -25,7 +25,7 @@ const filterFormSchema = z.object({
   keyword: z.string().optional(),
 });
 
-const FollowerList = () => {
+const FollowerList: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId, username } = useLocalSearchParams();
   const [keyword, setKeyword] = useState();
@@ -41,7 +41,7 @@ const FollowerList = () => {
   const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
       queryKey: ['users', documentId, 'followers', { keyword }],
-      queryFn: fetchFollowerUsers,
+      queryFn: fetchFollowers,
       enabled: !!documentId,
       initialPageParam: {
         pagination: {
@@ -123,7 +123,7 @@ const FollowerList = () => {
   };
 
   const onItemPress = (item: any) => {
-    router.push(`/users/${item.follower.documentId}`);
+    router.push(`/users/${item.documentId}`);
   };
 
   const renderItem = ({ item, index }: any) => {
@@ -135,16 +135,16 @@ const FollowerList = () => {
         }}>
         <HStack className={`items-center`} space="md">
           <Avatar size="sm">
-            <AvatarFallbackText>{item.follower.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${item.follower.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}${item.avatar?.formats.thumbnail.url}`,
               }}
             />
+            <AvatarFallbackText>{item.username}</AvatarFallbackText>
           </Avatar>
           <VStack>
-            <Text bold={true}>{item.follower.username}</Text>
-            <Text size="sm">{item.follower.email}</Text>
+            <Text bold={true}>{item.username}</Text>
+            <Text size="sm">{item.email}</Text>
           </VStack>
         </HStack>
       </TouchableOpacity>

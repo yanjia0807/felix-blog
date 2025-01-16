@@ -39,16 +39,18 @@
       "target": "api::comment.comment",
       "mappedBy": "topComment"
     },
-    "likes": {
-      "type": "integer"
-    },
-    "unlikes": {
-      "type": "integer"
-    },
     "reply": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::comment.comment"
+    },
+    "likes": {
+      "type": "integer",
+      "default": 0
+    },
+    "unlikes": {
+      "default": 0,
+      "type": "integer"
     }
   }
 }

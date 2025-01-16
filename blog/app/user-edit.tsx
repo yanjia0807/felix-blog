@@ -48,33 +48,30 @@ const userFormSchema = z.object({
   bio: z
     .string()
     .max(200, '简介不能超过 200 个字符')
-    .optional()
-    .transform((val) => (val === '' ? undefined : val)),
+    .nullable()
+    .transform((val) => (val === '' ? null : val)),
   gender: z
     .enum(['male', 'female'], {
       invalid_type_error: '性别格式不正确',
     })
-    .optional(),
+    .nullable(),
   birthday: z
     .date({
       invalid_type_error: '出生日期格式不正确',
     })
-    .optional(),
+    .nullable(),
   phoneNumber: z
     .string()
-    .refine(
-      (val: any) =>
-        val === null || val === '' || typeof val === 'undefined' || /^1[3-9]\d{9}$/.test(val),
-      {
-        message: '电话号码格式不正确',
-      },
-    )
-    .transform((val) => (val === '' ? undefined : val)),
+    .refine((val: any) => /^1[3-9]\d{9}$/.test(val), {
+      message: '电话号码格式不正确',
+    })
+    .nullable()
+    .transform((val) => (val === '' ? null : val)),
   district: z.any(),
   avatar: z.any(),
 });
 
-const UserEditScreen = () => {
+const UserEdit: React.FC = () => {
   const { user }: any = useAuth();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
@@ -89,7 +86,7 @@ const UserEditScreen = () => {
     defaultValues: {
       bio: user.bio,
       gender: user.gender,
-      birthday: user.birthday ? new Date(user.birthday) : undefined,
+      birthday: user.birthday ? new Date(user.birthday) : null,
       phoneNumber: user.phoneNumber,
       district: user.district,
       avatar: user.avatar,
@@ -282,4 +279,4 @@ const UserEditScreen = () => {
   );
 };
 
-export default UserEditScreen;
+export default UserEdit;

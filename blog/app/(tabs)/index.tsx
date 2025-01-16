@@ -22,7 +22,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { formatDistance } from '@/utils/date';
 
-const ListHeader = () => {
+const HomeHeader: React.FC = () => {
   const { user } = useAuth();
 
   const {
@@ -31,7 +31,6 @@ const ListHeader = () => {
     hasNextPage,
     isLoading: isLoadingFeatures,
     isFetchingNextPage,
-    refetch,
   } = useInfiniteQuery({
     queryKey: ['features', 'list'],
     queryFn: fetchFeatures,
@@ -92,7 +91,7 @@ const ListHeader = () => {
         <Image
           recyclingKey={item.assetId}
           source={{
-            uri: `${apiServerURL}/${item.image.formats.small.url}`,
+            uri: `${apiServerURL}${item.image.formats.medium.url}`,
           }}
           style={{
             width: '100%',
@@ -115,12 +114,12 @@ const ListHeader = () => {
                 </Text>
                 <HStack space="xs" className="items-center">
                   <Avatar size="sm">
-                    <AvatarFallbackText>{item.post?.author.username}</AvatarFallbackText>
                     <AvatarImage
                       source={{
-                        uri: `${apiServerURL}/${item.post?.author.avatar?.formats.thumbnail.url}`,
+                        uri: `${apiServerURL}${item.post?.author.avatar?.formats.thumbnail.url}`,
                       }}
                     />
+                    <AvatarFallbackText>{item.post?.author.username}</AvatarFallbackText>
                   </Avatar>
                   <Text size="sm" className="text-white">
                     {item.post?.author.username}
@@ -139,12 +138,12 @@ const ListHeader = () => {
       <Pressable onPress={() => onAvatarPress(item.documentId)}>
         <VStack className="items-center" space="sm">
           <Avatar key={item.id} size="md" className="mx-4">
-            <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${item.formats?.thumbnail.url}`,
+                uri: `${apiServerURL}${item.formats.thumbnail.url}`,
               }}
             />
+            <AvatarFallbackText>{item.username}</AvatarFallbackText>
           </Avatar>
           <Text size="sm">{item.username}</Text>
         </VStack>
@@ -185,7 +184,7 @@ const ListHeader = () => {
   );
 };
 
-const Home = () => {
+const Home: React.FC = () => {
   const { user } = useAuth();
 
   const {
@@ -246,12 +245,12 @@ const Home = () => {
             <HStack className="items-center justify-between" space="md">
               <Pressable className="w-8" onPress={() => onAvatarPress(item.author.documentId)}>
                 <Avatar size="sm">
-                  <AvatarFallbackText>{item.author.username}</AvatarFallbackText>
                   <AvatarImage
                     source={{
-                      uri: `${apiServerURL}/${item.author.avatar?.formats.thumbnail.url}`,
+                      uri: `${apiServerURL}${item.author.avatar?.formats.thumbnail.url}`,
                     }}
                   />
+                  <AvatarFallbackText>{item.author.username}</AvatarFallbackText>
                 </Avatar>
               </Pressable>
               <VStack className="flex-1">
@@ -318,7 +317,7 @@ const Home = () => {
   const isLoading = isLoadingRecomment;
 
   const renderListHeader = (props: any) => {
-    return <ListHeader {...props}></ListHeader>;
+    return <HomeHeader {...props}></HomeHeader>;
   };
 
   return (

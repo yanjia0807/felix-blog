@@ -43,7 +43,7 @@ const changePasswordSchema = z.object({
     .min(6, '确认密码长度至少为6位'),
 });
 
-const ChangePassword = () => {
+const ChangePassword: React.FC = () => {
   const { changePasswordMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = changePasswordMutation;
   const toast = useCustomToast();

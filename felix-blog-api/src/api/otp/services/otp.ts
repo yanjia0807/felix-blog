@@ -8,12 +8,10 @@ import { addMinutes } from "date-fns";
 import { randomInt } from "crypto";
 import { errors } from "@strapi/utils";
 
-const modelId = "api::otp.otp";
-
 const { ApplicationError, ValidationError, ForbiddenError, NotFoundError } =
   errors;
 
-export default factories.createCoreService(modelId, {
+export default factories.createCoreService("api::otp.otp", {
   async createOtp(userId, purpose) {
     const now = new Date(new Date().toISOString());
     const expiresAt = addMinutes(now, 30);
@@ -48,7 +46,7 @@ export default factories.createCoreService(modelId, {
   },
 
   async verifyOtp(email, code, purpose) {
-    const otp = await strapi.db.query(modelId).findOne({
+    const otp = await strapi.db.query("api::otp.otp").findOne({
       where: {
         code: { $eq: code },
         user: { email: { $eq: email } },

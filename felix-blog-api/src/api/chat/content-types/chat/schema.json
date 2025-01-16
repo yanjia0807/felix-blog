@@ -12,10 +12,16 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "lastMessage": {
+    "initiator": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::message.message"
+      "target": "plugin::users-permissions.user"
+    },
+    "users": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "chats"
     },
     "messages": {
       "type": "relation",
@@ -29,15 +35,10 @@
       "target": "api::chat-status.chat-status",
       "mappedBy": "chat"
     },
-    "users": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "plugin::users-permissions.user"
-    },
-    "initiator": {
+    "lastMessage": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "api::message.message"
     }
   }
 }

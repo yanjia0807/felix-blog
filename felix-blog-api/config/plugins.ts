@@ -12,15 +12,9 @@ export default ({ env }) => ({
         },
       },
       settings: {
-        defaultFrom: env('SMTP_USER'),
-        defaultReplyTo: env('SMTP_USER'),
+        defaultFrom: env("SMTP_USER"),
+        defaultReplyTo: env("SMTP_USER"),
       },
     },
-  },
-  upload: {
-    config: {},
-  },
-  "users-permissions": {
-    config: {},
   },
 });

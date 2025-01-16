@@ -6,60 +6,59 @@ import { TouchableOpacity } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { UpdatePostLikedData, updatePostLiked } from '@/api';
 import { useAuth } from './auth-context';
+import { usePostFilterDrawerContext } from './post-filter';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 
 export const LikeButton = ({ post, className }: any) => {
   const { user } = useAuth();
+  const userDocumentId = user?.documentId;
   const queryClient = useQueryClient();
+  const { filters } = usePostFilterDrawerContext();
+  const likedByMe = user ? _.some(post.likedByUsers, { documentId: userDocumentId }) : false;
 
   const { mutate } = useMutation({
     mutationFn: ({ documentId, postData }: UpdatePostLikedData) => {
       return updatePostLiked({ documentId, postData });
     },
+    async onSuccess(data: any, variables, context) {
+      await queryClient.invalidateQueries({
+        queryKey: ['posts', post.documentId, { userDocumentId }],
+      });
 
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['posts'] });
-      const prevData: any = queryClient.getQueryData(['posts']);
-      if (prevData) {
-        queryClient.setQueryData(['posts'], (oldData: any) => {
-          const newData = _.cloneDeep(oldData);
-          const newPost = _.find(_.flatten(_.map(newData.pages, 'data')), {
-            documentId: post.documentId,
-          });
-          if (newPost) {
-            newPost.likedByMe = !newPost.likedByMe;
-            newPost.likedByUsers = newPost.likedByMe
-              ? _.concat(_.map(post.likedByUsers, 'documentId'), user.documentId)
-              : _.filter(
-                  newPost.likedByUsers,
-                  (userItem: any) => userItem.documentId !== user.documentId,
-                );
-            return newData;
-          }
-        });
-        return { prevData };
-      }
-    },
-
-    onSettled: (data, error, variables, context) => {
-      if (error) {
-        queryClient.setQueryData(['posts'], context?.prevData);
-      }
-      queryClient.invalidateQueries({ queryKey: ['posts'], exact: true });
-      queryClient.invalidateQueries({ queryKey: ['posts', post.documentId] });
+      await queryClient.setQueryData(
+        ['posts', 'list', { userDocumentId, filters }],
+        (oldData: any) => {
+          return {
+            pages: _.map(oldData.pages, (page: any) => ({
+              meta: page.meta,
+              data: _.map(page.data, (item: any) =>
+                item.documentId === post.documentId
+                  ? {
+                      ...item,
+                      likedByUsers: data.likedByUsers,
+                    }
+                  : {
+                      ...item,
+                    },
+              ),
+            })),
+            pageParams: oldData.pageParams,
+          };
+        },
+      );
     },
   });
 
   const onLikedButtonPress = () => {
     if (user) {
-      const userDocumentIds = post.likedByMe
+      const userDocumentIds = likedByMe
         ? _.map(
-            _.filter(post.likedByUsers, (item: any) => item.documentId !== user.documentId),
+            _.filter(post.likedByUsers, (item: any) => item.documentId !== userDocumentId),
             'documentId',
           )
-        : _.concat(_.map(post.likedByUsers, 'documentId'), user.documentId);
+        : _.concat(_.map(post.likedByUsers, 'documentId'), userDocumentId);
 
       mutate({
         documentId: post.documentId,
@@ -73,7 +72,7 @@ export const LikeButton = ({ post, className }: any) => {
   return (
     <TouchableOpacity onPress={() => onLikedButtonPress()}>
       <HStack space="xs" className="items-center">
-        <Icon as={Heart} className={twMerge(post?.likedByMe && 'text-red-400', className)} />
+        <Icon as={Heart} className={twMerge(likedByMe && 'text-red-400', className)} />
         <Text size="xs">{post?.likedByUsers.length}</Text>
       </HStack>
     </TouchableOpacity>

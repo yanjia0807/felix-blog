@@ -13,7 +13,7 @@ import { apiServerURL, fetchChat, fetchMessagesByChat } from '@/api';
 import { createMessage, updateChatStatus } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FormControl } from '@/components/ui/form-control';
@@ -32,7 +32,7 @@ const messageFormSchema = z.object({
   content: z.string().min(1, '内容不能为空').max(100, '内容不能多余5000个字符'),
 });
 
-const Chat = () => {
+const Chat: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId }: any = useLocalSearchParams();
   const flatListRef = useRef<FlatList>(null);
@@ -201,27 +201,32 @@ const Chat = () => {
   const messageData = _.concat(incomeMessages, cacheMessages);
 
   const renderHeaderLeft = () => (
-    <HStack className="items-center" space="xl">
-      <Button action="secondary" variant="link" onPress={() => router.navigate('/chat')}>
-        <ButtonIcon as={ChevronLeft} />
-        <ButtonText>聊天列表</ButtonText>
-      </Button>
-      <HStack className="items-center" space="sm">
-        <Avatar size="md">
-          <AvatarImage
-            source={{ uri: `${apiServerURL}/${otherUser?.avatar?.formats.thumbnail.url}` }}
-          />
-        </Avatar>
-        <VStack>
-          <Heading size="sm" bold={true}>
-            {otherUser?.username}
-          </Heading>
-          <Text size="xs" className="text-success-500">
-            在线
-          </Text>
-        </VStack>
-      </HStack>
-    </HStack>
+    <>
+      {isQueryChatSuccess ? (
+        <HStack className="items-center" space="xl">
+          <Button action="secondary" variant="link" onPress={() => router.navigate('/chat')}>
+            <ButtonIcon as={ChevronLeft} />
+            <ButtonText>聊天列表</ButtonText>
+          </Button>
+          <HStack className="items-center" space="sm">
+            <Avatar size="md">
+              <AvatarImage
+                source={{ uri: `${apiServerURL}${otherUser?.avatar?.formats.thumbnail.url}` }}
+              />
+              <AvatarFallbackText>{otherUser?.username}</AvatarFallbackText>
+            </Avatar>
+            <VStack>
+              <Heading size="sm" bold={true}>
+                {otherUser?.username}
+              </Heading>
+              <Text size="xs" className="text-success-500">
+                在线
+              </Text>
+            </VStack>
+          </HStack>
+        </HStack>
+      ) : null}
+    </>
   );
 
   const renderHeaderRight = () => <Icon as={Ellipsis} />;
@@ -247,8 +252,11 @@ const Chat = () => {
       <HStack>
         <Avatar size="xs">
           <AvatarImage
-            source={{ uri: `${apiServerURL}/${otherUser?.avatar?.formats.thumbnail.url}` }}
+            source={{
+              uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
+            }}
           />
+          <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
         </Avatar>
         <HStack className="flex-1 items-center justify-between">
           <Card size="md" variant="elevated" className="m-3 w-2/3 rounded-md bg-primary-300 p-4">

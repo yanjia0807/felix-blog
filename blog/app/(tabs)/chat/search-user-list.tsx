@@ -24,7 +24,7 @@ const filterFormSchema = z.object({
   keyword: z.string().optional(),
 });
 
-const SearchUserList = () => {
+const SearchUserList: React.FC = () => {
   const { user } = useAuth();
   const documentId = user.documentId;
   const [keyword, setKeyword] = useState();
@@ -133,12 +133,12 @@ const SearchUserList = () => {
         }}>
         <HStack className={`items-center`} space="md">
           <Avatar size="sm">
-            <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${item.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}${item.avatar?.formats.thumbnail.url}`,
               }}
             />
+            <AvatarFallbackText>{item.username}</AvatarFallbackText>
           </Avatar>
           <VStack>
             <Text bold={true}>{item.username}</Text>

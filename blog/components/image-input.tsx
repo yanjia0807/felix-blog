@@ -16,7 +16,7 @@ import {
   ActionsheetItemText,
 } from '@/components/ui/actionsheet';
 import { Text } from '@/components/ui/text';
-import { Avatar, AvatarImage, AvatarBadge } from './ui/avatar';
+import { Avatar, AvatarImage, AvatarBadge, AvatarFallbackText } from './ui/avatar';
 import { Box } from './ui/box';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
@@ -214,21 +214,21 @@ export const AvatarImageInput = ({ onChange, value }: any) => {
 
   if (value) {
     if (value.id) {
-      source = { uri: `${apiServerURL}/${value.formats.thumbnail.url}` };
+      source = { uri: `${apiServerURL}${value.formats.thumbnail.url}` };
     } else if (value.length > 0 && value[0].uri) {
       source = { uri: value[0].uri };
     } else if (value.uri) {
       source = { uri: value.uri };
     }
   } else {
-    source = require('@/assets/images/profile/image.png');
+    source = null;
   }
 
   return (
     <>
       <Pressable onPress={() => onInputIconPressed()}>
         <Avatar size="xl">
-          <AvatarImage source={source} />
+          {source && <AvatarImage source={source} />}
           <AvatarBadge className="items-center justify-center">
             <Pressable onPress={() => onRemoveIconPressed()}>
               <Icon as={X} size="xs" />
@@ -416,7 +416,7 @@ export const ImageList = ({ images, onOpenGallery }: any) => {
         className={`mx-1 h-14 w-14 ${index === 0 ? 'ml-0' : ''} ${index === images.length - 1 ? 'mr-0' : ''}`}>
         <Image
           source={{
-            uri: item.thumbnailUri,
+            uri: item.uri,
           }}
           alt={item.alternativeText}
           style={{

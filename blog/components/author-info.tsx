@@ -22,12 +22,14 @@ const AuthorInfo = ({ author }: any) => {
     <Pressable onPress={() => onAvatarPress(author.documentId)}>
       <HStack className="items-center" space="sm">
         <Avatar size="sm">
+          {author.avatar && (
+            <AvatarImage
+              source={{
+                uri: `${apiServerURL}${author.avatar.formats.thumbnail.url}`,
+              }}
+            />
+          )}
           <AvatarFallbackText>{author.username}</AvatarFallbackText>
-          <AvatarImage
-            source={{
-              uri: `${apiServerURL}/${author.avatar?.formats.thumbnail.url}`,
-            }}
-          />
         </Avatar>
         <VStack>
           <Text size="sm" bold={true}>

@@ -12,19 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "type": {
-      "type": "enumeration",
-      "enum": [
-        "follow",
-        "system"
-      ]
-    },
-    "user": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "notifications"
-    },
     "state": {
       "type": "enumeration",
       "enum": [
@@ -33,8 +20,21 @@
       ],
       "default": "unread"
     },
-    "metaData": {
+    "data": {
       "type": "json"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "notifications"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "following",
+        "system"
+      ]
     }
   }
 }

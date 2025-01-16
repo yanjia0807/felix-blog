@@ -24,7 +24,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-const SettingScreen = () => {
+const Setting: React.FC = () => {
   const toast = useCustomToast();
   const { user, logoutMutation } = useAuth();
   const logoutToastId = _.random(0, 10000).toString();
@@ -139,4 +139,4 @@ const SettingScreen = () => {
   );
 };
 
-export default SettingScreen;
+export default Setting;

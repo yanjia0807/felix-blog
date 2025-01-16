@@ -114,6 +114,46 @@ module.exports = (plugin: any) => {
     },
   });
 
+  plugin.routes["content-api"].routes.unshift({
+    method: "GET",
+    path: "/users/custom/is-following-user",
+    handler: "custom.isFollowingUser",
+    config: {
+      middlewares: ["plugin::users-permissions.rateLimit"],
+      prefix: "",
+    },
+  });
+
+  plugin.routes["content-api"].routes.unshift({
+    method: "GET",
+    path: "/users/custom/followings",
+    handler: "custom.findFollowings",
+    config: {
+      middlewares: ["plugin::users-permissions.rateLimit"],
+      prefix: "",
+    },
+  });
+
+  plugin.routes["content-api"].routes.unshift({
+    method: "GET",
+    path: "/users/custom/followers",
+    handler: "custom.findFollowers",
+    config: {
+      middlewares: ["plugin::users-permissions.rateLimit"],
+      prefix: "",
+    },
+  });
+
+  plugin.routes["content-api"].routes.unshift({
+    method: "PUT",
+    path: "/users/custom/followings",
+    handler: "custom.updateFollowings",
+    config: {
+      middlewares: ["plugin::users-permissions.rateLimit"],
+      prefix: "",
+    },
+  });
+
   plugin.controllers.custom = {
     registerOtp: async (ctx) => {
       const pluginStore = await strapi.store({
@@ -184,7 +224,7 @@ module.exports = (plugin: any) => {
         role: role.id,
         email: email.toLowerCase(),
         username,
-        confirmed: !settings.email_confirmation,
+        confirmed: false,
       };
 
       const user = await strapi
@@ -323,6 +363,10 @@ module.exports = (plugin: any) => {
       const { auth } = ctx.state;
       await validate.query(ctx.query, schema, { auth });
 
+      const sanitizedQueryParams = await sanitize.query(ctx.query, schema, {
+        auth,
+      });
+
       const data: any = {
         ..._.pick(ctx.request.body, [
           "avatar",
@@ -334,10 +378,6 @@ module.exports = (plugin: any) => {
           "phoneNumber",
         ]),
       };
-
-      const sanitizedQueryParams = await sanitize.query(ctx.query, schema, {
-        auth,
-      });
 
       const userData = await strapi
         .documents("plugin::users-permissions.user")
@@ -353,6 +393,119 @@ module.exports = (plugin: any) => {
 
       const result = {
         ...sanitizeUserData,
+      };
+
+      return result;
+    },
+
+    isFollowingUser: async (ctx: any) => {
+      const user: any = await strapi
+        .documents("plugin::users-permissions.user")
+        .findOne({
+          documentId: ctx.state.user.documentId,
+          fields: [],
+          populate: {
+            followings: {
+              fields: [],
+            },
+          },
+        });
+      const isFollowing = _.some(user.followings, {
+        documentId: ctx.query.following,
+      });
+      return {
+        data: isFollowing,
+      };
+    },
+
+    updateFollowings: async (ctx: any) => {
+      const schema = strapi.contentType(modelId);
+      const { auth } = ctx.state;
+      await validate.query(ctx.query, schema, { auth });
+
+      const sanitizedQueryParams = await sanitize.query(ctx.query, schema, {
+        auth,
+      });
+
+      const user: any = await strapi
+        .documents("plugin::users-permissions.user")
+        .findOne({
+          documentId: ctx.state.user.documentId,
+          fields: [],
+          populate: {
+            followings: {
+              fields: [],
+            },
+            avatar: true,
+          },
+        });
+
+      const params: any = {
+        ..._.pick(ctx.request.body, ["following"]),
+      };
+
+      const isFollowingBefore = _.some(user.followings, {
+        documentId: params.following,
+      });
+
+      const followings = isFollowingBefore
+        ? _.filter(
+            user.followings,
+            (item: any) => item.documentId !== params.following
+          )
+        : _.concat(user.followings, params.following);
+
+      const isFollowing = !isFollowingBefore;
+
+      const data: any = {
+        followings,
+      };
+
+      const userData = await strapi
+        .documents("plugin::users-permissions.user")
+        .update({
+          documentId: ctx.state.user.documentId,
+          data,
+          ...sanitizedQueryParams,
+        });
+
+      const sanitizeUserData: any = await sanitize.output(userData, schema, {
+        auth,
+      });
+
+      const notificationParams = {
+        type: "following" as any,
+        user: params.following,
+        data: JSON.stringify({
+          follower: {
+            id: user.id,
+            documentId: user.documentId,
+            username: user.username,
+            avatar: user.avatar && {
+              formats: {
+                thumbnail: user.avatar.formats.thumbnail,
+              },
+            },
+            bio: user.bio,
+          },
+          isFollowing,
+        }),
+      };
+
+      const notification = await strapi
+        .documents("api::notification.notification")
+        .create({
+          data: notificationParams,
+        });
+
+      (strapi as any).io.to(params.following).emit("notification:create", {
+        data: notification,
+      });
+
+      const result = {
+        data: {
+          ...sanitizeUserData,
+        },
       };
 
       return result;
@@ -413,6 +566,150 @@ module.exports = (plugin: any) => {
       };
 
       return result;
+    },
+
+    findFollowings: async (ctx: any) => {
+      const {
+        filters: { keyword, documentId },
+        populate,
+        pagination,
+      } = ctx.query;
+
+      const page = pagination?.page || 1;
+      const pageSize = pagination?.pageSize || 20;
+      const start = (page - 1) * pageSize;
+      const limit = pageSize;
+
+      const user: any = await strapi
+        .documents("plugin::users-permissions.user")
+        .findOne({
+          documentId,
+          fields: [],
+          populate: {
+            followings: {
+              fields: [],
+            },
+          },
+        });
+
+      const filters: any = {
+        documentId: {
+          $in: _.map(user.followings, (item: any) => item.documentId),
+        },
+      };
+
+      if (keyword) {
+        filters["$or"] = [
+          {
+            username: {
+              $containsi: keyword,
+            },
+          },
+          {
+            email: {
+              $containsi: keyword,
+            },
+          },
+        ];
+      }
+
+      const [data, total]: any = await Promise.all([
+        strapi.documents(modelId).findMany({
+          pagination: {
+            start,
+            limit,
+          },
+          populate,
+          filters,
+        }),
+        strapi.documents(modelId).count({ filters }),
+      ]);
+
+      const pageCount = Math.ceil(total / pageSize);
+
+      return {
+        data,
+        meta: {
+          pagination: {
+            page,
+            pageSize,
+            pageCount,
+            total,
+          },
+        },
+      };
+    },
+
+    findFollowers: async (ctx: any) => {
+      const {
+        filters: { keyword, documentId },
+        populate,
+        pagination,
+      } = ctx.query;
+
+      const page = pagination?.page || 1;
+      const pageSize = pagination?.pageSize || 20;
+      const start = (page - 1) * pageSize;
+      const limit = pageSize;
+
+      const user: any = await strapi
+        .documents("plugin::users-permissions.user")
+        .findOne({
+          documentId,
+          fields: [],
+          populate: {
+            followers: {
+              fields: [],
+            },
+          },
+        });
+
+      const filters: any = {
+        documentId: {
+          $in: _.map(user.followers, (item: any) => item.documentId),
+        },
+      };
+
+      if (keyword) {
+        filters["$or"] = [
+          {
+            username: {
+              $containsi: keyword,
+            },
+          },
+          {
+            email: {
+              $containsi: keyword,
+            },
+          },
+        ];
+      }
+
+      const [data, total]: any = await Promise.all([
+        strapi.documents(modelId).findMany({
+          pagination: {
+            start,
+            limit,
+          },
+          populate,
+          filters,
+        }),
+        strapi.documents(modelId).count({ filters }),
+      ]);
+
+      const pageCount = Math.ceil(total / pageSize);
+
+      return {
+        data,
+        meta: {
+          pagination: {
+            page,
+            pageSize,
+            pageCount,
+            total,
+          },
+        },
+      };
     },
   };
 

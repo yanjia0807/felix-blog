@@ -34,7 +34,7 @@ const sendOtpSchema = z.object({
     ),
 });
 
-const SendOtp = () => {
+const SendOtp: React.FC = () => {
   const toast = useCustomToast();
   const { sendOtpMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = sendOtpMutation;

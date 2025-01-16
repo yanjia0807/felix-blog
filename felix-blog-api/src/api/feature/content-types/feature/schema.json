@@ -8,14 +8,14 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
     "image": {
       "type": "media",
       "multiple": false,
-      "required": true,
+      "required": false,
       "allowedTypes": [
         "images"
       ]
@@ -27,7 +27,8 @@
     "post": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::post.post"
+      "target": "api::post.post",
+      "inversedBy": "feature"
     },
     "order": {
       "type": "integer",

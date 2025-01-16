@@ -5,15 +5,13 @@
 import { factories } from "@strapi/strapi";
 const { sanitize, validate } = strapi.contentAPI;
 
-const modelId = "api::notification.notification";
-
-export default factories.createCoreService(modelId, {
+export default factories.createCoreService("api::notification.notification", {
   async unreadCount(ctx) {
     const { auth, user } = ctx.state;
-    const schema = strapi.getModel(modelId);
+    const schema = strapi.getModel("api::notification.notification");
     await validate.query(ctx.query, schema, { auth });
-    
-    return await strapi.documents(modelId).count({
+
+    return await strapi.documents("api::notification.notification").count({
       filters: {
         user: user.id,
         state: "unread",

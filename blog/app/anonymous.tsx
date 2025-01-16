@@ -7,7 +7,7 @@ import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 
-const Anonymous = () => {
+const Anonymous: React.FC = () => {
   const renderHeaderLeft = () => (
     <Button action="secondary" variant="link" onPress={() => router.replace('/')}>
       <ButtonIcon as={X} />

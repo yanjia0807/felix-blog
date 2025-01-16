@@ -65,6 +65,18 @@
       "inversedBy": "users",
       "configurable": false
     },
+    "chats": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::chat.chat",
+      "mappedBy": "users"
+    },
+    "notifications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notification.notification",
+      "mappedBy": "user"
+    },
     "posts": {
       "type": "relation",
       "relation": "oneToMany",
@@ -77,29 +89,17 @@
       "target": "api::post.post",
       "mappedBy": "likedByUsers"
     },
-    "comments": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::comment.comment",
-      "mappedBy": "user"
-    },
     "followings": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::follow.follow",
-      "mappedBy": "follower"
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "followers"
     },
     "followers": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::follow.follow",
-      "mappedBy": "following"
-    },
-    "notifications": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::notification.notification",
-      "mappedBy": "user"
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "followings"
     },
     "birthday": {
       "type": "date"
@@ -114,9 +114,6 @@
         "female"
       ]
     },
-    "bio": {
-      "type": "string"
-    },
     "avatar": {
       "type": "media",
       "multiple": false,
@@ -129,6 +126,15 @@
       "type": "component",
       "repeatable": false,
       "component": "shared.district"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comment.comment",
+      "mappedBy": "user"
     }
   }
 }

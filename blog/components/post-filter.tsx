@@ -7,6 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { fetchPosts } from '@/api';
+import { useAuth } from './auth-context';
 import { DateInput } from './date-input';
 import { TagSelect } from './tag-input';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
@@ -53,7 +54,9 @@ export const PostFilterDrawerContext = createContext<PostFilterDrawerContextType
 });
 
 export const PostFilterDrawerProvider = ({ children }: any) => {
+  const { user } = useAuth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const userDocumentId = user?.documentId || null;
 
   const defaultValues = {
     title: undefined,
@@ -69,11 +72,12 @@ export const PostFilterDrawerProvider = ({ children }: any) => {
 
   const clearFilters = () => setFilters(defaultValues);
 
-  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['posts', 'list', filters],
+      queryKey: ['posts', 'list', { userDocumentId, filters }],
       queryFn: fetchPosts,
       initialPageParam: {
+        userDocumentId,
         filters,
         pagination: {
           page: 1,
@@ -90,6 +94,7 @@ export const PostFilterDrawerProvider = ({ children }: any) => {
 
         if (page < pageCount) {
           return {
+            userDocumentId,
             filters,
             pagination: { page: page + 1, pageSize },
           };

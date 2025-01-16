@@ -1,4 +1,4 @@
-import type { Core } from '@strapi/strapi';
+import type { Core } from "@strapi/strapi";
 import { Server as SocketServer } from "socket.io";
 
 interface SocketConfig {
@@ -19,7 +19,7 @@ export default {
     const socketConfig = strapi.config.get("socket.config") as SocketConfig;
     if (!socketConfig) {
       strapi.log.error("Invalid Socket.IO configuration");
-      return
+      return;
     }
     strapi.server.httpServer.on("listening", () => {
       const io = new SocketServer(strapi.server.httpServer, {

@@ -41,25 +41,23 @@ export const fetchMe = async () => {
   }
 };
 
-export const updateMe = async (formData: any) => {
+export const updateMe = async (params: any) => {
   const query = qs.stringify(
     {
       populate: {
-        followers: {
-          populate: ['follower'],
-          fields: ['id'],
-        },
-        followings: {
-          populate: ['following'],
-          fields: ['id'],
-        },
         avatar: {
           fields: ['formats', 'name', 'alternativeText'],
+        },
+        district: true,
+        followers: {
+          count: true,
+        },
+        followings: {
+          count: true,
         },
         posts: {
           count: true,
         },
-        district: true,
       },
     },
     {
@@ -68,17 +66,18 @@ export const updateMe = async (formData: any) => {
   );
 
   const data: any = {
-    bio: formData.bio,
-    birthday: formData.birthday,
-    gender: formData.gender,
-    phoneNumber: formData.phoneNumber,
-    district: formData.district,
+    bio: params.bio,
+    birthday: params.birthday,
+    gender: params.gender,
+    phoneNumber: params.phoneNumber,
+    district: params.district,
   };
 
-  if (formData.avatar) {
-    if (!formData.avatar.documentId) {
-      const uri = formData.avatar.uri || formData.avatar[0]?.uri;
-      data.avatar = await uploadFiles(uri);
+  if (params.avatar) {
+    if (!params.avatar.documentId) {
+      const uri = params.avatar.uri || params.avatar[0]?.uri;
+      const fileId = await uploadFiles(uri);
+      data.avatar = fileId;
     }
   } else {
     data.avatar = null;
@@ -86,6 +85,44 @@ export const updateMe = async (formData: any) => {
 
   const res = await apiClient.put(`/users/custom/me?${query}`, data);
   return res;
+};
+
+export const updateFollowings = async (params: any) => {
+  const query = qs.stringify(
+    {
+      populate: {
+        avatar: {
+          fields: ['formats', 'name', 'alternativeText'],
+        },
+        district: true,
+        followers: {
+          count: true,
+        },
+        followings: {
+          count: true,
+        },
+        posts: {
+          count: true,
+        },
+      },
+    },
+    {
+      encodeValuesOnly: true,
+    },
+  );
+
+  const data: any = {
+    following: params.following,
+  };
+
+  const res = await apiClient.put(`/users/custom/followings?${query}`, data);
+  return res.data;
+};
+
+export const isFollowingUser = async (params: any) => {
+  const query: any = qs.stringify({ following: params.following });
+  const res = await apiClient.get(`/users/custom/is-following-user?${query}`);
+  return res.data;
 };
 
 export const fetchUser = async (id: string): Promise<any> => {
@@ -160,101 +197,46 @@ export const fetchUsers = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchFollowingUsers = async ({ pageParam }: any) => {
+export const fetchFollowings = async ({ pageParam }: any) => {
   const { pagination, documentId, keyword } = pageParam;
   const filters = {
-    $and: [
-      {
-        follower: {
-          documentId,
-        },
-      },
-      keyword
-        ? {
-            follower: {
-              $or: [
-                {
-                  username: {
-                    $containsi: keyword,
-                  },
-                },
-                {
-                  email: {
-                    $containsi: keyword,
-                  },
-                },
-              ],
-            },
-          }
-        : {},
-    ],
+    keyword,
+    documentId,
   };
-
   const populate = {
-    following: {
-      populate: {
-        avatar: {
-          fields: ['formats', 'name', 'alternativeText'],
-        },
-      },
+    avatar: {
+      fields: ['alternativeText', 'width', 'height', 'formats'],
     },
   };
 
   const query = qs.stringify({
     populate,
-    filters,
     pagination,
+    filters,
   });
-  const res = await apiClient.get(`/follows?${query}`);
 
+  const res = await apiClient.get(`/users/custom/followings?${query}`);
   return res;
 };
 
-export const fetchFollowerUsers = async ({ pageParam }: any) => {
+export const fetchFollowers = async ({ pageParam }: any) => {
   const { pagination, documentId, keyword } = pageParam;
   const filters = {
-    $and: [
-      {
-        following: {
-          documentId,
-        },
-      },
-      keyword
-        ? {
-            follower: {
-              $or: [
-                {
-                  username: {
-                    $containsi: keyword,
-                  },
-                },
-                {
-                  email: {
-                    $containsi: keyword,
-                  },
-                },
-              ],
-            },
-          }
-        : {},
-    ],
+    keyword,
+    documentId,
   };
-
   const populate = {
-    follower: {
-      populate: {
-        avatar: {
-          fields: ['formats', 'name', 'alternativeText'],
-        },
-      },
+    avatar: {
+      fields: ['alternativeText', 'width', 'height', 'formats'],
     },
   };
 
   const query = qs.stringify({
     populate,
-    filters,
     pagination,
+    filters,
   });
-  const res = await apiClient.get(`/follows?${query}`);
+
+  const res = await apiClient.get(`/users/custom/followers?${query}`);
   return res;
 };

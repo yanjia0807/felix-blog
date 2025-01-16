@@ -11,7 +11,17 @@ import { format } from 'date-fns';
 import _ from 'lodash';
 import { MessageCircle } from 'lucide-react-native';
 import { Heart, HeartCrack } from 'lucide-react-native';
-import React, { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  forwardRef,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
@@ -23,7 +33,7 @@ import {
   fetchRelatedComments,
 } from '@/api/comment';
 import { useAuth } from './auth-context';
-import { Avatar, AvatarImage } from './ui/avatar';
+import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
@@ -36,69 +46,18 @@ import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
 
-type CommentSchemaDetails = z.infer<typeof commentSchema>;
+const CommentContext = createContext<any>({});
 
-const commentSchema = z.object({
-  content: z.string({
-    required_error: '请填写内容',
-  }),
-});
-
-export const CommentIcon = ({ count = 0 }: any) => {
-  return (
-    <HStack space="xs" className="items-center">
-      <Icon as={MessageCircle} />
-      <Text size="xs">{count}</Text>
-    </HStack>
-  );
-};
-
-export const CommentInput = ({ postDocumentId, count = 0 }: any) => {
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const onInputIconPressed = () => {
-    bottomSheetRef.current?.present();
-  };
-
-  return (
-    <>
-      <Pressable onPress={() => onInputIconPressed()}>
-        <CommentIcon count={count} />
-      </Pressable>
-      <CommentSheet ref={bottomSheetRef} postDocumentId={postDocumentId} count={count} />
-    </>
-  );
-};
-
-const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: any, ref: any) {
-  const { user } = useAuth();
-  const [replyComment, setReplyComment] = useState<any>();
+export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [postDocumentId, setPostDocumentId] = useState<any>();
   const [selectCommentDocumentId, setSelectCommentDocumentId] = useState<any>();
+  const [replyComment, setReplyComment] = useState<any>();
   const [expandCommentIds, setExpandCommentIds] = useState<any>([]);
-  const inputRef = useRef<any>(null);
-  const queryClient = useQueryClient();
+  const [commentCount, setCommentCount] = useState(0);
+
   const toast = useCustomToast();
-  const snapPoints = useMemo(() => ['50%', '90%'], []);
-  const insets = useSafeAreaInsets();
-
-  useLayoutEffect(() => {
-    if (replyComment && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current.focus();
-      }, 100);
-    }
-  }, [replyComment]);
-
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    reset,
-  } = useForm<CommentSchemaDetails>({
-    resolver: zodResolver(commentSchema),
-    defaultValues: {
-      content: '',
-    },
-  });
+  const queryClient = useQueryClient();
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const {
     data: topComments,
@@ -109,11 +68,12 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
   } = useInfiniteQuery<any>({
     queryKey: ['comments', 'list', postDocumentId],
     queryFn: ({ pageParam }) => fetchPostComments(pageParam),
+    enabled: !!postDocumentId,
     initialPageParam: {
       postDocumentId,
       pagination: {
         page: 1,
-        pageSize: 5,
+        pageSize: 20,
       },
     },
     getNextPageParam: (lastPage: any) => {
@@ -135,11 +95,13 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
 
   const {
     data: relatedComments,
+    isSuccess: isFetchRelatedCommentsSuccess,
     isFetchingNextPage: isFetchingNextRelatedCommentsPage,
     fetchNextPage: fetchNextRelatedCommentsPage,
     hasNextPage: hasNextRelatedCommentsPage,
   } = useInfiniteQuery<any>({
     queryKey: [postDocumentId, selectCommentDocumentId, 'comments'],
+    enabled: !!postDocumentId && !!selectCommentDocumentId,
     queryFn: ({ pageParam }) => {
       return fetchRelatedComments(pageParam);
     },
@@ -167,6 +129,209 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
       return null;
     },
   });
+
+  const { mutate: createMutate, reset } = useMutation({
+    mutationFn: (comment: any) => {
+      return createComment(comment);
+    },
+    onSuccess: (data: any, variables: any, context: unknown) => {
+      toast.success({ description: '评论已发布' });
+      queryClient.invalidateQueries({
+        queryKey: ['posts', 'detail', postDocumentId],
+      });
+      if (variables.topComment) {
+        setExpandCommentIds((prev: any) => {
+          const current = _.find(prev, (documentId: string) => documentId === variables.topComment);
+          if (!current) {
+            return [...prev, variables.topComment];
+          } else {
+            return [...prev];
+          }
+        });
+        setSelectCommentDocumentId(variables.topComment);
+        queryClient.invalidateQueries({
+          queryKey: [postDocumentId, variables.topComment, 'comments'],
+        });
+        queryClient.setQueryData([postDocumentId, 'comments'], (oldData: any) => {
+          return {
+            pageParams: oldData.pageParams,
+            pages: _.map(oldData.pages, (page: any) => {
+              if (_.includes(_.map(page.data, 'documentId'), variables.topComment)) {
+                _.find(page.data, (item: any) => item.documentId === variables.topComment)
+                  .relatedComments.count++;
+                return page;
+              } else {
+                return page;
+              }
+            }),
+          };
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: [postDocumentId, 'comments'],
+        });
+      }
+      reset();
+    },
+    onError(error) {
+      toast.error({ description: error.message });
+      reset();
+    },
+  });
+
+  const { mutate: deleteMutate } = useMutation({
+    mutationFn: ({ documentId, topDocumentId }: any) => {
+      return deleteComment(documentId);
+    },
+    onSuccess: (data: any, variables: any, context: unknown) => {
+      toast.success({ description: '评论已删除' });
+      queryClient.invalidateQueries({
+        queryKey: ['posts', 'detail', postDocumentId],
+      });
+      if (variables.topDocumentId) {
+        queryClient.invalidateQueries({
+          queryKey: [postDocumentId, variables.topDocumentId, 'comments'],
+        });
+        queryClient.setQueryData([postDocumentId, 'comments'], (oldData: any) => {
+          return {
+            pageParams: oldData.pageParams,
+            pages: _.map(oldData.pages, (page: any) => {
+              if (_.includes(_.map(page.data, 'documentId'), variables.topDocumentId)) {
+                _.find(page.data, (item: any) => item.documentId === variables.topDocumentId)
+                  .relatedComments.count--;
+                return page;
+              } else {
+                return page;
+              }
+            }),
+          };
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: [postDocumentId, 'comments'],
+        });
+      }
+    },
+    onError(error, variables, context) {
+      toast.error({ description: error.message });
+    },
+  });
+
+  const value = {
+    postDocumentId,
+    setPostDocumentId,
+    selectCommentDocumentId,
+    setSelectCommentDocumentId,
+    replyComment,
+    setReplyComment,
+    expandCommentIds,
+    setExpandCommentIds,
+    commentCount,
+    setCommentCount,
+    topComments,
+    isFetchCommentsSuccess,
+    isFetchingNextCommentsPage,
+    fetchNextCommentsPage,
+    hasNextCommentsPage,
+    relatedComments,
+    isFetchingNextRelatedCommentsPage,
+    fetchNextRelatedCommentsPage,
+    hasNextRelatedCommentsPage,
+    isFetchRelatedCommentsSuccess,
+    createMutate,
+    deleteMutate,
+    bottomSheetRef,
+  };
+
+  return <CommentContext.Provider value={value}>{children}</CommentContext.Provider>;
+};
+
+export const useCommentContext = () => useContext<any>(CommentContext);
+
+type CommentFormSchema = z.infer<typeof commentFormSchema>;
+
+const commentFormSchema = z.object({
+  content: z.string({
+    required_error: '请填写内容',
+  }),
+});
+
+export const CommentListInput = ({ onPress, commentCount }: any) => {
+  const { bottomSheetRef } = useCommentContext();
+
+  const onInputIconPress = () => {
+    onPress();
+    bottomSheetRef.current?.present();
+  };
+
+  return (
+    <Pressable onPress={() => onInputIconPress()}>
+      <HStack space="xs" className="items-center">
+        <Icon as={MessageCircle} />
+        <Text size="xs">{commentCount}</Text>
+      </HStack>
+    </Pressable>
+  );
+};
+
+export const CommentInput = () => {
+  const { bottomSheetRef, commentCount } = useCommentContext();
+
+  const onInputIconPress = () => {
+    bottomSheetRef.current?.present();
+  };
+
+  return (
+    <Pressable onPress={() => onInputIconPress()}>
+      <HStack space="xs" className="items-center">
+        <Icon as={MessageCircle} />
+        <Text size="xs">{commentCount}</Text>
+      </HStack>
+    </Pressable>
+  );
+};
+
+export const CommentSheet = () => {
+  const { user } = useAuth();
+
+  const inputRef = useRef<any>(null);
+  const queryClient = useQueryClient();
+
+  const snapPoints = useMemo(() => ['50%', '90%'], []);
+  const insets = useSafeAreaInsets();
+
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    reset,
+  } = useForm<CommentFormSchema>({
+    resolver: zodResolver(commentFormSchema),
+    defaultValues: {
+      content: '',
+    },
+  });
+
+  const {
+    postDocumentId,
+    setSelectCommentDocumentId,
+    replyComment,
+    setReplyComment,
+    expandCommentIds,
+    setExpandCommentIds,
+    topComments,
+    commentCount,
+    isFetchingNextCommentsPage,
+    fetchNextCommentsPage,
+    hasNextCommentsPage,
+    relatedComments,
+    isFetchingNextRelatedCommentsPage,
+    fetchNextRelatedCommentsPage,
+    hasNextRelatedCommentsPage,
+    createMutate,
+    deleteMutate,
+    bottomSheetRef,
+  } = useCommentContext();
 
   const sectionListData = useMemo(() => {
     let data: any = [];
@@ -217,92 +382,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
     return data;
   }, [postDocumentId, queryClient, topComments, relatedComments]);
 
-  const { mutate: createMutate } = useMutation({
-    mutationFn: (comment: any) => {
-      return createComment(comment);
-    },
-    onSuccess: (data: any, variables: any, context: unknown) => {
-      toast.success({ description: '评论已发布' });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', postDocumentId],
-      });
-      if (variables.topComment) {
-        setExpandCommentIds((prev: any) => {
-          const current = _.find(prev, (documentId: string) => documentId === variables.topComment);
-          if (!current) {
-            return [...prev, variables.topComment];
-          } else {
-            return [...prev];
-          }
-        });
-        setSelectCommentDocumentId(variables.topComment);
-        queryClient.invalidateQueries({
-          queryKey: [postDocumentId, variables.topComment, 'comments'],
-        });
-        queryClient.setQueryData([postDocumentId, 'comments'], (oldData: any) => {
-          return {
-            pageParams: oldData.pageParams,
-            pages: _.map(oldData.pages, (page: any) => {
-              if (_.includes(_.map(page.data, 'documentId'), variables.topComment)) {
-                _.find(page.data, (item: any) => item.documentId === variables.topComment)
-                  .relatedComments.count++;
-                return page;
-              } else {
-                return page;
-              }
-            }),
-          };
-        });
-      } else {
-        queryClient.invalidateQueries({
-          queryKey: [postDocumentId, 'comments'],
-        });
-      }
-    },
-    onError(error, variables, context) {
-      toast.error({ description: error.message });
-    },
-  });
-
-  const { mutate: deleteMutate } = useMutation({
-    mutationFn: ({ documentId, topDocumentId }: any) => {
-      return deleteComment(documentId);
-    },
-    onSuccess: (data: any, variables: any, context: unknown) => {
-      toast.success({ description: '评论已删除' });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', postDocumentId],
-      });
-      if (variables.topDocumentId) {
-        queryClient.invalidateQueries({
-          queryKey: [postDocumentId, variables.topDocumentId, 'comments'],
-        });
-        queryClient.setQueryData([postDocumentId, 'comments'], (oldData: any) => {
-          return {
-            pageParams: oldData.pageParams,
-            pages: _.map(oldData.pages, (page: any) => {
-              if (_.includes(_.map(page.data, 'documentId'), variables.topDocumentId)) {
-                _.find(page.data, (item: any) => item.documentId === variables.topDocumentId)
-                  .relatedComments.count--;
-                return page;
-              } else {
-                return page;
-              }
-            }),
-          };
-        });
-      } else {
-        queryClient.invalidateQueries({
-          queryKey: [postDocumentId, 'comments'],
-        });
-      }
-    },
-    onError(error, variables, context) {
-      toast.error({ description: error.message });
-    },
-  });
-
-  const onExpandButtonPressed = async (section: any) => {
+  const onExpandButtonPress = async (section: any) => {
     setSelectCommentDocumentId(section.documentId);
     setExpandCommentIds((prev: any) => {
       const current = _.find(prev, (documentId: string) => documentId === section.documentId);
@@ -317,18 +397,33 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
     }
   };
 
-  const onCollapseButtonPressed = async (section: any) => {
+  const onSubmit = (formData: CommentFormSchema) => {
+    const data = {
+      content: formData.content,
+      user: user.documentId,
+      post: postDocumentId,
+      reply: replyComment?.documentId,
+      topComment: replyComment?.topDocumentId,
+    };
+
+    createMutate(data);
+  };
+
+  const onCollapseButtonPress = async (section: any) => {
     setExpandCommentIds((prev: any) => {
       return _.filter(prev, (documentId: string) => documentId !== section.documentId);
     });
   };
 
-  const onReplyButtonPressed = (documentId: string, topDocumentId: string, username: string) => {
+  const onReplyButtonPress = (documentId: string, topDocumentId: string, username: string) => {
     setReplyComment({
       documentId,
       topDocumentId,
       username,
     });
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
   };
 
   const onDeleteButtonPress = (documentId: string, topDocumentId: string | null) => {
@@ -345,9 +440,10 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
           <Avatar size="sm" className="my-1">
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${section.user.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}${section.user.avatar?.formats.thumbnail.url}`,
               }}
             />
+            <AvatarFallbackText>{section.user.username}</AvatarFallbackText>
           </Avatar>
         </Box>
         <VStack className="flex-1 items-start justify-start">
@@ -361,11 +457,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
                 variant="link"
                 className="mx-2"
                 onPress={() =>
-                  onReplyButtonPressed(
-                    section.documentId,
-                    section.documentId,
-                    section.user.username,
-                  )
+                  onReplyButtonPress(section.documentId, section.documentId, section.user.username)
                 }>
                 <ButtonText>回复</ButtonText>
               </Button>
@@ -404,7 +496,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
                   variant="link"
                   action="secondary"
                   className="mx-2"
-                  onPress={() => onExpandButtonPressed(section)}>
+                  onPress={() => onExpandButtonPress(section)}>
                   <ButtonText>展开回复</ButtonText>
                 </Button>
               </HStack>
@@ -425,7 +517,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
               variant="link"
               action="secondary"
               className="mx-2"
-              onPress={() => onExpandButtonPressed(section)}>
+              onPress={() => onExpandButtonPress(section)}>
               <ButtonText>展开更多</ButtonText>
             </Button>
           )}
@@ -436,7 +528,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
                 variant="link"
                 action="secondary"
                 className="mx-2"
-                onPress={() => onCollapseButtonPressed(section)}>
+                onPress={() => onCollapseButtonPress(section)}>
                 <ButtonText>收起</ButtonText>
               </Button>
             )}
@@ -450,8 +542,9 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
       <HStack className="my-1 ml-10 items-start" space="sm">
         <Avatar size="xs" className="my-1">
           <AvatarImage
-            source={{ uri: `${apiServerURL}/${item.user.avatar?.formats.thumbnail.url}` }}
+            source={{ uri: `${apiServerURL}${item.user.avatar?.formats.thumbnail.url}` }}
           />
+          <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
         </Avatar>
         <VStack className="flex-1 items-start justify-start">
           <HStack space="xs" className="items-center">
@@ -472,7 +565,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
                 variant="link"
                 className="mx-2"
                 onPress={() =>
-                  onReplyButtonPressed(
+                  onReplyButtonPress(
                     item.documentId,
                     item.topComment.documentId,
                     item.user.username,
@@ -513,19 +606,6 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
     );
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onSubmit = (data: CommentSchemaDetails) => {
-    const comment = {
-      content: data.content,
-      user: user.documentId,
-      post: postDocumentId,
-      reply: replyComment?.documentId,
-      topComment: replyComment?.topDocumentId,
-    };
-
-    createMutate(comment);
-  };
-
   const renderEmptyComponent = (props: any) => {
     return (
       <Box className="mt-10 w-full items-center justify-center">
@@ -538,6 +618,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
     return (
       <Input className="flex-1 bg-primary-100" variant="rounded">
         <BottomSheetTextInput
+          ref={inputRef}
           inputMode="text"
           className="py-auto ios:leading-[0px] h-full flex-1 px-3 text-typography-900 placeholder:text-typography-500"
           returnKeyType="send"
@@ -575,7 +656,7 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
 
   return (
     <BottomSheetModal
-      ref={ref}
+      ref={bottomSheetRef}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose={true}
@@ -583,27 +664,25 @@ const CommentSheet = forwardRef(function Sheet({ postDocumentId, count = 0 }: an
       footerComponent={renderFooter}>
       <VStack className="flex-1 bg-background-100 p-4" space="md">
         <VStack className="mb-4 items-center">
-          <Heading className="p-2">{`${count}条评论`}</Heading>
+          <Heading className="p-2">{`${commentCount}条评论`}</Heading>
           <Divider />
         </VStack>
-        {isFetchCommentsSuccess && (
-          <BottomSheetSectionList
-            sections={sectionListData}
-            keyExtractor={(item: any) => item.id.toString()}
-            renderItem={renderCommentItem}
-            renderSectionHeader={renderSectionHeader}
-            renderSectionFooter={renderSectionFooter}
-            ListEmptyComponent={renderEmptyComponent}
-            showsVerticalScrollIndicator={false}
-            stickySectionHeadersEnabled={false}
-            onEndReached={() => {
-              if (hasNextCommentsPage && !isFetchingNextCommentsPage) {
-                fetchNextCommentsPage();
-              }
-            }}
-          />
-        )}
+        <BottomSheetSectionList
+          sections={sectionListData}
+          keyExtractor={(item: any) => item.documentId}
+          renderItem={renderCommentItem}
+          renderSectionHeader={renderSectionHeader}
+          renderSectionFooter={renderSectionFooter}
+          ListEmptyComponent={renderEmptyComponent}
+          showsVerticalScrollIndicator={false}
+          stickySectionHeadersEnabled={false}
+          onEndReached={() => {
+            if (hasNextCommentsPage && !isFetchingNextCommentsPage) {
+              fetchNextCommentsPage();
+            }
+          }}
+        />
       </VStack>
     </BottomSheetModal>
   );
-});
+};

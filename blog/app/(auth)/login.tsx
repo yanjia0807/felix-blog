@@ -37,7 +37,7 @@ const loginSchema = z.object({
     .min(6, '密码长度至少为6位'),
 });
 
-const LoginScreen = () => {
+const Login: React.FC = () => {
   const { loginMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = loginMutation;
   const toast = useCustomToast();
@@ -147,4 +147,4 @@ const LoginScreen = () => {
   );
 };
 
-export default LoginScreen;
+export default Login;

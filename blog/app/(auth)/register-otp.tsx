@@ -52,7 +52,7 @@ const registerSchema = z.object({
     .min(6, '密码长度至少为6位'),
 });
 
-const RegisterScreen = () => {
+const Register: React.FC = () => {
   const { registerOtpMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = registerOtpMutation;
   const toast = useCustomToast();
@@ -76,7 +76,7 @@ const RegisterScreen = () => {
         });
         router.replace({
           pathname: '/otp-confirmation',
-          params: { email: data.email },
+          params: { email: data.email, purpose: 'verify-email' },
         });
       },
       onError: (error: any) => {
@@ -213,4 +213,4 @@ const RegisterScreen = () => {
   );
 };
 
-export default RegisterScreen;
+export default Register;

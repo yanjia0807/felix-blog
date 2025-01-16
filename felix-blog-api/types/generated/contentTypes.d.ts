@@ -369,35 +369,6 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiAboutAbout extends Struct.SingleTypeSchema {
-  collectionName: 'abouts';
-  info: {
-    description: 'Write about yourself and the content you create';
-    displayName: 'About';
-    pluralName: 'abouts';
-    singularName: 'about';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    blocks: Schema.Attribute.DynamicZone<
-      ['shared.quote', 'shared.rich-text', 'shared.slider']
-    >;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::about.about'> &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    title: Schema.Attribute.String;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiChatStatusChatStatus extends Struct.CollectionTypeSchema {
   collectionName: 'chat_statuses';
   info: {
@@ -467,7 +438,7 @@ export interface ApiChatChat extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     users: Schema.Attribute.Relation<
-      'oneToMany',
+      'manyToMany',
       'plugin::users-permissions.user'
     >;
   };
@@ -489,7 +460,7 @@ export interface ApiCommentComment extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    likes: Schema.Attribute.Integer;
+    likes: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -504,7 +475,7 @@ export interface ApiCommentComment extends Struct.CollectionTypeSchema {
     >;
     reply: Schema.Attribute.Relation<'oneToOne', 'api::comment.comment'>;
     topComment: Schema.Attribute.Relation<'manyToOne', 'api::comment.comment'>;
-    unlikes: Schema.Attribute.Integer;
+    unlikes: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -524,13 +495,13 @@ export interface ApiFeatureFeature extends Struct.CollectionTypeSchema {
     singularName: 'feature';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
+    image: Schema.Attribute.Media<'images'>;
     isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -547,79 +518,10 @@ export interface ApiFeatureFeature extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiFollowFollow extends Struct.CollectionTypeSchema {
-  collectionName: 'follows';
-  info: {
-    description: '';
-    displayName: 'Follow';
-    pluralName: 'follows';
-    singularName: 'follow';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    follower: Schema.Attribute.Relation<
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    following: Schema.Attribute.Relation<
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::follow.follow'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
-  collectionName: 'globals';
-  info: {
-    description: 'Define global settings';
-    displayName: 'Global';
-    pluralName: 'globals';
-    singularName: 'global';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    defaultSeo: Schema.Attribute.Component<'shared.seo', false>;
-    favicon: Schema.Attribute.Media<'images' | 'files' | 'videos'>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::global.global'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    siteDescription: Schema.Attribute.Text & Schema.Attribute.Required;
-    siteName: Schema.Attribute.String & Schema.Attribute.Required;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiMessageStatusMessageStatus
   extends Struct.CollectionTypeSchema {
   collectionName: 'message_statuses';
   info: {
-    description: '';
     displayName: 'MessageStatus';
     pluralName: 'message-statuses';
     singularName: 'message-status';
@@ -639,9 +541,6 @@ export interface ApiMessageStatusMessageStatus
       Schema.Attribute.Private;
     message: Schema.Attribute.Relation<'manyToOne', 'api::message.message'>;
     publishedAt: Schema.Attribute.DateTime;
-    readAt: Schema.Attribute.DateTime;
-    state: Schema.Attribute.Enumeration<['read', 'unread']> &
-      Schema.Attribute.DefaultTo<'unread'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -665,7 +564,7 @@ export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
   };
   attributes: {
     chat: Schema.Attribute.Relation<'manyToOne', 'api::chat.chat'>;
-    content: Schema.Attribute.Text;
+    content: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -710,17 +609,17 @@ export interface ApiNotificationNotification
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    data: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::notification.notification'
     > &
       Schema.Attribute.Private;
-    metaData: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
     state: Schema.Attribute.Enumeration<['read', 'unread']> &
       Schema.Attribute.DefaultTo<'unread'>;
-    type: Schema.Attribute.Enumeration<['follow', 'system']>;
+    type: Schema.Attribute.Enumeration<['following', 'system']>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -734,7 +633,6 @@ export interface ApiNotificationNotification
 export interface ApiOtpOtp extends Struct.CollectionTypeSchema {
   collectionName: 'otps';
   info: {
-    description: '';
     displayName: 'Otp';
     pluralName: 'otps';
     singularName: 'otp';
@@ -786,6 +684,7 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    feature: Schema.Attribute.Relation<'oneToOne', 'api::feature.feature'>;
     likedByUsers: Schema.Attribute.Relation<
       'manyToMany',
       'plugin::users-permissions.user'
@@ -795,7 +694,6 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     poi: Schema.Attribute.Component<'shared.poi', false>;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'title'>;
     tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
     title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
@@ -816,16 +714,16 @@ export interface ApiTagTag extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    code: Schema.Attribute.UID<'name'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::tag.tag'> &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String;
     posts: Schema.Attribute.Relation<'manyToMany', 'api::post.post'>;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1293,6 +1191,7 @@ export interface PluginUsersPermissionsUser
     bio: Schema.Attribute.String;
     birthday: Schema.Attribute.Date;
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    chats: Schema.Attribute.Relation<'manyToMany', 'api::chat.chat'>;
     comments: Schema.Attribute.Relation<'oneToMany', 'api::comment.comment'>;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -1305,8 +1204,14 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
-    followers: Schema.Attribute.Relation<'oneToMany', 'api::follow.follow'>;
-    followings: Schema.Attribute.Relation<'oneToMany', 'api::follow.follow'>;
+    followers: Schema.Attribute.Relation<
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    followings: Schema.Attribute.Relation<
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
     gender: Schema.Attribute.Enumeration<['male', 'female']>;
     likePosts: Schema.Attribute.Relation<'manyToMany', 'api::post.post'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1355,13 +1260,10 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::about.about': ApiAboutAbout;
       'api::chat-status.chat-status': ApiChatStatusChatStatus;
       'api::chat.chat': ApiChatChat;
       'api::comment.comment': ApiCommentComment;
       'api::feature.feature': ApiFeatureFeature;
-      'api::follow.follow': ApiFollowFollow;
-      'api::global.global': ApiGlobalGlobal;
       'api::message-status.message-status': ApiMessageStatusMessageStatus;
       'api::message.message': ApiMessageMessage;
       'api::notification.notification': ApiNotificationNotification;

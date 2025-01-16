@@ -2,8 +2,7 @@
   "collectionName": "components_shared_pois",
   "info": {
     "displayName": "Poi",
-    "icon": "pinMap",
-    "description": ""
+    "icon": "pinMap"
   },
   "options": {},
   "attributes": {

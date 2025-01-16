@@ -54,7 +54,7 @@ const postSchema = z.object({
   tags: z.array(z.any()),
 });
 
-const PostCreate = () => {
+const PostCreate: React.FC = () => {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();

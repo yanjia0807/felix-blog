@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
-import { apiServerURL, fetchFollowingUsers } from '@/api';
+import { apiServerURL, fetchFollowings } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -25,7 +25,7 @@ const filterFormSchema = z.object({
   keyword: z.string().optional(),
 });
 
-const FollowingList = () => {
+const FollowingList: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId, username } = useLocalSearchParams();
   const [keyword, setKeyword] = useState();
@@ -38,47 +38,40 @@ const FollowingList = () => {
     },
   });
 
-  const {
-    data: usersData,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isLoading,
-    isFetchingNextPage,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: ['users', documentId, 'followings', { keyword }],
-    queryFn: fetchFollowingUsers,
-    enabled: !!documentId,
-    initialPageParam: {
-      pagination: {
-        page: 1,
-        pageSize: 10,
-      },
-      documentId,
-      keyword,
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { page, pageSize, pageCount },
+  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
+    useInfiniteQuery({
+      queryKey: ['users', documentId, 'followings', { keyword }],
+      queryFn: fetchFollowings,
+      enabled: !!documentId,
+      initialPageParam: {
+        pagination: {
+          page: 1,
+          pageSize: 20,
         },
-      } = lastPage;
+        documentId,
+        keyword,
+      },
+      getNextPageParam: (lastPage: any) => {
+        const {
+          meta: {
+            pagination: { page, pageSize, pageCount },
+          },
+        } = lastPage;
 
-      if (page < pageCount) {
-        return {
-          pagination: { page: page + 1, pageSize },
-          documentId,
-          keyword,
-        };
-      }
+        if (page < pageCount) {
+          return {
+            pagination: { page: page + 1, pageSize },
+            documentId,
+            keyword,
+          };
+        }
 
-      return null;
-    },
-  });
+        return null;
+      },
+    });
 
   const users: any = _.reduce(
-    usersData?.pages,
+    data?.pages,
     (result: any, item: any) => [...result, ...item.data],
     [],
   );
@@ -130,7 +123,7 @@ const FollowingList = () => {
   };
 
   const onItemPress = (item: any) => {
-    router.push(`/users/${item.following.documentId}`);
+    router.push(`/users/${item.documentId}`);
   };
 
   const renderItem = ({ item, index }: any) => {
@@ -142,16 +135,16 @@ const FollowingList = () => {
         }}>
         <HStack className={`items-center`} space="md">
           <Avatar size="sm">
-            <AvatarFallbackText>{item.following.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}/${item.following.avatar?.formats.thumbnail.url}`,
+                uri: `${apiServerURL}${item.avatar?.formats.thumbnail.url}`,
               }}
             />
+            <AvatarFallbackText>{item.username}</AvatarFallbackText>
           </Avatar>
           <VStack>
-            <Text bold={true}>{item.following.username}</Text>
-            <Text size="sm">{item.following.email}</Text>
+            <Text bold={true}>{item.username}</Text>
+            <Text size="sm">{item.email}</Text>
           </VStack>
         </HStack>
       </TouchableOpacity>

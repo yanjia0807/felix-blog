@@ -3,13 +3,19 @@ import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, MapPin } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
 import { fetchPost } from '@/api/post';
+import { useAuth } from '@/components/auth-context';
 import AuthorInfo from '@/components/author-info';
-import { CommentInput } from '@/components/comment-input';
+import {
+  CommentInput,
+  CommentProvider,
+  CommentSheet,
+  useCommentContext,
+} from '@/components/comment-input';
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import { RecordingList } from '@/components/recording-list';
@@ -26,39 +32,29 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { formatDistance } from '@/utils/date';
 
-const PostCover = ({ cover }: any) => {
-  return (
-    <Box className="h-36 flex-1">
-      <Image
-        style={{
-          width: '100%',
-          height: '100%',
-          borderRadius: 8,
-        }}
-        source={{
-          uri: `${apiServerURL}/${cover.formats.small.url}`,
-        }}
-        alt={cover.alternativeText}
-      />
-    </Box>
-  );
-};
-
-const PostDetail = () => {
+const PostDetail: React.FC = () => {
+  const { user } = useAuth();
   const { documentId } = useLocalSearchParams();
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
+  const userDocumentId = user?.documentId || null;
+  const { setPostDocumentId, setCommentCount } = useCommentContext();
 
   const {
     isPending,
-    isError,
     isSuccess,
     data: post,
-    error,
   } = useQuery({
-    queryKey: ['posts', 'detail', documentId],
-    queryFn: () => fetchPost({ documentId }),
+    queryKey: ['posts', documentId, { userDocumentId }],
+    queryFn: () => fetchPost({ documentId, userDocumentId }),
   });
+
+  useEffect(() => {
+    if (isSuccess) {
+      setPostDocumentId(documentId);
+      setCommentCount(post.comments.count);
+    }
+  }, [isSuccess, documentId, post]);
 
   const images = _.map(
     _.find(post?.attachments || [], { type: 'image' })?.files || [],
@@ -115,7 +111,7 @@ const PostDetail = () => {
       />
       {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
       {isSuccess && (
-        <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1 p-6">
           <VStack className="flex-1" space="xl">
             <VStack space="sm">
               <Heading size="lg">{post.title}</Heading>
@@ -124,7 +120,7 @@ const PostDetail = () => {
                 <AuthorInfo author={post?.author} />
                 <HStack space="md" className="items-center justify-end">
                   <LikeButton post={post} />
-                  <CommentInput postDocumentId={post?.documentId} count={post?.comments?.count} />
+                  <CommentInput />
                 </HStack>
               </HStack>
               <HStack className="items-center justify-between">
@@ -149,7 +145,7 @@ const PostDetail = () => {
                       borderRadius: 8,
                     }}
                     source={{
-                      uri: `${apiServerURL}/${post.cover.formats.medium.url || post.cover.url}`,
+                      uri: `${apiServerURL}${post.cover.formats.medium.url || post.cover.url}`,
                     }}
                     alt={post.cover.alternativeText}
                   />
@@ -172,4 +168,11 @@ const PostDetail = () => {
   );
 };
 
-export default PostDetail;
+const PostDetailPage: React.FC = () => (
+  <CommentProvider>
+    <PostDetail />
+    <CommentSheet />
+  </CommentProvider>
+);
+
+export default PostDetailPage;

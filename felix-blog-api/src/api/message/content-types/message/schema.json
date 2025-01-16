@@ -13,7 +13,13 @@
   "pluginOptions": {},
   "attributes": {
     "content": {
-      "type": "text"
+      "type": "string"
+    },
+    "chat": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::chat.chat",
+      "inversedBy": "messages"
     },
     "sender": {
       "type": "relation",
@@ -24,12 +30,6 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
-    },
-    "chat": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::chat.chat",
-      "inversedBy": "messages"
     },
     "messageStatuses": {
       "type": "relation",

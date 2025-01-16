@@ -7,7 +7,7 @@ import React from 'react';
 import { apiServerURL, fetchNotifications, updateNotificationState } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,7 +19,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-const NotificationList = () => {
+const NotificationList: React.FC = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { notifications: newNotifications, setNotifications } = useSocket();
@@ -31,7 +31,7 @@ const NotificationList = () => {
       initialPageParam: {
         pagination: {
           page: 1,
-          pageSize: 5,
+          pageSize: 20,
         },
         filters: {
           userDocumentId: user.documentId,
@@ -121,21 +121,22 @@ const NotificationList = () => {
                 <Avatar size="lg">
                   <AvatarImage
                     source={{
-                      uri: `${apiServerURL}/${item.metaData.follower.avatar?.formats.thumbnail.url}`,
+                      uri: `${apiServerURL}${item.data.follower.avatar?.formats.thumbnail.url}`,
                     }}
                   />
+                  <AvatarFallbackText>{item.data.follower.username}</AvatarFallbackText>
                 </Avatar>
                 <VStack className="flex-1 justify-between" space="sm">
                   <Text size="md" bold={true}>
-                    {item.metaData.follower.username}
+                    {item.data.follower.username}
                   </Text>
                   <Text size="sm" numberOfLines={2}>
-                    {item.metaData.follower.bio}
+                    {item.data.follower.bio}
                   </Text>
                 </VStack>
               </HStack>
               <HStack className="items-center" space="md">
-                <Text>关注了你</Text>
+                <Text>{item.data.isFollowing ? '关注了你' : '取消了关注你'}</Text>
               </HStack>
             </HStack>
           </VStack>
@@ -150,7 +151,7 @@ const NotificationList = () => {
 
   const renderItem = ({ item, index }: any) => {
     switch (item.type) {
-      case 'follow':
+      case 'following':
         return renderFollowNotificationItem({ item, index });
       default:
         return renderDefaultNotificationItem({ item, index });

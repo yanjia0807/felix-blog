@@ -38,7 +38,7 @@ const resetPasswordSchema = z.object({
     .min(6, '确认密码长度至少为6位'),
 });
 
-const ResetPasswordScreen = () => {
+const ResetPassword: React.FC = () => {
   const toast = useCustomToast();
   const { resetPasswordOtpMutation } = useAuth();
   const { reset, error, mutate, isSuccess, isError, isPending } = resetPasswordOtpMutation;
@@ -159,4 +159,4 @@ const ResetPasswordScreen = () => {
   );
 };
 
-export default ResetPasswordScreen;
+export default ResetPassword;

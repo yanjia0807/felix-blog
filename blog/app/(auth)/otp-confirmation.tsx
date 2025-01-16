@@ -69,7 +69,7 @@ const OtpInputField = forwardRef(function OtpInputField(
   );
 });
 
-const OtpConfirmation = () => {
+const OtpConfirmation: React.FC = () => {
   const { email, purpose }: any = useLocalSearchParams();
   const { verifyOtpMutation } = useAuth();
   const toast = useCustomToast();

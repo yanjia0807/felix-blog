@@ -12,6 +12,18 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "isArchived": {
+      "type": "boolean",
+      "default": false
+    },
+    "isPinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "unreadCount": {
+      "type": "integer",
+      "default": 0
+    },
     "chat": {
       "type": "relation",
       "relation": "manyToOne",
@@ -22,18 +34,6 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
-    },
-    "unreadCount": {
-      "type": "integer",
-      "default": 0
-    },
-    "isArchived": {
-      "type": "boolean",
-      "default": false
-    },
-    "isPinned": {
-      "type": "boolean",
-      "default": false
     }
   }
 }

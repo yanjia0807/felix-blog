@@ -4,29 +4,17 @@
   "info": {
     "singularName": "message-status",
     "pluralName": "message-statuses",
-    "displayName": "MessageStatus",
-    "description": ""
+    "displayName": "MessageStatus"
   },
   "options": {
     "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
-    "readAt": {
-      "type": "datetime"
-    },
     "user": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
-    },
-    "state": {
-      "type": "enumeration",
-      "enum": [
-        "read",
-        "unread"
-      ],
-      "default": "unread"
     },
     "message": {
       "type": "relation",

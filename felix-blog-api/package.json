@@ -7,19 +7,14 @@
     "build": "strapi build",
     "deploy": "strapi deploy",
     "develop": "strapi develop",
-    "seed:example": "node ./scripts/seed.js",
     "start": "strapi start",
     "strapi": "strapi"
   },
   "dependencies": {
-    "@strapi/plugin-cloud": "5.4.0",
-    "@strapi/plugin-users-permissions": "5.4.0",
-    "@strapi/provider-email-nodemailer": "^5.1.1",
-    "@strapi/strapi": "5.4.0",
-    "@types/socket.io": "^3.0.2",
-    "date-fns": "^2.30.0",
-    "fs-extra": "^10.0.0",
-    "mime-types": "^2.1.27",
+    "@strapi/plugin-cloud": "5.7.0",
+    "@strapi/plugin-users-permissions": "5.7.0",
+    "@strapi/provider-email-nodemailer": "^5.7.0",
+    "@strapi/strapi": "5.7.0",
     "mysql2": "3.9.8",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
@@ -31,6 +26,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/socket.io": "^3.0.2",
     "typescript": "^5"
   },
   "engines": {
@@ -38,6 +34,6 @@
     "npm": ">=6.0.0"
   },
   "strapi": {
-    "uuid": "755b3ef9-1778-4630-ac8e-f3baeb46029a"
+    "uuid": "130fc08b-84dd-43ae-9a7f-acd161497c28"
   }
 }

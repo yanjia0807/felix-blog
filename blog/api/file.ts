@@ -1,17 +1,28 @@
 import * as FileSystem from 'expo-file-system';
+import * as SecureStore from 'expo-secure-store';
 import { apiServerURL } from './api-client';
 import { apiClient } from './api-client';
 
 export const uploadFiles = async (files: any) => {
+  const config: any = {
+    headers: {},
+    httpMethod: 'POST',
+    uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+    fieldName: 'files',
+  };
+
+  const accessToken = await SecureStore.getItemAsync('accessToken');
+  if (accessToken) {
+    config.headers.Authorization = 'Bearer ' + accessToken;
+  } else {
+    delete config.headers.Authorization;
+  }
+
   const uploadFiles = typeof files === 'string' ? [files] : files;
   const uploadTasks: Promise<any>[] = [];
 
   uploadFiles.forEach((file: any) => {
-    const uploadTask = FileSystem.uploadAsync(`${apiServerURL}/api/upload`, file, {
-      httpMethod: 'POST',
-      uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-      fieldName: 'files',
-    });
+    const uploadTask = FileSystem.uploadAsync(`${apiServerURL}/api/upload`, file, config);
     uploadTasks.push(uploadTask);
   });
 
