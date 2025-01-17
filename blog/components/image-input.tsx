@@ -21,6 +21,7 @@ import { Box } from './ui/box';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
+import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { Popover, PopoverBackdrop, PopoverContent } from './ui/popover';
 import { Portal } from './ui/portal';
 import { Pressable } from './ui/pressable';
@@ -142,14 +143,12 @@ export const CoverInput = ({ onChange, value }: any) => {
     allowsMultipleSelection: false,
   };
 
-  const onClearBtnPress = () => {
-    onChange(undefined);
-  };
+  const onClearBtnPress = () => onChange(undefined);
 
   return (
     <>
       {value ? (
-        <VStack className="my-2 h-32">
+        <VStack className="my-2 h-40">
           <Image
             style={{
               width: '100%',
@@ -172,15 +171,14 @@ export const CoverInput = ({ onChange, value }: any) => {
         </VStack>
       ) : (
         <>
-          <Button
-            onPress={() => onInputIconPressed()}
-            variant="link"
-            className="my-2 h-32 items-center justify-center border border-dashed border-background-300 data-[focus=true]:border-primary-700 data-[hover=true]:border-outline-400 data-[disabled=true]:opacity-40 data-[disabled=true]:hover:border-background-300 data-[focus=true]:hover:border-primary-700">
-            <HStack space="xs" className="items-center">
-              <ButtonIcon as={Plus} size="xs" />
-              <ButtonText size="md">封面</ButtonText>
-            </HStack>
-          </Button>
+          <Input variant="underlined" className="border-0 border-b p-2" isReadOnly={true}>
+            <InputField placeholder="请选择封面...." />
+            <InputSlot>
+              <Pressable onPress={() => onInputIconPressed()}>
+                <InputIcon as={ImageIcon}></InputIcon>
+              </Pressable>
+            </InputSlot>
+          </Input>
           <ImageSheet
             isOpen={isOpen}
             onClose={onClose}

@@ -131,13 +131,11 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const { mutate: createMutate, reset } = useMutation({
-    mutationFn: (comment: any) => {
-      return createComment(comment);
-    },
+    mutationFn: (comment: any) => createComment(comment),
     onSuccess: (data: any, variables: any, context: unknown) => {
       toast.success({ description: '评论已发布' });
       queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', postDocumentId],
+        queryKey: ['posts', postDocumentId],
       });
       if (variables.topComment) {
         setExpandCommentIds((prev: any) => {
@@ -297,7 +295,7 @@ export const CommentSheet = () => {
   const inputRef = useRef<any>(null);
   const queryClient = useQueryClient();
 
-  const snapPoints = useMemo(() => ['50%', '90%'], []);
+  const snapPoints = useMemo(() => ['60%', '90%'], []);
   const insets = useSafeAreaInsets();
 
   const {

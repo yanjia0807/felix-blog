@@ -35,6 +35,7 @@ interface PostFilterDrawerContextType {
   fetchNextPage: any;
   hasNextPage: boolean;
   isLoading: boolean;
+  isSuccess: boolean;
   isFetchingNextPage: boolean;
   refetch: any;
 }
@@ -49,6 +50,7 @@ export const PostFilterDrawerContext = createContext<PostFilterDrawerContextType
   fetchNextPage: undefined,
   hasNextPage: false,
   isLoading: false,
+  isSuccess: false,
   isFetchingNextPage: false,
   refetch: undefined,
 });
@@ -72,9 +74,9 @@ export const PostFilterDrawerProvider = ({ children }: any) => {
 
   const clearFilters = () => setFilters(defaultValues);
 
-  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
+  const { data, fetchNextPage, hasNextPage, isLoading, isSuccess, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['posts', 'list', { userDocumentId, filters }],
+      queryKey: ['posts', 'list', filters],
       queryFn: fetchPosts,
       initialPageParam: {
         userDocumentId,
@@ -116,6 +118,7 @@ export const PostFilterDrawerProvider = ({ children }: any) => {
         fetchNextPage,
         hasNextPage,
         isLoading,
+        isSuccess,
         isFetchingNextPage,
         refetch,
       }}>

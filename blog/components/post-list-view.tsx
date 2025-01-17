@@ -1,13 +1,12 @@
-import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin, Heart, MessageCircle } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 import { fetchUserPosts } from '@/api';
 import { formatDistance } from '@/utils/date';
-import { useAuth } from './auth-context';
 import { Box } from './ui/box';
 import { Card } from './ui/card';
 import { Heading } from './ui/heading';
@@ -17,19 +16,17 @@ import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-const PostListView = () => {
-  const { user } = useAuth();
-
-  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
+const PostListView = ({ userDocumentId }: any) => {
+  const { data, fetchNextPage, hasNextPage, isLoading, isSuccess, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['posts', { user: user.documentId }],
+      queryKey: ['posts', 'list', { userDocumentId }],
       queryFn: fetchUserPosts,
       initialPageParam: {
         pagination: {
           page: 1,
-          pageSize: 5,
+          pageSize: 20,
         },
-        userDocumentId: user.documentId,
+        userDocumentId,
       },
       getNextPageParam: (lastPage: any) => {
         const {
@@ -41,7 +38,7 @@ const PostListView = () => {
         if (page < pageCount) {
           return {
             pagination: { page: page + 1, pageSize },
-            userDocumentId: user.documentId,
+            userDocumentId,
           };
         }
 
@@ -49,28 +46,18 @@ const PostListView = () => {
       },
     });
 
-  const posts: any = _.reduce(
-    data?.pages,
-    (result: any, item: any) => [...result, ...item.data],
-    [],
-  );
+  const posts: any = isSuccess
+    ? _.reduce(data?.pages, (result: any, item: any) => [...result, ...item.data], [])
+    : [];
 
   const renderItem = ({ item }: any) => {
     return (
-      <Pressable
-        onPress={() => {
-          router.push({
-            pathname: '/posts/[documentId]',
-            params: {
-              documentId: item.documentId,
-            },
-          });
-        }}>
+      <Pressable onPress={() => router.push(`/posts/${item.documentId}`)}>
         <Card className="my-3 rounded-lg p-4">
           <VStack space="lg">
             <HStack className="items-start justify-start" space="md">
               <VStack space="md" className="flex-1">
-                <Heading numberOfLines={1} ellipsizeMode="tail">
+                <Heading numberOfLines={2} ellipsizeMode="tail">
                   {item.title}
                 </Heading>
                 <HStack className="items-center justify-between">
@@ -115,34 +102,30 @@ const PostListView = () => {
 
   return (
     <Box className="flex-1">
-      {user ? (
-        <FlashList
-          data={posts}
-          renderItem={renderItem}
-          keyExtractor={(item: any) => item.documentId}
-          estimatedItemSize={154}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          ListEmptyComponent={renderEmptyComponent}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={() => {
-                if (!isLoading) {
-                  refetch();
-                }
-              }}
-            />
+      <FlatList
+        data={posts}
+        nestedScrollEnabled={true}
+        renderItem={renderItem}
+        keyExtractor={(item: any) => item.documentId}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        ListEmptyComponent={renderEmptyComponent}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
           }
-        />
-      ) : (
-        <></>
-      )}
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={() => {
+              if (!isLoading) {
+                refetch();
+              }
+            }}
+          />
+        }
+      />
     </Box>
   );
 };

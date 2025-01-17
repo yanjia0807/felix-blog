@@ -307,9 +307,8 @@ const Chat: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      <VStack className="flex-1 justify-between px-4">
+      <VStack className="flex-1 justify-between p-4">
         <FlatList
-          className="py-2"
           contentContainerClassName="flex-grow justify-end"
           ref={flatListRef}
           data={messageData}
@@ -323,7 +322,7 @@ const Chat: React.FC = () => {
             }
           }}
         />
-        <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={100}>
+        <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={110}>
           <Controller name="content" control={control} render={renderInput} />
         </KeyboardAvoidingView>
       </VStack>

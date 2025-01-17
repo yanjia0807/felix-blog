@@ -248,15 +248,15 @@ const UserEdit: React.FC = () => {
           </HStack>
           <VStack className="flex-1" space="lg">
             <HStack
-              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2 px-4"
+              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2"
               space="md">
-              <Text bold={true}>邮箱地址</Text>
+              <Text className="font-medium text-typography-900">邮箱地址</Text>
               <Text className="text-typography-400">{user.email}</Text>
             </HStack>
             <HStack
-              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2 px-4"
+              className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2"
               space="md">
-              <Text bold={true}>用户名</Text>
+              <Text className="font-medium text-typography-900">用户名</Text>
               <Text className="text-typography-400">{user.username}</Text>
             </HStack>
             <Controller name="bio" control={control} render={renderBio} />

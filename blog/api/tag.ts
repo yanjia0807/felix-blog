@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import qs from 'qs';
 import { apiClient } from './api-client';
 
@@ -10,11 +9,4 @@ export const fetchTags = async ({ name }: any) => {
     : '';
   const res = await apiClient.get(`/tags?${query}`);
   return res.data;
-};
-
-export const useFetchTags = ({ name }: any) => {
-  return useQuery({
-    queryKey: ['tags', { name }],
-    queryFn: fetchTags,
-  });
 };

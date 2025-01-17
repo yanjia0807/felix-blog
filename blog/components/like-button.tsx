@@ -6,7 +6,6 @@ import { TouchableOpacity } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { UpdatePostLikedData, updatePostLiked } from '@/api';
 import { useAuth } from './auth-context';
-import { usePostFilterDrawerContext } from './post-filter';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
@@ -15,7 +14,6 @@ export const LikeButton = ({ post, className }: any) => {
   const { user } = useAuth();
   const userDocumentId = user?.documentId;
   const queryClient = useQueryClient();
-  const { filters } = usePostFilterDrawerContext();
   const likedByMe = user ? _.some(post.likedByUsers, { documentId: userDocumentId }) : false;
 
   const { mutate } = useMutation({
@@ -24,30 +22,26 @@ export const LikeButton = ({ post, className }: any) => {
     },
     async onSuccess(data: any, variables, context) {
       await queryClient.invalidateQueries({
-        queryKey: ['posts', post.documentId, { userDocumentId }],
+        queryKey: ['posts', 'detail', post.documentId],
+        refetchType: 'all',
       });
 
-      await queryClient.setQueryData(
-        ['posts', 'list', { userDocumentId, filters }],
-        (oldData: any) => {
-          return {
-            pages: _.map(oldData.pages, (page: any) => ({
-              meta: page.meta,
-              data: _.map(page.data, (item: any) =>
-                item.documentId === post.documentId
-                  ? {
-                      ...item,
-                      likedByUsers: data.likedByUsers,
-                    }
-                  : {
-                      ...item,
-                    },
-              ),
-            })),
-            pageParams: oldData.pageParams,
-          };
-        },
-      );
+      await queryClient.setQueriesData({ queryKey: ['posts', 'list'] }, (oldData: any) => ({
+        pages: _.map(oldData.pages, (page: any) => ({
+          meta: page.meta,
+          data: _.map(page.data, (item: any) =>
+            item.documentId === post.documentId
+              ? {
+                  ...item,
+                  likedByUsers: data.likedByUsers,
+                }
+              : {
+                  ...item,
+                },
+          ),
+        })),
+        pageParams: oldData.pageParams,
+      }));
     },
   });
 

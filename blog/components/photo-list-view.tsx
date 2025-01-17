@@ -2,19 +2,17 @@ import { MasonryFlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import _ from 'lodash';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { RefreshControl, useWindowDimensions } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL, fetchUserPhotos } from '@/api';
-import { useAuth } from './auth-context';
 import { Box } from './ui/box';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 
 const numColumns = 3;
 
-const PhotoListView = () => {
-  const { user } = useAuth();
+const PhotoListView = ({ userDocumentId }: any) => {
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
   const { width } = useWindowDimensions();
@@ -27,16 +25,16 @@ const PhotoListView = () => {
     );
   };
 
-  const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
+  const { data, fetchNextPage, hasNextPage, isLoading, isSuccess, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['posts', user.id, 'photos'],
+      queryKey: ['posts', 'list', { userDocumentId }, 'photos'],
       queryFn: fetchUserPhotos,
       initialPageParam: {
         pagination: {
           page: 1,
-          pageSize: 5,
+          pageSize: 20,
         },
-        userId: user.id,
+        userDocumentId,
       },
       getNextPageParam: (lastPage: any) => {
         const {
@@ -48,7 +46,7 @@ const PhotoListView = () => {
         if (page < pageCount) {
           return {
             pagination: { page: page + 1, pageSize },
-            userId: user.id,
+            userDocumentId,
           };
         }
 
@@ -61,34 +59,37 @@ const PhotoListView = () => {
     setIsGalleryPreviewOpen(true);
   };
 
-  const photos: any = _.reduce(
-    data?.pages,
-    (result: any, page: any) => {
-      return [
-        ...result,
-        ...page.data.map((item: any) => ({
-          ...item,
-          uri: `${apiServerURL}${item.formats.thumbnail.url}`,
-          originUrl: `${apiServerURL}${item.url}`,
-        })),
-      ];
-    },
-    [],
-  );
+  const photos: any = isSuccess
+    ? _.reduce(
+        data?.pages,
+        (result: any, page: any) => {
+          return [
+            ...result,
+            ...page.data.map((item: any) => ({
+              ...item,
+              uri: `${apiServerURL}${item.formats?.thumbnail.url}` || `${apiServerURL}${item.url}`,
+            })),
+          ];
+        },
+        [],
+      )
+    : [];
 
-  const originPhotos: any = _.reduce(
-    data?.pages,
-    (result: any, page: any) => {
-      return [
-        ...result,
-        ...page.data.map((item: any) => ({
-          ...item,
-          uri: `${apiServerURL}${item.url}`,
-        })),
-      ];
-    },
-    [],
-  );
+  const originPhotos: any = isSuccess
+    ? _.reduce(
+        data?.pages,
+        (result: any, page: any) => {
+          return [
+            ...result,
+            ...page.data.map((item: any) => ({
+              ...item,
+              uri: `${apiServerURL}${item.url}`,
+            })),
+          ];
+        },
+        [],
+      )
+    : [];
 
   const renderItem = ({ item, index }: any) => {
     return (

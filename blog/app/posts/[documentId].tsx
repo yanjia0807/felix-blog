@@ -33,20 +33,18 @@ import { VStack } from '@/components/ui/vstack';
 import { formatDistance } from '@/utils/date';
 
 const PostDetail: React.FC = () => {
-  const { user } = useAuth();
   const { documentId } = useLocalSearchParams();
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
-  const userDocumentId = user?.documentId || null;
   const { setPostDocumentId, setCommentCount } = useCommentContext();
-
+  console.log('@@', documentId);
   const {
     isPending,
     isSuccess,
     data: post,
   } = useQuery({
-    queryKey: ['posts', documentId, { userDocumentId }],
-    queryFn: () => fetchPost({ documentId, userDocumentId }),
+    queryKey: ['posts', 'detail', documentId],
+    queryFn: () => fetchPost({ documentId }),
   });
 
   useEffect(() => {
@@ -109,7 +107,7 @@ const PostDetail: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-50"></Spinner>}
+      {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-10" />}
       {isSuccess && (
         <ScrollView className="flex-1 p-6">
           <VStack className="flex-1" space="xl">

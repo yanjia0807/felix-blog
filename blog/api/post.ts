@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import qs from 'qs';
 import { apiClient } from './api-client';
+import { uploadFiles } from './file';
 
 export type PostData = any;
 export type UpdatePostLikedData = any;
@@ -8,7 +9,6 @@ export type UpdatePostLikedData = any;
 export const fetchPosts = async ({ pageParam }: any) => {
   const {
     pagination,
-    userDocumentId,
     filters: {
       title,
       authorName,
@@ -79,10 +79,12 @@ export const fetchPosts = async ({ pageParam }: any) => {
         },
       },
       likedByUsers: {
-        fields: ['id', 'documentId'],
-        filters: {
-          documentId: userDocumentId,
+        populate: {
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
+          },
         },
+        fields: ['username'],
       },
       tags: true,
       poi: true,
@@ -102,6 +104,7 @@ export const fetchPosts = async ({ pageParam }: any) => {
     sort: 'createdAt:desc',
     pagination,
   });
+
   const res = await apiClient.get(`/posts?${query}`);
   return res;
 };
@@ -119,6 +122,14 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
       },
       tags: true,
       poi: true,
+      likedByUsers: {
+        fields: ['username'],
+        populate: {
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
+          },
+        },
+      },
       cover: {
         fields: ['formats', 'name', 'alternativeText'],
       },
@@ -131,6 +142,7 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
     sort: 'createdAt:desc',
     pagination,
   });
+
   const res = await apiClient.get(`/posts?${query}`);
   return res;
 };
@@ -150,7 +162,12 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
         },
       },
       likedByUsers: {
-        count: true,
+        fields: ['username'],
+        populate: {
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
+          },
+        },
       },
       cover: {
         fields: ['formats', 'name', 'alternativeText'],
@@ -169,16 +186,16 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
 };
 
 export const fetchUserPhotos = async ({ pageParam }: any) => {
-  const { pagination, userId } = pageParam;
+  const { pagination, userDocumentId } = pageParam;
   const query = qs.stringify({
-    userId,
+    userDocumentId,
     pagination,
   });
   const res = await apiClient.get(`/posts/photos?${query}`);
   return res;
 };
 
-export const fetchPost = async ({ documentId, userDocumentId }: any) => {
+export const fetchPost = async ({ documentId }: any) => {
   const query = qs.stringify(
     {
       populate: {
@@ -186,9 +203,11 @@ export const fetchPost = async ({ documentId, userDocumentId }: any) => {
         poi: true,
         cover: true,
         likedByUsers: {
-          fields: ['id', 'documentId'],
-          filters: {
-            documentId: userDocumentId,
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
           },
         },
         author: {
@@ -216,8 +235,57 @@ export const fetchPost = async ({ documentId, userDocumentId }: any) => {
   return res.data;
 };
 
-export const createPost = async (data: PostData) => {
+export const createPost = async (formData: PostData) => {
   try {
+    let imageIds = [],
+      coverId = undefined,
+      audioIds = [];
+
+    if (formData.cover) {
+      coverId = await uploadFiles(formData.cover.uri);
+    }
+
+    const attachments = [];
+    if (formData.images.length > 0) {
+      imageIds = await uploadFiles(_.map(formData.images, (item: any) => item.uri));
+      attachments.push({
+        type: 'image',
+        files: imageIds,
+      });
+    }
+
+    if (formData.audios.length > 0) {
+      audioIds = await uploadFiles(_.map(formData.audios, (item: any) => item._uri));
+      attachments.push({
+        type: 'audio',
+        files: audioIds,
+      });
+    }
+
+    const data = {
+      title: formData.title,
+      cover: coverId,
+      content: formData.content,
+      author: formData.author,
+      poi:
+        formData.poi &&
+        _.pick(formData.poi, [
+          'name',
+          'location',
+          'type',
+          'typecode',
+          'pname',
+          'cityname',
+          'adname',
+          'address',
+          'pcode',
+          'adcode',
+          'citycode',
+        ]),
+      tags: formData.tags.map((item: any) => item.documentId),
+      attachments,
+    };
+
     const res = await apiClient.post(`/posts`, { data });
 
     return res.data;
@@ -231,7 +299,12 @@ export const updatePostLiked = async ({ documentId, postData }: UpdatePostLikedD
     const query = qs.stringify({
       populate: {
         likedByUsers: {
-          fields: ['documentId'],
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
         },
       },
     });

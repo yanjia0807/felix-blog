@@ -44,7 +44,7 @@ const postSchema = z.object({
       required_error: '标题是必填项',
     })
     .min(6, '标题不能少于6个字符')
-    .max(100, '标题不能多余100个字符'),
+    .max(200, '标题不能超过200个字符'),
   content: z.string().max(maxCharCount, `内容最多不能超过${maxCharCount}个字符`).optional(),
   author: z.string(),
   poi: z.any(),
@@ -83,12 +83,10 @@ const PostCreate: React.FC = () => {
     },
   });
 
-  const { isSuccess, isError, isPending, mutate } = useMutation({
-    mutationFn: (data: PostData) => {
-      return createPost(data);
-    },
+  const { isPending, mutate } = useMutation({
+    mutationFn: (data: PostSchema) => createPost(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
       toast.success({
         description: '保存成功',
       });
@@ -99,57 +97,7 @@ const PostCreate: React.FC = () => {
     },
   });
 
-  const onSubmit = async (formData: PostSchema) => {
-    let imageIds = [],
-      coverId = undefined,
-      audioIds = [];
-
-    if (formData.cover) {
-      coverId = await uploadFiles(formData.cover.uri);
-    }
-
-    const attachments = [];
-    if (formData.images.length > 0) {
-      imageIds = await uploadFiles(_.map(formData.images, (item: any) => item.uri));
-      attachments.push({
-        type: 'image',
-        files: imageIds,
-      });
-    }
-
-    if (formData.audios.length > 0) {
-      audioIds = await uploadFiles(_.map(formData.audios, (item: any) => item._uri));
-      attachments.push({
-        type: 'audio',
-        files: audioIds,
-      });
-    }
-
-    const data = {
-      title: formData.title,
-      cover: coverId,
-      content: formData.content,
-      author: formData.author,
-      poi:
-        formData.poi &&
-        _.pick(formData.poi, [
-          'name',
-          'location',
-          'type',
-          'typecode',
-          'pname',
-          'cityname',
-          'adname',
-          'address',
-          'pcode',
-          'adcode',
-          'citycode',
-        ]),
-      tags: formData.tags.map((item: any) => item.documentId),
-      attachments,
-    };
-    mutate(data);
-  };
+  const onSubmit = async (formData: PostSchema) => mutate(formData);
 
   const formData: any = watch();
 
@@ -197,10 +145,15 @@ const PostCreate: React.FC = () => {
 
   const renderHeaderRight = () => (
     <HStack space="md" className="items-center">
-      <Button size="sm" action="secondary" variant="link">
+      <Button size="md" action="secondary" variant="link" isDisabled={isPending}>
         <ButtonText>[存草稿]</ButtonText>
       </Button>
-      <Button action="primary" size="md" variant="link" onPress={handleSubmit(onSubmit)}>
+      <Button
+        action="primary"
+        size="md"
+        variant="link"
+        onPress={handleSubmit(onSubmit)}
+        isDisabled={isPending}>
         <ButtonText>发布</ButtonText>
       </Button>
     </HStack>
@@ -296,13 +249,11 @@ const PostCreate: React.FC = () => {
       />
       <>
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1, padding: 16 }}>
-          <VStack className="flex-1">
-            {isPending && (
-              <Spinner size="small" className="absolute bottom-0 left-0 right-0 top-0" />
-            )}
+          <VStack className="flex-1" space="lg">
+            {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-10" />}
+            <Controller control={control} name="cover" render={renderCover} />
             <Controller control={control} name="title" render={renderTitle} />
             <TagList tags={formData.tags} onRemove={onRemoveTag} />
-            <Controller control={control} name="cover" render={renderCover} />
             <Controller control={control} name="content" render={renderContent} />
             <HStack className="justify-end">
               <Controller control={control} name="poi" render={renderPosition} />
@@ -317,7 +268,7 @@ const PostCreate: React.FC = () => {
           </VStack>
         </KeyboardAwareScrollView>
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
-          <HStack space="md" className="w-full px-4">
+          <HStack space="md" className="w-full bg-background-200 px-4">
             <Controller control={control} name="images" render={renderImagesInput} />
             <Controller control={control} name="audios" render={renderAudiosInput} />
           </HStack>
