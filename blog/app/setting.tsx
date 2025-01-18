@@ -122,7 +122,7 @@ const Setting: React.FC = () => {
                 <Divider />
                 <Pressable onPress={() => onLogoutBtnPress()}>
                   <HStack className="mt-6 h-14 items-center justify-center p-3">
-                    <HStack className="items-center">
+                    <HStack className="items-center" space="md">
                       <Icon as={LogOut} size="lg" />
                       <Text>退出登录</Text>
                     </HStack>

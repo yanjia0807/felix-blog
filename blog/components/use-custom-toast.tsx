@@ -12,7 +12,7 @@ const CustomToast = ({ toast, id, title, description, actions }: any) => {
     <Toast
       action="error"
       nativeID={id}
-      className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
+      className="shadow-hard-2 w-full min-w-[240] max-w-[320] flex-row gap-4 p-4">
       <VStack space="xl" className="flex-1">
         <VStack space="xs">
           <HStack className="items-center justify-between">
@@ -39,8 +39,7 @@ const ConfirmToast = ({ toast, id, onConfirm, title, description }: any) => {
   return (
     <Toast
       nativeID={id}
-      action="info"
-      className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
+      className="shadow-hard-2 w-full min-w-[240] max-w-[320] flex-row gap-4 p-4">
       <VStack space="xl" className="flex-1">
         <VStack space="xs">
           <HStack className="items-center justify-between">
@@ -54,20 +53,13 @@ const ConfirmToast = ({ toast, id, onConfirm, title, description }: any) => {
         <ButtonGroup className="flex-row gap-3">
           <Button
             size="sm"
-            variant="outline"
-            action="default"
             className="flex-grow"
             onPress={() => {
               onConfirm();
             }}>
             <ButtonText>确定</ButtonText>
           </Button>
-          <Button
-            variant="outline"
-            action="default"
-            size="sm"
-            className="flex-grow"
-            onPress={() => toast.close(id)}>
+          <Button action="default" size="sm" className="flex-grow" onPress={() => toast.close(id)}>
             <ButtonText>取消</ButtonText>
           </Button>
         </ButtonGroup>
@@ -80,7 +72,7 @@ const AlertToast = function AlertToast({ toast, id, action, title, description }
   const nativeID = id || _.random().toString();
 
   return (
-    <Toast action={action} nativeID={nativeID} className="min-w-[240] max-w-[320] shadow-hard-2">
+    <Toast action={action} nativeID={nativeID} className="shadow-hard-2 min-w-[240] max-w-[320]">
       <VStack space="sm">
         <HStack className="items-center" space="sm">
           <ToastTitle>{title}</ToastTitle>

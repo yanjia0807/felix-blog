@@ -9,10 +9,10 @@ import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-import { uploadFiles } from '@/api';
-import { createPost, PostData } from '@/api/post';
+import { createPost } from '@/api/post';
 import { useAuth } from '@/components/auth-context';
 import { CoverInput, ImageGrid, ImageInput } from '@/components/image-input';
+import PageSpinner from '@/components/page-spinner';
 import { PositionInput } from '@/components/position-input';
 import { RecordingInput } from '@/components/recording-input';
 import { RecordingList } from '@/components/recording-list';
@@ -29,7 +29,6 @@ import {
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { Spinner } from '@/components/ui/spinner';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
@@ -250,7 +249,7 @@ const PostCreate: React.FC = () => {
       <>
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1, padding: 16 }}>
           <VStack className="flex-1" space="lg">
-            {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-10" />}
+            <PageSpinner isVisiable={isPending} />
             <Controller control={control} name="cover" render={renderCover} />
             <Controller control={control} name="title" render={renderTitle} />
             <TagList tags={formData.tags} onRemove={onRemoveTag} />

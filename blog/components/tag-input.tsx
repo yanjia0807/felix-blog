@@ -5,6 +5,7 @@ import {
   BottomSheetModal,
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { Check, Tag, X } from 'lucide-react-native';
@@ -12,11 +13,13 @@ import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } 
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { twMerge } from 'tailwind-merge';
+import { z } from 'zod';
 import { fetchTags } from '@/api/tag';
 import { Badge, BadgeIcon, BadgeText } from './ui/badge';
 import { Box } from './ui/box';
 import { Button, ButtonGroup, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
+import { FormControl } from './ui/form-control';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Input, InputIcon } from './ui/input';
@@ -87,22 +90,32 @@ export const TagInput = ({ value, onChange }: any) => {
   );
 };
 
+type FilterFormSchema = z.infer<typeof filterFormSchema>;
+
+const filterFormSchema = z.object({
+  name: z.string().max(100, '内容不能超过100个字符').nullable(),
+});
+
 export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    setSelectedTags([...value]);
-  }, [value]);
-
   const {
     control,
     formState: { errors },
     handleSubmit,
-    reset,
     getValues,
-  } = useForm({});
+  } = useForm<FilterFormSchema>({
+    resolver: zodResolver(filterFormSchema),
+    defaultValues: {
+      name: '',
+    },
+  });
+
+  useEffect(() => {
+    setSelectedTags([...value]);
+  }, [value]);
 
   const { data, error, isError, isSuccess, isLoading, refetch } = useQuery({
     queryKey: ['tags', { name: getValues() }],
@@ -176,20 +189,22 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
   };
 
   const renderInput = ({ field: { onChange, onBlur, value } }: any) => (
-    <Input className="bg-primary-100" variant="rounded">
-      <BottomSheetTextInput
-        inputMode="text"
-        className="py-auto ios:leading-[0px] h-full flex-1 px-3 text-typography-900 placeholder:text-typography-500"
-        returnKeyType="search"
-        placeholder="搜索标签..."
-        value={value}
-        onBlur={onBlur}
-        onChangeText={(e) => {
-          onChange(e);
-          debouncedSubmit();
-        }}
-      />
-    </Input>
+    <FormControl className="flex-1" isInvalid={!!errors.name} size="md">
+      <Input className="bg-background-50" variant="rounded">
+        <BottomSheetTextInput
+          inputMode="text"
+          className="h-full flex-1 px-3"
+          returnKeyType="search"
+          placeholder="搜索标签..."
+          value={value}
+          onBlur={onBlur}
+          onChangeText={(e) => {
+            onChange(e);
+            debouncedSubmit();
+          }}
+        />
+      </Input>
+    </FormControl>
   );
 
   return (
@@ -212,7 +227,9 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
         )}
         {isSuccess && (
           <>
-            <Controller name="name" control={control} render={renderInput} />
+            <HStack className="bg-background-100">
+              <Controller name="name" control={control} render={renderInput} />
+            </HStack>
             <TagList tags={selectedTags} onRemove={onRemove} />
             <BottomSheetFlatList
               data={data}

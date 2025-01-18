@@ -8,8 +8,7 @@ import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
 import { fetchPost } from '@/api/post';
-import { useAuth } from '@/components/auth-context';
-import AuthorInfo from '@/components/author-info';
+import { AuthorInfo } from '@/components/auth-context';
 import {
   CommentInput,
   CommentProvider,
@@ -18,6 +17,7 @@ import {
 } from '@/components/comment-input';
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
+import PageSpinner from '@/components/page-spinner';
 import { RecordingList } from '@/components/recording-list';
 import { ShareButton } from '@/components/share-button';
 import { TagList } from '@/components/tag-input';
@@ -27,7 +27,6 @@ import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { formatDistance } from '@/utils/date';
@@ -37,7 +36,7 @@ const PostDetail: React.FC = () => {
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
   const { setPostDocumentId, setCommentCount } = useCommentContext();
-  console.log('@@', documentId);
+
   const {
     isPending,
     isSuccess,
@@ -107,7 +106,7 @@ const PostDetail: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      {isPending && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-10" />}
+      <PageSpinner isVisiable={isPending} />
       {isSuccess && (
         <ScrollView className="flex-1 p-6">
           <VStack className="flex-1" space="xl">

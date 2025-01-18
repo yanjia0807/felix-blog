@@ -5,8 +5,7 @@ import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth } from '@/components/auth-context';
-import AuthHeader from '@/components/auth-header';
+import { useAuth, AuthHeader } from '@/components/auth-context';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,

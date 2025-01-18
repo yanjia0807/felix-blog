@@ -74,18 +74,6 @@ const PostListView = ({ userDocumentId }: any) => {
                 <Text numberOfLines={3}>{item.content}</Text>
               </VStack>
             </HStack>
-            <HStack className="items-center justify-end" space="md">
-              <HStack space="lg" className="flex-row items-center">
-                <HStack space="xs" className="items-center">
-                  <Icon as={Heart} />
-                  <Text size="xs">{item?.likedByUsers?.count}</Text>
-                </HStack>
-                <HStack space="xs" className="items-center">
-                  <Icon as={MessageCircle} />
-                  <Text size="xs">{item?.comments?.count}</Text>
-                </HStack>
-              </HStack>
-            </HStack>
           </VStack>
         </Card>
       </Pressable>

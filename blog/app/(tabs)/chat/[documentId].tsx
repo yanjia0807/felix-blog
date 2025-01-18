@@ -271,8 +271,8 @@ const Chat: React.FC = () => {
   };
 
   const renderInput = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl size="lg" isInvalid={!!errors.content}>
-      <Input variant="rounded" size="md">
+    <FormControl size="lg" className="flex-1" isInvalid={!!errors.content}>
+      <Input className="bg-background-50" variant="rounded">
         <InputField
           placeholder=""
           inputMode="text"
@@ -307,9 +307,9 @@ const Chat: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      <VStack className="flex-1 justify-between p-4">
+      <VStack className="flex-1 justify-between">
         <FlatList
-          contentContainerClassName="flex-grow justify-end"
+          contentContainerClassName="flex-grow justify-end p-4"
           ref={flatListRef}
           data={messageData}
           inverted={true}
@@ -322,8 +322,10 @@ const Chat: React.FC = () => {
             }
           }}
         />
-        <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={110}>
-          <Controller name="content" control={control} render={renderInput} />
+        <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={100}>
+          <HStack className="bg-background-100 p-2">
+            <Controller name="content" control={control} render={renderInput} />
+          </HStack>
         </KeyboardAvoidingView>
       </VStack>
     </SafeAreaView>

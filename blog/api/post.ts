@@ -138,6 +138,9 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
           files: true,
         },
       },
+      comments: {
+        count: true,
+      },
     },
     sort: 'createdAt:desc',
     pagination,
@@ -317,7 +320,7 @@ export const updatePostLiked = async ({ documentId, postData }: UpdatePostLikedD
   }
 };
 
-export const fetchRecentAuthors = async () => {
+export const fetchPostAuthors = async () => {
   const res = await apiClient.get(`/posts/recent-authors`);
   return res.data;
 };

@@ -1,15 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack } from 'expo-router';
-import { AlertCircleIcon, ChevronLeft } from 'lucide-react-native';
+import { AlertCircleIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth } from '@/components/auth-context';
-import AuthHeader from '@/components/auth-header';
+import { AuthHeader, useAuth } from '@/components/auth-context';
 import PrivacyPolicyDialog from '@/components/privacy-policy-dialog';
 import TermsOfServiceDialog from '@/components/terms-of-service-dialog';
-import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
   FormControlError,

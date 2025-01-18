@@ -36,7 +36,7 @@ const FollowerList: React.FC = () => {
     },
   });
 
-  const isMe = currentUser.documentId === documentId;
+  const isMe = currentUser?.documentId === documentId;
 
   const { data, error, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
@@ -46,7 +46,7 @@ const FollowerList: React.FC = () => {
       initialPageParam: {
         pagination: {
           page: 1,
-          pageSize: 10,
+          pageSize: 20,
         },
         documentId,
         keyword,
@@ -81,7 +81,7 @@ const FollowerList: React.FC = () => {
       action="secondary"
       variant="link"
       onPress={() => {
-        router.back();
+        router.dismissAll();
       }}>
       <ButtonIcon as={ChevronLeft} />
       <ButtonText>返回</ButtonText>

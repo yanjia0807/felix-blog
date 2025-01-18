@@ -7,9 +7,17 @@ import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import React from 'react';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
-import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchRecentAuthors } from '@/api';
+import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
 import { useAuth } from '@/components/auth-context';
+import {
+  CommentListInput,
+  CommentProvider,
+  CommentSheet,
+  useCommentContext,
+} from '@/components/comment-input';
+import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
+import PageSpinner from '@/components/page-spinner';
 import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
@@ -19,7 +27,6 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
@@ -62,14 +69,14 @@ const HomeHeader: React.FC = () => {
 
   const features: any = isLoadFeaturesSuccess
     ? _.reduce(featureData?.pages, (result: any, item: any) => [...result, ...item.data], [])
-    : Array(5).fill(undefined);
+    : Array(2).fill(undefined);
 
-  const { data: recentAuthorsData, isSuccess: isLoadRecentAuthorsSuccess } = useQuery({
-    queryKey: ['authors', 'recent'],
-    queryFn: fetchRecentAuthors,
+  const { data: authorsData, isSuccess: isLoadAuthorsSuccess } = useQuery({
+    queryKey: ['posts', 'authors'],
+    queryFn: fetchPostAuthors,
   });
 
-  const recentAuthors = isLoadRecentAuthorsSuccess ? recentAuthorsData : Array(5).fill(undefined);
+  const authors = isLoadAuthorsSuccess ? authorsData : Array(2).fill(undefined);
 
   const onFeatureItemPressed = ({ post }: any) => {
     if (post) {
@@ -77,53 +84,55 @@ const HomeHeader: React.FC = () => {
     }
   };
 
-  const renderFeatureItem = ({ item }: any) => (
-    <Skeleton className="mx-2 h-48 w-80" isLoaded={isLoadFeaturesSuccess} variant="rounded">
-      {item && (
-        <Pressable className="mx-2 h-48 w-80" onPress={() => onFeatureItemPressed(item)}>
-          <Image
-            recyclingKey={item.assetId}
-            source={{
-              uri: `${apiServerURL}${item.image?.formats.medium.url}`,
-            }}
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: 8,
-            }}
-          />
-          {item.post && (
-            <Box className="absolute bottom-0 z-10 w-full overflow-hidden rounded-md">
-              <BlurView intensity={10} tint="light">
-                <VStack space="md" className="p-2">
-                  <Text size="lg" bold={true} className="text-white" numberOfLines={2}>
-                    {item.post.title}
-                  </Text>
-                  <HStack className="items-center justify-between">
-                    <Text size="sm" className="text-white">
-                      {format(item.post.createdAt, 'yyyy-MM-dd HH:mm:ss')}
+  const renderFeatureItem = ({ item, index }: any) => (
+    <Box className={`ml-4 h-48 w-80 ${index === 0 ? 'ml-0' : ''}`}>
+      <Skeleton isLoaded={isLoadFeaturesSuccess} variant="rounded">
+        {item && (
+          <Pressable onPress={() => onFeatureItemPressed(item)}>
+            <Image
+              recyclingKey={item.assetId}
+              source={{
+                uri: `${apiServerURL}${item.image?.formats.medium.url}`,
+              }}
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: 8,
+              }}
+            />
+            {item.post && (
+              <Box className="absolute bottom-0 z-10 w-full overflow-hidden rounded-md">
+                <BlurView intensity={10} tint="light">
+                  <VStack space="md" className="p-2">
+                    <Text size="lg" bold={true} className="text-white" numberOfLines={2}>
+                      {item.post.title}
                     </Text>
-                    <HStack space="xs" className="items-center">
-                      <Avatar size="sm">
-                        <AvatarImage
-                          source={{
-                            uri: `${apiServerURL}${item.post.author.avatar?.formats.thumbnail.url}`,
-                          }}
-                        />
-                        <AvatarFallbackText>{item.post.author.username}</AvatarFallbackText>
-                      </Avatar>
+                    <HStack className="items-center justify-between">
                       <Text size="sm" className="text-white">
-                        {item.post.author.username}
+                        {format(item.post.createdAt, 'yyyy-MM-dd HH:mm:ss')}
                       </Text>
+                      <HStack space="xs" className="items-center">
+                        <Avatar size="sm">
+                          <AvatarImage
+                            source={{
+                              uri: `${apiServerURL}${item.post.author.avatar?.formats.thumbnail.url}`,
+                            }}
+                          />
+                          <AvatarFallbackText>{item.post.author.username}</AvatarFallbackText>
+                        </Avatar>
+                        <Text size="sm" className="text-white">
+                          {item.post.author.username}
+                        </Text>
+                      </HStack>
                     </HStack>
-                  </HStack>
-                </VStack>
-              </BlurView>
-            </Box>
-          )}
-        </Pressable>
-      )}
-    </Skeleton>
+                  </VStack>
+                </BlurView>
+              </Box>
+            )}
+          </Pressable>
+        )}
+      </Skeleton>
+    </Box>
   );
 
   const onAvatarPress = (documentId: string) => {
@@ -134,30 +143,23 @@ const HomeHeader: React.FC = () => {
     }
   };
 
-  const renderRecentAuthorItem = ({ item, index }: any) => {
+  const renderAuthorItem = ({ item, index }: any) => {
     return (
-      <Skeleton
-        className={`ml-4 h-16 w-16 ${index === 0 ? 'ml-0' : ''}`}
-        variant="circular"
-        isLoaded={isLoadRecentAuthorsSuccess}>
-        {item && (
-          <Pressable
-            onPress={() => onAvatarPress(item.documentId)}
-            className={`ml-4 ${index === 0 ? 'ml-0' : ''}`}>
-            <VStack className="items-center" space="xs">
-              <Avatar key={item.id} size="md">
-                <AvatarImage
-                  source={{
-                    uri: `${apiServerURL}${item.formats.thumbnail.url}`,
-                  }}
-                />
-                <AvatarFallbackText>{item.username}</AvatarFallbackText>
-              </Avatar>
-              <Text size="sm">{item.username}</Text>
-            </VStack>
-          </Pressable>
-        )}
-      </Skeleton>
+      <Pressable
+        onPress={() => onAvatarPress(item.documentId)}
+        className={`ml-4 ${index === 0 ? 'ml-0' : ''}`}>
+        <VStack className="items-center" space="xs">
+          <Avatar key={item.id} size="md">
+            <AvatarImage
+              source={{
+                uri: `${apiServerURL}${item.formats.thumbnail.url}`,
+              }}
+            />
+            <AvatarFallbackText>{item.username}</AvatarFallbackText>
+          </Avatar>
+          <Text size="sm">{item.username}</Text>
+        </VStack>
+      </Pressable>
     );
   };
 
@@ -176,15 +178,19 @@ const HomeHeader: React.FC = () => {
             }
           }}
         />
-        <VStack space="md">
-          <Text bold={true}>最近更新</Text>
-          <FlatList
-            data={recentAuthors}
-            renderItem={renderRecentAuthorItem}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-          />
-        </VStack>
+        <Box className="h-[94.7]">
+          <Skeleton variant="rounded" isLoaded={isLoadAuthorsSuccess}>
+            <VStack space="md">
+              <Text bold={true}>最近更新</Text>
+              <FlatList
+                data={authors}
+                renderItem={renderAuthorItem}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              />
+            </VStack>
+          </Skeleton>
+        </Box>
       </VStack>
     </VStack>
   );
@@ -192,6 +198,7 @@ const HomeHeader: React.FC = () => {
 
 const Home: React.FC = () => {
   const { user } = useAuth();
+  const { setPostDocumentId, setCommentCount } = useCommentContext();
 
   const {
     data: recommentData,
@@ -244,14 +251,21 @@ const Home: React.FC = () => {
     });
   };
 
+  const onCommentInputPress = ({ item }: any) => {
+    setPostDocumentId(item.documentId);
+    setCommentCount(item.comments.count);
+  };
+
   const renderRecommentItem = ({ item, index }: any) => {
     return (
       <Skeleton
-        className={`my-6 h-56 rounded-lg ${index === 0 ? 'mt-0' : ''}`}
+        className={`my-6 h-52 rounded-lg ${index === 0 ? 'mt-0' : ''}`}
         variant="rounded"
         isLoaded={isLoadRecommentSuccess}>
         {item && (
-          <Pressable onPress={() => onRecommentItemPressed({ item, index })}>
+          <Pressable
+            onPress={() => onRecommentItemPressed({ item, index })}
+            pointerEvents="box-none">
             <Card
               variant="elevated"
               className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}
@@ -275,7 +289,7 @@ const Home: React.FC = () => {
                       </Text>
                       <Text size="xs">{formatDistance(item.createdAt)}</Text>
                     </HStack>
-                    <HStack space="xs" className="items-center">
+                    <HStack space="xs" className="items-center justify-end">
                       {item.poi?.address && (
                         <>
                           <Icon as={MapPin} size="xs" />
@@ -299,6 +313,16 @@ const Home: React.FC = () => {
                     </VStack>
                   </VStack>
                 </HStack>
+                <HStack className="h-6 items-center justify-between">
+                  <HStack space="lg" className="flex-row items-center">
+                    <LikeButton post={item} />
+                    <CommentListInput
+                      onPress={() => onCommentInputPress({ item })}
+                      commentCount={item.comments.count}
+                    />
+                  </HStack>
+                  <UserAvatars users={item.likedByUsers} />
+                </HStack>
               </VStack>
             </Card>
           </Pressable>
@@ -309,19 +333,26 @@ const Home: React.FC = () => {
 
   const recomments: any = isLoadRecommentSuccess
     ? _.reduce(recommentData?.pages, (result: any, item: any) => [...result, ...item.data], [])
-    : Array(5).fill(undefined);
+    : Array(2).fill(undefined);
 
   const renderListHeader = (props: any) => {
     return <HomeHeader {...props}></HomeHeader>;
   };
 
+  const renderEmptyComponent = (props: any) => (
+    <Box className="flex-1 items-center justify-center">
+      <Text>暂无数据</Text>
+    </Box>
+  );
+
   return (
     <SafeAreaView className="flex-1">
+      <PageSpinner isVisiable={isLoadingRecomment} />
       <VStack className="flex-1 px-4">
-        {isLoadingRecomment && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-10" />}
         <FlatList
           data={recomments}
           ListHeaderComponent={renderListHeader}
+          ListEmptyComponent={renderEmptyComponent}
           renderItem={renderRecommentItem}
           showsVerticalScrollIndicator={false}
           onEndReached={() => {
@@ -345,4 +376,11 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+const HomePage: React.FC = () => (
+  <CommentProvider>
+    <Home />
+    <CommentSheet />
+  </CommentProvider>
+);
+
+export default HomePage;

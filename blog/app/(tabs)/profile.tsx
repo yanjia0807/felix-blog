@@ -136,10 +136,7 @@ const Profile: React.FC = () => {
   const { user } = useAuth();
 
   const renderItem = () => <></>;
-
   const renderListHeader = (props: any) => <ProfileHeader {...props} />;
-
-  if (!user) return <Redirect href="/anonymous" />;
 
   return (
     <SafeAreaView className="flex-1">
@@ -148,15 +145,21 @@ const Profile: React.FC = () => {
           title: '我的',
         }}
       />
-      <FlatList
-        contentContainerClassName="p-4"
-        data={[]}
-        ListHeaderComponent={renderListHeader}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+      <VStack className="flex-1 p-4">
+        <FlatList
+          data={[]}
+          ListHeaderComponent={renderListHeader}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+        />
+      </VStack>
     </SafeAreaView>
   );
 };
 
-export default Profile;
+const ProfilePage: React.FC = () => {
+  const { user } = useAuth();
+  return user ? <Profile /> : <Redirect href="/anonymous" />;
+};
+
+export default ProfilePage;

@@ -29,7 +29,8 @@ const FollowingList: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId, username } = useLocalSearchParams();
   const [keyword, setKeyword] = useState();
-  const isMe = currentUser.documentId === documentId;
+
+  const isMe = currentUser?.documentId === documentId;
 
   const { control, handleSubmit } = useForm<FilterFormSchema>({
     resolver: zodResolver(filterFormSchema),
@@ -81,7 +82,7 @@ const FollowingList: React.FC = () => {
       action="secondary"
       variant="link"
       onPress={() => {
-        router.back();
+        router.dismissAll();
       }}>
       <ButtonIcon as={ChevronLeft} />
       <ButtonText>返回</ButtonText>

@@ -21,6 +21,7 @@ import {
   updateFollowings,
 } from '@/api';
 import { useAuth } from '@/components/auth-context';
+import PageSpinner from '@/components/page-spinner';
 import PhotoListView from '@/components/photo-list-view';
 import PostListView from '@/components/post-list-view';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
@@ -35,13 +36,32 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
+const UserDetailSkeleton = () => (
+  <VStack space="xl">
+    <HStack className="items-center" space="lg">
+      <Skeleton variant="circular" className="h-24 w-24" />
+      <VStack space="sm" className="flex-1">
+        <SkeletonText _lines={2} className="h-2 w-1/2" />
+      </VStack>
+    </HStack>
+    <SkeletonText _lines={4} className="h-2" />
+    <Skeleton variant="rounded" className="my-2 h-20 w-full" />
+    <HStack space="sm">
+      <Skeleton variant="rounded" className="h-12 flex-1" />
+      <Skeleton variant="rounded" className="h-12 flex-1" />
+    </HStack>
+    <Skeleton variant="rounded" className="mb-2 h-36 flex-1" />
+    <Skeleton variant="rounded" className="h-36 flex-1" />
+  </VStack>
+);
+
 const UserDetailHeader: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId }: any = useLocalSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const queryClient = useQueryClient();
   const toast = useCustomToast();
-  const userDocumentIds = [currentUser.documentId, documentId];
+  const userDocumentIds = currentUser ? [currentUser.documentId, documentId] : [];
 
   const {
     isLoading: isLoadingUser,
@@ -58,7 +78,6 @@ const UserDetailHeader: React.FC = () => {
         userDocumentIds,
       }),
     onSuccess: async (data, variables, context) => {
-      await queryClient.invalidateQueries({ queryKey: ['chats', 'detail', { userDocumentIds }] });
       await queryClient.invalidateQueries({
         queryKey: ['chats', 'list'],
       });
@@ -66,11 +85,9 @@ const UserDetailHeader: React.FC = () => {
   });
 
   const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
-    queryKey: ['chats', 'detail', { userDocumentIds }],
+    queryKey: ['chats', 'list', { userDocumentIds }],
     enabled: !!currentUser,
-    queryFn: () => {
-      return fetchChatByUsers({ userDocumentIds });
-    },
+    queryFn: () => fetchChatByUsers({ userDocumentIds }),
   });
 
   const { data: isFollowing } = useQuery({
@@ -182,10 +199,9 @@ const UserDetailHeader: React.FC = () => {
             <ButtonIcon as={MessageCircle} />
           </Button>
           <Button
+            disabled={!currentUser}
             action={isFollowing ? 'negative' : 'positive'}
-            size="md"
-            className="rounded-3xl px-12"
-            disabled={isFollowPending}
+            className="rounded-3xl px-16"
             onPress={() => onFollowBtnPressed()}>
             <ButtonText>{isFollowing ? '取消关注' : '关注'}</ButtonText>
             {isFollowPending && <ButtonSpinner />}
@@ -238,31 +254,10 @@ const UserDetailHeader: React.FC = () => {
     </>
   );
 
-  const renderSkeleton = () => (
-    <>
-      <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-10" />
-      <VStack space="xl">
-        <HStack className="items-center" space="lg">
-          <Skeleton variant="circular" className="h-24 w-24" />
-          <VStack space="sm" className="flex-1">
-            <SkeletonText _lines={2} className="h-2 w-1/2" />
-          </VStack>
-        </HStack>
-        <SkeletonText _lines={4} className="h-2" />
-        <Skeleton variant="rounded" className="my-2 h-20 w-full" />
-        <HStack space="sm">
-          <Skeleton variant="rounded" className="h-12 flex-1" />
-          <Skeleton variant="rounded" className="h-12 flex-1" />
-        </HStack>
-        <Skeleton variant="rounded" className="mb-2 h-36 flex-1" />
-        <Skeleton variant="rounded" className="h-36 flex-1" />
-      </VStack>
-    </>
-  );
-
   return (
-    <VStack className="flex-1">
-      {isLoadingUser && renderSkeleton()}
+    <VStack className="flex-1 p-4">
+      <PageSpinner isVisiable={isLoadingUser} />
+      {isLoadingUser && <UserDetailSkeleton />}
       {isLoadUserSuccess && renderUser()}
     </VStack>
   );
@@ -294,13 +289,14 @@ const UserDetail: React.FC = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <FlatList
-        data={[]}
-        contentContainerClassName="p-4"
-        ListHeaderComponent={renderListHeader}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+      <VStack className="flex-1 px-4">
+        <FlatList
+          data={[]}
+          ListHeaderComponent={renderListHeader}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+        />
+      </VStack>
     </SafeAreaView>
   );
 };

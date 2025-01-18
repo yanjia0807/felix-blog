@@ -1,7 +1,7 @@
 import { router, Stack } from 'expo-router';
 import { X } from 'lucide-react-native';
 import React from 'react';
-import AuthHeader from '@/components/auth-header';
+import { AuthHeader } from '@/components/auth-context';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';

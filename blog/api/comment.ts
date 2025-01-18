@@ -41,7 +41,7 @@ export const fetchPostComments = async ({ postDocumentId, pagination }: any) => 
   }
 };
 
-export const fetchRelatedComments = async ({ topCommentDocumentId, pagination }: any) => {
+export const fetchRelatedComments = async ({ topDocumentId, pagination }: any) => {
   try {
     const query = qs.stringify({
       populate: {
@@ -78,7 +78,7 @@ export const fetchRelatedComments = async ({ topCommentDocumentId, pagination }:
       sort: ['createdAt:desc'],
       filters: {
         topComment: {
-          documentId: topCommentDocumentId,
+          documentId: topDocumentId,
         },
       },
       pagination,

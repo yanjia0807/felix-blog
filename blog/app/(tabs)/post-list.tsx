@@ -7,8 +7,7 @@ import React from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
 import { apiServerURL, fetchTags } from '@/api';
-import { useAuth } from '@/components/auth-context';
-import AuthorInfo from '@/components/author-info';
+import { AuthorInfo, useAuth } from '@/components/auth-context';
 import {
   CommentListInput,
   CommentProvider,
@@ -18,6 +17,7 @@ import {
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
+import PageSpinner from '@/components/page-spinner';
 import {
   PostFilter,
   PostFilterContent,
@@ -38,7 +38,6 @@ import { AddIcon, Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
@@ -103,6 +102,8 @@ const PostHeader: React.FC = () => {
 
 const PostList: React.FC = () => {
   const { user } = useAuth();
+  const { setPostDocumentId, setCommentCount } = useCommentContext();
+
   const {
     data: postData,
     fetchNextPage,
@@ -112,7 +113,6 @@ const PostList: React.FC = () => {
     isFetchingNextPage,
     refetch,
   } = usePostFilterDrawerContext();
-  const { setPostDocumentId, setCommentCount } = useCommentContext();
 
   const posts: any = isSuccess
     ? _.reduce(postData?.pages, (result: any, item: any) => [...result, ...item.data], [])
@@ -130,67 +130,75 @@ const PostList: React.FC = () => {
       : [];
 
     return (
-      <Skeleton className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`} isLoaded={isSuccess}>
-        {item && (
-          <Card variant="elevated" className={`my-6 rounded-lg p-5 ${index === 0 ? 'mt-0' : ''}`}>
-            <VStack space="xl">
-              <VStack space="sm">
-                <HStack className="items-center justify-between">
-                  <AuthorInfo author={item.author} />
-                  <PostMenuPopover post={item} />
-                </HStack>
-                <HStack className="items-center justify-between">
-                  <Text size="xs">{formatDistance(item.createdAt)}</Text>
-                  <HStack space="xs" className="items-center">
-                    {item.poi?.address && (
-                      <HStack className="items-center">
-                        <Icon as={MapPin} size="xs" />
-                        <Text size="xs">{item.poi.address}</Text>
+      <Box className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
+        <Skeleton variant="rounded" isLoaded={isSuccess}>
+          {item && (
+            <Pressable onPress={() => onPostItemPressed({ item, index })} pointerEvents="box-none">
+              <Card variant="elevated">
+                <VStack space="xl">
+                  <VStack space="sm">
+                    <HStack className="items-center justify-between">
+                      <AuthorInfo author={item.author} />
+                      <PostMenuPopover post={item} />
+                    </HStack>
+                    <HStack className="items-center justify-between">
+                      <Text size="xs">{formatDistance(item.createdAt)}</Text>
+                      <HStack space="xs" className="items-center justify-end">
+                        {item.poi?.address && (
+                          <HStack className="items-center">
+                            <Icon as={MapPin} size="xs" />
+                            <Text size="xs">{item.poi.address}</Text>
+                          </HStack>
+                        )}
                       </HStack>
+                    </HStack>
+                    <TagList tags={item.tags || []}></TagList>
+                  </VStack>
+                  <VStack space="md">
+                    <Heading numberOfLines={2}>{item.title}</Heading>
+                    {item.cover && (
+                      <Box className="h-36 flex-1">
+                        <Image
+                          source={{
+                            uri: `${apiServerURL}${item.cover.formats?.medium.url}`,
+                          }}
+                          contentFit="cover"
+                          alt={item.cover.alternativeText}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: 8,
+                          }}
+                        />
+                      </Box>
                     )}
-                  </HStack>
-                </HStack>
-                <TagList tags={item.tags || []}></TagList>
-              </VStack>
-              <Pressable onPress={() => onPostItemPressed({ item, index })}>
-                <VStack space="md">
-                  <Heading numberOfLines={2}>{item.title}</Heading>
-                  {item.cover && (
-                    <Box className="h-36 flex-1">
-                      <Image
-                        source={{
-                          uri: `${apiServerURL}${item.cover.formats?.medium.url}`,
-                        }}
-                        contentFit="cover"
-                        alt={item.cover.alternativeText}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          borderRadius: 8,
-                        }}
+                    <Text numberOfLines={3}>{item.content}</Text>
+                  </VStack>
+                  <ImageList images={images} />
+                  <HStack className="h-6 items-center justify-between">
+                    <HStack space="lg" className="flex-row items-center">
+                      <LikeButton post={item} />
+                      <CommentListInput
+                        onPress={() => onCommentInputPress({ item })}
+                        commentCount={item.comments.count}
                       />
-                    </Box>
-                  )}
-                  <Text numberOfLines={3}>{item.content}</Text>
+                    </HStack>
+                    <UserAvatars users={item.likedByUsers} />
+                  </HStack>
                 </VStack>
-              </Pressable>
-              <ImageList images={images} />
-              <HStack className="h-6 items-center justify-between">
-                <HStack space="lg" className="flex-row items-center">
-                  <LikeButton post={item} />
-                  <CommentListInput
-                    onPress={() => onCommentInputPress({ item })}
-                    commentCount={item.comments.count}
-                  />
-                </HStack>
-                <UserAvatars users={item.likedByUsers} />
-              </HStack>
-            </VStack>
-          </Card>
-        )}
-      </Skeleton>
+              </Card>
+            </Pressable>
+          )}
+        </Skeleton>
+      </Box>
     );
   };
+
+  const renderEmptyComponent = (props: any) => (
+    <Box className="flex-1 items-center justify-center">
+      <Text>暂无数据</Text>
+    </Box>
+  );
 
   const renderPostHeader = (props: any) => {
     return <PostHeader {...props}></PostHeader>;
@@ -209,15 +217,12 @@ const PostList: React.FC = () => {
 
   return (
     <VStack className="flex-1 px-4">
-      {isLoading && (
-        <Spinner
-          size="small"
-          className="bg-background absolute bottom-0 left-0 right-0 top-0 z-10"
-        />
-      )}
+      <PageSpinner isVisiable={isLoading} />
       <FlatList
+        className="flex-1"
         data={posts}
         ListHeaderComponent={renderPostHeader}
+        ListEmptyComponent={renderEmptyComponent}
         renderItem={renderPostItem}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}

@@ -6,6 +6,7 @@ import React from 'react';
 import { FlatList, RefreshControl, SafeAreaView } from 'react-native';
 import { apiServerURL, fetchChats } from '@/api';
 import { useAuth } from '@/components/auth-context';
+import PageSpinner from '@/components/page-spinner';
 import { useSocket } from '@/components/socket-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
@@ -14,7 +15,6 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
-import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -99,19 +99,15 @@ const ChatList: React.FC = () => {
       )
     : [];
 
-  const renderListHeader = (props: any) => {
-    return <ChatListHeader {...props} />;
-  };
+  const renderListHeader = (props: any) => <ChatListHeader {...props} />;
 
-  const onChatItemPressed = ({ item }: any) => {
-    router.push(`/chat/${item.documentId}`);
-  };
+  const onChatItemPressed = ({ item }: any) => router.push(`/chat/${item.documentId}`);
 
   const renderItem = ({ item, index }: any) => {
     const otherUser: any = _.find(item.users, (item: any) => item.id !== user.id);
 
     return (
-      <Pressable onPress={() => onChatItemPressed({ item, index })}>
+      <Pressable onPress={() => onChatItemPressed({ item, index })} pointerEvents="box-none">
         {item.lastMessage ? (
           <HStack space="sm" className="w-full rounded-lg py-2">
             <Avatar>
@@ -169,45 +165,45 @@ const ChatList: React.FC = () => {
   const renderItemSeparator = (props: any) => <Divider {...props} className="my-2" />;
 
   return (
-    <>
-      {user ? (
-        <SafeAreaView className="flex-1">
-          <Stack.Screen
-            options={{
-              headerShown: false,
-            }}
-          />
-          {isLoading && <Spinner className="absolute bottom-0 left-0 right-0 top-0 z-10" />}
-          <VStack className="flex-1 px-4">
-            <FlatList
-              data={chats}
-              ListHeaderComponent={renderListHeader}
-              renderItem={renderItem}
-              ItemSeparatorComponent={renderItemSeparator}
-              showsVerticalScrollIndicator={false}
-              onEndReached={() => {
-                if (hasNextPage && !isFetchingNextPage) {
-                  fetchNextPage();
+    <SafeAreaView className="flex-1">
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+      />
+      <PageSpinner isVisiable={isLoading} />
+      <VStack className="flex-1 px-4">
+        <FlatList
+          data={chats}
+          ListHeaderComponent={renderListHeader}
+          renderItem={renderItem}
+          ItemSeparatorComponent={renderItemSeparator}
+          showsVerticalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={() => {
+                if (!isLoading) {
+                  refetch();
                 }
               }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isLoading}
-                  onRefresh={() => {
-                    if (!isLoading) {
-                      refetch();
-                    }
-                  }}
-                />
-              }
             />
-          </VStack>
-        </SafeAreaView>
-      ) : (
-        <Redirect href="/anonymous" />
-      )}
-    </>
+          }
+        />
+      </VStack>
+    </SafeAreaView>
   );
 };
 
-export default ChatList;
+const ChatListPage: React.FC = () => {
+  const { user }: any = useAuth();
+
+  return user ? <ChatList /> : <Redirect href="/anonymous" />;
+};
+
+export default ChatListPage;

@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { fetchMe } from '@/api';
-
+import { twMerge } from 'tailwind-merge';
+import { apiServerURL, fetchMe } from '@/api';
 import {
   loginUser,
   registerUser,
@@ -15,6 +17,13 @@ import {
   changePassword,
   resetPasswordOtp,
 } from '@/api/auth';
+import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
+import { Heading } from './ui/heading';
+import { HStack } from './ui/hstack';
+import { Pressable } from './ui/pressable';
+import { Text } from './ui/text';
+import { VStack } from './ui/vstack';
+
 const AuthContext = createContext<any>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
@@ -42,7 +51,6 @@ export const AuthProvider = ({ children }: any) => {
     await queryClient.setQueryData(['users', 'me'], () => null);
     setAccessToken(null);
     await SecureStore.deleteItemAsync('accessToken');
-
     await queryClient.removeQueries({
       queryKey: ['users', 'me'],
     });
@@ -159,3 +167,53 @@ export const AuthProvider = ({ children }: any) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+
+export const AuthHeader = ({ className, title, subtitle }: any) => {
+  return (
+    <HStack className={twMerge('mb-20 items-center', className)} space="md">
+      <Image
+        alt="logo"
+        source={require('/assets/images/icon.png')}
+        style={{ width: 40, height: 40, borderRadius: 6 }}
+      />
+      <VStack>
+        <Heading>{title}</Heading>
+        {subtitle && <Text sub={true}>{subtitle}</Text>}
+      </VStack>
+    </HStack>
+  );
+};
+
+export const AuthorInfo = ({ author }: any) => {
+  const { user } = useAuth();
+
+  const onAvatarPress = (documentId: string) => {
+    if (user?.documentId === documentId) {
+      router.push('/profile');
+    } else {
+      router.push(`/users/${documentId}`);
+    }
+  };
+
+  return (
+    <Pressable onPress={() => onAvatarPress(author.documentId)}>
+      <HStack className="items-center" space="sm">
+        <Avatar size="sm">
+          {author.avatar && (
+            <AvatarImage
+              source={{
+                uri: `${apiServerURL}${author.avatar.formats.thumbnail.url}`,
+              }}
+            />
+          )}
+          <AvatarFallbackText>{author.username}</AvatarFallbackText>
+        </Avatar>
+        <VStack>
+          <Text size="sm" bold={true}>
+            {author.username}
+          </Text>
+        </VStack>
+      </HStack>
+    </Pressable>
+  );
+};
