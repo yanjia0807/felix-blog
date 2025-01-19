@@ -158,12 +158,12 @@ const UserDetailHeader: React.FC = () => {
       <VStack space="xl">
         <HStack className="items-center" space="lg">
           <Avatar size="xl" className="shadow">
+            <AvatarFallbackText>{user.username}</AvatarFallbackText>
             <AvatarImage
               source={{
                 uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
               }}
             />
-            <AvatarFallbackText>{user.username}</AvatarFallbackText>
           </Avatar>
           <VStack space="sm">
             <Text size="2xl" bold={true}>

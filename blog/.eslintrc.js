@@ -5,6 +5,7 @@ module.exports = {
   rules: {
     'prettier/prettier': 'warn',
     'import/no-unresolved': 'off',
+    'react-hooks/exhaustive-deps': 'warn',
     'import/order': [
       'warn',
       {
@@ -22,6 +23,5 @@ module.exports = {
         },
       },
     ],
-    'react-hooks/exhaustive-deps': 'off',
   },
 };

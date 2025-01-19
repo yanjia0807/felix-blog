@@ -210,10 +210,10 @@ const Chat: React.FC = () => {
           </Button>
           <HStack className="items-center" space="sm">
             <Avatar size="md">
+              <AvatarFallbackText>{otherUser?.username}</AvatarFallbackText>
               <AvatarImage
                 source={{ uri: `${apiServerURL}${otherUser?.avatar?.formats.thumbnail.url}` }}
               />
-              <AvatarFallbackText>{otherUser?.username}</AvatarFallbackText>
             </Avatar>
             <VStack>
               <Heading size="sm" bold={true}>
@@ -251,12 +251,12 @@ const Chat: React.FC = () => {
     return (
       <HStack>
         <Avatar size="xs">
+          <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
           <AvatarImage
             source={{
               uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
             }}
           />
-          <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
         </Avatar>
         <HStack className="flex-1 items-center justify-between">
           <Card size="md" variant="elevated" className="m-3 w-2/3 rounded-md bg-primary-300 p-4">

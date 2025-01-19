@@ -15,9 +15,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { twMerge } from 'tailwind-merge';
 import { z } from 'zod';
 import { fetchTags } from '@/api/tag';
+import PageSpinner from './page-spinner';
 import { Badge, BadgeIcon, BadgeText } from './ui/badge';
 import { Box } from './ui/box';
-import { Button, ButtonGroup, ButtonText } from './ui/button';
+import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { FormControl } from './ui/form-control';
 import { Heading } from './ui/heading';
@@ -60,7 +61,7 @@ export const TagSelect = ({ value = [], onChange }: any) => {
 export const TagList = ({ tags, onRemove, className }: any) => {
   if (tags?.length > 0) {
     return (
-      <HStack space="sm" className={twMerge('my-1 flex-wrap', className)}>
+      <HStack space="sm" className={twMerge('flex-wrap', className)}>
         {tags.map((item: any) => (
           <Pressable onPress={() => onRemove && onRemove(item.documentId)} key={item.documentId}>
             <Badge size="lg" variant="solid" className="rounded px-2">
@@ -98,7 +99,7 @@ const filterFormSchema = z.object({
 
 export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);
-  const snapPoints = useMemo(() => ['50%', '90%'], []);
+  const snapPoints = useMemo(() => ['80%'], []);
   const insets = useSafeAreaInsets();
 
   const {
@@ -174,8 +175,10 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
 
   const renderFooter = (props: any) => {
     return (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
-        <HStack className="items-center justify-around bg-background-50 p-2">
+      <BottomSheetFooter {...props}>
+        <HStack
+          className="items-center justify-around bg-background-50 p-2"
+          style={{ paddingBottom: insets.bottom }}>
           <Button className="flex-1" variant="link" onPress={() => onCloseBtnPressed()}>
             <ButtonText>取消</ButtonText>
           </Button>
@@ -216,30 +219,23 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
       <VStack className="flex-1 bg-background-100 p-4" space="md">
+        <PageSpinner isVisiable={isLoading} />
         <VStack className="mb-4 items-center">
           <Heading className="p-2">请选择标签</Heading>
           <Divider />
         </VStack>
-        {isError && (
-          <Box className="items-center">
-            <Text>{error.message}</Text>
-          </Box>
-        )}
-        {isSuccess && (
-          <>
-            <HStack className="bg-background-100">
-              <Controller name="name" control={control} render={renderInput} />
-            </HStack>
-            <TagList tags={selectedTags} onRemove={onRemove} />
-            <BottomSheetFlatList
-              data={data}
-              keyExtractor={(item: any) => item.id.toString()}
-              renderItem={renderItem}
-              showsVerticalScrollIndicator={false}
-              extraData={{ selectedTags }}
-            />
-          </>
-        )}
+        <HStack className="bg-background-100">
+          <Controller name="name" control={control} render={renderInput} />
+        </HStack>
+        <TagList tags={selectedTags} onRemove={onRemove} />
+        <BottomSheetFlatList
+          data={data}
+          keyExtractor={(item: any) => item.id.toString()}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 60 }}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          extraData={{ selectedTags }}
+        />
       </VStack>
     </BottomSheetModal>
   );

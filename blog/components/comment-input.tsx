@@ -11,7 +11,15 @@ import { format } from 'date-fns';
 import _ from 'lodash';
 import { MessageCircle } from 'lucide-react-native';
 import { Heart, HeartCrack } from 'lucide-react-native';
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
@@ -23,6 +31,7 @@ import {
   fetchRelatedComments,
 } from '@/api/comment';
 import { useAuth } from './auth-context';
+import PageSpinner from './page-spinner';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
@@ -41,11 +50,9 @@ const CommentContext = createContext<any>({});
 
 export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [postDocumentId, setPostDocumentId] = useState<any>();
-  const [replyDocumentId, setReplyDocumentId] = useState<any>();
-  const [replyTopDocumentId, setReplyTopDocumentId] = useState<any>();
-  const [replyUsername, setReplyUsername] = useState<any>();
-  const [expandDocumentId, setExpandDocumentId] = useState<any>();
+  const [currentDocumentId, setCurrentDocumentId] = useState<any>();
   const [expandDocumentIds, setExpandDocumentIds] = useState<any>([]);
+  const [replyDocument, setReplyDocument] = useState<any>();
   const [commentCount, setCommentCount] = useState(0);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
@@ -78,11 +85,11 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const relatedCommentQuery = useInfiniteQuery<any>({
-    queryKey: ['posts', 'detail', postDocumentId, 'comments', expandDocumentId],
-    enabled: !!expandDocumentId,
+    queryKey: ['posts', 'detail', postDocumentId, 'comments', currentDocumentId],
+    enabled: !!currentDocumentId,
     queryFn: ({ pageParam }) => fetchRelatedComments(pageParam),
     initialPageParam: {
-      topDocumentId: expandDocumentId,
+      topDocumentId: currentDocumentId,
       pagination: {
         page: 1,
         pageSize: 5,
@@ -97,7 +104,7 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       if (page < pageCount) {
         return {
-          topDocumentId: expandDocumentId,
+          topDocumentId: currentDocumentId,
           pagination: { page: page + 1, pageSize },
         };
       }
@@ -117,14 +124,10 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const value = {
     postDocumentId,
     setPostDocumentId,
-    expandDocumentId,
-    setExpandDocumentId,
-    replyDocumentId,
-    setReplyDocumentId,
-    replyTopDocumentId,
-    setReplyTopDocumentId,
-    replyUsername,
-    setReplyUsername,
+    currentDocumentId,
+    setCurrentDocumentId,
+    replyDocument,
+    setReplyDocument,
     expandDocumentIds,
     setExpandDocumentIds,
     commentCount,
@@ -153,12 +156,16 @@ const commentFormSchema = z.object({
 });
 
 export const CommentListInput = ({ onPress, commentCount }: any) => {
-  const { bottomSheetRef } = useCommentContext();
+  const { bottomSheetRef, setCommentCount } = useCommentContext();
 
   const onInputIconPress = () => {
     onPress();
     bottomSheetRef.current?.present();
   };
+
+  useEffect(() => {
+    setCommentCount(commentCount);
+  }, [commentCount, setCommentCount]);
 
   return (
     <Pressable onPress={() => onInputIconPress()}>
@@ -186,19 +193,13 @@ export const CommentInput = () => {
 
 export const CommentSheet = () => {
   const { user } = useAuth();
-
   const inputRef = useRef<any>(null);
   const queryClient = useQueryClient();
   const snapPoints = useMemo(() => ['60%', '90%'], []);
   const insets = useSafeAreaInsets();
   const toast = useCustomToast();
 
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    reset,
-  } = useForm<CommentFormSchema>({
+  const { control, handleSubmit, reset } = useForm<CommentFormSchema>({
     resolver: zodResolver(commentFormSchema),
     defaultValues: {
       content: '',
@@ -207,13 +208,9 @@ export const CommentSheet = () => {
 
   const {
     postDocumentId,
-    setExpandDocumentId,
-    replyTopDocumentId,
-    setReplyTopDocumentId,
-    replyDocumentId,
-    setReplyDocumentId,
-    replyUsername,
-    setReplyUsername,
+    replyDocument,
+    setReplyDocument,
+    setCurrentDocumentId,
     expandDocumentIds,
     setExpandDocumentIds,
     commentCount,
@@ -224,73 +221,51 @@ export const CommentSheet = () => {
     bottomSheetRef,
   } = useCommentContext();
 
-  const comments = useMemo(() => {
-    const commentsData = _.reduce(
-      commentQuery.data?.pages,
+  const isLoading = commentQuery.isLoading || relatedCommentQuery.isLoading;
+  const isPending = createMutation.isPending || deleteMutation.isPending;
+
+  const commentsData = _.reduce(
+    commentQuery.data?.pages,
+    (result: any, page: any) => [...result, ...page.data],
+    [],
+  );
+
+  const comments = _.map(commentsData, (item: any) => {
+    const relatedCommentData: any = queryClient.getQueryData([
+      'posts',
+      'detail',
+      postDocumentId,
+      'comments',
+      item.documentId,
+    ]);
+
+    const relatedComments = _.reduce(
+      relatedCommentData?.pages,
       (result: any, page: any) => [...result, ...page.data],
       [],
     );
 
-    return _.map(commentsData, (item: any) => {
-      const relatedCommentData: any = queryClient.getQueryData([
-        'posts',
-        'detail',
-        postDocumentId,
-        'comments',
-        item.documentId,
-      ]);
+    return {
+      ...item,
+      title: item.content,
+      data: relatedComments,
+    };
+  });
 
-      const relatedComments = _.reduce(
-        relatedCommentData?.pages,
-        (result: any, page: any) => [...result, ...page.data],
-        [],
-      );
-
-      return {
-        ...item,
-        title: item.content,
-        data: relatedComments,
-      };
-    });
-  }, [commentQuery.data, relatedCommentQuery.data]);
-
-  const onExpandButtonPress = async (expandDocumentId: any) => {
-    setExpandDocumentId(expandDocumentId);
-    setExpandDocumentIds((prev: any) => _.uniq([...prev, expandDocumentId]));
+  const onExpandButtonPress = async (currentDocumentId: any) => {
+    if (
+      !queryClient.getQueryData(['posts', 'detail', postDocumentId, 'comments', currentDocumentId])
+    ) {
+      setCurrentDocumentId(currentDocumentId);
+    }
+    setExpandDocumentIds((prev: any) => _.uniq([...prev, currentDocumentId]));
   };
 
-  const onExpandMoreButtonPress = async (expandDocumentId: any) => {
-    setExpandDocumentId(expandDocumentId);
+  const onExpandMoreButtonPress = async (currentDocumentId: any) => {
+    setCurrentDocumentId(currentDocumentId);
     if (relatedCommentQuery.hasNextPage && !relatedCommentQuery.isFetchingNextPage) {
       relatedCommentQuery.fetchNextPage();
     }
-  };
-
-  const onSubmit = (formData: CommentFormSchema) => {
-    const data = {
-      content: formData.content,
-      user: user.documentId,
-      post: postDocumentId,
-      reply: replyDocumentId,
-      topComment: replyTopDocumentId,
-    };
-
-    createMutation.mutate(data, {
-      async onSuccess(data: any) {
-        toast.success({ description: '评论已发布' });
-        await queryClient.invalidateQueries({
-          queryKey: ['posts', 'detail', postDocumentId],
-        });
-
-        setExpandDocumentId(data.topComment.documentId);
-        setExpandDocumentIds((prev: any) => _.uniq([...prev, data.topComment.documentId]));
-        reset({ content: '' });
-      },
-      onError(error: any) {
-        toast.error({ description: error.message });
-        reset({ content: '' });
-      },
-    });
   };
 
   const onCollapseButtonPress = async (section: any) => {
@@ -299,31 +274,110 @@ export const CommentSheet = () => {
     );
   };
 
-  const onReplyButtonPress = (
-    replyTopDocumentId: string,
-    replyDocumentId: string,
-    username: string,
-  ) => {
-    setReplyTopDocumentId(replyTopDocumentId);
-    setReplyDocumentId(replyDocumentId);
-    setReplyUsername(username);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 300);
+  const onSubmit = (formData: CommentFormSchema) => {
+    const data = {
+      content: formData.content,
+      user: user.documentId,
+      post: postDocumentId,
+      reply: replyDocument?.documentId,
+      topComment: replyDocument?.topDocumentId,
+    };
+    setCurrentDocumentId(null);
+
+    createMutation.mutate(data, {
+      async onSuccess(data: any) {
+        toast.success({ description: '评论已发布' });
+
+        if (data.topComment) {
+          setCurrentDocumentId(data.topComment.documentId);
+          await queryClient.invalidateQueries({
+            queryKey: ['posts', 'detail', postDocumentId, 'comments', data.topComment.documentId],
+            exact: true,
+          });
+          setExpandDocumentIds((prev: any) => _.uniq([...prev, data.topComment.documentId]));
+          setReplyDocument(null);
+        }
+
+        await queryClient.invalidateQueries({
+          queryKey: ['posts', 'detail', postDocumentId, 'comments'],
+          exact: true,
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ['posts', 'detail', postDocumentId],
+          exact: true,
+        });
+
+        await queryClient.setQueriesData({ queryKey: ['posts', 'list'] }, (oldData: any) => ({
+          pages: _.map(oldData.pages, (page: any) => ({
+            meta: page.meta,
+            data: _.map(page.data, (item: any) =>
+              item.documentId === postDocumentId
+                ? {
+                    ...item,
+                    comments: {
+                      count: item.comments.count + 1,
+                    },
+                  }
+                : {
+                    ...item,
+                  },
+            ),
+          })),
+          pageParams: oldData.pageParams,
+        }));
+
+        reset({ content: '' });
+      },
+      onError(error: any) {
+        toast.error({ description: error.message });
+      },
+    });
   };
 
   const onDeleteButtonPress = (documentId: string, topDocumentId: string | null) => {
+    setCurrentDocumentId(null);
     deleteMutation.mutate(
       {
         documentId,
         topDocumentId,
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           toast.success({ description: '评论已删除' });
+          if (topDocumentId) {
+            setCurrentDocumentId(topDocumentId);
+            await queryClient.invalidateQueries({
+              queryKey: ['posts', 'detail', postDocumentId, 'comments', topDocumentId],
+              exact: true,
+            });
+          }
+          queryClient.invalidateQueries({
+            queryKey: ['posts', 'detail', postDocumentId, 'comments'],
+            exact: true,
+          });
           queryClient.invalidateQueries({
             queryKey: ['posts', 'detail', postDocumentId],
+            exact: true,
           });
+          await queryClient.setQueriesData({ queryKey: ['posts', 'list'] }, (oldData: any) => ({
+            pages: _.map(oldData.pages, (page: any) => ({
+              meta: page.meta,
+              data: _.map(page.data, (item: any) =>
+                item.documentId === postDocumentId
+                  ? {
+                      ...item,
+                      comments: {
+                        count: item.comments.count - 1,
+                      },
+                    }
+                  : {
+                      ...item,
+                    },
+              ),
+            })),
+            pageParams: oldData.pageParams,
+          }));
         },
         onError(error: any) {
           toast.error({ description: error.message });
@@ -332,29 +386,44 @@ export const CommentSheet = () => {
     );
   };
 
+  const onReplyButtonPress = (
+    replyDocumentId: string,
+    replyTopDocumentId: string,
+    username: string,
+  ) => {
+    setReplyDocument({
+      documentId: replyDocumentId,
+      topDocumentId: replyTopDocumentId,
+      username: username,
+    });
+
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 300);
+  };
+
   const renderSectionHeader = ({ section }: any) => {
     return (
-      <HStack className="my-2 items-start" space="sm">
-        <Box className="w-10">
-          <Avatar size="sm" className="my-1">
+      <HStack>
+        <Box className="w-12">
+          <Avatar size="sm">
+            <AvatarFallbackText>{section.user.username}</AvatarFallbackText>
             <AvatarImage
               source={{
                 uri: `${apiServerURL}${section.user.avatar?.formats.thumbnail.url}`,
               }}
             />
-            <AvatarFallbackText>{section.user.username}</AvatarFallbackText>
           </Avatar>
         </Box>
         <VStack className="flex-1 items-start justify-start">
-          <Text bold={true}>{section.user.username}</Text>
-          <Text size="sm">{section.content}</Text>
+          <Text size="sm">{section.user.username}</Text>
+          <Text size="md">{section.content}</Text>
           <HStack className="items-center justify-between">
-            <HStack className="items-center">
+            <HStack className="items-center" space="md">
               <Text size="sm">{format(section.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
               <Button
                 size="sm"
                 variant="link"
-                className="mx-2"
                 onPress={() =>
                   onReplyButtonPress(section.documentId, section.documentId, section.user.username)
                 }>
@@ -366,7 +435,6 @@ export const CommentSheet = () => {
                   size="sm"
                   action="secondary"
                   variant="link"
-                  className="mx-2"
                   onPress={() => onDeleteButtonPress(section.documentId, null)}>
                   <ButtonText>删除</ButtonText>
                 </Button>
@@ -394,7 +462,6 @@ export const CommentSheet = () => {
                   size="sm"
                   variant="link"
                   action="secondary"
-                  className="mx-2"
                   onPress={() => onExpandButtonPress(section.documentId)}>
                   <ButtonText>展开回复</ButtonText>
                 </Button>
@@ -407,15 +474,13 @@ export const CommentSheet = () => {
 
   const renderSectionFooter = ({ section }: any) => {
     return (
-      <HStack className="items-center" space="sm">
-        <Box className="w-10" />
-        <HStack>
+      <HStack className="items-center pl-12">
+        <HStack className="items-center" space="md">
           {relatedCommentQuery.hasNextPage && (
             <Button
               size="sm"
               variant="link"
               action="secondary"
-              className="mx-2"
               onPress={() => onExpandMoreButtonPress(section.documentId)}>
               <ButtonText>展开更多</ButtonText>
             </Button>
@@ -426,7 +491,6 @@ export const CommentSheet = () => {
                 size="sm"
                 variant="link"
                 action="secondary"
-                className="mx-2"
                 onPress={() => onCollapseButtonPress(section)}>
                 <ButtonText>收起</ButtonText>
               </Button>
@@ -438,67 +502,69 @@ export const CommentSheet = () => {
 
   const renderCommentItem = ({ item }: any) => {
     return _.includes(expandDocumentIds, item.topComment.documentId) ? (
-      <HStack className="my-1 ml-10 items-start" space="sm">
-        <Avatar size="xs" className="my-1">
-          <AvatarImage
-            source={{ uri: `${apiServerURL}${item.user.avatar?.formats.thumbnail.url}` }}
-          />
-          <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
-        </Avatar>
-        <VStack className="flex-1 items-start justify-start">
-          <HStack space="xs" className="items-center">
-            <Text bold={true}>{item.user.username}</Text>
-            {item.reply && (
-              <>
-                <Text>►</Text>
-                <Text bold={true}>{item.reply.user.username}</Text>
-              </>
-            )}
-          </HStack>
-          <Text size="sm">{item.content}</Text>
-          <HStack className="items-center justify-between">
-            <HStack className="items-center">
-              <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
-              <Button
-                size="sm"
-                variant="link"
-                className="mx-2"
-                onPress={() =>
-                  onReplyButtonPress(
-                    item.topComment.documentId,
-                    item.documentId,
-                    item.user.username,
-                  )
-                }>
-                <ButtonText>回复</ButtonText>
-              </Button>
-              {item.user.documentId === user?.documentId && (
+      <HStack className="items-start pl-12">
+        <HStack space="sm">
+          <Avatar size="xs">
+            <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
+            <AvatarImage
+              source={{ uri: `${apiServerURL}${item.user.avatar?.formats.thumbnail.url}` }}
+            />
+          </Avatar>
+          <VStack className="flex-1 items-start justify-start">
+            <HStack className="items-center" space="sm">
+              <Text size="sm">{item.user.username}</Text>
+              {item.reply && (
+                <>
+                  <Text>→</Text>
+                  <Text size="sm">{item.reply.user.username}</Text>
+                </>
+              )}
+            </HStack>
+            <Text size="md">{item.content}</Text>
+            <HStack className="items-center justify-between">
+              <HStack className="items-center" space="md">
+                <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
                 <Button
                   size="sm"
                   variant="link"
-                  action="secondary"
-                  className="mx-2"
-                  onPress={() => onDeleteButtonPress(item.documentId, item.topComment.documentId)}>
-                  <ButtonText>删除</ButtonText>
+                  onPress={() =>
+                    onReplyButtonPress(
+                      item.documentId,
+                      item.topComment.documentId,
+                      item.user.username,
+                    )
+                  }>
+                  <ButtonText>回复</ButtonText>
                 </Button>
-              )}
+                {item.user.documentId === user?.documentId && (
+                  <Button
+                    size="sm"
+                    variant="link"
+                    action="secondary"
+                    onPress={() =>
+                      onDeleteButtonPress(item.documentId, item.topComment.documentId)
+                    }>
+                    <ButtonText>删除</ButtonText>
+                  </Button>
+                )}
+              </HStack>
+              <HStack className="flex-1 items-center justify-end" space="md">
+                <Pressable>
+                  <HStack className="items-center" space="sm">
+                    <Icon as={Heart} size="sm" />
+                    <Text size="xs">{item.likes}</Text>
+                  </HStack>
+                </Pressable>
+                <Pressable>
+                  <HStack className="items-center" space="sm">
+                    <Icon as={HeartCrack} size="sm" />
+                    <Text size="xs">{item.unlikes}</Text>
+                  </HStack>
+                </Pressable>
+              </HStack>
             </HStack>
-            <HStack className="flex-1 items-center justify-end" space="md">
-              <Pressable>
-                <HStack className="items-center" space="sm">
-                  <Icon as={Heart} size="sm" />
-                  <Text size="xs">{item.likes}</Text>
-                </HStack>
-              </Pressable>
-              <Pressable>
-                <HStack className="items-center" space="sm">
-                  <Icon as={HeartCrack} size="sm" />
-                  <Text size="xs">{item.unlikes}</Text>
-                </HStack>
-              </Pressable>
-            </HStack>
-          </HStack>
-        </VStack>
+          </VStack>
+        </HStack>
       </HStack>
     ) : (
       <></>
@@ -516,23 +582,23 @@ export const CommentSheet = () => {
   const renderCommentInput = ({ field: { onChange, onBlur, value } }: any) => {
     const handleBlur = () => {
       onBlur();
-      setReplyDocumentId(null);
-      setReplyTopDocumentId(null);
-      setReplyUsername(null);
+      setReplyDocument(null);
+      reset();
     };
+
     return (
-      <FormControl className="flex-1" isInvalid={!!errors.content} size="md">
-        <Input className="flex-1 bg-background-50" variant="rounded">
+      <FormControl className="flex-1" size="md">
+        <Input className="flex-1 bg-background-50" variant="rounded" isDisabled={isPending}>
           <BottomSheetTextInput
             ref={inputRef}
             inputMode="text"
             autoCapitalize="none"
             className="h-full flex-1 px-3"
             returnKeyType="send"
-            placeholder={replyDocumentId ? `回复 ${replyUsername}` : '输入评论...'}
+            placeholder={replyDocument ? `回复 ${replyDocument.username}` : '输入评论...'}
             value={value}
-            onChangeText={onChange}
             onBlur={handleBlur}
+            onChangeText={onChange}
             onSubmitEditing={handleSubmit(onSubmit)}
           />
         </Input>
@@ -554,9 +620,9 @@ export const CommentSheet = () => {
 
   const renderFooter = (props: any) => {
     return (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+      <BottomSheetFooter {...props}>
         {user && (
-          <HStack className="bg-background-100 p-2">
+          <HStack className="bg-background-100 p-2" style={{ paddingBottom: insets.bottom }}>
             <Controller name="content" control={control} render={renderCommentInput} />
           </HStack>
         )}
@@ -573,11 +639,13 @@ export const CommentSheet = () => {
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
       <VStack className="flex-1 bg-background-100 p-4" space="md">
+        <PageSpinner isVisiable={isLoading} />
         <VStack className="mb-4 items-center">
           <Heading className="p-2">{`${commentCount}条评论`}</Heading>
           <Divider />
         </VStack>
         <BottomSheetSectionList
+          contentContainerStyle={{ paddingBottom: insets.bottom + 60 }}
           sections={comments}
           keyExtractor={(item: any) => item.documentId}
           renderItem={renderCommentItem}

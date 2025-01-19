@@ -72,6 +72,7 @@ export const fetchPosts = async ({ pageParam }: any) => {
   const query = qs.stringify({
     populate: {
       author: {
+        fields: ['username'],
         populate: {
           avatar: {
             fields: ['alternativeText', 'width', 'height', 'formats'],
@@ -114,6 +115,7 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
   const query = qs.stringify({
     populate: {
       author: {
+        fields: ['username'],
         populate: {
           avatar: {
             fields: ['alternativeText', 'width', 'height', 'formats'],
@@ -131,7 +133,7 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
         },
       },
       cover: {
-        fields: ['formats', 'name', 'alternativeText'],
+        fields: ['alternativeText', 'width', 'height', 'formats'],
       },
       attachments: {
         populate: {
@@ -158,6 +160,7 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
       tags: true,
       poi: true,
       author: {
+        fields: ['username'],
         populate: {
           avatar: {
             fields: ['alternativeText', 'width', 'height', 'formats'],

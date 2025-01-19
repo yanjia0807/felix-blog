@@ -1,4 +1,5 @@
 import '@/global.css';
+import { useReactQueryDevTools } from '@dev-plugins/react-query';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
@@ -30,6 +31,7 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const [theme, setTheme] = useState<Theme>();
   const colorScheme = useColorScheme();
+  useReactQueryDevTools(queryClient);
 
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -53,7 +55,7 @@ export default function RootLayout() {
     };
 
     loadTheme();
-  }, []);
+  }, [colorScheme]);
 
   const updateTheme = (newTheme: Theme) => {
     setTheme(newTheme);

@@ -26,6 +26,7 @@ import {
 } from '@/components/post-filter';
 import PostMenuPopover from '@/components/post-menu-popover';
 import { TagList } from '@/components/tag-input';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Badge, BadgeIcon, BadgeText } from '@/components/ui/badge';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
@@ -176,15 +177,45 @@ const PostList: React.FC = () => {
                   </VStack>
                   <ImageList images={images} />
                   <HStack className="h-6 items-center justify-between">
-                    <HStack space="lg" className="flex-row items-center">
-                      <LikeButton post={item} />
+                    <LikeButton post={item} />
+                    <UserAvatars users={item.likedByUsers} />
+                  </HStack>
+                  <Divider />
+                  <VStack space="md">
+                    <HStack className="items-center justify-end" space="sm">
                       <CommentListInput
                         onPress={() => onCommentInputPress({ item })}
                         commentCount={item.comments.count}
                       />
                     </HStack>
-                    <UserAvatars users={item.likedByUsers} />
-                  </HStack>
+                    {item.lastComment && (
+                      <>
+                        <HStack space="md" className="items-center">
+                          <Text className="flex-1" size="sm" numberOfLines={2}>
+                            {item.lastComment.content}
+                          </Text>
+                        </HStack>
+                        <HStack className="items-center justify-end" space="md">
+                          <HStack className="items-center" space="md">
+                            <HStack className="items-center" space="xs">
+                              <Avatar size="xs">
+                                <AvatarFallbackText>
+                                  {item.lastComment.user.username}
+                                </AvatarFallbackText>
+                                <AvatarImage
+                                  source={{
+                                    uri: `${apiServerURL}${item.lastComment.user.avatar?.formats.thumbnail.url}`,
+                                  }}
+                                />
+                              </Avatar>
+                              <Text size="sm">{item.lastComment.user.username}</Text>
+                            </HStack>
+                            <Text size="xs">{formatDistance(item.lastComment.createdAt)}</Text>
+                          </HStack>
+                        </HStack>
+                      </>
+                    )}
+                  </VStack>
                 </VStack>
               </Card>
             </Pressable>

@@ -135,12 +135,12 @@ const FollowerList: React.FC = () => {
         }}>
         <HStack className={`items-center`} space="md">
           <Avatar size="sm">
+            <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
                 uri: `${apiServerURL}${item.avatar?.formats.thumbnail.url}`,
               }}
             />
-            <AvatarFallbackText>{item.username}</AvatarFallbackText>
           </Avatar>
           <VStack>
             <Text bold={true}>{item.username}</Text>

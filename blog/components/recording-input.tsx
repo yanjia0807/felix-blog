@@ -18,6 +18,7 @@ import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
+import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
 const AnimatedRing = ({ metering }: any) => {
@@ -221,8 +222,10 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
 
   const renderFooter = (props: any) => {
     return (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
-        <HStack className="items-center justify-around bg-background-50 p-2">
+      <BottomSheetFooter {...props}>
+        <HStack
+          className="items-center justify-around bg-background-50 p-2"
+          style={{ paddingBottom: insets.bottom }}>
           <TouchableOpacity
             className="h-24 w-24 items-center justify-center rounded-full bg-primary-500"
             onPress={doRecording}>
@@ -269,14 +272,19 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
       enablePanDownToClose={true}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
-      <VStack className="flex-1 bg-background-100 p-4" space="md">
-        <VStack className="mb-4 items-center">
+      <VStack
+        className="flex-1 bg-background-100 p-4"
+        space="md"
+        style={{ paddingBottom: insets.bottom + 60 }}>
+        <VStack className="items-center">
           <Heading className="p-2">录音</Heading>
           <Divider />
         </VStack>
-        <Heading size="4xl" className="self-center">
-          {formattedTime}
-        </Heading>
+        <VStack className="flex-1 items-center justify-center">
+          <Text size="5xl" bold={true}>
+            {formattedTime}
+          </Text>
+        </VStack>
       </VStack>
     </BottomSheetModal>
   );

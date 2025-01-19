@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { amapIosApiKey } from '@/api';
 import { fetchAround } from '@/api/amap';
 import { Text } from '@/components/ui/text';
+import PageSpinner from './page-spinner';
 import { Box } from './ui/box';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
@@ -59,7 +60,7 @@ export const PositionInput = ({ value, onChange }: any) => {
 
 export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
   const [position, setPosition] = useState<Position | null>(null);
-  const snapPoints = useMemo(() => ['50%', '90%'], []);
+  const snapPoints = useMemo(() => ['80%'], []);
   const insets = useSafeAreaInsets();
   const {
     data,
@@ -165,39 +166,33 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
       <VStack className="flex-1 bg-background-100 p-4" space="md">
+        <PageSpinner isVisiable={isLoading} />
         <VStack className="mb-4 items-center">
           <Heading className="p-2">请选择位置</Heading>
           <Divider />
         </VStack>
-        {isError && (
-          <Box className="flex-1 items-center">
-            <Text>{error.message}</Text>
-          </Box>
-        )}
-        {isSuccess && (
-          <BottomSheetFlatList
-            data={places}
-            keyExtractor={(item: any) => item.id}
-            renderItem={renderPositionItem}
-            ListEmptyComponent={renderEmptyComponent}
-            showsVerticalScrollIndicator={false}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
-            refreshControl={
-              <RefreshControl
-                refreshing={isLoading}
-                onRefresh={() => {
-                  if (!isLoading) {
-                    refetch();
-                  }
-                }}
-              />
+        <BottomSheetFlatList
+          data={places}
+          keyExtractor={(item: any) => item.id}
+          renderItem={renderPositionItem}
+          ListEmptyComponent={renderEmptyComponent}
+          showsVerticalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
             }
-          />
-        )}
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={() => {
+                if (!isLoading) {
+                  refetch();
+                }
+              }}
+            />
+          }
+        />
       </VStack>
     </BottomSheetModal>
   );

@@ -29,12 +29,12 @@ const ChatListHeader: React.FC = () => {
     <HStack className="mb-4 items-center justify-between">
       <HStack className="items-center" space="sm">
         <Avatar>
+          <AvatarFallbackText>{user.username}</AvatarFallbackText>
           <AvatarImage
             source={{
               uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
             }}
           />
-          <AvatarFallbackText>{user.username}</AvatarFallbackText>
         </Avatar>
         <Heading>我的消息</Heading>
       </HStack>
@@ -111,12 +111,12 @@ const ChatList: React.FC = () => {
         {item.lastMessage ? (
           <HStack space="sm" className="w-full rounded-lg py-2">
             <Avatar>
+              <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
               <AvatarImage
                 source={{
                   uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
                 }}
               />
-              <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
             </Avatar>
             <VStack space="xs" className="flex-1">
               <HStack className="items-center justify-between">
@@ -146,12 +146,12 @@ const ChatList: React.FC = () => {
         ) : (
           <HStack space="sm" className="w-full items-center rounded-lg py-2">
             <Avatar>
+              <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
               <AvatarImage
                 source={{
                   uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
                 }}
               />
-              <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
             </Avatar>
             <Text size="md" bold={true}>
               {otherUser.username}

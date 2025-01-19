@@ -23,6 +23,7 @@ import { ShareButton } from '@/components/share-button';
 import { TagList } from '@/components/tag-input';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -38,7 +39,7 @@ const PostDetail: React.FC = () => {
   const { setPostDocumentId, setCommentCount } = useCommentContext();
 
   const {
-    isPending,
+    isLoading,
     isSuccess,
     data: post,
   } = useQuery({
@@ -51,7 +52,7 @@ const PostDetail: React.FC = () => {
       setPostDocumentId(documentId);
       setCommentCount(post.comments.count);
     }
-  }, [isSuccess, documentId, post]);
+  }, [isSuccess, documentId, post, setPostDocumentId, setCommentCount]);
 
   const images = _.map(
     _.find(post?.attachments || [], { type: 'image' })?.files || [],
@@ -106,22 +107,15 @@ const PostDetail: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      <PageSpinner isVisiable={isPending} />
+      <PageSpinner isVisiable={isLoading} />
       {isSuccess && (
-        <ScrollView className="flex-1 p-6">
-          <VStack className="flex-1" space="xl">
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
+          <VStack className="flex-1 p-4" space="xl">
             <VStack space="sm">
               <Heading size="lg">{post.title}</Heading>
-              <TagList tags={post?.tags} />
+              <TagList tags={post.tags} />
               <HStack className="items-center justify-between">
-                <AuthorInfo author={post?.author} />
-                <HStack space="md" className="items-center justify-end">
-                  <LikeButton post={post} />
-                  <CommentInput />
-                </HStack>
-              </HStack>
-              <HStack className="items-center justify-between">
-                <Text size="sm">{formatDistance(post?.createdAt)}</Text>
+                <Text size="xs">{formatDistance(post?.createdAt)}</Text>
                 {post.poi?.address && (
                   <HStack className="items-center">
                     <Icon as={MapPin} size="xs" />
@@ -131,9 +125,16 @@ const PostDetail: React.FC = () => {
                   </HStack>
                 )}
               </HStack>
+              <HStack className="items-center justify-between">
+                <AuthorInfo author={post.author} />
+                <HStack space="md" className="items-center justify-end">
+                  <LikeButton post={post} />
+                  <CommentInput />
+                </HStack>
+              </HStack>
             </VStack>
             <VStack space="sm">
-              {post?.cover && (
+              {post.cover && (
                 <Box className="h-36 flex-1">
                   <Image
                     style={{
@@ -151,7 +152,14 @@ const PostDetail: React.FC = () => {
               <ImageList images={images} onOpenGallery={(index: number) => onOpenGallery(index)} />
               <RecordingList recordings={recordings} />
             </VStack>
-            <Text size="lg">{post?.content}</Text>
+            <Text size="lg">{post.content}</Text>
+            <Divider />
+            <HStack className="items-center justify-end">
+              <HStack space="md" className="items-center justify-end">
+                <LikeButton post={post} />
+                <CommentInput />
+              </HStack>
+            </HStack>
           </VStack>
         </ScrollView>
       )}

@@ -119,12 +119,12 @@ const NotificationList: React.FC = () => {
             <HStack className="w-full items-center" space="4xl">
               <HStack className="flex-1 items-center" space="md">
                 <Avatar size="lg">
+                  <AvatarFallbackText>{item.data.follower.username}</AvatarFallbackText>
                   <AvatarImage
                     source={{
                       uri: `${apiServerURL}${item.data.follower.avatar?.formats.thumbnail.url}`,
                     }}
                   />
-                  <AvatarFallbackText>{item.data.follower.username}</AvatarFallbackText>
                 </Avatar>
                 <VStack className="flex-1 justify-between" space="sm">
                   <Text size="md" bold={true}>

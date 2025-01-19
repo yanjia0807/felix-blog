@@ -22,6 +22,7 @@ import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
+import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -72,7 +73,7 @@ const HomeHeader: React.FC = () => {
     : Array(2).fill(undefined);
 
   const { data: authorsData, isSuccess: isLoadAuthorsSuccess } = useQuery({
-    queryKey: ['posts', 'authors'],
+    queryKey: ['posts', 'list', 'authors'],
     queryFn: fetchPostAuthors,
   });
 
@@ -113,12 +114,12 @@ const HomeHeader: React.FC = () => {
                       </Text>
                       <HStack space="xs" className="items-center">
                         <Avatar size="sm">
+                          <AvatarFallbackText>{item.post.author.username}</AvatarFallbackText>
                           <AvatarImage
                             source={{
                               uri: `${apiServerURL}${item.post.author.avatar?.formats.thumbnail.url}`,
                             }}
                           />
-                          <AvatarFallbackText>{item.post.author.username}</AvatarFallbackText>
                         </Avatar>
                         <Text size="sm" className="text-white">
                           {item.post.author.username}
@@ -150,12 +151,12 @@ const HomeHeader: React.FC = () => {
         className={`ml-4 ${index === 0 ? 'ml-0' : ''}`}>
         <VStack className="items-center" space="xs">
           <Avatar key={item.id} size="md">
+            <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
                 uri: `${apiServerURL}${item.formats.thumbnail.url}`,
               }}
             />
-            <AvatarFallbackText>{item.username}</AvatarFallbackText>
           </Avatar>
           <Text size="sm">{item.username}</Text>
         </VStack>
@@ -271,25 +272,23 @@ const Home: React.FC = () => {
               className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}
               size="md">
               <VStack space="lg">
-                <HStack className="items-center justify-between" space="md">
-                  <Pressable className="w-8" onPress={() => onAvatarPress(item.author.documentId)}>
-                    <Avatar size="sm">
-                      <AvatarImage
-                        source={{
-                          uri: `${apiServerURL}${item.author.avatar?.formats.thumbnail.url}`,
-                        }}
-                      />
-                      <AvatarFallbackText>{item.author.username}</AvatarFallbackText>
-                    </Avatar>
-                  </Pressable>
-                  <VStack className="flex-1">
-                    <HStack className="items-center justify-between">
-                      <Text size="sm" bold={true}>
-                        {item.author.username}
-                      </Text>
-                      <Text size="xs">{formatDistance(item.createdAt)}</Text>
+                <HStack space="lg" className="items-center justify-between">
+                  <Pressable onPress={() => onAvatarPress(item.author.documentId)}>
+                    <HStack className="items-center" space="sm">
+                      <Avatar size="md">
+                        <AvatarFallbackText>{item.author.username}</AvatarFallbackText>
+                        <AvatarImage
+                          source={{
+                            uri: `${apiServerURL}${item.author.avatar?.formats.thumbnail.url}`,
+                          }}
+                        />
+                      </Avatar>
+                      <Text size="sm">{item.author.username}</Text>
                     </HStack>
-                    <HStack space="xs" className="items-center justify-end">
+                  </Pressable>
+                  <VStack className="items-end">
+                    <Text size="xs">{formatDistance(item.createdAt)}</Text>
+                    <HStack space="xs" className="items-center">
                       {item.poi?.address && (
                         <>
                           <Icon as={MapPin} size="xs" />
@@ -297,32 +296,59 @@ const Home: React.FC = () => {
                         </>
                       )}
                     </HStack>
-                    <TagList tags={item.tags} />
                   </VStack>
                 </HStack>
                 <HStack className="items-start justify-start" space="md">
-                  <Box className="w-8"></Box>
                   <VStack space="lg" className="flex-1 justify-between">
-                    <VStack>
-                      <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
-                        {item.title}
-                      </Heading>
-                      <Text numberOfLines={3} ellipsizeMode="tail">
-                        {item.content}
-                      </Text>
-                    </VStack>
+                    <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
+                      {item.title}
+                    </Heading>
+                    <TagList tags={item.tags} />
+                    <Text numberOfLines={5} ellipsizeMode="tail">
+                      {item.content}
+                    </Text>
                   </VStack>
                 </HStack>
                 <HStack className="h-6 items-center justify-between">
-                  <HStack space="lg" className="flex-row items-center">
-                    <LikeButton post={item} />
+                  <LikeButton post={item} />
+                  <UserAvatars users={item.likedByUsers} />
+                </HStack>
+                <Divider />
+                <VStack space="md">
+                  <HStack className="items-center justify-end" space="sm">
                     <CommentListInput
                       onPress={() => onCommentInputPress({ item })}
                       commentCount={item.comments.count}
                     />
                   </HStack>
-                  <UserAvatars users={item.likedByUsers} />
-                </HStack>
+                  {item.lastComment && (
+                    <>
+                      <HStack space="md" className="items-center">
+                        <Text className="flex-1" size="sm" numberOfLines={2}>
+                          {item.lastComment.content}
+                        </Text>
+                      </HStack>
+                      <HStack className="items-center justify-end" space="md">
+                        <HStack className="items-center" space="md">
+                          <HStack className="items-center" space="xs">
+                            <Avatar size="xs">
+                              <AvatarFallbackText>
+                                {item.lastComment.user.username}
+                              </AvatarFallbackText>
+                              <AvatarImage
+                                source={{
+                                  uri: `${apiServerURL}${item.lastComment.user.avatar?.formats.thumbnail.url}`,
+                                }}
+                              />
+                            </Avatar>
+                            <Text size="sm">{item.lastComment.user.username}</Text>
+                          </HStack>
+                          <Text size="xs">{formatDistance(item.lastComment.createdAt)}</Text>
+                        </HStack>
+                      </HStack>
+                    </>
+                  )}
+                </VStack>
               </VStack>
             </Card>
           </Pressable>

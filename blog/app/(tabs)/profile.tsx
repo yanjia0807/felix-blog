@@ -42,12 +42,12 @@ const ProfileHeader: React.FC = () => {
     <VStack className="flex-1" space="xl">
       <HStack className="items-center justify-between">
         <Avatar size="lg">
+          <AvatarFallbackText>{user.username}</AvatarFallbackText>
           <AvatarImage
             source={{
               uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
             }}
           />
-          <AvatarFallbackText>{user.username}</AvatarFallbackText>
         </Avatar>
         <HStack className="items-center" space="sm">
           <Button

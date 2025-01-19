@@ -267,7 +267,7 @@ const PostCreate: React.FC = () => {
           </VStack>
         </KeyboardAwareScrollView>
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
-          <HStack space="md" className="w-full bg-background-200 px-4">
+          <HStack space="md" className="w-full bg-background-100 px-4">
             <Controller control={control} name="images" render={renderImagesInput} />
             <Controller control={control} name="audios" render={renderAudiosInput} />
           </HStack>

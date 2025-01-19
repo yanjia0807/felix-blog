@@ -3,9 +3,51 @@
  */
 
 import { factories } from "@strapi/strapi";
+import _ from "lodash";
 const { sanitize, validate } = strapi.contentAPI;
 
 export default factories.createCoreService("api::post.post", {
+  async find(params) {
+    const { results, pagination } = await super.find(params);
+
+    const lastComments = await Promise.all(
+      results.map((item: any) =>
+        strapi.documents("api::comment.comment").findMany({
+          filters: {
+            post: { documentId: item.documentId },
+          },
+          sort: "createdAt:desc",
+          start: 0,
+          limit: 1,
+          populate: {
+            user: {
+              populate: {
+                avatar: {
+                  fields: ["formats", "name", "alternativeText"],
+                },
+              },
+              fields: ["username"],
+            },
+          },
+          fields: ["createdAt", "content"],
+        })
+      )
+    );
+
+    const resultsWithLastComments = _.map(
+      results,
+      (item: any, index: number) => ({
+        ...item,
+        lastComment:
+          lastComments[index] && lastComments[index].length > 0
+            ? lastComments[index][0]
+            : null,
+      })
+    );
+
+    return { results: resultsWithLastComments, pagination };
+  },
+
   async findRecentAuthors(ctx: any) {
     let data = await strapi.db.connection.raw(
       `SELECT t1.id,t1.document_id AS 'documentId',t1.username,t2.formats FROM (
