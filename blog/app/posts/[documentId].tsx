@@ -18,7 +18,7 @@ import {
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
-import { RecordingList } from '@/components/recording-list';
+import { RecordingList } from '@/components/recording-input';
 import { ShareButton } from '@/components/share-button';
 import { TagList } from '@/components/tag-input';
 import { Box } from '@/components/ui/box';

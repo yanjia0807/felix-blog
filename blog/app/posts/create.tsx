@@ -14,8 +14,7 @@ import { useAuth } from '@/components/auth-context';
 import { CoverInput, ImageGrid, ImageInput } from '@/components/image-input';
 import PageSpinner from '@/components/page-spinner';
 import { PositionInput } from '@/components/position-input';
-import { RecordingInput } from '@/components/recording-input';
-import { RecordingList } from '@/components/recording-list';
+import { RecordingInput, RecordingList } from '@/components/recording-input';
 import { TagInput, TagList } from '@/components/tag-input';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import {

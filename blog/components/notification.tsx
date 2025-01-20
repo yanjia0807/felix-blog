@@ -7,11 +7,9 @@ import { fetchNotificationUnreadCount } from '@/api';
 import { useAuth } from './auth-context';
 import { useSocket } from './socket-context';
 import { Box } from './ui/box';
-import { Button, ButtonIcon } from './ui/button';
 import { Icon } from './ui/icon';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
-import { VStack } from './ui/vstack';
 
 const Notification = () => {
   const { user } = useAuth();
@@ -26,7 +24,6 @@ const Notification = () => {
   });
 
   const count = isSuccess ? (data as any) + _.filter(notifications, { state: 'unread' }).length : 0;
-  // const count = 0;
   return (
     <>
       {user && (

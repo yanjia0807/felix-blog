@@ -20,7 +20,7 @@ export const LikeButton = ({ post, className }: any) => {
     mutationFn: ({ documentId, postData }: UpdatePostLikedData) => {
       return updatePostLiked({ documentId, postData });
     },
-    async onSuccess(data: any, variables, context) {
+    async onSuccess(data: any) {
       await queryClient.invalidateQueries({
         queryKey: ['posts', 'detail', post.documentId],
         refetchType: 'all',
