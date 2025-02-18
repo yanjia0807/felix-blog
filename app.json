@@ -5,12 +5,25 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#8FBF9F"
+    },
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.felixblog"
+      "bundleIdentifier": "info.yanjia.felix-blog",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "$(PRODUCT_NAME) 需要您的位置信息来提供个性化体验。",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "$(PRODUCT_NAME) 需要持续访问您的位置信息来提供后台服务。",
+        "NSLocationAlwaysUsageDescription": "$(PRODUCT_NAME) 需要始终访问您的位置信息以实现完整功能。"
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -27,16 +40,27 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
+        "expo-image-picker",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "photosPermission": "$(PRODUCT_NAME) 需要访问您的照片，以便与您的朋友分享照片。"
         }
       ],
-      "expo-font",
-      "expo-secure-store"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "$(PRODUCT_NAME) 需要访问您的相机，以便与您的朋友分享照片。",
+          "microphonePermission": "$(PRODUCT_NAME) 需要访问您的麦克风，以便与您的朋友分享语音",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "允许 $(PRODUCT_NAME) 访问您的面容 ID 生物识别数据。"
+        }
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
