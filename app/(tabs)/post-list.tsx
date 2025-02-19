@@ -1,9 +1,9 @@
+import React, { memo, useCallback, useMemo } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { Check, Eraser, MapPin } from 'lucide-react-native';
-import React, { memo, useCallback, useMemo } from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
 import { apiServerURL, fetchPosts, fetchTags } from '@/api';
@@ -103,7 +103,7 @@ const PostHeader: React.FC = () => {
   );
 };
 
-const PostItem: React.FC = ({ item, index, isSuccess }: any) => {
+const PostItem: React.FC = ({ item, index, isLoaded }: any) => {
   const onPostItemPressed = ({ item }: any) => router.push(`/posts/${item.documentId}`);
 
   const images = item
@@ -117,17 +117,20 @@ const PostItem: React.FC = ({ item, index, isSuccess }: any) => {
     : [];
 
   return (
-    <Box className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
-      <Skeleton variant="rounded" isLoaded={isSuccess}>
+    <Box className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
+      <Skeleton variant="rounded" isLoaded={isLoaded}>
         {item && (
           <Pressable onPress={() => onPostItemPressed({ item, index })} pointerEvents="box-none">
             <Card variant="elevated">
-              <VStack space="xl">
+              <VStack space="lg">
                 <VStack space="sm">
                   <HStack className="items-center justify-between">
                     <AuthorInfo author={item.author} />
                     <PostMenuPopover post={item} />
                   </HStack>
+                  <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
+                    {item.title}
+                  </Heading>
                   <HStack className="items-center justify-between">
                     <Text size="xs">{formatDistance(item.createdAt)}</Text>
                     <HStack space="xs" className="items-center justify-end">
@@ -141,44 +144,41 @@ const PostItem: React.FC = ({ item, index, isSuccess }: any) => {
                   </HStack>
                   <TagList tags={item.tags || []}></TagList>
                 </VStack>
-                <VStack space="md">
-                  <Heading numberOfLines={2}>{item.title}</Heading>
-                  {item.cover && (
-                    <Box className="h-36 flex-1">
-                      <Image
-                        source={{
-                          uri: `${apiServerURL}${item.cover.formats?.medium.url}`,
-                        }}
-                        contentFit="cover"
-                        alt={item.cover.alternativeText}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          borderRadius: 8,
-                        }}
-                      />
-                    </Box>
-                  )}
-                  <Text numberOfLines={3}>{item.content}</Text>
-                </VStack>
+                {item.cover && (
+                  <Box className="h-36 flex-1">
+                    <Image
+                      source={{
+                        uri: `${apiServerURL}${item.cover.formats?.medium.url}`,
+                      }}
+                      contentFit="cover"
+                      alt={item.cover.alternativeText}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: 8,
+                      }}
+                    />
+                  </Box>
+                )}
+                <Text numberOfLines={5}>{item.content}</Text>
                 <ImageList images={images} />
                 <HStack className="h-6 items-center justify-between">
                   <LikeButton post={item} />
                   <UserAvatars users={item.likedByUsers} />
                 </HStack>
-                <VStack space="md" className="mt-6">
-                  <HStack className="items-center justify-end" space="sm">
+                <VStack space="sm">
+                  <HStack className="items-center justify-end">
                     <CommentIcon item={item} />
                   </HStack>
                   {item.lastComment && (
                     <>
-                      <HStack space="md" className="items-center">
-                        <Text className="flex-1" size="sm" numberOfLines={2}>
+                      <HStack space="xs" className="items-center">
+                        <Text className="flex-1" size="sm" numberOfLines={3}>
                           {item.lastComment.content}
                         </Text>
                       </HStack>
                       <HStack className="items-center justify-end" space="md">
-                        <HStack className="items-center" space="md">
+                        <HStack className="items-center" space="xs">
                           <HStack className="items-center" space="xs">
                             <Avatar size="xs">
                               <AvatarFallbackText>
@@ -208,7 +208,6 @@ const PostItem: React.FC = ({ item, index, isSuccess }: any) => {
 };
 
 const PostList = memo(function PostList() {
-  console.log('@@ render PostList');
   const { user } = useAuth();
   const { filters } = usePostFilterContext();
 
@@ -227,7 +226,7 @@ const PostList = memo(function PostList() {
       filters,
       pagination: {
         page: 1,
-        pageSize: 10,
+        pageSize: 20,
       },
     },
     getNextPageParam: (lastPage: any) => {
@@ -249,30 +248,23 @@ const PostList = memo(function PostList() {
     },
   });
 
-  const posts: any = useMemo(
-    () =>
-      isSuccess
-        ? _.reduce(postData?.pages, (result: any, item: any) => [...result, ...item.data], [])
-        : Array(5).fill(undefined),
-    [isSuccess, postData?.pages],
-  );
+  const posts: any = isSuccess
+    ? _.reduce(postData?.pages, (result: any, item: any) => [...result, ...item.data], [])
+    : Array(5).fill(undefined);
 
   const renderPostItem = ({ item, index }: any) => (
-    <PostItem item={item} index={index} isSuccess={isSuccess} />
+    <PostItem item={item} index={index} isLoaded={!isLoading} />
   );
 
-  const renderPostHeader = useCallback((props: any) => <PostHeader {...props}></PostHeader>, []);
+  const renderPostHeader = (props: any) => <PostHeader {...props} />;
 
-  const renderEmptyComponent = useCallback(
-    (props: any) => (
-      <Box className="flex-1 items-center justify-center">
-        <Text>暂无数据</Text>
-      </Box>
-    ),
-    [],
+  const renderEmptyComponent = () => (
+    <Box className="flex-1 items-center justify-center">
+      <Text>暂无数据</Text>
+    </Box>
   );
 
-  const onCreatePostButtonPressed = useCallback(() => router.push('/posts/create'), []);
+  const onCreatePostButtonPressed = () => router.push('/posts/create');
 
   return (
     <>
@@ -287,17 +279,13 @@ const PostList = memo(function PostList() {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
           }}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
               onRefresh={() => {
-                if (!isLoading) {
-                  refetch();
-                }
+                if (!isLoading) refetch();
               }}
             />
           }

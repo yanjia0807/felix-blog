@@ -1,3 +1,4 @@
+import React, { useCallback } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { BlurView } from 'expo-blur';
@@ -5,10 +6,9 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
-import React, { useCallback } from 'react';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
 import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
-import { useAuth } from '@/components/auth-context';
+import { AuthorInfo, useAuth } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
@@ -26,10 +26,9 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
+import PostMenuPopover from '@/components/post-menu-popover';
 
 const HomeHeader: React.FC = () => {
-  const { user } = useAuth();
-
   const {
     data: featureData,
     fetchNextPage,
@@ -42,7 +41,7 @@ const HomeHeader: React.FC = () => {
     initialPageParam: {
       pagination: {
         page: 1,
-        pageSize: 5,
+        pageSize: 20,
       },
     },
     getNextPageParam: (lastPage: any) => {
@@ -130,13 +129,7 @@ const HomeHeader: React.FC = () => {
     </Box>
   );
 
-  const onAvatarPress = (documentId: string) => {
-    if (user?.documentId === documentId) {
-      router.push('/profile');
-    } else {
-      router.push(`/users/${documentId}`);
-    }
-  };
+  const onAvatarPress = (documentId: string) => router.push(`/users/${documentId}`);
 
   const renderAuthorItem = ({ item, index }: any) => {
     return (
@@ -194,112 +187,91 @@ const HomeHeader: React.FC = () => {
 interface RecommentItemProps {
   item: any;
   index: any;
-  isLoading: boolean;
+  isLoaded: boolean;
 }
 
-const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoading }) => {
-  const { user } = useAuth();
-
+const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) => {
   const onRecommentItemPressed = (documentId: string) => router.push(`/posts/${documentId}`);
 
-  const onAvatarPress = (documentId: string) => {
-    if (user?.documentId === documentId) {
-      router.push('/profile');
-    } else {
-      router.push(`/users/${documentId}`);
-    }
-  };
+  const onAvatarPress = (documentId: string) => router.push(`/users/${documentId}`);
 
   return (
-    <Skeleton
-      className={`my-6 h-52 rounded-lg ${index === 0 ? 'mt-0' : ''}`}
-      variant="rounded"
-      isLoaded={!isLoading}>
-      {item && (
-        <Pressable onPress={() => onRecommentItemPressed(item.documentId)} pointerEvents="box-none">
-          <Card
-            variant="elevated"
-            className={`my-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}
-            size="md">
-            <VStack space="lg">
-              <HStack space="lg" className="items-center justify-between">
-                <Pressable onPress={() => onAvatarPress(item.author.documentId)}>
-                  <HStack className="items-center" space="sm">
-                    <Avatar size="md">
-                      <AvatarFallbackText>{item.author.username}</AvatarFallbackText>
-                      <AvatarImage
-                        source={{
-                          uri: `${apiServerURL}${item.author.avatar?.formats.thumbnail.url}`,
-                        }}
-                      />
-                    </Avatar>
-                    <Text size="sm">{item.author.username}</Text>
-                  </HStack>
-                </Pressable>
-                <VStack className="items-end">
-                  <Text size="xs">{formatDistance(item.createdAt)}</Text>
-                  <HStack space="xs" className="items-center">
-                    {item.poi?.address && (
-                      <>
-                        <Icon as={MapPin} size="xs" />
-                        <Text size="xs">{item.poi.address}</Text>
-                      </>
-                    )}
-                  </HStack>
-                </VStack>
-              </HStack>
-              <HStack className="items-start justify-start" space="md">
-                <VStack space="lg" className="flex-1 justify-between">
+    <Box className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
+      <Skeleton variant="rounded" isLoaded={isLoaded}>
+        {item && (
+          <Pressable
+            onPress={() => onRecommentItemPressed(item.documentId)}
+            pointerEvents="box-none">
+            <Card variant="elevated" size="md">
+              <VStack space="lg">
+                <VStack space="sm">
+                  <Pressable onPress={() => onAvatarPress(item.author.documentId)}>
+                    <HStack className="items-center justify-between">
+                      <AuthorInfo author={item.author} />
+                      <PostMenuPopover post={item} />
+                    </HStack>
+                  </Pressable>
                   <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
                     {item.title}
                   </Heading>
-                  <TagList tags={item.tags} />
-                  <Text numberOfLines={5} ellipsizeMode="tail">
-                    {item.content}
-                  </Text>
-                </VStack>
-              </HStack>
-              <HStack className="h-6 items-center justify-between">
-                <LikeButton post={item} />
-                <UserAvatars users={item.likedByUsers} />
-              </HStack>
-              <VStack space="md" className="mt-6">
-                <HStack className="items-center justify-end" space="sm">
-                  <CommentIcon item={item} />
-                </HStack>
-                {item.lastComment && (
-                  <>
-                    <HStack space="md" className="items-center">
-                      <Text className="flex-1" size="sm" numberOfLines={2}>
-                        {item.lastComment.content}
-                      </Text>
-                    </HStack>
-                    <HStack className="items-center justify-end" space="md">
-                      <HStack className="items-center" space="md">
-                        <HStack className="items-center" space="xs">
-                          <Avatar size="xs">
-                            <AvatarFallbackText>
-                              {item.lastComment.user.username}
-                            </AvatarFallbackText>
-                            <AvatarImage
-                              source={{
-                                uri: `${apiServerURL}${item.lastComment.user.avatar?.formats.thumbnail.url}`,
-                              }}
-                            />
-                          </Avatar>
-                          <Text size="sm">{item.lastComment.user.username}</Text>
+                  <HStack className="items-center justify-between">
+                    <Text size="xs">{formatDistance(item.createdAt)}</Text>
+                    <HStack space="xs" className="items-center justify-end">
+                      {item.poi?.address && (
+                        <HStack className="items-center">
+                          <Icon as={MapPin} size="xs" />
+                          <Text size="xs">{item.poi.address}</Text>
                         </HStack>
-                        <Text size="xs">{formatDistance(item.lastComment.createdAt)}</Text>
-                      </HStack>
+                      )}
                     </HStack>
-                  </>
-                )}
+                  </HStack>
+                  <TagList tags={item.tags} />
+                </VStack>
+                <Text numberOfLines={5} ellipsizeMode="tail">
+                  {item.content}
+                </Text>
+                <HStack className="h-6 items-center justify-between">
+                  <LikeButton post={item} />
+                  <UserAvatars users={item.likedByUsers} />
+                </HStack>
+                <VStack space="sm">
+                  <HStack className="items-center justify-end">
+                    <CommentIcon item={item} />
+                  </HStack>
+                  {item.lastComment && (
+                    <>
+                      <HStack space="md" className="items-center">
+                        <Text className="flex-1" size="sm" numberOfLines={3}>
+                          {item.lastComment.content}
+                        </Text>
+                      </HStack>
+                      <HStack className="items-center justify-end" space="xs">
+                        <HStack className="items-center" space="xs">
+                          <HStack className="items-center" space="xs">
+                            <Avatar size="xs">
+                              <AvatarFallbackText>
+                                {item.lastComment.user.username}
+                              </AvatarFallbackText>
+                              <AvatarImage
+                                source={{
+                                  uri: `${apiServerURL}${item.lastComment.user.avatar?.formats.thumbnail.url}`,
+                                }}
+                              />
+                            </Avatar>
+                            <Text size="sm">{item.lastComment.user.username}</Text>
+                          </HStack>
+                          <Text size="xs">{formatDistance(item.lastComment.createdAt)}</Text>
+                        </HStack>
+                      </HStack>
+                    </>
+                  )}
+                </VStack>
               </VStack>
-            </VStack>
-          </Card>
-        </Pressable>
-      )}
-    </Skeleton>
+            </Card>
+          </Pressable>
+        )}
+      </Skeleton>
+    </Box>
   );
 };
 
@@ -343,24 +315,21 @@ const Home: React.FC = () => {
     : Array(2).fill(undefined);
 
   const renderRecommentItem = ({ item, index }: any) => (
-    <RecommentItem item={item} index={index} isLoading={isLoadingRecomment} />
+    <RecommentItem item={item} index={index} isLoaded={!isLoadingRecomment} />
   );
 
-  const renderListHeader = useCallback((props: any) => <HomeHeader {...props}></HomeHeader>, []);
+  const renderListHeader = (props: any) => <HomeHeader {...props}></HomeHeader>;
 
-  const renderEmptyComponent = useCallback(
-    (props: any) => (
-      <Box className="flex-1 items-center justify-center">
-        <Text>暂无数据</Text>
-      </Box>
-    ),
-    [],
+  const renderEmptyComponent = (props: any) => (
+    <Box className="flex-1 items-center justify-center">
+      <Text>暂无数据</Text>
+    </Box>
   );
 
   return (
     <SafeAreaView className="flex-1">
       <PageSpinner isVisiable={isLoadingRecomment} />
-      <VStack className="flex-1 px-4">
+      <VStack className="flex-1 px-4" space="md">
         <FlatList
           data={recomments}
           ListHeaderComponent={renderListHeader}
@@ -368,17 +337,13 @@ const Home: React.FC = () => {
           renderItem={renderRecommentItem}
           showsVerticalScrollIndicator={false}
           onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
           }}
           refreshControl={
             <RefreshControl
               refreshing={isLoadingRecomment}
               onRefresh={() => {
-                if (!isLoadingRecomment) {
-                  refetch();
-                }
+                if (!isLoadingRecomment) refetch();
               }}
             />
           }

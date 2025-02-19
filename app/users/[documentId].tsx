@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
@@ -9,7 +10,6 @@ import {
   ScanFace,
   Share2,
 } from 'lucide-react-native';
-import React, { useState } from 'react';
 import { FlatList } from 'react-native';
 import {
   apiServerURL,
@@ -60,6 +60,7 @@ const UserDetailHeader: React.FC = () => {
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const userDocumentIds = currentUser ? [currentUser.documentId, documentId] : [];
+  const isMe = documentId === currentUser?.documentId;
 
   const {
     isLoading: isLoadingUser,
@@ -188,30 +189,33 @@ const UserDetailHeader: React.FC = () => {
         <HStack className="items-center justify-center">
           <Text size="sm">{user.bio || '个人签名'}</Text>
         </HStack>
-        <HStack className="items-center justify-center" space="2xl">
-          <Button
-            size="md"
-            action="secondary"
-            onPress={() => onChatButtonPressed()}
-            className="items-center justify-center rounded-3xl p-2.5">
-            <ButtonIcon as={MessageCircle} />
-          </Button>
-          <Button
-            disabled={!currentUser}
-            action={isFollowing ? 'negative' : 'positive'}
-            className="rounded-3xl px-16"
-            onPress={() => onFollowBtnPressed()}>
-            <ButtonText>{isFollowing ? '取消关注' : '关注'}</ButtonText>
-            {isFollowPending && <ButtonSpinner />}
-          </Button>
-          <Button
-            action="secondary"
-            size="md"
-            onPress={() => onShareButtonPressed()}
-            className="items-center justify-center rounded-3xl p-2.5">
-            <ButtonIcon as={Share2} />
-          </Button>
-        </HStack>
+        {!isMe && (
+          <HStack className="items-center justify-center" space="2xl">
+            <Button
+              size="md"
+              action="secondary"
+              onPress={() => onChatButtonPressed()}
+              className="items-center justify-center rounded-3xl p-2.5">
+              <ButtonIcon as={MessageCircle} />
+            </Button>
+            <Button
+              disabled={!currentUser}
+              action={isFollowing ? 'negative' : 'positive'}
+              className="rounded-3xl px-16"
+              onPress={() => onFollowBtnPressed()}>
+              <ButtonText>{isFollowing ? '取消关注' : '关注'}</ButtonText>
+              {isFollowPending && <ButtonSpinner />}
+            </Button>
+            <Button
+              action="secondary"
+              size="md"
+              onPress={() => onShareButtonPressed()}
+              className="items-center justify-center rounded-3xl p-2.5">
+              <ButtonIcon as={Share2} />
+            </Button>
+          </HStack>
+        )}
+
         <HStack
           space="md"
           className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
@@ -287,14 +291,12 @@ const UserDetail: React.FC = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <VStack className="flex-1 px-4">
-        <FlatList
-          data={[]}
-          ListHeaderComponent={renderListHeader}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-        />
-      </VStack>
+      <FlatList
+        data={[]}
+        ListHeaderComponent={renderListHeader}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 };

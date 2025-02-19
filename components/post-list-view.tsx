@@ -1,8 +1,8 @@
+import React from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
-import React from 'react';
 import { RefreshControl } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { fetchUserPosts } from '@/api';
@@ -50,14 +50,14 @@ const PostListView = ({ userDocumentId }: any) => {
     ? _.reduce(data?.pages, (result: any, item: any) => [...result, ...item.data], [])
     : [];
 
-  const renderItem = ({ item }: any) => {
+  const renderItem = ({ item, index }: any) => {
     return (
-      <Pressable onPress={() => router.push(`/posts/${item.documentId}`)}>
-        <Card className="my-3 rounded-lg p-4">
-          <VStack space="lg">
-            <HStack className="items-start justify-start" space="md">
-              <VStack space="md" className="flex-1">
-                <Heading numberOfLines={2} ellipsizeMode="tail">
+      <Box className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
+        <Pressable onPress={() => router.push(`/posts/${item.documentId}`)}>
+          <Card>
+            <VStack space="lg">
+              <VStack space="sm">
+                <Heading numberOfLines={1} ellipsizeMode="tail">
                   {item.title}
                 </Heading>
                 <HStack className="items-center justify-between">
@@ -71,12 +71,12 @@ const PostListView = ({ userDocumentId }: any) => {
                     )}
                   </HStack>
                 </HStack>
-                <Text numberOfLines={3}>{item.content}</Text>
               </VStack>
-            </HStack>
-          </VStack>
-        </Card>
-      </Pressable>
+              <Text numberOfLines={5}>{item.content}</Text>
+            </VStack>
+          </Card>
+        </Pressable>
+      </Box>
     );
   };
 

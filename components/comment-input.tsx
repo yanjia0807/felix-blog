@@ -83,7 +83,8 @@ export const CommentIcon = ({ item }: any) => {
     <Pressable onPress={() => onInputIconPress()}>
       <HStack space="xs" className="items-center">
         <Icon as={MessageCircle} />
-        <Text size="xs">{item.comments.count}</Text>
+        <Text size="sm">最新评论</Text>
+        <Text size="xs">{`(${item.comments.count})`}</Text>
       </HStack>
     </Pressable>
   );

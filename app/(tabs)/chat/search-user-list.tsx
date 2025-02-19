@@ -1,9 +1,9 @@
+import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Search } from 'lucide-react-native';
-import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
@@ -92,9 +92,9 @@ const SearchUserList: React.FC = () => {
 
   const renderInput = ({ field: { onBlur, onChange, value } }: any) => {
     return (
-      <FormControl size="lg" className="flex-1">
-        <Input className="my-2 w-full border p-3">
-          <InputSlot>
+      <FormControl className="flex-1">
+        <Input variant="rounded">
+          <InputSlot className="pl-3">
             <InputIcon as={Search} />
           </InputSlot>
           <InputField
@@ -114,7 +114,7 @@ const SearchUserList: React.FC = () => {
 
   const renderListHeader = () => {
     return (
-      <HStack className="w-full items-center justify-between" space="md">
+      <HStack className="w-full items-center justify-between">
         <Controller name="keyword" control={control} render={renderInput} />
       </HStack>
     );
@@ -158,7 +158,7 @@ const SearchUserList: React.FC = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <VStack className="flex-1 px-4">
+      <VStack className="flex-1 p-4">
         <FlatList
           data={users}
           ListHeaderComponent={renderListHeader}
@@ -167,21 +167,16 @@ const SearchUserList: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item: any) => item.documentId}
           onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
           }}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
               onRefresh={() => {
-                if (!isLoading) {
-                  refetch();
-                }
+                if (!isLoading) refetch();
               }}
             />
           }
-          contentContainerClassName="flex-1"
         />
       </VStack>
     </SafeAreaView>

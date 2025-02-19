@@ -1,9 +1,9 @@
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, MapPin } from 'lucide-react-native';
-import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
@@ -69,12 +69,7 @@ const PostDetail: React.FC = () => {
   };
 
   const renderHeaderLeft = () => (
-    <Button
-      action="secondary"
-      variant="link"
-      onPress={() => {
-        router.back();
-      }}>
+    <Button action="secondary" variant="link" onPress={() => router.back()}>
       <ButtonIcon as={ChevronLeft} />
       <ButtonText>返回</ButtonText>
     </Button>
@@ -139,6 +134,7 @@ const PostDetail: React.FC = () => {
               <ImageList images={images} onOpenGallery={(index: number) => onOpenGallery(index)} />
               <RecordingList recordings={recordings} />
             </VStack>
+            <Divider />
             <Text size="lg">{post.content}</Text>
             <Divider />
             <HStack className="items-center justify-end">
