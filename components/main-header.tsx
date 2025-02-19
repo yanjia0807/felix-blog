@@ -11,7 +11,7 @@ const MainHeader = React.memo(function MainHeader() {
     <HStack className="mb-6 items-center justify-between">
       <Image
         alt="logo"
-        source={require('/assets/images/icon.png')}
+        source={require('../assets/images/icon.png')}
         style={{ width: 40, height: 40, borderRadius: 8 }}
       />
       <HStack className="items-center" space="md">

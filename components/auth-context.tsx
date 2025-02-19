@@ -173,7 +173,7 @@ export const AuthHeader = ({ className, title, subtitle }: any) => {
     <HStack className={twMerge('mb-20 items-center', className)} space="md">
       <Image
         alt="logo"
-        source={require('/assets/images/icon.png')}
+        source={require('../assets/images/icon.png')}
         style={{ width: 40, height: 40, borderRadius: 6 }}
       />
       <VStack>
