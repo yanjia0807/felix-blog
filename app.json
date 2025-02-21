@@ -17,6 +17,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "info.yanjia.felix-blog",
       "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
         "NSLocationWhenInUseUsageDescription": "$(PRODUCT_NAME) 需要您的位置信息来提供个性化体验。",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "$(PRODUCT_NAME) 需要持续访问您的位置信息来提供后台服务。",
         "NSLocationAlwaysUsageDescription": "$(PRODUCT_NAME) 需要始终访问您的位置信息以实现完整功能。"
@@ -30,7 +33,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.felixblog"
+      "package": "com.anonymous.felixblog",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -64,6 +71,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "d44b9e27-d156-43c1-bd0d-55200dc33467"
+      }
+    },
+    "owner": "yanjia0807"
   }
 }
