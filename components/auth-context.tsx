@@ -1,8 +1,8 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import React, { createContext, useContext, useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { apiServerURL, fetchMe } from '@/api';
 import {
@@ -18,12 +18,11 @@ import {
   resetPasswordOtp,
 } from '@/api/auth';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
+import { Button, ButtonText } from './ui/button';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
-import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import { Button, ButtonText } from './ui/button';
 
 const AuthContext = createContext<any>(undefined);
 
@@ -31,11 +30,10 @@ export const AuthProvider = ({ children }: any) => {
   let [accessToken, setAccessToken] = useState<any>();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ['users', 'me'],
     queryFn: fetchMe,
     enabled: !!accessToken,
-    initialData: null,
   });
 
   useEffect(() => {
@@ -144,6 +142,10 @@ export const AuthProvider = ({ children }: any) => {
     onSuccess: async (data) => {},
     onError: (error) => {},
   });
+
+  if (isError) {
+    SecureStore.deleteItemAsync('accessToken');
+  }
 
   return (
     <AuthContext.Provider
