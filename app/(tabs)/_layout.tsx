@@ -9,6 +9,7 @@ import {
 } from 'expo-router/ui';
 import { House, MessageCircle, Pentagon, User2 } from 'lucide-react-native';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
@@ -54,10 +55,12 @@ export const TabButton = forwardRef(
 );
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs>
       <TabSlot />
-      <TabList asChild>
+      <TabList asChild style={{ paddingBottom: insets.bottom }}>
         <TabButtonList>
           <TabTrigger name="home" href="/" asChild>
             <TabButton title="主页" icon={House} />

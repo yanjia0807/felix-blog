@@ -36,11 +36,18 @@ export const AuthProvider = ({ children }: any) => {
     enabled: !!accessToken,
   });
 
+  if (isError) {
+    console.error('error', isError);
+  }
+
   useEffect(() => {
     const loadAuthData = async () => {
       const token = await SecureStore.getItemAsync('accessToken');
-      console.log('Loaded token:', token);
-      setAccessToken(token);
+
+      if (token) {
+        console.log('Loaded token:', token);
+        setAccessToken(token);
+      }
     };
 
     loadAuthData();
@@ -142,10 +149,6 @@ export const AuthProvider = ({ children }: any) => {
     onSuccess: async (data) => {},
     onError: (error) => {},
   });
-
-  if (isError) {
-    SecureStore.deleteItemAsync('accessToken');
-  }
 
   return (
     <AuthContext.Provider
