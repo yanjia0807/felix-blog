@@ -1,9 +1,9 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
-import { Check, Eraser, MapPin } from 'lucide-react-native';
+import { Eraser, MapPin } from 'lucide-react-native';
 import { FlatList, RefreshControl } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
 import { apiServerURL, fetchPosts, fetchTags } from '@/api';
@@ -23,9 +23,8 @@ import {
 import PostMenuPopover from '@/components/post-menu-popover';
 import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import { Badge, BadgeIcon, BadgeText } from '@/components/ui/badge';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
@@ -67,12 +66,14 @@ const PostHeader: React.FC = () => {
     ({ item }: any) => (
       <Skeleton className="mx-2 h-7 w-20" isLoaded={isSuccess} variant="rounded">
         {item && (
-          <Pressable onPress={() => onTagItemPress(item)} className="mx-2">
-            <Badge size="lg" variant="outline" className="rounded">
-              <BadgeText>{item.name}</BadgeText>
-              {_.includes(filters.tags, item.id) && <BadgeIcon as={Check} className="ml-2" />}
-            </Badge>
-          </Pressable>
+          <Button
+            size="sm"
+            action="secondary"
+            variant={_.includes(filters.tags, item.id) ? 'solid' : 'outline'}
+            className="mx-2"
+            onPress={() => onTagItemPress(item)}>
+            <ButtonText>{item.name}</ButtonText>
+          </Button>
         )}
       </Skeleton>
     ),
@@ -103,7 +104,13 @@ const PostHeader: React.FC = () => {
   );
 };
 
-const PostItem: React.FC = ({ item, index, isLoaded }: any) => {
+interface PostItemProps {
+  item: any;
+  index: number;
+  isLoaded: boolean;
+}
+
+const PostItem: React.FC<PostItemProps> = ({ item, index, isLoaded }) => {
   const onPostItemPressed = ({ item }: any) => router.push(`/posts/${item.documentId}`);
 
   const images = item

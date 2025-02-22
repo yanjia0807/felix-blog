@@ -1,6 +1,6 @@
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Filter } from 'lucide-react-native';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
@@ -286,7 +286,7 @@ export const PostFilterContent = () => {
           <Button action="primary" className="mt-8 rounded-full" onPress={handleSubmit(onSubmit)}>
             <ButtonText>搜索</ButtonText>
           </Button>
-          <Button variant="link" onPress={() => onClearFilterBtnPress()}>
+          <Button action="default" variant="link" onPress={() => onClearFilterBtnPress()}>
             <ButtonText>重置</ButtonText>
           </Button>
         </VStack>

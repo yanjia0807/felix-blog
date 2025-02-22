@@ -200,7 +200,7 @@ const UserDetailHeader: React.FC = () => {
             </Button>
             <Button
               disabled={!currentUser}
-              action={isFollowing ? 'negative' : 'positive'}
+              action={isFollowing ? 'secondary' : 'primary'}
               className="rounded-3xl px-16"
               onPress={() => onFollowBtnPressed()}>
               <ButtonText>{isFollowing ? '取消关注' : '关注'}</ButtonText>
@@ -218,7 +218,7 @@ const UserDetailHeader: React.FC = () => {
 
         <HStack
           space="md"
-          className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
+          className="justify-around rounded-lg border-y border-primary-50 bg-primary-100 py-3">
           <VStack className="items-center justify-center">
             <Text size="xl" bold={true}>
               {user.posts?.count}

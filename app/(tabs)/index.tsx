@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { BlurView } from 'expo-blur';
@@ -8,11 +8,12 @@ import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
 import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
-import { AuthorInfo, useAuth } from '@/components/auth-context';
+import { AuthorInfo } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
 import PageSpinner from '@/components/page-spinner';
+import PostMenuPopover from '@/components/post-menu-popover';
 import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
@@ -26,7 +27,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
-import PostMenuPopover from '@/components/post-menu-popover';
 
 const HomeHeader: React.FC = () => {
   const {
@@ -66,7 +66,7 @@ const HomeHeader: React.FC = () => {
     : Array(2).fill(undefined);
 
   const { data: authorsData, isSuccess: isLoadAuthorsSuccess } = useQuery({
-    queryKey: ['posts', 'list', 'authors'],
+    queryKey: ['posts', 'authors', 'list'],
     queryFn: fetchPostAuthors,
   });
 

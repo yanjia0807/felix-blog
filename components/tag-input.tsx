@@ -1,3 +1,4 @@
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -8,16 +9,14 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Check, Tag, X } from 'lucide-react-native';
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Tag, X } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { twMerge } from 'tailwind-merge';
 import { z } from 'zod';
 import { fetchTags } from '@/api/tag';
 import PageSpinner from './page-spinner';
-import { Badge, BadgeIcon, BadgeText } from './ui/badge';
-import { Button, ButtonText } from './ui/button';
+import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { FormControl } from './ui/form-control';
 import { Heading } from './ui/heading';
@@ -44,14 +43,14 @@ export const TagSelect = ({ value = [], onChange }: any) => {
   return (
     <HStack space="sm" className="flex-wrap">
       {data?.map((item: any) => (
-        <Pressable onPress={() => onTagItemPress(item)} key={item.id}>
-          <Badge size="lg" variant="solid" className="rounded p-1">
-            <BadgeText className="pr-4">{item.name}</BadgeText>
-            {_.includes(value, item.id) && (
-              <BadgeIcon size="sm" as={Check} className="absolute right-1" />
-            )}
-          </Badge>
-        </Pressable>
+        <Button
+          onPress={() => onTagItemPress(item)}
+          key={item.id}
+          size="sm"
+          action="secondary"
+          variant={_.includes(value, item.id) ? 'solid' : 'outline'}>
+          <ButtonText>{item.name}</ButtonText>
+        </Button>
       ))}
     </HStack>
   );
@@ -60,14 +59,17 @@ export const TagSelect = ({ value = [], onChange }: any) => {
 export const TagList = ({ tags, onRemove, className }: any) => {
   if (tags?.length > 0) {
     return (
-      <HStack space="sm" className={twMerge('flex-wrap', className)}>
+      <HStack space="xs" className={twMerge('flex-wrap', className)}>
         {tags.map((item: any) => (
-          <Pressable onPress={() => onRemove && onRemove(item.documentId)} key={item.documentId}>
-            <Badge size="lg" variant="solid" className="rounded px-2">
-              <BadgeText className={`${onRemove && 'pr-4'}`}>{item.name}</BadgeText>
-              {onRemove && <BadgeIcon as={X} size="md" className="absolute right-1" />}
-            </Badge>
-          </Pressable>
+          <Button
+            size="xs"
+            disabled
+            action="secondary"
+            onPress={() => onRemove && onRemove(item.documentId)}
+            key={item.documentId}>
+            <ButtonText className={`${onRemove && 'pr-4'}`}>{item.name}</ButtonText>
+            {onRemove && <ButtonIcon as={X} className="absolute right-1" />}
+          </Button>
         ))}
       </HStack>
     );

@@ -1,8 +1,8 @@
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Bell } from 'lucide-react-native';
-import React from 'react';
 import { fetchNotificationUnreadCount } from '@/api';
 import { useAuth } from './auth-context';
 import { useSocket } from './socket-context';
@@ -38,7 +38,7 @@ const Notification = () => {
               </Text>
             </Box>
           )}
-          <Icon as={Bell} size={22 as any} />
+          <Icon className="text-tertiary-500" as={Bell} size={22 as any} />
         </Pressable>
       )}
     </>

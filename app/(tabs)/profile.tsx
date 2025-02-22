@@ -1,7 +1,7 @@
+import React, { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { Redirect, router, Stack } from 'expo-router';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings2 } from 'lucide-react-native';
-import React, { useState } from 'react';
 import { FlatList, Pressable } from 'react-native';
 import { apiServerURL } from '@/api';
 import { useAuth } from '@/components/auth-context';
@@ -52,6 +52,7 @@ const ProfileHeader: React.FC = () => {
           <Button
             size="sm"
             className="rounded-3xl px-6"
+            action="primary"
             onPress={() => {
               router.push('/user-edit');
             }}>
@@ -61,6 +62,7 @@ const ProfileHeader: React.FC = () => {
           <Button
             size="sm"
             className="rounded-3xl px-6"
+            action="secondary"
             onPress={() => {
               router.push('/setting');
             }}>
@@ -93,7 +95,7 @@ const ProfileHeader: React.FC = () => {
       </VStack>
       <HStack
         space="md"
-        className="justify-around rounded-lg border-y border-primary-100 bg-primary-200 py-3">
+        className="justify-around rounded-lg border-y border-primary-50 bg-primary-100 py-3">
         <VStack className="items-center justify-center">
           <Text size="xl" bold={true}>
             {user.posts.count}

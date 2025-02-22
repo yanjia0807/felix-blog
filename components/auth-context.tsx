@@ -23,6 +23,7 @@ import { HStack } from './ui/hstack';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
+import { Button, ButtonText } from './ui/button';
 
 const AuthContext = createContext<any>(undefined);
 
@@ -196,22 +197,18 @@ export const AuthorInfo = ({ author }: any) => {
   };
 
   return (
-    <Pressable onPress={() => onAvatarPress(author.documentId)}>
-      <HStack className="items-center" space="sm">
-        <Avatar size="sm">
-          <AvatarFallbackText>{author.username}</AvatarFallbackText>
-          <AvatarImage
-            source={{
-              uri: `${apiServerURL}${author.avatar?.formats.thumbnail.url}`,
-            }}
-          />
-        </Avatar>
-        <VStack>
-          <Text size="sm" bold={true}>
-            {author.username}
-          </Text>
-        </VStack>
-      </HStack>
-    </Pressable>
+    <Button variant="link" onPress={() => onAvatarPress(author.documentId)}>
+      <Avatar size="sm">
+        <AvatarFallbackText>{author.username}</AvatarFallbackText>
+        <AvatarImage
+          source={{
+            uri: `${apiServerURL}${author.avatar?.formats.thumbnail.url}`,
+          }}
+        />
+      </Avatar>
+      <VStack>
+        <ButtonText size="sm">{author.username}</ButtonText>
+      </VStack>
+    </Button>
   );
 };

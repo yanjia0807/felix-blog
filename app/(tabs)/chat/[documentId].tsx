@@ -258,7 +258,7 @@ const Chat: React.FC = () => {
           />
         </Avatar>
         <HStack className="flex-1 items-center justify-between">
-          <Card size="md" variant="elevated" className="m-3 w-2/3 rounded-md bg-primary-300 p-4">
+          <Card size="md" variant="elevated" className="m-3 w-2/3 rounded-md bg-primary-200 p-4">
             <Text>{item.content}</Text>
           </Card>
           <Text size="sm" className="flex-1">
@@ -271,7 +271,7 @@ const Chat: React.FC = () => {
 
   const renderInput = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl size="lg" className="flex-1" isInvalid={!!errors.content}>
-      <Input className="bg-background-50" variant="rounded">
+      <Input className="bg-background-200" variant="rounded">
         <InputField
           placeholder=""
           inputMode="text"

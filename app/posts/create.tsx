@@ -1,9 +1,9 @@
+import React, { useCallback, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { AlertCircleIcon, ChevronLeft } from 'lucide-react-native';
-import React, { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
@@ -85,6 +85,7 @@ const PostCreate: React.FC = () => {
     mutationFn: (data: PostSchema) => createPost(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
       toast.success({
         description: '保存成功',
       });
@@ -143,9 +144,9 @@ const PostCreate: React.FC = () => {
 
   const renderHeaderRight = () => (
     <HStack space="md" className="items-center">
-      <Button size="md" action="secondary" variant="link" isDisabled={isPending}>
+      {/* <Button size="md" action="secondary" variant="link" isDisabled={isPending}>
         <ButtonText>[存草稿]</ButtonText>
-      </Button>
+      </Button> */}
       <Button
         action="primary"
         size="md"

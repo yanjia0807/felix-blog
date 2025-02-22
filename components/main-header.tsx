@@ -1,5 +1,5 @@
-import { Image } from 'expo-image';
 import React from 'react';
+import { Image } from 'expo-image';
 import { useAuth } from './auth-context';
 import Notification from './notification';
 import { HStack } from './ui/hstack';

@@ -1,3 +1,4 @@
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {
   BottomSheetBackdrop,
   BottomSheetSectionList,
@@ -11,7 +12,6 @@ import { format } from 'date-fns';
 import _ from 'lodash';
 import { MessageCircle } from 'lucide-react-native';
 import { Heart, HeartCrack } from 'lucide-react-native';
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
@@ -27,7 +27,7 @@ import { useAuth } from './auth-context';
 import PageSpinner from './page-spinner';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';
-import { Button, ButtonText } from './ui/button';
+import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { FormControl } from './ui/form-control';
 import { Heading } from './ui/heading';
@@ -80,13 +80,12 @@ export const CommentIcon = ({ item }: any) => {
   };
 
   return (
-    <Pressable onPress={() => onInputIconPress()}>
+    <Button variant="link" action="secondary" onPress={() => onInputIconPress()}>
       <HStack space="xs" className="items-center">
-        <Icon as={MessageCircle} />
-        <Text size="sm">最新评论</Text>
-        <Text size="xs">{`(${item.comments.count})`}</Text>
+        <ButtonIcon as={MessageCircle} />
+        <ButtonText size="sm">评论{`(${item.comments.count})`}</ButtonText>
       </HStack>
-    </Pressable>
+    </Button>
   );
 };
 
