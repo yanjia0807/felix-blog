@@ -36,6 +36,8 @@
       "package": "com.anonymous.felixblog",
       "permissions": [
         "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
       ]
     },
@@ -80,6 +82,12 @@
         "projectId": "d44b9e27-d156-43c1-bd0d-55200dc33467"
       }
     },
-    "owner": "yanjia0807"
+    "owner": "yanjia0807",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d44b9e27-d156-43c1-bd0d-55200dc33467"
+    }
   }
 }

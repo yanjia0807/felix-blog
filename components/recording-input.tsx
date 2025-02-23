@@ -4,7 +4,7 @@ import { intervalToDuration } from 'date-fns';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw, Trash2, Volume2 } from 'lucide-react-native';
-import { Keyboard, TouchableOpacity } from 'react-native';
+import { Keyboard } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -20,9 +20,9 @@ import { Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
+import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import { Pressable } from './ui/pressable';
 
 const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
   const ringStyle = useAnimatedStyle(() => ({
