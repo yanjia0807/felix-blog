@@ -22,38 +22,32 @@ import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
+import { Pressable } from './ui/pressable';
 
-const AnimatedRing = ({ metering }: any) => {
-  console.log('@@AnimatedRing', AnimatedRing);
+const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
   const ringStyle = useAnimatedStyle(() => ({
-    opacity: withSpring(
-      interpolate(metering.value, [-160, 0], [0, 1]), // 调整输入范围为[-160,0]
-    ),
+    opacity: withSpring(interpolate(metering.value, [-160, 0], [0, 1])),
     transform: [
       {
-        scale: withSpring(
-          interpolate(metering.value, [-160, 0], [0.5, 1.2]), // 调整输入范围
-        ),
+        scale: withSpring(interpolate(metering.value, [-160, 0], [0.5, 1])),
       },
     ],
   }));
 
   return (
-    <Animated.View entering={BounceIn} exiting={BounceOut} style={{ position: 'absolute' }}>
-      <Animated.View
-        style={[
-          {
-            width: 128,
-            height: 128,
-            borderRadius: 64,
-            backgroundColor: 'rgba(255,255,255,0.3)', // 添加可见背景色
-            borderWidth: 2,
-            borderColor: 'white',
-          },
-          ringStyle,
-        ]}
-      />
-    </Animated.View>
+    <Pressable onPress={doRecording}>
+      <Animated.View entering={BounceIn} exiting={BounceOut}>
+        <Animated.View
+          className="h-40 w-40 items-center justify-center rounded-full bg-primary-400"
+          style={[ringStyle]}>
+          {recordingStatus?.isRecording ? (
+            <Mic size={48} color="white" />
+          ) : (
+            <MicOff size={48} color="white" />
+          )}
+        </Animated.View>
+      </Animated.View>
+    </Pressable>
   );
 };
 
@@ -240,19 +234,8 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
           <HStack
             className="items-center justify-around bg-background-50 p-2"
             style={{ paddingBottom: insets.bottom }}>
-            <TouchableOpacity
-              className="h-24 w-24 items-center justify-center rounded-full bg-primary-500"
-              onPress={doRecording}>
-              {recordingStatus?.isRecording ? (
-                <>
-                  <AnimatedRing metering={metering} />
-                  <MicOff size={32} color="white" />
-                </>
-              ) : (
-                <Mic size={32} color="white" />
-              )}
-            </TouchableOpacity>
             <Button
+              variant="link"
               action="secondary"
               isDisabled={!recordingStatus || !recordingStatus.isRecording}
               onPress={pauseRecording}>
@@ -260,6 +243,7 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
               <ButtonText>暂停</ButtonText>
             </Button>
             <Button
+              variant="link"
               action="secondary"
               isDisabled={!recordingStatus || recordingStatus.isRecording}
               onPress={resetRecording}>
@@ -269,6 +253,7 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
             <Button
               isDisabled={!recordingStatus || recordingStatus?.isRecording}
               onPress={commitRecording}
+              variant="link"
               action="primary">
               <ButtonIcon as={Check} />
               <ButtonText>确定</ButtonText>
@@ -277,16 +262,12 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
         </BottomSheetFooter>
       );
     },
-    [
-      commitRecording,
-      doRecording,
-      insets.bottom,
-      metering,
-      pauseRecording,
-      recordingStatus,
-      resetRecording,
-    ],
+    [commitRecording, insets.bottom, pauseRecording, recordingStatus, resetRecording],
   );
+
+  const onDismiss = useCallback(() => {
+    resetRecording();
+  }, [resetRecording]);
 
   return (
     <BottomSheetModal
@@ -295,7 +276,8 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
       enableDynamicSizing={false}
       enablePanDownToClose={true}
       backdropComponent={renderBackdrop}
-      footerComponent={renderFooter}>
+      footerComponent={renderFooter}
+      onDismiss={onDismiss}>
       <VStack
         className="flex-1 bg-background-100 p-4"
         space="md"
@@ -304,10 +286,16 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
           <Heading className="p-2">录音</Heading>
           <Divider />
         </VStack>
-        <VStack className="flex-1 items-center justify-center">
-          <Text size="5xl" bold={true}>
+        <VStack className="flex-1 items-center justify-center" space="4xl">
+          <Text size="4xl" bold={true}>
             {formattedTime}
           </Text>
+
+          <AnimatedRing
+            metering={metering}
+            recordingStatus={recordingStatus}
+            doRecording={doRecording}
+          />
         </VStack>
       </VStack>
     </BottomSheetModal>
