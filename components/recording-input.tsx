@@ -1,10 +1,10 @@
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { intervalToDuration } from 'date-fns';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import { Check, Mic, MicOff, PauseCircle, RotateCcw, Trash2, Volume2 } from 'lucide-react-native';
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Keyboard, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -51,6 +51,7 @@ const AnimatedRing = ({ metering }: any) => {
 export const RecordingInput = ({ onChange, value }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const onInputIconPressed = () => {
+    Keyboard.dismiss();
     bottomSheetRef.current?.present();
   };
 

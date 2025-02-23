@@ -1,7 +1,7 @@
+import React, { forwardRef, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import React, { forwardRef, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
@@ -17,10 +17,26 @@ import useCustomToast from '@/components/use-custom-toast';
 type OtpSchemaDetails = z.infer<typeof otpSchema>;
 
 const otpSchema = z.object({
-  code1: z.string().length(1),
-  code2: z.string().length(1),
-  code3: z.string().length(1),
-  code4: z.string().length(1),
+  code1: z
+    .string()
+    .min(1)
+    .max(1)
+    .regex(/^[0-9]$/),
+  code2: z
+    .string()
+    .min(1)
+    .max(1)
+    .regex(/^[0-9]$/),
+  code3: z
+    .string()
+    .min(1)
+    .max(1)
+    .regex(/^[0-9]$/),
+  code4: z
+    .string()
+    .min(1)
+    .max(1)
+    .regex(/^[0-9]$/),
 });
 
 const OtpInputField = forwardRef(function OtpInputField(
@@ -29,39 +45,45 @@ const OtpInputField = forwardRef(function OtpInputField(
 ) {
   const nextInputRef = inputRefs[index + 1] || { current: null };
   const prevInputRef = inputRefs[index - 1] || { current: null };
+  const latestTimestamp = useRef<number>(0);
 
-  const onChangeText = (text: string) => {
-    onChange(text);
-
-    if (text.length === 1 && nextInputRef.current) {
-      nextInputRef.current.focus();
+  const onKeyPress = (e: any) => {
+    if (Date.now() - latestTimestamp.current < 100 && e.nativeEvent.key === 'Backspace') {
+      return;
+    } else {
+      latestTimestamp.current = Date.now();
     }
-    setTimeout(() => {
-      ref.current.setSelection(0, 1);
-    }, 0);
+
+    if (e.nativeEvent.key === 'Backspace') {
+      if (value.length > 0 && index === inputRefs.length - 1) {
+        return onChange('');
+      }
+      if (prevInputRef.current) {
+        onChange('');
+        prevInputRef.current.focus();
+      }
+    } else {
+      if (nextInputRef.current) {
+        nextInputRef.current.focus();
+      }
+    }
   };
 
-  const onKeyPress = ({ nativeEvent: { key } }: any) => {
-    if (key === 'Backspace' && !_.isNumber(value) && prevInputRef.current) {
-      prevInputRef.current.focus();
-    }
-  };
-
-  const onFocus = ({ nativeEvent }: any) => {
-    ref.current.setSelection(0, value?.length);
+  const onFocus = (e: any) => {
+    onChange('');
   };
 
   return (
     <Input className="h-12 w-12" variant="underlined">
       <InputField
         ref={ref}
-        inputMode="decimal"
+        inputMode="numeric"
         className="text-center text-4xl"
+        onKeyPress={onKeyPress}
+        onFocus={onFocus}
         maxLength={1}
         onBlur={onBlur}
-        onKeyPress={onKeyPress}
-        onChangeText={onChangeText}
-        onFocus={onFocus}
+        onChangeText={onChange}
         value={value}
       />
     </Input>
@@ -81,6 +103,8 @@ const OtpConfirmation: React.FC = () => {
       code: `${code1}${code2}${code3}${code4}`,
       purpose,
     };
+
+    console.log(data);
 
     mutate(data, {
       onSuccess: () => {

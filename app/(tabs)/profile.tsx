@@ -78,11 +78,11 @@ const ProfileHeader: React.FC = () => {
         <HStack space="md" className="items-center">
           <HStack className="items-center" space="xs">
             <Icon size="xs" as={Calendar} />
-            <Text size="xs">{user.birthday}</Text>
+            <Text size="xs">{user.birthday || '未设置'}</Text>
           </HStack>
           <HStack className="items-center" space="xs">
             <Icon size="xs" as={ScanFace} />
-            <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
+            <Text size="xs">{user.gender ? (user.gender === 'male' ? '男' : '女') : '未设置'}</Text>
           </HStack>
           {user.district && (
             <HStack className="items-center" space="xs">
