@@ -24,11 +24,16 @@ import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
 const AnimatedRing = ({ metering }: any) => {
+  console.log('@@AnimatedRing', AnimatedRing);
   const ringStyle = useAnimatedStyle(() => ({
-    opacity: withSpring(interpolate(metering.value, [-100, 0], [0, 1])),
+    opacity: withSpring(
+      interpolate(metering.value, [-160, 0], [0, 1]), // 调整输入范围为[-160,0]
+    ),
     transform: [
       {
-        scale: withSpring(interpolate(metering.value, [-100, 0], [0.5, 1.2])),
+        scale: withSpring(
+          interpolate(metering.value, [-160, 0], [0.5, 1.2]), // 调整输入范围
+        ),
       },
     ],
   }));
@@ -41,9 +46,13 @@ const AnimatedRing = ({ metering }: any) => {
             width: 128,
             height: 128,
             borderRadius: 64,
+            backgroundColor: 'rgba(255,255,255,0.3)', // 添加可见背景色
+            borderWidth: 2,
+            borderColor: 'white',
           },
           ringStyle,
-        ]}></Animated.View>
+        ]}
+      />
     </Animated.View>
   );
 };
@@ -67,6 +76,7 @@ export const RecordingInput = ({ onChange, value }: any) => {
 };
 
 export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any, ref: any) {
+  console.log('@@RecordingSheet');
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
@@ -203,11 +213,10 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
     }
   }, [
     audioPermission,
-    recordingStatus?.canRecord,
-    recordingStatus?.isRecording,
+    recordingStatus,
     requestAudioPermission,
-    resumeRecording,
     startRecording,
+    resumeRecording,
     stopRecording,
   ]);
 
@@ -223,49 +232,61 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
     [],
   );
 
-  const renderFooter = (props: any) => {
-    return (
-      <BottomSheetFooter {...props}>
-        <HStack
-          className="items-center justify-around bg-background-50 p-2"
-          style={{ paddingBottom: insets.bottom }}>
-          <TouchableOpacity
-            className="h-24 w-24 items-center justify-center rounded-full bg-primary-500"
-            onPress={doRecording}>
-            {recordingStatus?.isRecording ? (
-              <>
-                <AnimatedRing metering={metering} />
-                <MicOff size={32} color="white" />
-              </>
-            ) : (
-              <Mic size={32} color="white" />
-            )}
-          </TouchableOpacity>
-          <Button
-            action="secondary"
-            isDisabled={!recordingStatus || !recordingStatus.isRecording}
-            onPress={pauseRecording}>
-            <ButtonIcon as={PauseCircle} />
-            <ButtonText>暂停</ButtonText>
-          </Button>
-          <Button
-            action="secondary"
-            isDisabled={!recordingStatus || recordingStatus.isRecording}
-            onPress={resetRecording}>
-            <ButtonIcon as={RotateCcw} />
-            <ButtonText>重置</ButtonText>
-          </Button>
-          <Button
-            isDisabled={!recordingStatus || recordingStatus?.isRecording}
-            onPress={commitRecording}
-            action="primary">
-            <ButtonIcon as={Check} />
-            <ButtonText>确定</ButtonText>
-          </Button>
-        </HStack>
-      </BottomSheetFooter>
-    );
-  };
+  const renderFooter = useCallback(
+    (props: any) => {
+      console.log('@@renderFooter');
+      return (
+        <BottomSheetFooter {...props}>
+          <HStack
+            className="items-center justify-around bg-background-50 p-2"
+            style={{ paddingBottom: insets.bottom }}>
+            <TouchableOpacity
+              className="h-24 w-24 items-center justify-center rounded-full bg-primary-500"
+              onPress={doRecording}>
+              {recordingStatus?.isRecording ? (
+                <>
+                  <AnimatedRing metering={metering} />
+                  <MicOff size={32} color="white" />
+                </>
+              ) : (
+                <Mic size={32} color="white" />
+              )}
+            </TouchableOpacity>
+            <Button
+              action="secondary"
+              isDisabled={!recordingStatus || !recordingStatus.isRecording}
+              onPress={pauseRecording}>
+              <ButtonIcon as={PauseCircle} />
+              <ButtonText>暂停</ButtonText>
+            </Button>
+            <Button
+              action="secondary"
+              isDisabled={!recordingStatus || recordingStatus.isRecording}
+              onPress={resetRecording}>
+              <ButtonIcon as={RotateCcw} />
+              <ButtonText>重置</ButtonText>
+            </Button>
+            <Button
+              isDisabled={!recordingStatus || recordingStatus?.isRecording}
+              onPress={commitRecording}
+              action="primary">
+              <ButtonIcon as={Check} />
+              <ButtonText>确定</ButtonText>
+            </Button>
+          </HStack>
+        </BottomSheetFooter>
+      );
+    },
+    [
+      commitRecording,
+      doRecording,
+      insets.bottom,
+      metering,
+      pauseRecording,
+      recordingStatus,
+      resetRecording,
+    ],
+  );
 
   return (
     <BottomSheetModal
