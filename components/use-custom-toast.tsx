@@ -14,7 +14,7 @@ const useCustomToast = () => {
     () =>
       function AlertToast({ id, action, title, description }: any) {
         return (
-          <Toast nativeID={id} action={action} className="shadow-hard-2 min-w-[240] max-w-[320]">
+          <Toast nativeID={id} action={action} className="min-w-[240] max-w-[320] shadow-hard-2">
             <VStack space="sm">
               <HStack className="items-center" space="sm">
                 <ToastTitle>{title}</ToastTitle>
@@ -39,8 +39,9 @@ const useCustomToast = () => {
       function ConfirmToast({ id, onConfirm, title, description }: any) {
         return (
           <Toast
+            variant="outline"
             nativeID={id}
-            className="shadow-hard-2 w-full min-w-[240] max-w-[320] flex-row gap-4 p-4">
+            className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
             <VStack space="xl" className="flex-1">
               <VStack space="xs">
                 <HStack className="items-center justify-between">
@@ -53,6 +54,7 @@ const useCustomToast = () => {
               </VStack>
               <ButtonGroup className="flex-row gap-3">
                 <Button
+                  action="positive"
                   size="sm"
                   className="flex-grow"
                   onPress={() => {
@@ -61,7 +63,7 @@ const useCustomToast = () => {
                   <ButtonText>确定</ButtonText>
                 </Button>
                 <Button
-                  action="default"
+                  action="negative"
                   size="sm"
                   className="flex-grow"
                   onPress={() => toast.close(id)}>
@@ -82,7 +84,7 @@ const useCustomToast = () => {
           <Toast
             action="error"
             nativeID={id}
-            className="shadow-hard-2 w-full min-w-[240] max-w-[320] flex-row gap-4 p-4">
+            className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
             <VStack space="xl" className="flex-1">
               <VStack space="xs">
                 <HStack className="items-center justify-between">

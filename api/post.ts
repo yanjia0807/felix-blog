@@ -153,9 +153,9 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
 };
 
 export const fetchUserPosts = async ({ pageParam }: any) => {
-  const { pagination, filters } = pageParam;
+  const { pagination, userDocumentId, status } = pageParam;
 
-  if (filters.status === 'draft') {
+  if (status === 'draft') {
     return fetchUserDraftPosts({ pageParam });
   }
 
@@ -185,7 +185,7 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
     },
     filters: {
       author: {
-        documentId: filters.userDocumentId,
+        documentId: userDocumentId,
       },
     },
     pagination,
@@ -195,6 +195,10 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
   const query = qs.stringify(params);
 
   const res = await apiClient.get(`/posts?${query}`);
+  res.data = res.data.map((item: any) => ({
+    ...item,
+    status: 'published',
+  }));
   return res;
 };
 
@@ -320,6 +324,22 @@ export const createPost = async (formData: PostData) => {
 
     const res = await apiClient.post(`/posts?status=${formData.status}`, { data });
     return res.data;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const deletePost = async ({ documentId }: any) => {
+  try {
+    await apiClient.delete(`/posts/${documentId}`);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const unpublishPost = async ({ documentId }: any) => {
+  try {
+    await apiClient.put(`/posts/${documentId}/unpublish`, {data:{}});
   } catch (error: any) {
     throw new Error(error.message);
   }

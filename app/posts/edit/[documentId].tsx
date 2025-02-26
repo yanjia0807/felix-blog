@@ -19,14 +19,7 @@ const PostEdit = () => {
   const toast = useCustomToast();
 
   const query = useQuery({
-    queryKey: [
-      'posts',
-      'detail',
-      {
-        documentId,
-        status,
-      },
-    ],
+    queryKey: ['posts', 'detail', documentId],
     queryFn: () => fetchPost({ documentId, status }),
   });
 
@@ -85,14 +78,7 @@ const PostEdit = () => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
       queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
       queryClient.invalidateQueries({
-        queryKey: [
-          'posts',
-          'detail',
-          {
-            documentId,
-            status,
-          },
-        ],
+        queryKey: ['posts', 'detail', documentId],
       });
       toast.success({
         description: '保存成功',

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import _ from 'lodash';
-import { Edit, Ellipsis, MapPin, Trash } from 'lucide-react-native';
+import { Edit, Ellipsis, MapPin, Trash, Undo2 } from 'lucide-react-native';
 import { RefreshControl } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { fetchUserPosts } from '@/api';
+import { deletePost, unpublishPost } from '@/api/post';
 import { formatDistance } from '@/utils/date';
+import { useAuth } from './auth-context';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Card } from './ui/card';
@@ -21,18 +23,23 @@ import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
 
 const PostListView = ({ documentId, userDocumentId }: any) => {
-  const [filters, setFilters] = useState({ userDocumentId, status: 'published' });
+  const [status, setStatus] = useState('published');
+  const queryClient = useQueryClient();
   const toast = useCustomToast();
+  const toastId = 'toast_delete';
+  const { user } = useAuth();
+
   const { data, fetchNextPage, hasNextPage, isLoading, isSuccess, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['posts', 'list', filters],
+      queryKey: ['posts', 'list', { userDocumentId, status }],
       queryFn: fetchUserPosts,
       initialPageParam: {
         pagination: {
           page: 1,
           pageSize: 20,
         },
-        filters,
+        userDocumentId,
+        status,
       },
       getNextPageParam: (lastPage: any) => {
         const {
@@ -44,13 +51,51 @@ const PostListView = ({ documentId, userDocumentId }: any) => {
         if (page < pageCount) {
           return {
             pagination: { page: page + 1, pageSize },
-            filters,
+            userDocumentId,
+            status,
           };
         }
 
         return null;
       },
     });
+
+  const deleteMutation = useMutation({
+    mutationFn: ({ documentId }: any) => deletePost({ documentId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
+      queryClient.invalidateQueries({
+        queryKey: ['posts', 'detail', documentId],
+      });
+      toast.success({
+        description: '删除成功',
+      });
+    },
+    onError(error, variables, context) {
+      toast.close(toastId);
+      toast.error({ description: error.message });
+    },
+  });
+
+  const unpublishMutation = useMutation({
+    mutationFn: ({ documentId }: any) => unpublishPost({ documentId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
+      queryClient.invalidateQueries({
+        queryKey: ['posts', 'detail', documentId],
+        refetchType: 'none',
+      });
+      toast.success({
+        description: '取消发布成功',
+      });
+    },
+    onError(error, variables, context) {
+      toast.close(toastId);
+      toast.error({ description: error.message });
+    },
+  });
 
   const posts: any = isSuccess
     ? _.reduce(data?.pages, (result: any, item: any) => [...result, ...item.data], [])
@@ -68,10 +113,29 @@ const PostListView = ({ documentId, userDocumentId }: any) => {
     router.push(`/posts/edit/${item.documentId}?status=${item.status}`);
   };
 
+  const onUnpublishBtnPress = ({ item }: any) => {
+    toast.confirm({
+      toastId,
+      description: `确认要取消发布吗？`,
+      onConfirm: async () => {
+        toast.close(toastId);
+        unpublishMutation.mutate({
+          documentId: item.documentId,
+        });
+      },
+    });
+  };
+
   const onDeleteBtnPress = ({ item }: any) => {
     toast.confirm({
+      toastId,
       description: `确认要删除吗？`,
-      onConfirm: async () => {},
+      onConfirm: async () => {
+        toast.close(toastId);
+        deleteMutation.mutate({
+          documentId: item.documentId,
+        });
+      },
     });
   };
 
@@ -87,10 +151,23 @@ const PostListView = ({ documentId, userDocumentId }: any) => {
                     {item.title}
                   </Heading>
                   <Menu placement="left" trigger={renderTrigger}>
-                    <MenuItem key="Edit" textValue="编辑" onPress={() => onEditBtnPress({ item })}>
-                      <Icon as={Edit} size="xs" className="mr-2" />
-                      <MenuItemLabel size="xs">编辑</MenuItemLabel>
-                    </MenuItem>
+                    {status === 'draft' ? (
+                      <MenuItem
+                        key="Edit"
+                        textValue="编辑"
+                        onPress={() => onEditBtnPress({ item })}>
+                        <Icon as={Edit} size="xs" className="mr-2" />
+                        <MenuItemLabel size="xs">编辑</MenuItemLabel>
+                      </MenuItem>
+                    ) : (
+                      <MenuItem
+                        key="Unpublish"
+                        textValue="取消发布"
+                        onPress={() => onUnpublishBtnPress({ item })}>
+                        <Icon as={Undo2} size="xs" className="mr-2" />
+                        <MenuItemLabel size="xs">取消发布</MenuItemLabel>
+                      </MenuItem>
+                    )}
                     <MenuSeparator />
                     <MenuItem
                       key="Delete"
@@ -129,27 +206,17 @@ const PostListView = ({ documentId, userDocumentId }: any) => {
     );
   };
 
-  const onPublishedBtnPress = () => {
-    setFilters((prev: any) => ({ ...prev, status: 'published' }));
-  };
-
-  const onDraftBtnPress = () => {
-    setFilters((prev: any) => ({ ...prev, status: 'draft' }));
-  };
-
   return (
     <Box className="flex-1">
       <HStack className="items-center justify-end" space="sm">
-        <Button size="sm" action="secondary" variant="link" onPress={() => onPublishedBtnPress()}>
-          <ButtonText className={filters.status === 'published' ? 'underline' : undefined}>
+        <Button size="sm" action="secondary" variant="link" onPress={() => setStatus('published')}>
+          <ButtonText className={status === 'published' ? 'underline' : undefined}>
             已发布
           </ButtonText>
         </Button>
         <Divider orientation="vertical" className="h-4" />
-        <Button size="sm" action="secondary" variant="link" onPress={() => onDraftBtnPress()}>
-          <ButtonText className={filters.status === 'draft' ? 'underline' : undefined}>
-            未发布
-          </ButtonText>
+        <Button size="sm" action="secondary" variant="link" onPress={() => setStatus('draft')}>
+          <ButtonText className={status === 'draft' ? 'underline' : undefined}>未发布</ButtonText>
         </Button>
       </HStack>
       <FlatList

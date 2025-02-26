@@ -27,7 +27,6 @@ import useCustomToast from '@/components/use-custom-toast';
 const Setting: React.FC = () => {
   const toast = useCustomToast();
   const { user, logoutMutation } = useAuth();
-  const logoutToastId = _.random(0, 10000).toString();
   const { theme, updateTheme } = usePreferences();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(theme === 'dark');
 
@@ -35,13 +34,14 @@ const Setting: React.FC = () => {
     router.push('/change-password');
   };
 
+  const toastId = 'toastId';
   const onLogoutBtnPress = () => {
     toast.confirm({
-      toastId: logoutToastId,
+      toastId,
       title: '退出登录',
       description: `确认要退出登录吗？`,
       onConfirm: async () => {
-        toast.close(logoutToastId);
+        toast.close(toastId);
         await logoutMutation();
         router.replace('/');
         toast.success({ description: '退出登录成功' });

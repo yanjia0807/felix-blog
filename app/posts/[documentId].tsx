@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import _ from 'lodash';
-import { ChevronLeft, MapPin, StickyNote } from 'lucide-react-native';
+import { ChevronLeft, Edit, Ellipsis, MapPin, StickyNote, Trash, Undo2 } from 'lucide-react-native';
 import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
-import { fetchPost } from '@/api/post';
-import { AuthorInfo } from '@/components/auth-context';
+import { deletePost, fetchPost, unpublishPost } from '@/api/post';
+import { AuthorInfo, useAuth } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
@@ -21,31 +21,72 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Menu, MenuItem, MenuItemLabel, MenuSeparator } from '@/components/ui/menu';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import useCustomToast from '@/components/use-custom-toast';
 import { formatDistance } from '@/utils/date';
 
 const PostDetail: React.FC = () => {
   const { documentId, status } = useLocalSearchParams();
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const toast = useCustomToast();
+  const toastId = 'toastId';
+  const { user } = useAuth();
+  const navigation = useNavigation<any>();
 
   const {
     isLoading,
     isSuccess,
     data: post,
   } = useQuery({
-    queryKey: [
-      'posts',
-      'detail',
-      {
-        documentId,
-        status,
-      },
-    ],
+    queryKey: ['posts', 'detail', documentId],
     queryFn: () => fetchPost({ documentId, status }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: ({ documentId }: any) => deletePost({ documentId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
+      queryClient.invalidateQueries({
+        queryKey: ['posts', 'detail', documentId],
+      });
+      toast.success({
+        description: '删除成功',
+      });
+      router.back();
+    },
+    onError(error, variables, context) {
+      toast.close(toastId);
+      toast.error({ description: error.message });
+    },
+  });
+
+  const unpublishMutation = useMutation({
+    mutationFn: ({ documentId }: any) => unpublishPost({ documentId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
+      queryClient.invalidateQueries({
+        queryKey: ['posts', 'detail', documentId],
+        refetchType: 'none',
+      });
+      toast.success({
+        description: '取消发布成功',
+      });
+      navigation.setParams({
+        status: 'draft',
+      });
+    },
+    onError(error, variables, context) {
+      toast.close(toastId);
+      toast.error({ description: error.message });
+    },
   });
 
   const cover = post?.cover
@@ -105,6 +146,44 @@ const PostDetail: React.FC = () => {
     <ShareButton className="h-8 w-8 items-center justify-center rounded-full" />
   );
 
+  const renderTrigger = (triggerProps: any) => {
+    return (
+      <Pressable {...triggerProps}>
+        <Icon as={Ellipsis} />
+      </Pressable>
+    );
+  };
+
+  const onEditBtnPress = () => {
+    router.push(`/posts/edit/${documentId}?status=${status}`);
+  };
+
+  const onUnpublishBtnPress = () => {
+    toast.confirm({
+      toastId,
+      description: `确认要取消发布吗？`,
+      onConfirm: async () => {
+        toast.close(toastId);
+        unpublishMutation.mutate({
+          documentId,
+        });
+      },
+    });
+  };
+
+  const onDeleteBtnPress = () => {
+    toast.confirm({
+      toastId,
+      description: `确认要删除吗？`,
+      onConfirm: async () => {
+        toast.close(toastId);
+        deleteMutation.mutate({
+          documentId,
+        });
+      },
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -120,7 +199,7 @@ const PostDetail: React.FC = () => {
         <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
           <VStack className="flex-1 p-4" space="lg">
             <VStack space="sm">
-              <HStack className="items-center justify-between">
+              <HStack className="items-center justify-between" space="lg">
                 <Heading size="lg" className="flex-1">
                   {post.title}
                 </Heading>
@@ -131,6 +210,29 @@ const PostDetail: React.FC = () => {
                       未发布
                     </Text>
                   </HStack>
+                )}
+                {user?.documentId === post?.author?.documentId && (
+                  <Menu placement="left" trigger={renderTrigger}>
+                    {status === 'draft' ? (
+                      <MenuItem key="Edit" textValue="编辑" onPress={() => onEditBtnPress()}>
+                        <Icon as={Edit} size="xs" className="mr-2" />
+                        <MenuItemLabel size="xs">编辑</MenuItemLabel>
+                      </MenuItem>
+                    ) : (
+                      <MenuItem
+                        key="Unpublish"
+                        textValue="取消发布"
+                        onPress={() => onUnpublishBtnPress()}>
+                        <Icon as={Undo2} size="xs" className="mr-2" />
+                        <MenuItemLabel size="xs">取消发布</MenuItemLabel>
+                      </MenuItem>
+                    )}
+                    <MenuSeparator />
+                    <MenuItem key="Delete" textValue="删除" onPress={() => onDeleteBtnPress()}>
+                      <Icon as={Trash} size="xs" className="mr-2" />
+                      <MenuItemLabel size="xs">删除</MenuItemLabel>
+                    </MenuItem>
+                  </Menu>
                 )}
               </HStack>
               <TagList value={post.tags} readonly={true} />
