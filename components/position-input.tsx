@@ -1,3 +1,4 @@
+import React, { forwardRef, useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -7,7 +8,6 @@ import {
 import { useInfiniteQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { MapPinIcon } from 'lucide-react-native';
-import React, { forwardRef, useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import { init, Geolocation, Position, PositionError } from 'react-native-amap-geolocation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { amapIosApiKey } from '@/api';

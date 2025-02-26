@@ -3,7 +3,16 @@ import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal } from '@gorho
 import { intervalToDuration } from 'date-fns';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
-import { Check, Mic, MicOff, PauseCircle, RotateCcw, Trash2, Volume2 } from 'lucide-react-native';
+import {
+  Check,
+  CircleX,
+  Mic,
+  MicOff,
+  PauseCircle,
+  RotateCcw,
+  Trash2,
+  Volume2,
+} from 'lucide-react-native';
 import { Keyboard } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -23,6 +32,7 @@ import { HStack } from './ui/hstack';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
+import _ from 'lodash';
 
 const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
   const ringStyle = useAnimatedStyle(() => ({
@@ -70,7 +80,6 @@ export const RecordingInput = ({ onChange, value }: any) => {
 };
 
 export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any, ref: any) {
-  console.log('@@RecordingSheet');
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
@@ -148,7 +157,7 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
   }, [metering, recordingStatus, stopRecording]);
 
   const commitRecording = useCallback(async () => {
-    onChange([...value, recording]);
+    onChange([...value, { ...recording, uri: recording?._uri }]);
     ref.current?.close();
   }, [onChange, recording, ref, value]);
 
@@ -302,19 +311,23 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
   );
 });
 
-export const RecordingList = ({ recordings, onRemove, className = '' }: any) => {
-  if (recordings.length > 0) {
+export const RecordingList = ({ value = [], onChange, className = '', readonly = false }: any) => {
+  const onRemove = async (uri: string) => {
+    onChange(_.filter(value, (item: any) => item.uri !== uri));
+  };
+
+  if (value.length > 0) {
     return (
       <HStack space="sm" className={twMerge('flex-wrap', className)}>
-        {recordings.map((item: any) => (
-          <RecordingIcon key={item._uri || item.url} item={item} onRemove={onRemove} />
+        {value.map((item: any) => (
+          <RecordingIcon key={item.uri} item={item} onRemove={onRemove} readonly={readonly} />
         ))}
       </HStack>
     );
   }
 };
 
-export const RecordingIcon = ({ item, onRemove, className }: any) => {
+export const RecordingIcon = ({ item, onRemove, className, readonly }: any) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [durationMillis, setDurationMillis] = useState(0);
   const recordingRef = useRef<any>({ sound: null, isPlaying: false });
@@ -338,19 +351,13 @@ export const RecordingIcon = ({ item, onRemove, className }: any) => {
     }
   };
 
-  const onRemoveBtnPress = async () => {
-    const key = item._uri || item.url;
-    onRemove(key);
-  };
-
   useEffect(() => {
     const loadAudio = async () => {
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
       });
-      let source = item._uri ? { uri: item._uri } : { uri: `${apiServerURL}${item.url}` };
       const { sound, status }: any = await Audio.Sound.createAsync(
-        source,
+        { uri: item.uri },
         { shouldPlay: false },
         onPlaybackStatusUpdate,
       );
@@ -364,18 +371,25 @@ export const RecordingIcon = ({ item, onRemove, className }: any) => {
           recordingRef.current.sound.unloadAsync();
         }
       : undefined;
-  }, [item._uri, item.url]);
+  }, [item.uri]);
 
   return (
     <Button
       onPress={() => onItemPress()}
-      className={twMerge(className, 'my-2 items-center justify-start rounded')}>
+      className={twMerge(
+        className,
+        'items-center justify-start rounded',
+        !readonly ? 'pr-8' : undefined,
+      )}>
       <ButtonIcon as={Volume2} />
       <ButtonText>{formattedTime}</ButtonText>
       <ButtonSpinner style={isPlaying ? { display: 'flex' } : { display: 'none' }} />
-      {onRemove && (
-        <Button size="xs" action="negative" className="p-1" onPress={() => onRemoveBtnPress()}>
-          <ButtonIcon as={Trash2} />
+      {!readonly && (
+        <Button
+          size="xs"
+          className="absolute right-0 top-0 h-auto p-1"
+          onPress={() => onRemove(item.uri)}>
+          <ButtonIcon as={CircleX} />
         </Button>
       )}
     </Button>

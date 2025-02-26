@@ -1,9 +1,9 @@
+import React, { forwardRef, useState } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import _ from 'lodash';
 import { Camera, CircleX, SwitchCamera, ImageIcon, X, Trash2 } from 'lucide-react-native';
-import React, { forwardRef, useState } from 'react';
 import { FlatList, SafeAreaView, useWindowDimensions } from 'react-native';
 import { apiServerURL } from '@/api';
 import {
@@ -22,7 +22,6 @@ import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
-import { Popover, PopoverBackdrop, PopoverContent } from './ui/popover';
 import { Portal } from './ui/portal';
 import { Pressable } from './ui/pressable';
 import { VStack } from './ui/vstack';
@@ -42,9 +41,9 @@ export const ImageCamera = ({ isOpen, onClose, onChange, value, imagePickerOptio
         const photo = await cameraRef.current.takePictureAsync();
         let val;
         if (imagePickerOptions.allowsMultipleSelection) {
-          val = [...value, photo];
+          val = [...value, { ...photo, largeUri: photo.uri }];
         } else {
-          val = photo;
+          val = { ...photo, largeUri: photo.uri };
         }
         onChange(val);
         onClose();
@@ -97,7 +96,7 @@ export const ImageCamera = ({ isOpen, onClose, onChange, value, imagePickerOptio
   );
 };
 
-export const ImageInput = ({ onChange, value }: any) => {
+export const ImageInput = ({ onChange, value = [] }: any) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const onInputIconPressed = () => setIsOpen(true);
@@ -129,7 +128,7 @@ export const ImageInput = ({ onChange, value }: any) => {
   );
 };
 
-export const CoverInput = ({ onChange, value }: any) => {
+export const CoverInput = ({ onChange, value, onOpenGallery }: any) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const onInputIconPressed = () => {
@@ -148,7 +147,7 @@ export const CoverInput = ({ onChange, value }: any) => {
   return (
     <>
       {value ? (
-        <VStack className="my-2 h-40">
+        <Pressable className="my-2 h-40" onPress={() => onOpenGallery(0)}>
           <Image
             style={{
               width: '100%',
@@ -163,12 +162,12 @@ export const CoverInput = ({ onChange, value }: any) => {
           />
           <Button
             size="xs"
-            action="negative"
-            className="absolute bottom-0 right-0 p-1"
+            action="secondary"
+            className="absolute right-0 top-0 h-auto p-1"
             onPress={() => onClearBtnPress()}>
-            <ButtonIcon as={Trash2} />
+            <ButtonIcon as={CircleX} />
           </Button>
-        </VStack>
+        </Pressable>
       ) : (
         <>
           <Input variant="underlined" className="border-0 border-b p-2" isReadOnly={true}>
@@ -256,9 +255,15 @@ export const ImageSheet = forwardRef(function Sheet(
     if (!result.canceled) {
       let val;
       if (imagePickerOptions.allowsMultipleSelection) {
-        val = _.uniqBy([...value, ...result.assets], 'uri');
+        val = _.map(_.uniqBy([...value, ...result.assets], 'uri'), (item: any) => ({
+          ...item,
+          largeUri: item.uri,
+        }));
       } else {
-        val = result.assets[0];
+        val = {
+          ...result.assets[0],
+          largeUri: result.assets[0].uri,
+        };
       }
 
       onChange(val);
@@ -308,76 +313,47 @@ export const ImageSheet = forwardRef(function Sheet(
   );
 });
 
-export const ImageItem = ({
-  image,
-  index,
-  handleSetCover,
-  onOpenGallery,
-  onRemove,
-  setCover,
-  selectedImage,
-  setSelectedImage,
-}: any) => {
+export const ImageItem = ({ image, index, onOpenGallery, onRemove }: any) => {
   return (
-    <Popover
-      key={image.uri}
-      isOpen={selectedImage?.uri === image.uri}
-      onClose={() => setSelectedImage(null)}
-      shouldOverlapWithTrigger={true}
-      trigger={(triggerProps: any) => (
-        <Pressable
-          {...triggerProps}
-          onPress={() => onOpenGallery(index)}
-          onLongPress={() => setSelectedImage(image)}>
-          <Image
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: 8,
-            }}
-            alt={image.alternativeText || image.uri}
-            source={{
-              uri: image.uri,
-            }}
-          />
-          {onRemove && (
-            <Button
-              size="xs"
-              action="negative"
-              className="absolute bottom-0 right-0 p-1"
-              onPress={() => onRemove(image.uri)}>
-              <ButtonIcon as={Trash2} />
-            </Button>
-          )}
-        </Pressable>
-      )}>
-      <PopoverBackdrop />
-      <PopoverContent size="xs" className="p-1">
-        <Button size="xs" variant="link" onPress={() => setCover(image)}>
-          <ButtonText>设为封面</ButtonText>
-        </Button>
-      </PopoverContent>
-    </Popover>
+    <Pressable onPress={() => onOpenGallery(index)}>
+      <Image
+        style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: 8,
+        }}
+        alt={image.alternativeText || image.uri}
+        source={{
+          uri: image.uri,
+        }}
+      />
+      <Button
+        size="xs"
+        action="secondary"
+        className="absolute right-0 top-0 h-auto p-1"
+        onPress={() => onRemove(image.uri)}>
+        <ButtonIcon as={CircleX} />
+      </Button>
+    </Pressable>
   );
 };
 
-export const ImageGrid = ({ images, onOpenGallery, onRemove, className, onSetCover }: any) => {
+export const ImageGrid = ({ value = [], onOpenGallery, cover, onChange }: any) => {
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const { width: screenWidth } = useWindowDimensions();
   const numColumns = 4;
-  const spacing = 10;
+  const spacing = 16;
   const padding = 16;
   const imageSize = (screenWidth - padding * 2 - (numColumns - 1) * spacing) / numColumns;
 
-  const setCover = (image: any) => {
-    setSelectedImage(null);
-    onSetCover(image);
+  const onRemove = async (uri: string) => {
+    onChange(_.filter(value, (item: any) => item.uri !== uri));
   };
 
-  if (images.length > 0) {
+  if (value.length > 0) {
     return (
       <HStack className="flex-wrap">
-        {images.map((image: any, index: number) => (
+        {value.map((image: any, index: number) => (
           <Box
             key={image.uri}
             className="my-2"
@@ -391,9 +367,8 @@ export const ImageGrid = ({ images, onOpenGallery, onRemove, className, onSetCov
             <ImageItem
               image={image}
               index={index}
-              onOpenGallery={onOpenGallery}
+              onOpenGallery={() => onOpenGallery(index + (cover ? 1 : 0))}
               onRemove={onRemove}
-              setCover={setCover}
               selectedImage={selectedImage}
               setSelectedImage={setSelectedImage}
             />
@@ -404,14 +379,14 @@ export const ImageGrid = ({ images, onOpenGallery, onRemove, className, onSetCov
   }
 };
 
-export const ImageList = ({ images, onOpenGallery }: any) => {
+export const ImageList = ({ value = [], onOpenGallery }: any) => {
   const renderItem = ({ item, index }: any) => {
     return (
       <Pressable
         onPress={() => {
           onOpenGallery && onOpenGallery(index);
         }}
-        className={`mx-1 h-14 w-14 ${index === 0 ? 'ml-0' : ''} ${index === images.length - 1 ? 'mr-0' : ''}`}>
+        className={`mx-1 h-14 w-14 ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}>
         <Image
           source={{
             uri: item.uri,
@@ -427,9 +402,9 @@ export const ImageList = ({ images, onOpenGallery }: any) => {
     );
   };
 
-  return images?.length > 0 ? (
+  return value?.length > 0 ? (
     <FlatList
-      data={images}
+      data={value}
       horizontal={true}
       renderItem={renderItem}
       showsHorizontalScrollIndicator={false}

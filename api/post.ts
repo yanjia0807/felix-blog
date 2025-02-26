@@ -153,9 +153,13 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
 };
 
 export const fetchUserPosts = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId } = pageParam;
+  const { pagination, filters } = pageParam;
 
-  const query = qs.stringify({
+  if (filters.status === 'draft') {
+    return fetchUserDraftPosts({ pageParam });
+  }
+
+  const params = {
     populate: {
       tags: true,
       poi: true,
@@ -181,13 +185,32 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
     },
     filters: {
       author: {
-        documentId: userDocumentId,
+        documentId: filters.userDocumentId,
       },
     },
-    sort: 'createdAt:desc',
     pagination,
-  });
+    sort: 'createdAt:desc',
+  };
+
+  const query = qs.stringify(params);
+
   const res = await apiClient.get(`/posts?${query}`);
+  return res;
+};
+
+export const fetchUserDraftPosts = async ({ pageParam }: any) => {
+  const { pagination } = pageParam;
+
+  const params = {
+    pagination,
+  };
+
+  const query = qs.stringify(params);
+  const res = await apiClient.get(`/posts/user-draft-posts?${query}`);
+  res.data = res.data.map((item: any) => ({
+    ...item,
+    status: 'draft',
+  }));
   return res;
 };
 
@@ -201,7 +224,7 @@ export const fetchUserPhotos = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchPost = async ({ documentId }: any) => {
+export const fetchPost = async ({ documentId, status }: any) => {
   const query = qs.stringify(
     {
       populate: {
@@ -232,6 +255,7 @@ export const fetchPost = async ({ documentId }: any) => {
           count: true,
         },
       },
+      status,
     },
     {
       encodeValuesOnly: true,
@@ -243,28 +267,30 @@ export const fetchPost = async ({ documentId }: any) => {
 
 export const createPost = async (formData: PostData) => {
   try {
-    let imageIds = [],
-      coverId = undefined,
-      audioIds = [];
-
-    if (formData.cover) {
-      coverId = await uploadFiles(formData.cover.uri);
-    }
+    const coverId = formData.cover ? await uploadFiles(formData.cover.uri) : undefined;
 
     const attachments = [];
-    if (formData.images.length > 0) {
-      imageIds = await uploadFiles(_.map(formData.images, (item: any) => item.uri));
+    const imageIds =
+      formData.images.length > 0
+        ? await uploadFiles(_.map(formData.images, (item: any) => item.uri))
+        : [];
+
+    if (imageIds.length > 0) {
       attachments.push({
         type: 'image',
         files: imageIds,
       });
     }
 
-    if (formData.audios.length > 0) {
-      audioIds = await uploadFiles(_.map(formData.audios, (item: any) => item._uri));
+    const recordingIds =
+      formData.recordings.length > 0
+        ? await uploadFiles(_.map(formData.recordings, (item: any) => item._uri))
+        : [];
+
+    if (recordingIds.length > 0) {
       attachments.push({
         type: 'audio',
-        files: audioIds,
+        files: recordingIds,
       });
     }
 
@@ -292,7 +318,83 @@ export const createPost = async (formData: PostData) => {
       attachments,
     };
 
-    const res = await apiClient.post(`/posts`, { data });
+    const res = await apiClient.post(`/posts?status=${formData.status}`, { data });
+    return res.data;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const editPost = async (formData: PostData) => {
+  try {
+    let coverId = undefined;
+    if (formData.cover) {
+      coverId = formData.cover.id ? formData.cover.id : await uploadFiles(formData.cover.uri);
+    } else {
+      coverId = null;
+    }
+
+    const attachments = [];
+    let imageIds = [
+      ..._.filter(formData.images, (item: any) => item.id).map((item: any) => item.id),
+    ];
+    const images = _.filter(formData.images, (item: any) => !item.id);
+
+    imageIds =
+      images.length > 0
+        ? [...imageIds, ...(await uploadFiles(_.map(images, (item: any) => item.uri)))]
+        : imageIds;
+
+    if (imageIds.length > 0) {
+      attachments.push({
+        type: 'image',
+        files: imageIds,
+      });
+    }
+
+    let recordingIds = [
+      ..._.filter(formData.recordings, (item: any) => item.id).map((item: any) => item.id),
+    ];
+    const recordings = _.filter(formData.recordings, (item: any) => !item.id);
+
+    recordingIds =
+      recordings.length > 0
+        ? [...recordingIds, ...(await uploadFiles(_.map(recordings, (item: any) => item.uri)))]
+        : recordingIds;
+
+    if (recordingIds.length > 0) {
+      attachments.push({
+        type: 'audio',
+        files: recordingIds,
+      });
+    }
+
+    const data = {
+      title: formData.title,
+      cover: coverId,
+      content: formData.content,
+      author: formData.author,
+      poi:
+        formData.poi &&
+        _.pick(formData.poi, [
+          'name',
+          'location',
+          'type',
+          'typecode',
+          'pname',
+          'cityname',
+          'adname',
+          'address',
+          'pcode',
+          'adcode',
+          'citycode',
+        ]),
+      tags: formData.tags.map((item: any) => item.documentId),
+      attachments,
+    };
+    const res = await apiClient.put(`/posts/${formData.documentId}?status=${formData.status}`, {
+      data,
+    });
 
     return res.data;
   } catch (error: any) {

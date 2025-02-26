@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import { ChevronLeft, MapPin } from 'lucide-react-native';
+import { ChevronLeft, MapPin, StickyNote } from 'lucide-react-native';
 import { ScrollView } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
@@ -16,19 +16,19 @@ import PageSpinner from '@/components/page-spinner';
 import { RecordingList } from '@/components/recording-input';
 import { ShareButton } from '@/components/share-button';
 import { TagList } from '@/components/tag-input';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { formatDistance } from '@/utils/date';
 
 const PostDetail: React.FC = () => {
-  const { documentId } = useLocalSearchParams();
+  const { documentId, status } = useLocalSearchParams();
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
 
@@ -37,31 +37,57 @@ const PostDetail: React.FC = () => {
     isSuccess,
     data: post,
   } = useQuery({
-    queryKey: ['posts', 'detail', documentId],
-    queryFn: () => fetchPost({ documentId }),
+    queryKey: [
+      'posts',
+      'detail',
+      {
+        documentId,
+        status,
+      },
+    ],
+    queryFn: () => fetchPost({ documentId, status }),
   });
+
+  const cover = post?.cover
+    ? {
+        ...post.cover,
+        uri: `${apiServerURL}${post.cover.formats?.large?.url || post.cover.url}`,
+        largeUri: `${apiServerURL}${post.cover.formats?.large?.url || post.cover.url}`,
+      }
+    : undefined;
 
   const images = _.map(
     _.find(post?.attachments || [], { type: 'image' })?.files || [],
     (item: any) => ({
-      id: item.id,
-      assetId: item.documentId,
-      alternativeText: item.alternativeText,
-      uri: `${apiServerURL}${item.formats?.thumbnail.url || item.url}`,
+      ...item,
+      uri: `${apiServerURL}${item.formats?.thumbnail.url}`,
+      largeUri: `${apiServerURL}${item.formats?.large?.url || item.url}`,
     }),
   );
 
-  const originImages: any = _.map(
-    _.find(post?.attachments || [], { type: 'image' })?.files || [],
+  const galleryImages: any = _.concat(
+    [],
+    cover
+      ? {
+          ...cover,
+          uri: cover.largeUri || cover.uri,
+        }
+      : [],
+    images
+      ? images.map((item: any) => ({
+          ...item,
+          uri: item.largeUri || item.uri,
+        }))
+      : [],
+  );
+
+  const recordings = _.map(
+    _.find(post?.attachments || [], { type: 'audio' })?.files || [],
     (item: any) => ({
-      id: item.id,
-      assetId: item.documentId,
-      alternativeText: item.alternativeText,
+      ...item,
       uri: `${apiServerURL}${item.url}`,
     }),
   );
-
-  const recordings = _.find(post?.attachments || [], { type: 'audio' })?.files || [];
 
   const onOpenGallery = async (index: number) => {
     setImageIndex(index);
@@ -92,10 +118,22 @@ const PostDetail: React.FC = () => {
       <PageSpinner isVisiable={isLoading} />
       {isSuccess && (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
-          <VStack className="flex-1 p-4" space="xl">
+          <VStack className="flex-1 p-4" space="lg">
             <VStack space="sm">
-              <Heading size="lg">{post.title}</Heading>
-              <TagList tags={post.tags} />
+              <HStack className="items-center justify-between">
+                <Heading size="lg" className="flex-1">
+                  {post.title}
+                </Heading>
+                {status === 'draft' && (
+                  <HStack className="items-center" space="xs">
+                    <Icon as={StickyNote} size="sm" />
+                    <Text size="sm" className="text-gray-400">
+                      未发布
+                    </Text>
+                  </HStack>
+                )}
+              </HStack>
+              <TagList value={post.tags} readonly={true} />
               <HStack className="items-center justify-between">
                 <Text size="xs">{formatDistance(post?.createdAt)}</Text>
                 {post.poi?.address && (
@@ -116,8 +154,8 @@ const PostDetail: React.FC = () => {
               </HStack>
             </VStack>
             <VStack space="sm">
-              {post.cover && (
-                <Box className="h-36 flex-1">
+              {cover && (
+                <Pressable className="h-36 flex-1" onPress={() => onOpenGallery(0)}>
                   <Image
                     style={{
                       width: '100%',
@@ -125,14 +163,17 @@ const PostDetail: React.FC = () => {
                       borderRadius: 8,
                     }}
                     source={{
-                      uri: `${apiServerURL}${post.cover.formats.medium.url || post.cover.url}`,
+                      uri: cover.uri,
                     }}
-                    alt={post.cover.alternativeText}
+                    alt={cover.alternativeText}
                   />
-                </Box>
+                </Pressable>
               )}
-              <ImageList images={images} onOpenGallery={(index: number) => onOpenGallery(index)} />
-              <RecordingList recordings={recordings} />
+              <ImageList
+                value={images}
+                onOpenGallery={(index: number) => onOpenGallery(index + (cover ? 1 : 0))}
+              />
+              <RecordingList value={recordings} readonly={true} />
             </VStack>
             <Divider />
             <Text size="lg">{post.content}</Text>
@@ -147,7 +188,7 @@ const PostDetail: React.FC = () => {
         </ScrollView>
       )}
       <GalleryPreview
-        images={originImages}
+        images={galleryImages}
         initialIndex={imageIndex}
         isVisible={isGalleryPreviewOpen}
         onRequestClose={() => setIsGalleryPreviewOpen(false)}

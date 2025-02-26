@@ -36,10 +36,6 @@ export const AuthProvider = ({ children }: any) => {
     enabled: !!accessToken,
   });
 
-  if (isError) {
-    console.error('error', isError);
-  }
-
   useEffect(() => {
     const loadAuthData = async () => {
       const token = await SecureStore.getItemAsync('accessToken');
@@ -149,6 +145,10 @@ export const AuthProvider = ({ children }: any) => {
     onSuccess: async (data) => {},
     onError: (error) => {},
   });
+
+  if (isError) {
+    logoutMutation();
+  }
 
   return (
     <AuthContext.Provider

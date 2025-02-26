@@ -16,7 +16,7 @@ import { twMerge } from 'tailwind-merge';
 import { z } from 'zod';
 import { fetchTags } from '@/api/tag';
 import PageSpinner from './page-spinner';
-import { Button, ButtonIcon, ButtonText } from './ui/button';
+import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { FormControl } from './ui/form-control';
 import { Heading } from './ui/heading';
@@ -56,19 +56,21 @@ export const TagSelect = ({ value = [], onChange }: any) => {
   );
 };
 
-export const TagList = ({ tags, onRemove, className }: any) => {
-  if (tags?.length > 0) {
+export const TagList = ({ value = [], onChange, className, readonly = false }: any) => {
+  const onRemove = (documentId: any) => {
+    onChange(_.filter(value, (item: any) => item.documentId !== documentId));
+  };
+
+  if (value?.length > 0) {
     return (
-      <HStack space="xs" className={twMerge('flex-wrap', className)}>
-        {tags.map((item: any) => (
+      <HStack space="sm" className={twMerge('flex-wrap', className)}>
+        {value.map((item: any) => (
           <Button
             size="xs"
-            disabled
             action="secondary"
-            onPress={() => onRemove && onRemove(item.documentId)}
+            onPress={() => !readonly && onRemove(item.documentId)}
             key={item.documentId}>
-            <ButtonText className={`${onRemove && 'pr-4'}`}>{item.name}</ButtonText>
-            {onRemove && <ButtonIcon as={X} className="absolute right-1" />}
+            <ButtonText>{item.name}</ButtonText>
           </Button>
         ))}
       </HStack>
@@ -98,7 +100,7 @@ const filterFormSchema = z.object({
   name: z.string().max(100, '内容不能超过100个字符').nullable(),
 });
 
-export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
+export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any, ref: any) {
   const [selectedTags, setSelectedTags] = useState<any>([]);
   const snapPoints = useMemo(() => ['80%'], []);
   const insets = useSafeAreaInsets();
@@ -133,12 +135,6 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
 
   const onAdd = (tag: any) => {
     setSelectedTags((prev: any) => [...prev, tag]);
-  };
-
-  const onRemove = (tagDocumentId: any) => {
-    setSelectedTags((prev: any) =>
-      _.filter(prev, (item: any) => item.documentId !== tagDocumentId),
-    );
   };
 
   const onCommitBtnPressed = () => {
@@ -228,7 +224,7 @@ export const TagSheet = forwardRef(function Sheet({ value, onChange }: any, ref:
         <HStack className="bg-background-100">
           <Controller name="name" control={control} render={renderInput} />
         </HStack>
-        <TagList tags={selectedTags} onRemove={onRemove} />
+        <TagList value={selectedTags} onChange={onChange} />
         <BottomSheetFlatList
           data={data}
           keyExtractor={(item: any) => item.id.toString()}
