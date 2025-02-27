@@ -31,8 +31,11 @@ import { formatDistance } from '@/utils/date';
 
 const PostDetail: React.FC = () => {
   const { documentId, status } = useLocalSearchParams();
-  const [imageIndex, setImageIndex] = useState<number>(0);
-  const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
+  const [gallery, setGallery] = useState<any>({
+    images: [],
+    index: 0,
+  });
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const toastId = 'toastId';
@@ -94,6 +97,7 @@ const PostDetail: React.FC = () => {
         ...post.cover,
         uri: `${apiServerURL}${post.cover.formats?.large?.url || post.cover.url}`,
         largeUri: `${apiServerURL}${post.cover.formats?.large?.url || post.cover.url}`,
+        cover: true,
       }
     : undefined;
 
@@ -103,10 +107,11 @@ const PostDetail: React.FC = () => {
       ...item,
       uri: `${apiServerURL}${item.formats?.thumbnail.url}`,
       largeUri: `${apiServerURL}${item.formats?.large?.url || item.url}`,
+      cover: false,
     }),
   );
 
-  const galleryImages: any = _.concat(
+  const galleryImages = _.concat(
     [],
     cover
       ? {
@@ -130,9 +135,12 @@ const PostDetail: React.FC = () => {
     }),
   );
 
-  const onOpenGallery = async (index: number) => {
-    setImageIndex(index);
-    setIsGalleryPreviewOpen(true);
+  const onSetGallery = (index: number) => {
+    setGallery({
+      images: galleryImages,
+      index,
+    });
+    setIsGalleryOpen(true);
   };
 
   const renderHeaderLeft = () => (
@@ -257,7 +265,7 @@ const PostDetail: React.FC = () => {
             </VStack>
             <VStack space="sm">
               {cover && (
-                <Pressable className="h-36 flex-1" onPress={() => onOpenGallery(0)}>
+                <Pressable className="h-36 flex-1" onPress={() => onSetGallery(0)}>
                   <Image
                     style={{
                       width: '100%',
@@ -273,7 +281,8 @@ const PostDetail: React.FC = () => {
               )}
               <ImageList
                 value={images}
-                onOpenGallery={(index: number) => onOpenGallery(index + (cover ? 1 : 0))}
+                galleryInitIndex={cover ? 1 : 0}
+                onSetGallery={onSetGallery}
               />
               <RecordingList value={recordings} readonly={true} />
             </VStack>
@@ -290,10 +299,10 @@ const PostDetail: React.FC = () => {
         </ScrollView>
       )}
       <GalleryPreview
-        images={galleryImages}
-        initialIndex={imageIndex}
-        isVisible={isGalleryPreviewOpen}
-        onRequestClose={() => setIsGalleryPreviewOpen(false)}
+        images={gallery.images}
+        initialIndex={gallery.index}
+        isVisible={isGalleryOpen}
+        onRequestClose={() => setIsGalleryOpen(false)}
       />
     </SafeAreaView>
   );

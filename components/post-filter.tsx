@@ -1,6 +1,7 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, Filter } from 'lucide-react-native';
+import _ from 'lodash';
+import { AlertCircle, Eraser, Filter } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
@@ -21,57 +22,14 @@ import { Switch } from './ui/switch';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-interface DrawerContextType {
-  isDrawerOpen: boolean;
-  openDrawer: any;
-  closeDrawer: any;
-}
-
 interface FilterContextType {
+  isDrawerOpen: boolean;
+  setIsDrawerOpen: any;
   filters: any;
   setFilters: any;
-  clearFilters: any;
+  selectTag: any;
+  clearFilterTags: any;
 }
-
-const DrawerContext = createContext<DrawerContextType>({} as DrawerContextType);
-export const useDrawerContext = () => useContext(DrawerContext);
-
-const FilterContext = createContext<FilterContextType>({} as any);
-export const usePostFilterContext = () => useContext(FilterContext);
-
-export const PostFilterProvider = ({ children }: any) => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [filters, setFilters] = useState<any>(defaultValues);
-  const clearFilters = useCallback(() => setFilters(defaultValues), []);
-  const openDrawer = useCallback(() => setIsDrawerOpen(true), []);
-  const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
-
-  const drawerValue = useMemo(
-    () => ({ isDrawerOpen, openDrawer, closeDrawer }),
-    [closeDrawer, isDrawerOpen, openDrawer],
-  );
-
-  const filterValue = useMemo(
-    () => ({ filters, setFilters, clearFilters }),
-    [clearFilters, filters],
-  );
-
-  return (
-    <DrawerContext.Provider value={drawerValue}>
-      <FilterContext.Provider value={filterValue}>{children}</FilterContext.Provider>
-    </DrawerContext.Provider>
-  );
-};
-
-export const PostFilter = () => {
-  const { openDrawer } = useDrawerContext();
-
-  return (
-    <Button variant="link" action="secondary" onPress={() => openDrawer()}>
-      <ButtonIcon as={Filter} size="xl" />
-    </Button>
-  );
-};
 
 const defaultValues = {
   title: undefined,
@@ -81,6 +39,71 @@ const defaultValues = {
   isIncludeImage: false,
   isIncludeRecording: false,
   tags: [],
+};
+
+const FilterContext = createContext<FilterContextType>({} as any);
+export const usePostFilterContext = () => useContext(FilterContext);
+
+export const PostFilterProvider = ({ children }: any) => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [filters, setFilters] = useState<any>(defaultValues);
+
+  const selectTag = useCallback(
+    ({ item }: any) => {
+      if (_.includes(filters.tags, item.id)) {
+        setFilters((val: any) => ({
+          ...val,
+          tags: _.filter([...filters.tags], (val: any) => val !== item.id),
+        }));
+      } else {
+        setFilters((val: any) => ({
+          ...val,
+          tags: [...filters.tags, item.id],
+        }));
+      }
+    },
+    [filters.tags],
+  );
+
+  const clearFilterTags = useCallback(
+    () =>
+      setFilters((val: any) => ({
+        ...val,
+        tags: [],
+      })),
+    [],
+  );
+
+  const value = {
+    isDrawerOpen,
+    setIsDrawerOpen,
+    filters,
+    setFilters,
+    selectTag,
+    clearFilterTags,
+  };
+
+  return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;
+};
+
+export const PostFilterIcon = () => {
+  const { setIsDrawerOpen } = usePostFilterContext();
+
+  return (
+    <Button variant="link" action="secondary" onPress={() => setIsDrawerOpen(true)}>
+      <ButtonIcon as={Filter} size="xl" />
+    </Button>
+  );
+};
+
+export const ResetFilterIcon = () => {
+  const { clearFilterTags } = usePostFilterContext();
+
+  return (
+    <Button variant="link" action="secondary" onPress={() => clearFilterTags()}>
+      <ButtonIcon as={Eraser} />
+    </Button>
+  );
 };
 
 const postFilterSchema = z.object({
@@ -96,8 +119,8 @@ const postFilterSchema = z.object({
 type PostFilterSchema = z.infer<typeof postFilterSchema>;
 
 export const PostFilterContent = () => {
-  const { filters, setFilters } = usePostFilterContext();
-  const { closeDrawer } = useDrawerContext();
+  console.log('@@PostFilterContent');
+  const { filters, setFilters, setIsDrawerOpen, isDrawerOpen } = usePostFilterContext();
 
   const {
     control,
@@ -112,7 +135,7 @@ export const PostFilterContent = () => {
 
   useEffect(() => {
     setValue('tags', filters.tags);
-  }, [filters, setValue]);
+  }, [filters.tags, setValue, isDrawerOpen]);
 
   const renderTitle = ({ field: { onChange, onBlur, value } }: any) => {
     return (
@@ -231,8 +254,6 @@ export const PostFilterContent = () => {
   };
 
   const renderTags = ({ field: { onChange, onBlur, value } }: any) => {
-    const onClearBtnPress = () => onChange([]);
-
     return (
       <FormControl isInvalid={!!errors.isIncludeRecording}>
         <VStack space="md">
@@ -240,11 +261,6 @@ export const PostFilterContent = () => {
             <FormControlLabel>
               <FormControlLabelText>标签</FormControlLabelText>
             </FormControlLabel>
-            <HStack>
-              <Button variant="link" size="sm" onPress={() => onClearBtnPress()}>
-                <ButtonText>清空</ButtonText>
-              </Button>
-            </HStack>
           </HStack>
           <TagSelect value={value} onChange={onChange} />
           <FormControlError>
@@ -257,8 +273,8 @@ export const PostFilterContent = () => {
   };
 
   const onSubmit = (data: any) => {
+    setIsDrawerOpen(false);
     setFilters({ ...data });
-    closeDrawer();
   };
 
   const onClearFilterBtnPress = () => {

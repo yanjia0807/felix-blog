@@ -1,11 +1,12 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
-import { Eraser, MapPin } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 import { FlatList, RefreshControl } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
+import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL, fetchPosts, fetchTags } from '@/api';
 import { AuthorInfo, useAuth } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
@@ -14,17 +15,17 @@ import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
 import PageSpinner from '@/components/page-spinner';
 import {
-  PostFilter,
+  PostFilterIcon,
   PostFilterContent,
   PostFilterProvider,
-  useDrawerContext,
   usePostFilterContext,
+  ResetFilterIcon,
 } from '@/components/post-filter';
 import PostMenuPopover from '@/components/post-menu-popover';
 import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
 import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
@@ -39,64 +40,54 @@ import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
 
+interface PostItemProps {
+  item: any;
+  index: number;
+  isLoaded: boolean;
+  setGallery: any;
+  setIsGalleryOpen: any;
+}
+
+const PostTagItem = ({ item, isLoaded }: any) => {
+  // console.log('@@PostTagItem');
+  const { filters, selectTag } = usePostFilterContext();
+
+  return (
+    <Button
+      size="sm"
+      action="secondary"
+      variant={_.includes(filters.tags, item.id) ? 'solid' : 'outline'}
+      className="mx-2"
+      onPress={() => selectTag({ item })}>
+      <ButtonText>{item.name}</ButtonText>
+    </Button>
+  );
+};
+
 const PostHeader: React.FC = () => {
-  const { isSuccess, data } = useQuery({
+  console.log('@@PostHeader');
+  const { isSuccess, data: tags } = useQuery({
     queryKey: ['tags', 'list'],
     queryFn: fetchTags,
   });
 
-  const tags = isSuccess ? data : Array(5).fill(undefined);
-  const { filters, setFilters, clearFilters } = usePostFilterContext();
-
-  const onTagItemPress = useCallback(
-    (item: any) => {
-      if (_.includes(filters.tags, item.id)) {
-        setFilters((val: any) => ({
-          ...val,
-          tags: _.filter([...val.tags], (val: any) => val !== item.id),
-        }));
-      } else {
-        setFilters((val: any) => ({ ...val, tags: [...val.tags, item.id] }));
-      }
-    },
-    [filters.tags, setFilters],
-  );
-
-  const renderTagsItem = useCallback(
-    ({ item }: any) => (
-      <Skeleton className="mx-2 h-7 w-20" isLoaded={isSuccess} variant="rounded">
-        {item && (
-          <Button
-            size="sm"
-            action="secondary"
-            variant={_.includes(filters.tags, item.id) ? 'solid' : 'outline'}
-            className="mx-2"
-            onPress={() => onTagItemPress(item)}>
-            <ButtonText>{item.name}</ButtonText>
-          </Button>
-        )}
-      </Skeleton>
-    ),
-    [filters.tags, isSuccess, onTagItemPress],
-  );
+  const renderItem = ({ item }: any) => <PostTagItem item={item} isLoaded={isSuccess} />;
 
   return (
-    <VStack className="mb-4">
+    <VStack className="h-32">
       <MainHeader />
       <VStack className="flex-1" space="md">
-        <HStack className="items-center" space="md">
+        <HStack className="items-center justify-between" space="md">
           <FlatList
             data={tags}
-            renderItem={renderTagsItem}
+            renderItem={renderItem}
             horizontal={true}
             showsHorizontalScrollIndicator={false}
           />
           <Divider orientation="vertical" />
           <HStack space="sm">
-            <PostFilter />
-            <Button variant="link" action="secondary" onPress={() => clearFilters()}>
-              <ButtonIcon as={Eraser} />
-            </Button>
+            <PostFilterIcon />
+            <ResetFilterIcon />
           </HStack>
         </HStack>
       </VStack>
@@ -104,119 +95,161 @@ const PostHeader: React.FC = () => {
   );
 };
 
-interface PostItemProps {
-  item: any;
-  index: number;
-  isLoaded: boolean;
-}
+const PostItem: React.FC<PostItemProps> = memo(
+  ({ item, index, isLoaded, setGallery, setIsGalleryOpen }) => {
+    console.log('@@PostItem');
 
-const PostItem: React.FC<PostItemProps> = ({ item, index, isLoaded }) => {
-  const onPostItemPressed = ({ item }: any) => router.push(`/posts/${item.documentId}`);
+    const cover = item?.cover
+      ? {
+          ...item.cover,
+          uri: `${apiServerURL}${item.cover.formats?.large?.url || item.cover.url}`,
+          largeUri: `${apiServerURL}${item.cover.formats?.large?.url || item.cover.url}`,
+        }
+      : undefined;
 
-  const images = item
-    ? _.map(_.find(item.attachments || [], { type: 'image' })?.files || [], (item: any) => ({
-        id: item.id,
-        assetId: item.documentId,
-        alternativeText: item.alternativeText,
-        thumbnailUri: `${apiServerURL}${item.formats?.thumbnail.url} || ${apiServerURL}${item.url}`,
-        uri: `${apiServerURL}${item.url}`,
-      }))
-    : [];
+    const images = _.map(
+      _.find(item?.attachments || [], { type: 'image' })?.files || [],
+      (item: any) => ({
+        ...item,
+        uri: `${apiServerURL}${item.formats?.thumbnail.url}`,
+        largeUri: `${apiServerURL}${item.formats?.large?.url || item.url}`,
+      }),
+    );
 
-  return (
-    <Box className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
-      <Skeleton variant="rounded" isLoaded={isLoaded}>
-        {item && (
-          <Pressable onPress={() => onPostItemPressed({ item, index })} pointerEvents="box-none">
-            <Card variant="elevated">
-              <VStack space="lg">
-                <VStack space="sm">
-                  <HStack className="items-center justify-between">
-                    <AuthorInfo author={item.author} />
-                    <PostMenuPopover post={item} />
-                  </HStack>
-                  <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
-                    {item.title}
-                  </Heading>
-                  <HStack className="items-center justify-between">
-                    <Text size="xs">{formatDistance(item.createdAt)}</Text>
-                    <HStack space="xs" className="items-center justify-end">
-                      {item.poi?.address && (
-                        <HStack className="items-center">
-                          <Icon as={MapPin} size="xs" />
-                          <Text size="xs">{item.poi.address}</Text>
-                        </HStack>
-                      )}
+    const galleryImages = _.concat(
+      [],
+      cover
+        ? {
+            ...cover,
+            uri: cover.largeUri || cover.uri,
+            cover: true,
+          }
+        : [],
+      images
+        ? images.map((item: any) => ({
+            ...item,
+            uri: item.largeUri || item.uri,
+            cover: false,
+          }))
+        : [],
+    );
+
+    const onSetGallery = (index?: number) => {
+      setGallery({
+        images: galleryImages,
+        index,
+      });
+      setIsGalleryOpen(true);
+    };
+
+    const onPostItemPressed = ({ item }: any) => router.push(`/posts/${item.documentId}`);
+
+    return (
+      <Box className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
+        <Skeleton variant="rounded" isLoaded={isLoaded}>
+          {item && (
+            <Pressable onPress={() => onPostItemPressed({ item, index })} pointerEvents="box-none">
+              <Card variant="elevated">
+                <VStack space="lg">
+                  <VStack space="sm">
+                    <HStack className="items-center justify-between">
+                      <AuthorInfo author={item.author} />
+                      <PostMenuPopover post={item} />
                     </HStack>
-                  </HStack>
-                  <TagList tags={item.tags || []}></TagList>
-                </VStack>
-                {item.cover && (
-                  <Box className="h-36 flex-1">
-                    <Image
-                      source={{
-                        uri: `${apiServerURL}${item.cover.formats?.medium.url}`,
-                      }}
-                      contentFit="cover"
-                      alt={item.cover.alternativeText}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: 8,
-                      }}
-                    />
-                  </Box>
-                )}
-                <Text numberOfLines={5}>{item.content}</Text>
-                <ImageList images={images} />
-                <HStack className="h-6 items-center justify-between">
-                  <LikeButton post={item} />
-                  <UserAvatars users={item.likedByUsers} />
-                </HStack>
-                <VStack space="sm">
-                  <HStack className="items-center justify-end">
-                    <CommentIcon item={item} />
-                  </HStack>
-                  {item.lastComment && (
-                    <>
-                      <HStack space="xs" className="items-center">
-                        <Text className="flex-1" size="sm" numberOfLines={3}>
-                          {item.lastComment.content}
-                        </Text>
-                      </HStack>
-                      <HStack className="items-center justify-end" space="md">
-                        <HStack className="items-center" space="xs">
-                          <HStack className="items-center" space="xs">
-                            <Avatar size="xs">
-                              <AvatarFallbackText>
-                                {item.lastComment.user.username}
-                              </AvatarFallbackText>
-                              <AvatarImage
-                                source={{
-                                  uri: `${apiServerURL}${item.lastComment.user.avatar?.formats.thumbnail.url}`,
-                                }}
-                              />
-                            </Avatar>
-                            <Text size="sm">{item.lastComment.user.username}</Text>
+                    <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
+                      {item.title}
+                    </Heading>
+                    <HStack className="items-center justify-between">
+                      <Text size="xs">{formatDistance(item.createdAt)}</Text>
+                      <HStack space="xs" className="items-center justify-end">
+                        {item.poi?.address && (
+                          <HStack className="items-center">
+                            <Icon as={MapPin} size="xs" />
+                            <Text size="xs">{item.poi.address}</Text>
                           </HStack>
-                          <Text size="xs">{formatDistance(item.lastComment.createdAt)}</Text>
-                        </HStack>
+                        )}
                       </HStack>
-                    </>
+                    </HStack>
+                    <TagList tags={item.tags || []}></TagList>
+                  </VStack>
+                  {cover && (
+                    <Pressable className="h-36 flex-1" onPress={() => onSetGallery(0)}>
+                      <Image
+                        source={{
+                          uri: cover.uri,
+                        }}
+                        contentFit="cover"
+                        alt={cover.alternativeText}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: 8,
+                        }}
+                      />
+                    </Pressable>
                   )}
+                  <Text numberOfLines={5}>{item.content}</Text>
+                  <ImageList
+                    value={images}
+                    galleryInitIndex={cover ? 1 : 0}
+                    onSetGallery={onSetGallery}
+                  />
+                  <HStack className="h-6 items-center justify-between">
+                    <LikeButton post={item} />
+                    <UserAvatars users={item.likedByUsers} />
+                  </HStack>
+                  <VStack space="sm">
+                    <HStack className="items-center justify-end">
+                      <CommentIcon item={item} />
+                    </HStack>
+                    {item.lastComment && (
+                      <>
+                        <HStack space="xs" className="items-center">
+                          <Text className="flex-1" size="sm" numberOfLines={3}>
+                            {item.lastComment.content}
+                          </Text>
+                        </HStack>
+                        <HStack className="items-center justify-end" space="md">
+                          <HStack className="items-center" space="xs">
+                            <HStack className="items-center" space="xs">
+                              <Avatar size="xs">
+                                <AvatarFallbackText>
+                                  {item.lastComment.user.username}
+                                </AvatarFallbackText>
+                                <AvatarImage
+                                  source={{
+                                    uri: `${apiServerURL}${item.lastComment.user.avatar?.formats.thumbnail.url}`,
+                                  }}
+                                />
+                              </Avatar>
+                              <Text size="sm">{item.lastComment.user.username}</Text>
+                            </HStack>
+                            <Text size="xs">{formatDistance(item.lastComment.createdAt)}</Text>
+                          </HStack>
+                        </HStack>
+                      </>
+                    )}
+                  </VStack>
                 </VStack>
-              </VStack>
-            </Card>
-          </Pressable>
-        )}
-      </Skeleton>
-    </Box>
-  );
-};
+              </Card>
+            </Pressable>
+          )}
+        </Skeleton>
+      </Box>
+    );
+  },
+);
 
-const PostList = memo(function PostList() {
+const PostList = function PostList() {
+  console.log('@@PostList');
+
   const { user } = useAuth();
   const { filters } = usePostFilterContext();
+  const [gallery, setGallery] = useState<any>({
+    images: [],
+    index: 0,
+  });
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   const {
     data: postData,
@@ -260,7 +293,13 @@ const PostList = memo(function PostList() {
     : Array(5).fill(undefined);
 
   const renderPostItem = ({ item, index }: any) => (
-    <PostItem item={item} index={index} isLoaded={!isLoading} />
+    <PostItem
+      item={item}
+      index={index}
+      isLoaded={!isLoading}
+      setGallery={setGallery}
+      setIsGalleryOpen={setIsGalleryOpen}
+    />
   );
 
   const renderPostHeader = (props: any) => <PostHeader {...props} />;
@@ -304,20 +343,27 @@ const PostList = memo(function PostList() {
           </Fab>
         )}
       </VStack>
+      <GalleryPreview
+        images={gallery.images}
+        initialIndex={gallery.index}
+        isVisible={isGalleryOpen}
+        onRequestClose={() => setIsGalleryOpen(false)}
+      />
       <CommentSheet />
     </>
   );
-});
+};
 
 const PostListDrawer: React.FC = () => {
-  const { isDrawerOpen, openDrawer, closeDrawer } = useDrawerContext();
+  console.log('@@Drawer');
+  const { isDrawerOpen, setIsDrawerOpen } = usePostFilterContext();
   const renderDrawerContent = () => <PostFilterContent />;
 
   return (
     <Drawer
       open={isDrawerOpen}
-      onOpen={() => openDrawer()}
-      onClose={() => closeDrawer()}
+      onOpen={() => setIsDrawerOpen(true)}
+      onClose={() => setIsDrawerOpen(false)}
       renderDrawerContent={renderDrawerContent}>
       <PostList />
     </Drawer>
@@ -326,11 +372,11 @@ const PostListDrawer: React.FC = () => {
 
 const PostListPage: React.FC = () => (
   <SafeAreaView className="flex-1">
-    <CommentProvider>
-      <PostFilterProvider>
+    <PostFilterProvider>
+      <CommentProvider>
         <PostListDrawer />
-      </PostFilterProvider>
-    </CommentProvider>
+      </CommentProvider>
+    </PostFilterProvider>
   </SafeAreaView>
 );
 

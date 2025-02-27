@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Image } from 'expo-image';
 import { useAuth } from './auth-context';
 import Notification from './notification';
 import { HStack } from './ui/hstack';
 
-const MainHeader = React.memo(function MainHeader() {
+const MainHeader = memo(function MainHeader() {
   const { user } = useAuth();
 
   return (

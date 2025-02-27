@@ -379,13 +379,11 @@ export const ImageGrid = ({ value = [], onOpenGallery, cover, onChange }: any) =
   }
 };
 
-export const ImageList = ({ value = [], onOpenGallery }: any) => {
+export const ImageList = ({ value = [], galleryInitIndex, onSetGallery }: any) => {
   const renderItem = ({ item, index }: any) => {
     return (
       <Pressable
-        onPress={() => {
-          onOpenGallery && onOpenGallery(index);
-        }}
+        onPress={() => onSetGallery(galleryInitIndex + index)}
         className={`mx-1 h-14 w-14 ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}>
         <Image
           source={{

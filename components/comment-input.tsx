@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   BottomSheetBackdrop,
   BottomSheetSectionList,
@@ -89,7 +97,9 @@ export const CommentIcon = ({ item }: any) => {
   );
 };
 
-export const CommentSheet = () => {
+export const CommentSheet = memo(() => {
+  console.log('@@render CommentSheet');
+
   const { user } = useAuth();
   const inputRef = useRef<any>(null);
   const queryClient = useQueryClient();
@@ -627,4 +637,4 @@ export const CommentSheet = () => {
       </VStack>
     </BottomSheetModal>
   );
-};
+});

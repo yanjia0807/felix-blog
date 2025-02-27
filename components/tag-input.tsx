@@ -27,7 +27,7 @@ import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
 export const TagSelect = ({ value = [], onChange }: any) => {
-  const { data } = useQuery({
+  const { data: tags } = useQuery({
     queryKey: ['tags', 'list'],
     queryFn: fetchTags,
   });
@@ -42,7 +42,7 @@ export const TagSelect = ({ value = [], onChange }: any) => {
 
   return (
     <HStack space="sm" className="flex-wrap">
-      {data?.map((item: any) => (
+      {tags?.map((item: any) => (
         <Button
           onPress={() => onTagItemPress(item)}
           key={item.id}
