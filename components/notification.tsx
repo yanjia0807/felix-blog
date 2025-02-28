@@ -7,8 +7,7 @@ import { fetchNotificationUnreadCount } from '@/api';
 import { useAuth } from './auth-context';
 import { useSocket } from './socket-context';
 import { Box } from './ui/box';
-import { Icon } from './ui/icon';
-import { Pressable } from './ui/pressable';
+import { Button, ButtonIcon } from './ui/button';
 import { Text } from './ui/text';
 
 const Notification = () => {
@@ -27,9 +26,12 @@ const Notification = () => {
   return (
     <>
       {user && (
-        <Pressable onPress={() => router.navigate('/notification-list')}>
+        <Button
+          onPress={() => router.navigate('/notification-list')}
+          action="positive"
+          variant="link">
           {count > 0 && (
-            <Box className="absolute right-0 top-[-8] h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
+            <Box className="hs-4 absolute right-0 top-[-8] w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
@@ -38,8 +40,8 @@ const Notification = () => {
               </Text>
             </Box>
           )}
-          <Icon className="text-tertiary-500" as={Bell} size={22 as any} />
-        </Pressable>
+          <ButtonIcon as={Bell} size={22 as any} className="text-secondary-900" />
+        </Button>
       )}
     </>
   );

@@ -5,7 +5,7 @@ import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
-import { MapPin } from 'lucide-react-native';
+import { Ellipsis, MapPin } from 'lucide-react-native';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
 import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
 import { AuthorInfo } from '@/components/auth-context';
@@ -13,7 +13,7 @@ import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment
 import { LikeButton } from '@/components/like-button';
 import MainHeader from '@/components/main-header';
 import PageSpinner from '@/components/page-spinner';
-import PostMenuPopover from '@/components/post-menu-popover';
+import PostItemMenu from '@/components/post-menu-popover';
 import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
@@ -208,7 +208,7 @@ const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) 
                   <Pressable onPress={() => onAvatarPress(item.author.documentId)}>
                     <HStack className="items-center justify-between">
                       <AuthorInfo author={item.author} />
-                      <PostMenuPopover post={item} />
+                      <PostItemMenu post={item} />
                     </HStack>
                   </Pressable>
                   <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>

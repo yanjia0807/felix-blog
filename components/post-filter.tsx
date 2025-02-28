@@ -91,7 +91,7 @@ export const PostFilterIcon = () => {
 
   return (
     <Button variant="link" action="secondary" onPress={() => setIsDrawerOpen(true)}>
-      <ButtonIcon as={Filter} size="xl" />
+      <ButtonIcon as={Filter} className="text-tertiary-500" />
     </Button>
   );
 };
@@ -101,7 +101,7 @@ export const ResetFilterIcon = () => {
 
   return (
     <Button variant="link" action="secondary" onPress={() => clearFilterTags()}>
-      <ButtonIcon as={Eraser} />
+      <ButtonIcon as={Eraser} className="text-tertiary-500" />
     </Button>
   );
 };

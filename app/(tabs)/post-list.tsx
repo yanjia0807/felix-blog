@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState } from 'react';
+import React, { memo, useState } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -21,7 +21,7 @@ import {
   usePostFilterContext,
   ResetFilterIcon,
 } from '@/components/post-filter';
-import PostMenuPopover from '@/components/post-menu-popover';
+import PostItemMenu from '@/components/post-menu-popover';
 import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
@@ -154,7 +154,7 @@ const PostItem: React.FC<PostItemProps> = memo(
                   <VStack space="sm">
                     <HStack className="items-center justify-between">
                       <AuthorInfo author={item.author} />
-                      <PostMenuPopover post={item} />
+                      <PostItemMenu post={item} />
                     </HStack>
                     <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
                       {item.title}
