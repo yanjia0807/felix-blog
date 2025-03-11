@@ -18,7 +18,6 @@ import {
 } from './ui/form-control';
 import { HStack } from './ui/hstack';
 import { Input, InputField } from './ui/input';
-import { Switch } from './ui/switch';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
@@ -36,8 +35,6 @@ const defaultValues = {
   authorName: undefined,
   createdAtFrom: undefined,
   createdAtTo: undefined,
-  isIncludeImage: false,
-  isIncludeRecording: false,
   tags: [],
 };
 
@@ -111,15 +108,12 @@ const postFilterSchema = z.object({
   authorName: z.string().optional(),
   createdAtFrom: z.date().optional(),
   createdAtTo: z.date().optional(),
-  isIncludeImage: z.boolean(),
-  isIncludeRecording: z.boolean(),
   tags: z.array(z.any()),
 });
 
 type PostFilterSchema = z.infer<typeof postFilterSchema>;
 
 export const PostFilterContent = () => {
-  console.log('@@PostFilterContent');
   const { filters, setFilters, setIsDrawerOpen, isDrawerOpen } = usePostFilterContext();
 
   const {
@@ -219,43 +213,9 @@ export const PostFilterContent = () => {
     );
   };
 
-  const renderIsIncludeImage = ({ field: { onChange, onBlur, value } }: any) => {
-    return (
-      <FormControl isInvalid={!!errors.isIncludeImage}>
-        <HStack space="md">
-          <FormControlLabel>
-            <FormControlLabelText>包含图片</FormControlLabelText>
-          </FormControlLabel>
-          <Switch size="md" value={value} onValueChange={onChange} />
-          <FormControlError>
-            <FormControlErrorIcon as={AlertCircle} />
-            <FormControlErrorText>{errors?.isIncludeImage?.message}</FormControlErrorText>
-          </FormControlError>
-        </HStack>
-      </FormControl>
-    );
-  };
-
-  const renderIsIncludeRecording = ({ field: { onChange, onBlur, value } }: any) => {
-    return (
-      <FormControl isInvalid={!!errors.isIncludeRecording}>
-        <HStack space="md">
-          <FormControlLabel>
-            <FormControlLabelText>包含录音</FormControlLabelText>
-          </FormControlLabel>
-          <Switch size="md" value={value} onValueChange={onChange} />
-          <FormControlError>
-            <FormControlErrorIcon as={AlertCircle} />
-            <FormControlErrorText>{errors?.isIncludeRecording?.message}</FormControlErrorText>
-          </FormControlError>
-        </HStack>
-      </FormControl>
-    );
-  };
-
   const renderTags = ({ field: { onChange, onBlur, value } }: any) => {
     return (
-      <FormControl isInvalid={!!errors.isIncludeRecording}>
+      <FormControl isInvalid={!!errors.tags}>
         <VStack space="md">
           <HStack className="justify-between">
             <FormControlLabel>
@@ -265,7 +225,7 @@ export const PostFilterContent = () => {
           <TagSelect value={value} onChange={onChange} />
           <FormControlError>
             <FormControlErrorIcon as={AlertCircle} />
-            <FormControlErrorText>{errors?.isIncludeRecording?.message}</FormControlErrorText>
+            <FormControlErrorText>{errors?.tags?.message}</FormControlErrorText>
           </FormControlError>
         </VStack>
       </FormControl>
@@ -292,12 +252,6 @@ export const PostFilterContent = () => {
             <Text>--</Text>
             <Controller name="createdAtTo" control={control} render={renderCreatedAtTo} />
           </HStack>
-          <Controller name="isIncludeImage" control={control} render={renderIsIncludeImage} />
-          <Controller
-            name="isIncludeRecording"
-            control={control}
-            render={renderIsIncludeRecording}
-          />
           <Controller name="tags" control={control} render={renderTags} />
           <Button action="primary" className="mt-8 rounded-full" onPress={handleSubmit(onSubmit)}>
             <ButtonText>搜索</ButtonText>

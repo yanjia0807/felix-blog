@@ -28,16 +28,20 @@ export const uploadFiles = async (files: any) => {
 
   const res = await Promise.all(uploadTasks);
 
-  const result = res.map((item) => {
-    const body = JSON.parse(item.body);
-    return body[0].id;
-  });
+  const result = res.map((item) => JSON.parse(item.body)[0]);
 
   if (typeof files === 'string') return result[0];
   return result;
 };
 
-export const destoryFile = async (id: any) => {
+export const updateFileInfo = async (id:string, fileInfo:any) => {
+  const res = await apiClient.post(`/upload?id=${id}`, {
+    data: fileInfo
+  });
+  return res;
+};
+
+export const destoryFile = async (id: string) => {
   const res = await apiClient.delete(`/upload/files/${id}`);
   return res;
 };

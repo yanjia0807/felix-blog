@@ -7,7 +7,7 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { House, MessageCircle, Pentagon, User2 } from 'lucide-react-native';
+import { House, MessageCircle, Pentagon, User2, Waves } from 'lucide-react-native';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui/card';
@@ -73,6 +73,9 @@ export default function TabLayout() {
           </TabTrigger>
           <TabTrigger name="profile" href="/profile" asChild>
             <TabButton title="我的" icon={User2} />
+          </TabTrigger>
+          <TabTrigger name="feature" href="/feature" asChild>
+            <TabButton title="测试" icon={Waves} />
           </TabTrigger>
         </TabButtonList>
       </TabList>

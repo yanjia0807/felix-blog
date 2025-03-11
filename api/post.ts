@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import qs from 'qs';
+import { isImage, FileTypeNum } from '@/utils/file';
 import { apiClient } from './api-client';
 import { uploadFiles } from './file';
 
@@ -9,15 +10,7 @@ export type UpdatePostLikedData = any;
 export const fetchPosts = async ({ pageParam }: any) => {
   const {
     pagination,
-    filters: {
-      title,
-      authorName,
-      createdAtFrom,
-      createdAtTo,
-      isIncludeImage,
-      isIncludeAudio,
-      tags,
-    },
+    filters: { title, authorName, createdAtFrom, createdAtTo, tags },
   } = pageParam;
 
   const filters: any = {};
@@ -53,22 +46,6 @@ export const fetchPosts = async ({ pageParam }: any) => {
     };
   }
 
-  if (isIncludeImage) {
-    filters.attachments = {
-      type: {
-        $contains: 'image',
-      },
-    };
-  }
-
-  if (isIncludeAudio) {
-    filters.attachments = {
-      type: {
-        $contains: 'audio',
-      },
-    };
-  }
-
   const query = qs.stringify({
     populate: {
       author: {
@@ -92,9 +69,9 @@ export const fetchPosts = async ({ pageParam }: any) => {
       cover: {
         fields: ['alternativeText', 'width', 'height', 'formats'],
       },
-      attachments: {
+      files: {
         populate: {
-          files: true,
+          file: true,
         },
       },
       comments: {
@@ -130,14 +107,6 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
           avatar: {
             fields: ['alternativeText', 'width', 'height', 'formats'],
           },
-        },
-      },
-      cover: {
-        fields: ['alternativeText', 'width', 'height', 'formats'],
-      },
-      attachments: {
-        populate: {
-          files: true,
         },
       },
       comments: {
@@ -250,9 +219,9 @@ export const fetchPost = async ({ documentId, status }: any) => {
             },
           },
         },
-        attachments: {
+        files: {
           populate: {
-            files: true,
+            file: true,
           },
         },
         comments: {
@@ -271,58 +240,201 @@ export const fetchPost = async ({ documentId, status }: any) => {
 
 export const createPost = async (formData: PostData) => {
   try {
-    const coverId = formData.cover ? await uploadFiles(formData.cover.uri) : undefined;
-
-    const attachments = [];
-    const imageIds =
-      formData.images.length > 0
-        ? await uploadFiles(_.map(formData.images, (item: any) => item.uri))
-        : [];
-
-    if (imageIds.length > 0) {
-      attachments.push({
-        type: 'image',
-        files: imageIds,
-      });
+    let coverId;
+    if (formData.cover) {
+      const coverRes = await uploadFiles(formData.cover.uri);
+      coverId = coverRes.id;
     }
 
-    const recordingIds =
-      formData.recordings.length > 0
-        ? await uploadFiles(_.map(formData.recordings, (item: any) => item._uri))
-        : [];
+    let files: any = [];
 
-    if (recordingIds.length > 0) {
-      attachments.push({
-        type: 'audio',
-        files: recordingIds,
-      });
+    const images = _.filter(formData.images, (item: any) => isImage(item.fileType));
+    const imageUris = _.map(images, 'uri');
+
+    if (imageUris.length > 0) {
+      const imageRes = await uploadFiles(imageUris);
+      files = files.concat(
+        _.map(imageRes, (item, i) => ({
+          file: item.id,
+          fileInfo: {},
+        })),
+      );
     }
+
+    const videos = _.filter(formData.images, (item: any) => item.fileType === FileTypeNum.Video);
+    const videoUris = _.map(videos, (item: any) => item.detail.uri);
+
+    if (videoUris.length > 0) {
+      const videoRes = await uploadFiles(videoUris);
+      const thumbnails = _.map(videos, (item: any) => item.uri);
+      const thumbnailRes = await uploadFiles(thumbnails);
+      files = files.concat(
+        _.map(videoRes, (item, i) => ({
+          file: item.id,
+          fileInfo: thumbnailRes[i],
+        })),
+      );
+    }
+
+    if (formData.recordings.length > 0) {
+      const recordingRes = await uploadFiles(_.map(formData.recordings, 'uri'));
+      files = files.concat(
+        _.map(recordingRes, (item, i) => ({
+          file: item.id,
+          fileInfo: {},
+        })),
+      );
+    }
+
+    const poi =
+      formData.poi &&
+      _.pick(formData.poi, [
+        'name',
+        'location',
+        'type',
+        'typecode',
+        'pname',
+        'cityname',
+        'adname',
+        'address',
+        'pcode',
+        'adcode',
+        'citycode',
+      ]);
+
+    const tags = formData.tags.map((item: any) => item.documentId);
 
     const data = {
       title: formData.title,
       cover: coverId,
       content: formData.content,
       author: formData.author,
-      poi:
-        formData.poi &&
-        _.pick(formData.poi, [
-          'name',
-          'location',
-          'type',
-          'typecode',
-          'pname',
-          'cityname',
-          'adname',
-          'address',
-          'pcode',
-          'adcode',
-          'citycode',
-        ]),
-      tags: formData.tags.map((item: any) => item.documentId),
-      attachments,
+      poi,
+      tags,
+      files,
     };
 
     const res = await apiClient.post(`/posts?status=${formData.status}`, { data });
+    return res.data;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const editPost = async (formData: PostData) => {
+  try {
+    let coverId;
+    if (formData.cover) {
+      if (formData.cover.id) {
+        coverId = formData.cover.id;
+      } else {
+        const coverRes = await uploadFiles(formData.cover.uri);
+        coverId = coverRes.id;
+      }
+    } else {
+      coverId = null;
+    }
+
+    let files: any = [];
+    const images = _.filter(formData.images, (item: any) => isImage(item.fileType));
+    const imageRes = await Promise.all(
+      _.map(images, async (item: any) => {
+        if (item.id) {
+          return {
+            file: item.data.file.id,
+            fileInfo: item.data.fileInfo
+          }
+        } else {
+          const res = await uploadFiles(item.uri);
+          return {
+            file: res.id,
+            fileInfo: {},
+          };
+        }
+      }),
+    );
+
+    if (imageRes.length > 0) {
+      files = files.concat(imageRes);
+    }
+
+    const videos = _.filter(formData.images, (item: any) => item.fileType === FileTypeNum.Video);
+    const videoRes = await Promise.all(
+      _.map(videos, async (item: any) => {
+        if (item.id) {
+          return {
+            file: item.data.file.id,
+            fileInfo: item.data.fileInfo
+          }
+        } else {
+          const res = await uploadFiles(item.detail.uri);
+          const thumbnailRes = await uploadFiles(item.uri);
+          return {
+            file: res.id,
+            fileInfo: thumbnailRes,
+          };
+        }
+      }),
+    );
+
+    if (videoRes.length > 0) {
+      files = files.concat(videoRes);
+    }
+
+    const recordings = formData.recordings;
+    const recordingRes = await Promise.all(
+      _.map(recordings, async (item: any) => {
+        if (item.id) {
+          return {
+            file: item.data.file.id,
+            fileInfo: item.data.fileInfo
+          }
+        } else {
+          const res = await uploadFiles(item.uri);
+          return {
+            file: res.id,
+            fileInfo: {},
+          };
+        }
+      }),
+    );
+
+    if (recordingRes.length > 0) {
+      files = files.concat(recordingRes);
+    }
+
+    const poi =
+      formData.poi &&
+      _.pick(formData.poi, [
+        'name',
+        'location',
+        'type',
+        'typecode',
+        'pname',
+        'cityname',
+        'adname',
+        'address',
+        'pcode',
+        'adcode',
+        'citycode',
+      ]);
+
+    const tags = formData.tags.map((item: any) => item.documentId);
+
+    const data = {
+      title: formData.title,
+      cover: coverId,
+      content: formData.content,
+      author: formData.author,
+      poi,
+      tags,
+      files,
+    };
+
+    const res = await apiClient.put(`/posts/${formData.documentId}?status=${formData.status}`, {
+      data,
+    });
+
     return res.data;
   } catch (error: any) {
     throw new Error(error.message);
@@ -339,84 +451,7 @@ export const deletePost = async ({ documentId }: any) => {
 
 export const unpublishPost = async ({ documentId }: any) => {
   try {
-    await apiClient.put(`/posts/${documentId}/unpublish`, {data:{}});
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-};
-
-export const editPost = async (formData: PostData) => {
-  try {
-    let coverId = undefined;
-    if (formData.cover) {
-      coverId = formData.cover.id ? formData.cover.id : await uploadFiles(formData.cover.uri);
-    } else {
-      coverId = null;
-    }
-
-    const attachments = [];
-    let imageIds = [
-      ..._.filter(formData.images, (item: any) => item.id).map((item: any) => item.id),
-    ];
-    const images = _.filter(formData.images, (item: any) => !item.id);
-
-    imageIds =
-      images.length > 0
-        ? [...imageIds, ...(await uploadFiles(_.map(images, (item: any) => item.uri)))]
-        : imageIds;
-
-    if (imageIds.length > 0) {
-      attachments.push({
-        type: 'image',
-        files: imageIds,
-      });
-    }
-
-    let recordingIds = [
-      ..._.filter(formData.recordings, (item: any) => item.id).map((item: any) => item.id),
-    ];
-    const recordings = _.filter(formData.recordings, (item: any) => !item.id);
-
-    recordingIds =
-      recordings.length > 0
-        ? [...recordingIds, ...(await uploadFiles(_.map(recordings, (item: any) => item.uri)))]
-        : recordingIds;
-
-    if (recordingIds.length > 0) {
-      attachments.push({
-        type: 'audio',
-        files: recordingIds,
-      });
-    }
-
-    const data = {
-      title: formData.title,
-      cover: coverId,
-      content: formData.content,
-      author: formData.author,
-      poi:
-        formData.poi &&
-        _.pick(formData.poi, [
-          'name',
-          'location',
-          'type',
-          'typecode',
-          'pname',
-          'cityname',
-          'adname',
-          'address',
-          'pcode',
-          'adcode',
-          'citycode',
-        ]),
-      tags: formData.tags.map((item: any) => item.documentId),
-      attachments,
-    };
-    const res = await apiClient.put(`/posts/${formData.documentId}?status=${formData.status}`, {
-      data,
-    });
-
-    return res.data;
+    await apiClient.put(`/posts/${documentId}/unpublish`, { data: {} });
   } catch (error: any) {
     throw new Error(error.message);
   }

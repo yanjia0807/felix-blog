@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Edit, Ellipsis, MapPin, StickyNote, Trash, Undo2 } from 'lucide-react-native';
 import { ScrollView } from 'react-native';
-import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL } from '@/api';
 import { deletePost, fetchPost, unpublishPost } from '@/api/post';
+import AlbumPagerView from '@/components/album-pager-view';
 import { AuthorInfo, useAuth } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
-import { ImageList } from '@/components/image-input';
+import { CoverView, ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
 import { RecordingList } from '@/components/recording-input';
@@ -28,14 +27,22 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { formatDistance } from '@/utils/date';
+import {
+  getFileType,
+  isImage,
+  isVideo,
+  FileTypeNum,
+  largeUrl,
+  thumbnailUrl,
+  videoUrl,
+} from '@/utils/file';
 
 const PostDetail: React.FC = () => {
   const { documentId, status } = useLocalSearchParams();
-  const [gallery, setGallery] = useState<any>({
-    images: [],
-    index: 0,
-  });
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isPagerOpen, setIsPagerOpen] = useState(false);
+  const [pagerIndex, setPagerIndex] = useState<number>(0);
+  const onPagerClose = () => setIsPagerOpen(false);
+
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const toastId = 'toastId';
@@ -94,54 +101,56 @@ const PostDetail: React.FC = () => {
 
   const cover = post?.cover
     ? {
-        ...post.cover,
-        uri: `${apiServerURL}${post.cover.formats?.large?.url || post.cover.url}`,
-        largeUri: `${apiServerURL}${post.cover.formats?.large?.url || post.cover.url}`,
-        cover: true,
+        id: post.cover.id,
+        data: post.cover,
+        fileType: FileTypeNum.Image,
+        uri: largeUrl(post.cover),
+        detail: {
+          uri: largeUrl(post.cover),
+        },
       }
     : undefined;
 
   const images = _.map(
-    _.find(post?.attachments || [], { type: 'image' })?.files || [],
-    (item: any) => ({
-      ...item,
-      uri: `${apiServerURL}${item.formats?.thumbnail.url}`,
-      largeUri: `${apiServerURL}${item.formats?.large?.url || item.url}`,
-      cover: false,
-    }),
+    _.filter(post?.files || [], (item: any) => {
+      return isImage(item.file.mime) || isVideo(item.file.mime);
+    }) || [],
+    (item: any) => {
+      if (isImage(item.file.mime)) {
+        return {
+          id: item.id,
+          data: item,
+          fileType: FileTypeNum.Image,
+          uri: thumbnailUrl(item.file),
+          detail: {
+            uri: largeUrl(item.file),
+          },
+        };
+      } else if (isVideo(item.file.mime)) {
+        return {
+          id: item.id,
+          data: item,
+          fileType: FileTypeNum.Video,
+          uri: thumbnailUrl(item.fileInfo),
+          detail: {
+            uri: videoUrl(item.file),
+          },
+        };
+      }
+    },
   );
 
-  const galleryImages = _.concat(
-    [],
-    cover
-      ? {
-          ...cover,
-          uri: cover.largeUri || cover.uri,
-        }
-      : [],
-    images
-      ? images.map((item: any) => ({
-          ...item,
-          uri: item.largeUri || item.uri,
-        }))
-      : [],
-  );
+  const album = _.concat(cover ? cover : [], images);
 
   const recordings = _.map(
-    _.find(post?.attachments || [], { type: 'audio' })?.files || [],
+    _.filter(post?.files || [], (item: any) => getFileType(item.file.mime) === FileTypeNum.Audio),
     (item: any) => ({
-      ...item,
-      uri: `${apiServerURL}${item.url}`,
+      id: item.id,
+      data: item,
+      fileType: FileTypeNum.Audio,
+      uri: `${apiServerURL}${item.file.url}`,
     }),
   );
-
-  const onSetGallery = (index: number) => {
-    setGallery({
-      images: galleryImages,
-      index,
-    });
-    setIsGalleryOpen(true);
-  };
 
   const renderHeaderLeft = () => (
     <Button action="secondary" variant="link" onPress={() => router.back()}>
@@ -192,6 +201,16 @@ const PostDetail: React.FC = () => {
     });
   };
 
+  const onCoverPress = () => {
+    setPagerIndex(0);
+    setIsPagerOpen(true);
+  };
+
+  const onImagePress = (index: number) => {
+    setPagerIndex(index + (cover ? 1 : 0));
+    setIsPagerOpen(true);
+  };
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -205,9 +224,9 @@ const PostDetail: React.FC = () => {
       <PageSpinner isVisiable={isLoading} />
       {isSuccess && (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
-          <VStack className="flex-1 p-4" space="lg">
-            <VStack space="sm">
-              <HStack className="items-center justify-between" space="lg">
+          <VStack className="flex-1 p-4" space="4xl">
+            <VStack space="lg">
+              <HStack className="items-center justify-between" space="xl">
                 <Heading size="lg" className="flex-1">
                   {post.title}
                 </Heading>
@@ -263,27 +282,9 @@ const PostDetail: React.FC = () => {
                 </HStack>
               </HStack>
             </VStack>
-            <VStack space="sm">
-              {cover && (
-                <Pressable className="h-36 flex-1" onPress={() => onSetGallery(0)}>
-                  <Image
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: 8,
-                    }}
-                    source={{
-                      uri: cover.uri,
-                    }}
-                    alt={cover.alternativeText}
-                  />
-                </Pressable>
-              )}
-              <ImageList
-                value={images}
-                galleryInitIndex={cover ? 1 : 0}
-                onSetGallery={onSetGallery}
-              />
+            <VStack space="lg">
+              <CoverView value={cover} onPress={onCoverPress} />
+              <ImageList value={images} onPress={onImagePress} />
               <RecordingList value={recordings} readonly={true} />
             </VStack>
             <Divider />
@@ -298,11 +299,11 @@ const PostDetail: React.FC = () => {
           </VStack>
         </ScrollView>
       )}
-      <GalleryPreview
-        images={gallery.images}
-        initialIndex={gallery.index}
-        isVisible={isGalleryOpen}
-        onRequestClose={() => setIsGalleryOpen(false)}
+      <AlbumPagerView
+        initIndex={pagerIndex}
+        value={album}
+        isOpen={isPagerOpen}
+        onClose={onPagerClose}
       />
     </SafeAreaView>
   );

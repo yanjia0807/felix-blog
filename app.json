@@ -69,7 +69,8 @@
           "faceIDPermission": "允许 $(PRODUCT_NAME) 访问您的面容 ID 生物识别数据。"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

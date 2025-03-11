@@ -3,16 +3,8 @@ import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal } from '@gorho
 import { intervalToDuration } from 'date-fns';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
-import {
-  Check,
-  CircleX,
-  Mic,
-  MicOff,
-  PauseCircle,
-  RotateCcw,
-  Trash2,
-  Volume2,
-} from 'lucide-react-native';
+import _ from 'lodash';
+import { Check, CircleX, Mic, MicOff, PauseCircle, RotateCcw, Volume2 } from 'lucide-react-native';
 import { Keyboard } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -24,7 +16,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { twMerge } from 'tailwind-merge';
-import { apiServerURL } from '@/api';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
@@ -32,7 +23,9 @@ import { HStack } from './ui/hstack';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import _ from 'lodash';
+import useCustomToast from './use-custom-toast';
+
+const SELECTION_LIMIT = 5;
 
 const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
   const ringStyle = useAnimatedStyle(() => ({
@@ -49,7 +42,7 @@ const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
       <Animated.View entering={BounceIn} exiting={BounceOut}>
         <Animated.View
           className="h-40 w-40 items-center justify-center rounded-full bg-primary-400"
-          style={[ringStyle]}>
+          style={[{ opacity: 0.7 }, ringStyle]}>
           {recordingStatus?.isRecording ? (
             <Mic size={48} color="white" />
           ) : (
@@ -87,7 +80,7 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
   const [durationMillis, setDurationMillis] = useState<number>(0);
   const snapPoints = useMemo(() => ['50%'], []);
   const insets = useSafeAreaInsets();
-
+  const toast = useCustomToast();
   const duration: any = intervalToDuration({ start: 0, end: durationMillis });
   const formattedTime = `${String(duration?.minutes || '').padStart(2, '0')}:${String(duration?.seconds || '').padStart(2, '0')}`;
 
@@ -200,6 +193,11 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
   }, [onRecordingStatusUpdate, resetRecording]);
 
   const doRecording = useCallback(async () => {
+    if (value.length === SELECTION_LIMIT) {
+      toast.info({ description: `最多只能选择${SELECTION_LIMIT}个` });
+      return;
+    }
+
     if (audioPermission && audioPermission.status !== 'granted') {
       console.log('Requesting audio permission..');
       await requestAudioPermission();
@@ -215,8 +213,11 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
       }
     }
   }, [
+    value,
     audioPermission,
-    recordingStatus,
+    recordingStatus?.canRecord,
+    recordingStatus?.isRecording,
+    toast,
     requestAudioPermission,
     startRecording,
     resumeRecording,
@@ -378,7 +379,7 @@ export const RecordingIcon = ({ item, onRemove, className, readonly }: any) => {
       onPress={() => onItemPress()}
       className={twMerge(
         className,
-        'items-center justify-start rounded',
+        'items-center justify-start rounded opacity-50',
         !readonly ? 'pr-8' : undefined,
       )}>
       <ButtonIcon as={Volume2} />

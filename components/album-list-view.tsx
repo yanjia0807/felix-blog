@@ -1,8 +1,8 @@
+import React, { useState } from 'react';
 import { MasonryFlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import _ from 'lodash';
-import React, { useState } from 'react';
 import { RefreshControl, useWindowDimensions } from 'react-native';
 import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL, fetchUserPhotos } from '@/api';
@@ -12,7 +12,7 @@ import { Text } from './ui/text';
 
 const numColumns = 3;
 
-const PhotoListView = ({ userDocumentId }: any) => {
+const AlbumListView = ({ userDocumentId }: any) => {
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
   const { width } = useWindowDimensions();
@@ -149,4 +149,4 @@ const PhotoListView = ({ userDocumentId }: any) => {
   );
 };
 
-export default PhotoListView;
+export default AlbumListView;

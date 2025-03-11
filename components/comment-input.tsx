@@ -567,7 +567,7 @@ export const CommentSheet = memo(() => {
             ref={inputRef}
             inputMode="text"
             autoCapitalize="none"
-            className="h-full flex-1 px-3"
+            className="h-full flex-1 px-3 text-typography-500"
             returnKeyType="send"
             placeholder={replyDocument ? `回复 ${replyDocument.username}` : '输入评论...'}
             value={value}

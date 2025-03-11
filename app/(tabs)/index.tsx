@@ -5,7 +5,7 @@ import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
-import { Ellipsis, MapPin } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
 import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
 import { AuthorInfo } from '@/components/auth-context';
@@ -27,6 +27,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
+import { thumbnailUrl } from '@/utils/file';
 
 const HomeHeader: React.FC = () => {
   const {
@@ -254,7 +255,7 @@ const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) 
                               </AvatarFallbackText>
                               <AvatarImage
                                 source={{
-                                  uri: `${apiServerURL}${item.lastComment.user.avatar?.formats.thumbnail.url}`,
+                                  uri: thumbnailUrl(item.lastComment.user.avatar),
                                 }}
                               />
                             </Avatar>

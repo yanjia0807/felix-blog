@@ -4,8 +4,8 @@ import { Redirect, router, Stack } from 'expo-router';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings2 } from 'lucide-react-native';
 import { FlatList, Pressable } from 'react-native';
 import { apiServerURL } from '@/api';
+import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-context';
-import PhotoListView from '@/components/photo-list-view';
 import PostListView from '@/components/post-list-view';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -127,7 +127,7 @@ const ProfileHeader: React.FC = () => {
       {selectedIndex === 0 ? (
         <PostListView userDocumentId={user.documentId} />
       ) : (
-        <PhotoListView userDocumentId={user.documentId} />
+        <AlbumListView userDocumentId={user.documentId} />
       )}
     </VStack>
   );

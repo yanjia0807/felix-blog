@@ -1,11 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { AlertCircle } from 'lucide-react-native';
+import _ from 'lodash';
+import { AlertCircle, View } from 'lucide-react-native';
 import { Controller, UseFormReturn } from 'react-hook-form';
-import GalleryPreview from 'react-native-gallery-preview';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
+import AlbumPagerView from './album-pager-view';
 import { CoverInput, ImageGrid, ImageInput } from './image-input';
 import PageSpinner from './page-spinner';
 import { PositionInput } from './position-input';
@@ -23,7 +24,6 @@ import { HStack } from './ui/hstack';
 import { Input, InputField, InputSlot } from './ui/input';
 import { Textarea, TextareaInput } from './ui/textarea';
 import { VStack } from './ui/vstack';
-import _ from 'lodash';
 
 const maxCharCount = 5000;
 
@@ -58,8 +58,9 @@ type PostFormProps = {
 const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
   const insets = useSafeAreaInsets();
   const [charCount, setCharCount] = useState(0);
-  const [initialIndex, setInitialIndex] = useState<number>(0);
-  const [galleryPreviewIsOpen, setGalleryPreviewIsOpen] = useState(false);
+  const [isPagerOpen, setIsPagerOpen] = useState(false);
+  const [pagerIndex, setPagerIndex] = useState<number>(0);
+  const onPagerClose = () => setIsPagerOpen(false);
 
   const {
     control,
@@ -68,25 +69,17 @@ const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
   } = form;
 
   const formData: any = watch();
-  const galleryImages: any = _.concat(
-    [],
-    formData?.cover
-      ? {
-          ...formData.cover,
-          uri: formData.cover.largeUri || formData.cover.uri,
-        }
-      : [],
-    formData?.images
-      ? formData.images.map((item: any) => ({
-          ...item,
-          uri: item.largeUri || item.uri,
-        }))
-      : [],
-  );
 
-  const onOpenGallery = async (index: number) => {
-    setInitialIndex(index);
-    setGalleryPreviewIsOpen(true);
+  const album = _.concat(formData?.cover ? formData.cover : [], formData.images);
+
+  const onCoverPress = () => {
+    setPagerIndex(0);
+    setIsPagerOpen(true);
+  };
+
+  const onImagePress = (index: number) => {
+    setPagerIndex(index + (formData?.cover ? 1 : 0));
+    setIsPagerOpen(true);
   };
 
   const renderTitle = ({ field: { onChange, onBlur, value } }: any) => (
@@ -113,7 +106,7 @@ const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
 
   const renderCover = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.cover} size="md">
-      <CoverInput value={value} onChange={onChange} onOpenGallery={onOpenGallery} />
+      <CoverInput value={value} onChange={onChange} onPress={onCoverPress} />
     </FormControl>
   );
 
@@ -165,12 +158,7 @@ const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
 
   const renderImageGrid = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.images} size="md">
-      <ImageGrid
-        value={value}
-        cover={formData.cover}
-        onChange={onChange}
-        onOpenGallery={onOpenGallery}
-      />
+      <ImageGrid value={value} cover={formData.cover} onChange={onChange} onPress={onImagePress} />
     </FormControl>
   );
 
@@ -195,7 +183,9 @@ const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
       <PageSpinner isVisiable={(mode === 'edit' && query?.isLoading) || mutation.isPending} />
       {(mode === 'create' || (mode === 'edit' && query?.isSuccess)) && (
         <>
-          <KeyboardAwareScrollView contentContainerStyle={{ flex: 1, padding: 16 }}>
+          <KeyboardAwareScrollView
+            contentContainerStyle={{ padding: 16 }}
+            showsVerticalScrollIndicator={false}>
             <VStack space="lg">
               <Controller control={control} name="cover" render={renderCover} />
               <Controller control={control} name="title" render={renderTitle} />
@@ -214,11 +204,11 @@ const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
               <Controller control={control} name="recordings" render={renderRecordingsInput} />
             </HStack>
           </KeyboardStickyView>
-          <GalleryPreview
-            images={galleryImages}
-            initialIndex={initialIndex}
-            isVisible={galleryPreviewIsOpen}
-            onRequestClose={() => setGalleryPreviewIsOpen(false)}
+          <AlbumPagerView
+            initIndex={pagerIndex}
+            value={album}
+            isOpen={isPagerOpen}
+            onClose={onPagerClose}
           />
         </>
       )}

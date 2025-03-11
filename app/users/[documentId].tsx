@@ -19,9 +19,9 @@ import {
   isFollowingUser,
   updateFollowings,
 } from '@/api';
+import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-context';
 import PageSpinner from '@/components/page-spinner';
-import PhotoListView from '@/components/photo-list-view';
 import PostListView from '@/components/post-list-view';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
@@ -250,7 +250,7 @@ const UserDetailHeader: React.FC = () => {
         {selectedIndex === 0 ? (
           <PostListView userDocumentId={user.documentId} />
         ) : (
-          <PhotoListView userDocumentId={user.documentId} />
+          <AlbumListView userDocumentId={user.documentId} />
         )}
       </VStack>
     </>

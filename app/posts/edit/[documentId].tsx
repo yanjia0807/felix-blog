@@ -12,6 +12,15 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import useCustomToast from '@/components/use-custom-toast';
+import {
+  getFileType,
+  isImage,
+  isVideo,
+  FileTypeNum,
+  largeUrl,
+  thumbnailUrl,
+  videoUrl,
+} from '@/utils/file';
 
 const PostEdit = () => {
   const { documentId, status } = useLocalSearchParams();
@@ -29,38 +38,63 @@ const PostEdit = () => {
 
   useEffect(() => {
     if (query.isSuccess) {
-      const { attachments, author, cover, ...rest } = query.data;
+      const { files, author, ...rest } = query.data;
 
-      const coverImage = cover
+      const cover = query.data.cover
         ? {
-            ...cover,
-            uri: `${apiServerURL}${cover.formats?.large?.url || cover.url}`,
-            largeUri: `${apiServerURL}${cover.formats?.large?.url || cover.url}`,
-            cover: true,
+            id: query.data.cover.id,
+            data: query.data.cover,
+            fileType: FileTypeNum.Image,
+            uri: largeUrl(query.data.cover),
+            detail: {
+              uri: largeUrl(query.data.cover),
+            },
           }
         : undefined;
 
       const images = _.map(
-        _.find(attachments || [], { type: 'image' })?.files || [],
-        (item: any) => ({
-          ...item,
-          uri: `${apiServerURL}${item.formats?.thumbnail.url}`,
-          largeUri: `${apiServerURL}${item.formats?.large?.url || item.url}`,
-        }),
+        _.filter(query.data.files || [], (item: any) => {
+          return isImage(item.file.mime) || isVideo(item.file.mime);
+        }) || [],
+        (item: any) => {
+          if (isImage(item.file.mime)) {
+            return {
+              id: item.id,
+              data: item,
+              fileType: FileTypeNum.Image,
+              uri: thumbnailUrl(item.file),
+              detail: {
+                uri: largeUrl(item.file),
+              },
+            };
+          } else if (isVideo(item.file.mime)) {
+            return {
+              id: item.id,
+              data: item,
+              fileType: FileTypeNum.Video,
+              uri: thumbnailUrl(item.fileInfo),
+              detail: {
+                uri: videoUrl(item.file),
+              },
+            };
+          }
+        },
       );
 
       const recordings = _.map(
-        _.find(attachments || [], { type: 'audio' })?.files || [],
+        _.filter(files || [], (item: any) => getFileType(item.file.mime) === FileTypeNum.Audio),
         (item: any) => ({
-          ...item,
-          uri: `${apiServerURL}${item.url}`,
+          id: item.id,
+          data: item,
+          fileType: FileTypeNum.Audio,
+          uri: `${apiServerURL}${item.file.url}`,
         }),
       );
 
       const post = {
         ...rest,
         author: author.documentId,
-        cover: coverImage,
+        cover,
         images,
         recordings,
         status,

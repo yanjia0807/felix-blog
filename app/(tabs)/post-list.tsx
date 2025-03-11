@@ -6,8 +6,8 @@ import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import { FlatList, RefreshControl } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
-import GalleryPreview from 'react-native-gallery-preview';
 import { apiServerURL, fetchPosts, fetchTags } from '@/api';
+import AlbumPagerView from '@/components/album-pager-view';
 import { AuthorInfo, useAuth } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
 import { ImageList } from '@/components/image-input';
@@ -39,17 +39,9 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
-
-interface PostItemProps {
-  item: any;
-  index: number;
-  isLoaded: boolean;
-  setGallery: any;
-  setIsGalleryOpen: any;
-}
+import { FileTypeNum, isImage, isVideo, largeUrl, thumbnailUrl, videoUrl } from '@/utils/file';
 
 const PostTagItem = ({ item, isLoaded }: any) => {
-  // console.log('@@PostTagItem');
   const { filters, selectTag } = usePostFilterContext();
 
   return (
@@ -65,7 +57,6 @@ const PostTagItem = ({ item, isLoaded }: any) => {
 };
 
 const PostHeader: React.FC = () => {
-  console.log('@@PostHeader');
   const { isSuccess, data: tags } = useQuery({
     queryKey: ['tags', 'list'],
     queryFn: fetchTags,
@@ -95,91 +86,101 @@ const PostHeader: React.FC = () => {
   );
 };
 
-const PostItem: React.FC<PostItemProps> = memo(
-  ({ item, index, isLoaded, setGallery, setIsGalleryOpen }) => {
-    console.log('@@PostItem');
-
-    const cover = item?.cover
+const PostItem: React.FC<any> = memo(
+  ({ post, index, isLoaded, setIsPagerOpen, setPagerIndex, setAblum }) => {
+    const cover = post?.cover
       ? {
-          ...item.cover,
-          uri: `${apiServerURL}${item.cover.formats?.large?.url || item.cover.url}`,
-          largeUri: `${apiServerURL}${item.cover.formats?.large?.url || item.cover.url}`,
+          id: post.cover.id,
+          data: post.cover,
+          fileType: FileTypeNum.Image,
+          uri: largeUrl(post.cover),
+          detail: {
+            uri: largeUrl(post.cover),
+          },
         }
       : undefined;
 
     const images = _.map(
-      _.find(item?.attachments || [], { type: 'image' })?.files || [],
-      (item: any) => ({
-        ...item,
-        uri: `${apiServerURL}${item.formats?.thumbnail.url}`,
-        largeUri: `${apiServerURL}${item.formats?.large?.url || item.url}`,
-      }),
+      _.filter(post?.files || [], (item: any) => {
+        return isImage(item.file.mime) || isVideo(item.file.mime);
+      }) || [],
+      (item: any) => {
+        if (isImage(item.file.mime)) {
+          return {
+            id: item.id,
+            data: item,
+            fileType: FileTypeNum.Image,
+            uri: thumbnailUrl(item.file),
+            detail: {
+              uri: largeUrl(item.file),
+            },
+          };
+        } else if (isVideo(item.file.mime)) {
+          return {
+            id: item.id,
+            data: item,
+            fileType: FileTypeNum.Video,
+            uri: thumbnailUrl(item.fileInfo),
+            detail: {
+              uri: videoUrl(item.file),
+            },
+          };
+        }
+      },
     );
 
-    const galleryImages = _.concat(
-      [],
-      cover
-        ? {
-            ...cover,
-            uri: cover.largeUri || cover.uri,
-            cover: true,
-          }
-        : [],
-      images
-        ? images.map((item: any) => ({
-            ...item,
-            uri: item.largeUri || item.uri,
-            cover: false,
-          }))
-        : [],
-    );
+    const album = _.concat(cover ? cover : [], images);
 
-    const onSetGallery = (index?: number) => {
-      setGallery({
-        images: galleryImages,
-        index,
-      });
-      setIsGalleryOpen(true);
+    const onPostItemPressed = ({ item }: any) => router.push(`/posts/${post.documentId}`);
+
+    const onCoverPress = () => {
+      setAblum(album);
+      setPagerIndex(0);
+      setIsPagerOpen(true);
     };
 
-    const onPostItemPressed = ({ item }: any) => router.push(`/posts/${item.documentId}`);
+    const onImagePress = (index: number) => {
+      setAblum(album);
+      setPagerIndex(index + (cover ? 1 : 0));
+      setIsPagerOpen(true);
+    };
 
     return (
       <Box className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
         <Skeleton variant="rounded" isLoaded={isLoaded}>
-          {item && (
-            <Pressable onPress={() => onPostItemPressed({ item, index })} pointerEvents="box-none">
+          {post && (
+            <Pressable onPress={() => onPostItemPressed({ post, index })} pointerEvents="box-none">
               <Card variant="elevated">
                 <VStack space="lg">
                   <VStack space="sm">
                     <HStack className="items-center justify-between">
-                      <AuthorInfo author={item.author} />
-                      <PostItemMenu post={item} />
+                      <AuthorInfo author={post.author} />
+                      <PostItemMenu post={post} />
                     </HStack>
                     <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
-                      {item.title}
+                      {post.title}
                     </Heading>
                     <HStack className="items-center justify-between">
-                      <Text size="xs">{formatDistance(item.createdAt)}</Text>
+                      <Text size="xs">{formatDistance(post.createdAt)}</Text>
                       <HStack space="xs" className="items-center justify-end">
-                        {item.poi?.address && (
+                        {post.poi?.address && (
                           <HStack className="items-center">
                             <Icon as={MapPin} size="xs" />
-                            <Text size="xs">{item.poi.address}</Text>
+                            <Text size="xs">{post.poi.address}</Text>
                           </HStack>
                         )}
                       </HStack>
                     </HStack>
-                    <TagList tags={item.tags || []}></TagList>
+                    <TagList tags={post.tags || []}></TagList>
                   </VStack>
                   {cover && (
-                    <Pressable className="h-36 flex-1" onPress={() => onSetGallery(0)}>
+                    <Pressable className="h-36 flex-1" onPress={onCoverPress}>
                       <Image
                         source={{
                           uri: cover.uri,
                         }}
                         contentFit="cover"
-                        alt={cover.alternativeText}
+                        alt={''}
                         style={{
                           width: '100%',
                           height: '100%',
@@ -188,25 +189,21 @@ const PostItem: React.FC<PostItemProps> = memo(
                       />
                     </Pressable>
                   )}
-                  <Text numberOfLines={5}>{item.content}</Text>
-                  <ImageList
-                    value={images}
-                    galleryInitIndex={cover ? 1 : 0}
-                    onSetGallery={onSetGallery}
-                  />
+                  <Text numberOfLines={5}>{post.content}</Text>
+                  <ImageList value={images} onPress={onImagePress} />
                   <HStack className="h-6 items-center justify-between">
-                    <LikeButton post={item} />
-                    <UserAvatars users={item.likedByUsers} />
+                    <LikeButton post={post} />
+                    <UserAvatars users={post.likedByUsers} />
                   </HStack>
                   <VStack space="sm">
                     <HStack className="items-center justify-end">
-                      <CommentIcon item={item} />
+                      <CommentIcon item={post} />
                     </HStack>
-                    {item.lastComment && (
+                    {post.lastComment && (
                       <>
                         <HStack space="xs" className="items-center">
                           <Text className="flex-1" size="sm" numberOfLines={3}>
-                            {item.lastComment.content}
+                            {post.lastComment.content}
                           </Text>
                         </HStack>
                         <HStack className="items-center justify-end" space="md">
@@ -214,17 +211,17 @@ const PostItem: React.FC<PostItemProps> = memo(
                             <HStack className="items-center" space="xs">
                               <Avatar size="xs">
                                 <AvatarFallbackText>
-                                  {item.lastComment.user.username}
+                                  {post.lastComment.user.username}
                                 </AvatarFallbackText>
                                 <AvatarImage
                                   source={{
-                                    uri: `${apiServerURL}${item.lastComment.user.avatar?.formats.thumbnail.url}`,
+                                    uri: `${apiServerURL}${post.lastComment.user.avatar?.formats.thumbnail.url}`,
                                   }}
                                 />
                               </Avatar>
-                              <Text size="sm">{item.lastComment.user.username}</Text>
+                              <Text size="sm">{post.lastComment.user.username}</Text>
                             </HStack>
-                            <Text size="xs">{formatDistance(item.lastComment.createdAt)}</Text>
+                            <Text size="xs">{formatDistance(post.lastComment.createdAt)}</Text>
                           </HStack>
                         </HStack>
                       </>
@@ -241,15 +238,12 @@ const PostItem: React.FC<PostItemProps> = memo(
 );
 
 const PostList = function PostList() {
-  console.log('@@PostList');
-
   const { user } = useAuth();
   const { filters } = usePostFilterContext();
-  const [gallery, setGallery] = useState<any>({
-    images: [],
-    index: 0,
-  });
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isPagerOpen, setIsPagerOpen] = useState(false);
+  const [pagerIndex, setPagerIndex] = useState<number>(0);
+  const [album, setAblum] = useState<any>([]);
+  const onPagerClose = () => setIsPagerOpen(false);
 
   const {
     data: postData,
@@ -294,11 +288,12 @@ const PostList = function PostList() {
 
   const renderPostItem = ({ item, index }: any) => (
     <PostItem
-      item={item}
+      post={item}
       index={index}
       isLoaded={!isLoading}
-      setGallery={setGallery}
-      setIsGalleryOpen={setIsGalleryOpen}
+      setIsPagerOpen={setIsPagerOpen}
+      setPagerIndex={setPagerIndex}
+      setAblum={setAblum}
     />
   );
 
@@ -343,11 +338,11 @@ const PostList = function PostList() {
           </Fab>
         )}
       </VStack>
-      <GalleryPreview
-        images={gallery.images}
-        initialIndex={gallery.index}
-        isVisible={isGalleryOpen}
-        onRequestClose={() => setIsGalleryOpen(false)}
+      <AlbumPagerView
+        initIndex={pagerIndex}
+        value={album}
+        isOpen={isPagerOpen}
+        onClose={onPagerClose}
       />
       <CommentSheet />
     </>
@@ -355,7 +350,6 @@ const PostList = function PostList() {
 };
 
 const PostListDrawer: React.FC = () => {
-  console.log('@@Drawer');
   const { isDrawerOpen, setIsDrawerOpen } = usePostFilterContext();
   const renderDrawerContent = () => <PostFilterContent />;
 

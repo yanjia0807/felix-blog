@@ -21,7 +21,7 @@ const PostItemMenu = ({ post, ...props }: any) => {
     <Menu placement="bottom" disabledKeys={['Settings']} trigger={renderTrigger}>
       <MenuItem key="Share" textValue="Share" onPress={() => onShareItemPressed()}>
         <Icon as={Share} size="xs" className="mr-2" />
-        <MenuItemLabel size="xs">分享(开发中)</MenuItemLabel>
+        <MenuItemLabel size="xs">分享</MenuItemLabel>
       </MenuItem>
     </Menu>
   );
