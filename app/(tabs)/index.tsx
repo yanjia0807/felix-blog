@@ -27,7 +27,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
-import { thumbnailSize } from '@/utils/file';
+import { largeSize, thumbnailSize } from '@/utils/file';
 
 const HomeHeader: React.FC = () => {
   const {
@@ -87,7 +87,7 @@ const HomeHeader: React.FC = () => {
             <Image
               recyclingKey={item.assetId}
               source={{
-                uri: `${apiServerURL}${item.image?.formats.medium.url}`,
+                uri: largeSize(item.image),
               }}
               style={{
                 width: '100%',

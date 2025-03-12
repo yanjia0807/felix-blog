@@ -46,7 +46,7 @@ export const isAudio = (mime: string) => getFileType(mime) === FileTypeNum.Audio
 export const largeSize = (file: any) => {
   if (!file) return '';
   const formats = file.formats || {};
-  const specs = ['large', 'medium'];
+  const specs = ['large', 'medium', 'small', 'thumbnail'];
   let selected = file.url;
   for (const item of specs) {
     if (formats[item]) {
@@ -60,7 +60,7 @@ export const largeSize = (file: any) => {
 export const thumbnailSize = (file: any) => {
   if (!file) return '';
   const formats = file.formats || {};
-  const specs = ['thumbnail', 'small'];
+  const specs = ['thumbnail', 'small', 'medium', 'large'];
   let selected = file.url;
   for (const item of specs) {
     if (formats[item]) {
