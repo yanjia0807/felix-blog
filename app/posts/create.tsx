@@ -42,6 +42,8 @@ const PostCreate: React.FC = () => {
     recordings: [],
     tags: [],
     status: 'published',
+    attachments: [],
+    attachmentExtras: [],
   };
 
   const form = useForm<PostSchema>({
