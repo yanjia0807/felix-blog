@@ -46,6 +46,8 @@ export const postSchema = z.object({
   recordings: z.array(z.any()),
   tags: z.array(z.any()),
   status: z.enum(['draft', 'published']),
+  attachments: z.array(z.any()),
+  attachmentExtras: z.array(z.any()),
 });
 
 type PostFormProps = {

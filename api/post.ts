@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import qs from 'qs';
-import { isImage, FileTypeNum } from '@/utils/file';
+import { isVideo } from '@/utils/file';
 import { apiClient } from './api-client';
 import { uploadFiles } from './file';
 
@@ -69,9 +69,11 @@ export const fetchPosts = async ({ pageParam }: any) => {
       cover: {
         fields: ['alternativeText', 'width', 'height', 'formats'],
       },
-      files: {
+      attachments: true,
+      attachmentExtras: {
         populate: {
-          file: true,
+          attachment: true,
+          thumbnail: true,
         },
       },
       comments: {
@@ -219,9 +221,11 @@ export const fetchPost = async ({ documentId, status }: any) => {
             },
           },
         },
-        files: {
+        attachments: true,
+        attachmentExtras: {
           populate: {
-            file: true,
+            attachment: true,
+            thumbnail: true,
           },
         },
         comments: {
@@ -240,51 +244,35 @@ export const fetchPost = async ({ documentId, status }: any) => {
 
 export const createPost = async (formData: PostData) => {
   try {
-    let coverId;
-    if (formData.cover) {
-      const coverRes = await uploadFiles(formData.cover.uri);
-      coverId = coverRes.id;
-    }
+    const coverId = formData.cover && (await uploadFiles(formData.cover.uri)).id;
 
-    let files: any = [];
+    const uploadUris: any = [];
+    _.forEach(formData.images, (item: any) => {
+      uploadUris.push(item.uri);
+      if (isVideo(item.fileType)) {
+        uploadUris.push(item.thumbnail);
+      }
+    });
 
-    const images = _.filter(formData.images, (item: any) => isImage(item.fileType));
-    const imageUris = _.map(images, 'uri');
+    _.forEach(formData.recordings, (item: any) => {
+      uploadUris.push(item.uri);
+    });
 
-    if (imageUris.length > 0) {
-      const imageRes = await uploadFiles(imageUris);
-      files = files.concat(
-        _.map(imageRes, (item, i) => ({
-          file: item.id,
-          fileInfo: {},
-        })),
-      );
-    }
+    const uploadRes = await uploadFiles(uploadUris);
+    const attachments = _.map(
+      [...formData.images, ...formData.recordings],
+      (item: any) => _.find(uploadRes, ['uri', item.uri]).id,
+    );
 
-    const videos = _.filter(formData.images, (item: any) => item.fileType === FileTypeNum.Video);
-    const videoUris = _.map(videos, (item: any) => item.detail.uri);
-
-    if (videoUris.length > 0) {
-      const videoRes = await uploadFiles(videoUris);
-      const thumbnails = _.map(videos, (item: any) => item.uri);
-      const thumbnailRes = await uploadFiles(thumbnails);
-      files = files.concat(
-        _.map(videoRes, (item, i) => ({
-          file: item.id,
-          fileInfo: thumbnailRes[i],
-        })),
-      );
-    }
-
-    if (formData.recordings.length > 0) {
-      const recordingRes = await uploadFiles(_.map(formData.recordings, 'uri'));
-      files = files.concat(
-        _.map(recordingRes, (item, i) => ({
-          file: item.id,
-          fileInfo: {},
-        })),
-      );
-    }
+    const attachmentExtras: any = [];
+    _.forEach(formData.images, (item: any) => {
+      if (isVideo(item.fileType)) {
+        attachmentExtras.push({
+          attachment: _.find(uploadRes, ['uri', item.uri]).id,
+          thumbnail: _.find(uploadRes, ['uri', item.thumbnail]).id,
+        });
+      }
+    });
 
     const poi =
       formData.poi &&
@@ -311,7 +299,8 @@ export const createPost = async (formData: PostData) => {
       author: formData.author,
       poi,
       tags,
-      files,
+      attachments,
+      attachmentExtras,
     };
 
     const res = await apiClient.post(`/posts?status=${formData.status}`, { data });
@@ -323,85 +312,50 @@ export const createPost = async (formData: PostData) => {
 
 export const editPost = async (formData: PostData) => {
   try {
-    let coverId;
-    if (formData.cover) {
-      if (formData.cover.id) {
-        coverId = formData.cover.id;
-      } else {
-        const coverRes = await uploadFiles(formData.cover.uri);
-        coverId = coverRes.id;
+    const coverId = formData.cover
+      ? formData.cover.id || (await uploadFiles(formData.cover.uri)).id
+      : null;
+
+    const uploadUris: any = [];
+    _.forEach(formData.images, (item: any) => {
+      if (!item.id) {
+        uploadUris.push(item.uri);
+        if (isVideo(item.fileType)) {
+          uploadUris.push(item.thumbnail);
+        }
       }
-    } else {
-      coverId = null;
-    }
+    });
 
-    let files: any = [];
-    const images = _.filter(formData.images, (item: any) => isImage(item.fileType));
-    const imageRes = await Promise.all(
-      _.map(images, async (item: any) => {
-        if (item.id) {
-          return {
-            file: item.data.file.id,
-            fileInfo: item.data.fileInfo
-          }
-        } else {
-          const res = await uploadFiles(item.uri);
-          return {
-            file: res.id,
-            fileInfo: {},
-          };
-        }
-      }),
+    _.forEach(formData.recordings, (item: any) => {
+      if (!item.id) {
+        uploadUris.push(item.uri);
+      }
+    });
+
+    const uploadRes = await uploadFiles(uploadUris);
+
+    const attachments = _.map([...formData.images, ...formData.recordings], (item: any) =>
+      item.id ? item.id : _.find(uploadRes, ['uri', item.uri]).id,
     );
 
-    if (imageRes.length > 0) {
-      files = files.concat(imageRes);
-    }
-
-    const videos = _.filter(formData.images, (item: any) => item.fileType === FileTypeNum.Video);
-    const videoRes = await Promise.all(
-      _.map(videos, async (item: any) => {
+    const attachmentExtras: any = [];
+    _.forEach(formData.images, (item: any) => {
+      if (isVideo(item.fileType)) {
         if (item.id) {
-          return {
-            file: item.data.file.id,
-            fileInfo: item.data.fileInfo
-          }
+          const extra = _.find(formData.attachmentExtras, (item1: any) => item1.attachment.id === item.id)
+          attachmentExtras.push({
+            attachment: extra.attachment.id,
+            thumbnail: extra.thumbnail.id
+          });
         } else {
-          const res = await uploadFiles(item.detail.uri);
-          const thumbnailRes = await uploadFiles(item.uri);
-          return {
-            file: res.id,
-            fileInfo: thumbnailRes,
-          };
-        }
-      }),
-    );
-
-    if (videoRes.length > 0) {
-      files = files.concat(videoRes);
-    }
-
-    const recordings = formData.recordings;
-    const recordingRes = await Promise.all(
-      _.map(recordings, async (item: any) => {
-        if (item.id) {
-          return {
-            file: item.data.file.id,
-            fileInfo: item.data.fileInfo
+          const extra = {
+            attachment: _.find(uploadRes, ['uri', item.uri]).id,
+            thumbnail: _.find(uploadRes, ['uri', item.thumbnail]).id,
           }
-        } else {
-          const res = await uploadFiles(item.uri);
-          return {
-            file: res.id,
-            fileInfo: {},
-          };
+          attachmentExtras.push(extra);
         }
-      }),
-    );
-
-    if (recordingRes.length > 0) {
-      files = files.concat(recordingRes);
-    }
+      }
+    });
 
     const poi =
       formData.poi &&
@@ -428,7 +382,8 @@ export const editPost = async (formData: PostData) => {
       author: formData.author,
       poi,
       tags,
-      files,
+      attachments,
+      attachmentExtras,
     };
 
     const res = await apiClient.put(`/posts/${formData.documentId}?status=${formData.status}`, {

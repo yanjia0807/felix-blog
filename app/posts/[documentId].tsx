@@ -4,7 +4,6 @@ import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router'
 import _ from 'lodash';
 import { ChevronLeft, Edit, Ellipsis, MapPin, StickyNote, Trash, Undo2 } from 'lucide-react-native';
 import { ScrollView } from 'react-native';
-import { apiServerURL } from '@/api';
 import { deletePost, fetchPost, unpublishPost } from '@/api/post';
 import AlbumPagerView from '@/components/album-pager-view';
 import { AuthorInfo, useAuth } from '@/components/auth-context';
@@ -28,13 +27,14 @@ import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { formatDistance } from '@/utils/date';
 import {
-  getFileType,
   isImage,
   isVideo,
   FileTypeNum,
-  largeUrl,
-  thumbnailUrl,
-  videoUrl,
+  largeSize,
+  thumbnailSize,
+  fileUrl,
+  isAudio,
+  videoThumbnail,
 } from '@/utils/file';
 
 const PostDetail: React.FC = () => {
@@ -99,56 +99,46 @@ const PostDetail: React.FC = () => {
     },
   });
 
-  const cover = post?.cover
-    ? {
-        id: post.cover.id,
-        data: post.cover,
-        fileType: FileTypeNum.Image,
-        uri: largeUrl(post.cover),
-        detail: {
-          uri: largeUrl(post.cover),
-        },
-      }
-    : undefined;
+  const cover = post?.cover && {
+    id: post.cover.id,
+    data: post.cover,
+    fileType: FileTypeNum.Image,
+    uri: largeSize(post.cover),
+    preview: largeSize(post.cover),
+  };
 
   const images = _.map(
-    _.filter(post?.files || [], (item: any) => {
-      return isImage(item.file.mime) || isVideo(item.file.mime);
-    }) || [],
+    _.filter(post?.attachments || [], (item: any) => isImage(item.mime) || isVideo(item.mime)) ||
+      [],
     (item: any) => {
-      if (isImage(item.file.mime)) {
-        return {
-          id: item.id,
-          data: item,
-          fileType: FileTypeNum.Image,
-          uri: thumbnailUrl(item.file),
-          detail: {
-            uri: largeUrl(item.file),
-          },
-        };
-      } else if (isVideo(item.file.mime)) {
-        return {
-          id: item.id,
-          data: item,
-          fileType: FileTypeNum.Video,
-          uri: thumbnailUrl(item.fileInfo),
-          detail: {
-            uri: videoUrl(item.file),
-          },
-        };
-      }
+      return isImage(item.mime)
+        ? {
+            id: item.id,
+            data: item,
+            fileType: FileTypeNum.Image,
+            uri: thumbnailSize(item),
+            preview: largeSize(item),
+          }
+        : {
+            id: item.id,
+            data: item,
+            fileType: FileTypeNum.Video,
+            uri: thumbnailSize(item),
+            thumbnail: videoThumbnail(item, post?.attachmentExtras || []),
+            preview: largeSize(item),
+          };
     },
   );
 
   const album = _.concat(cover ? cover : [], images);
 
   const recordings = _.map(
-    _.filter(post?.files || [], (item: any) => getFileType(item.file.mime) === FileTypeNum.Audio),
+    _.filter(post?.attachments || [], (item: any) => isAudio(item.mime)),
     (item: any) => ({
       id: item.id,
       data: item,
       fileType: FileTypeNum.Audio,
-      uri: `${apiServerURL}${item.file.url}`,
+      uri: fileUrl(item),
     }),
   );
 

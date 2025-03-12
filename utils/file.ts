@@ -41,7 +41,9 @@ export const isImage = (mime: string) => getFileType(mime) === FileTypeNum.Image
 
 export const isVideo = (mime: string) => getFileType(mime) === FileTypeNum.Video;
 
-export const largeUrl = (file: any) => {
+export const isAudio = (mime: string) => getFileType(mime) === FileTypeNum.Audio;
+
+export const largeSize = (file: any) => {
   if (!file) return '';
   const formats = file.formats || {};
   const specs = ['large', 'medium'];
@@ -55,7 +57,7 @@ export const largeUrl = (file: any) => {
   return `${apiServerURL}${selected}`;
 };
 
-export const thumbnailUrl = (file: any) => {
+export const thumbnailSize = (file: any) => {
   if (!file) return '';
   const formats = file.formats || {};
   const specs = ['thumbnail', 'small'];
@@ -69,10 +71,15 @@ export const thumbnailUrl = (file: any) => {
   return `${apiServerURL}${selected}`;
 };
 
-export const videoUrl = (file: any) => {
+export const videoThumbnail = (file: any, attachmentExtras: any) => {
+  const item = _.find(attachmentExtras, (item: any) => item.attachment.id === file.id);
+  return `${apiServerURL}${item.thumbnail.formats.thumbnail.url}`;
+};
+
+export const fileUrl = (file: any) => {
   if (!file) return '';
   let selected = file.url;
-  return `${apiServerURL}${selected}`
+  return `${apiServerURL}${selected}`;
 };
 
 export const getVideoImage = async (url: string) => {

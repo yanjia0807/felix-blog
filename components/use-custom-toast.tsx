@@ -53,7 +53,7 @@ const Confirm = ({ id, onConfirm, title, description, close }: any) => {
             }}>
             <ButtonText>确定</ButtonText>
           </Button>
-          <Button action="negative" size="sm" className="flex-grow" onPress={() => close}>
+          <Button action="negative" size="sm" className="flex-grow" onPress={close}>
             <ButtonText>取消</ButtonText>
           </Button>
         </ButtonGroup>
@@ -134,7 +134,13 @@ const useCustomToast = () => {
         placement: 'top',
         duration: null,
         render: ({ id }) => (
-          <Confirm id={id} title={title} description={description} onConfirm={onConfirm} />
+          <Confirm
+            id={id}
+            title={title}
+            description={description}
+            onConfirm={onConfirm}
+            close={close}
+          />
         ),
         close,
         ...props,

@@ -68,7 +68,7 @@ const ImagePage = forwardRef(
           <PageSpinner isVisiable={loading} />
           <Zoom>
             <Image
-              source={item.detail.uri}
+              source={item.preview}
               contentFit="contain"
               style={{ width: screenWidth, flex: 1 }}
               onLoadStart={onLoadStart}
@@ -117,7 +117,7 @@ const VideoPage = forwardRef(
 
     const doubleTap = Gesture.Tap().numberOfTaps(2);
 
-    const player = useVideoPlayer(item.detail.uri, (player) => {
+    const player = useVideoPlayer(item.preview, (player) => {
       player.timeUpdateEventInterval = 1;
     });
 

@@ -1,5 +1,6 @@
 import * as FileSystem from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
+import _ from 'lodash';
 import { apiServerURL } from './api-client';
 import { apiClient } from './api-client';
 
@@ -18,25 +19,30 @@ export const uploadFiles = async (files: any) => {
     delete config.headers.Authorization;
   }
 
-  const uploadFiles = typeof files === 'string' ? [files] : files;
-  const uploadTasks: Promise<any>[] = [];
+  const uris = typeof files === 'string' ? [files] : files;
 
-  uploadFiles.forEach((file: any) => {
-    const uploadTask = FileSystem.uploadAsync(`${apiServerURL}/api/upload`, file, config);
-    uploadTasks.push(uploadTask);
-  });
-
-  const res = await Promise.all(uploadTasks);
-
-  const result = res.map((item) => JSON.parse(item.body)[0]);
-
-  if (typeof files === 'string') return result[0];
-  return result;
+  const tasks = _.map(uris, (uri: any) =>
+    FileSystem.uploadAsync(`${apiServerURL}/api/upload`, uri, config).then((res: any) => {
+      if (res.status === 413) {
+        throw new Error("文件超过大小限制");
+      }
+      const result = { ...JSON.parse(res.body)[0], uri };
+      return result;
+    }),
+  );
+  
+  const res: any = await Promise.all(tasks);
+  return typeof files === 'string' ? res[0] : res;
 };
 
-export const updateFileInfo = async (id:string, fileInfo:any) => {
+export const getFile = async(id: string) => {
+  const res = await apiClient.get(`/upload/files/${id}`);
+  return res;
+}
+
+export const updateFileInfo = async (id: string, fileInfo: any) => {
   const res = await apiClient.post(`/upload?id=${id}`, {
-    data: fileInfo
+    data: fileInfo,
   });
   return res;
 };

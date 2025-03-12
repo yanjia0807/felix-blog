@@ -167,18 +167,15 @@ export const ImageCamera = ({ isOpen, onClose, onChange, value }: any) => {
       val = {
         fileType: FileTypeNum.Image,
         uri: data.uri,
-        detail: {
-          uri: data.uri,
-        },
+        preview: data.uri,
       };
     } else {
       const thumbnail = await getVideoImage(data.uri);
       val = {
         fileType: FileTypeNum.Video,
-        uri: thumbnail?.uri,
-        detail: {
-          uri: data.uri,
-        },
+        uri: data.uri,
+        thumbnail: thumbnail?.uri,
+        preview: data.uri,
       };
     }
 
@@ -546,9 +543,7 @@ const selectFromImageLib = async ({ imagePickerOptions, value, onFail }: any) =>
           name: item.fileName,
           fileType: FileTypeNum.Image,
           uri: item.uri,
-          detail: {
-            uri: item.uri,
-          },
+          preview: item.uri,
         });
       } else if (isVideo(item.mimeType)) {
         const thumbnail = await getVideoImage(item.uri);
@@ -556,10 +551,9 @@ const selectFromImageLib = async ({ imagePickerOptions, value, onFail }: any) =>
           assetId: item.assetId,
           name: item.fileName,
           fileType: FileTypeNum.Video,
-          uri: thumbnail?.uri,
-          detail: {
-            uri: item.uri,
-          },
+          uri: item.uri,
+          thumbnail: thumbnail?.uri,
+          preview: item.uri,
         });
       }
     }
@@ -638,6 +632,8 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
 };
 
 export const ImageItem = ({ item, index, onPress, onRemove }: any) => {
+  const uri = isVideo(item.fileType) ? item.thumbnail : item.uri;
+
   return (
     <Pressable onPress={() => onPress(index)}>
       <Image
@@ -647,8 +643,8 @@ export const ImageItem = ({ item, index, onPress, onRemove }: any) => {
           borderRadius: 8,
           opacity: 0.7,
         }}
-        alt={item.alternativeText || item.uri}
-        source={item.uri}
+        alt={''}
+        source={uri}
       />
       <Button
         size="xs"
@@ -704,13 +700,15 @@ export const ImageGrid = ({ value = [], onPress, cover, onChange }: any) => {
 
 export const ImageList = ({ value = [], onPress }: any) => {
   const renderItem = ({ item, index }: any) => {
+    const uri = isVideo(item.fileType) ? item.thumbnail : item.uri;
+
     return (
       <Pressable
         onPress={() => onPress(index)}
         className={`mx-1 h-16 w-16 ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}>
         <Image
           source={{
-            uri: item.uri,
+            uri,
           }}
           alt={item.alternativeText}
           style={{

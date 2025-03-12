@@ -27,7 +27,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
-import { thumbnailUrl } from '@/utils/file';
+import { thumbnailSize } from '@/utils/file';
 
 const HomeHeader: React.FC = () => {
   const {
@@ -255,7 +255,7 @@ const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) 
                               </AvatarFallbackText>
                               <AvatarImage
                                 source={{
-                                  uri: thumbnailUrl(item.lastComment.user.avatar),
+                                  uri: thumbnailSize(item.lastComment.user.avatar),
                                 }}
                               />
                             </Avatar>

@@ -39,7 +39,15 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
-import { FileTypeNum, isImage, isVideo, largeUrl, thumbnailUrl, videoUrl } from '@/utils/file';
+import {
+  FileTypeNum,
+  isImage,
+  isVideo,
+  largeSize,
+  thumbnailSize,
+  fileUrl,
+  videoThumbnail,
+} from '@/utils/file';
 
 const PostTagItem = ({ item, isLoaded }: any) => {
   const { filters, selectTag } = usePostFilterContext();
@@ -88,44 +96,34 @@ const PostHeader: React.FC = () => {
 
 const PostItem: React.FC<any> = memo(
   ({ post, index, isLoaded, setIsPagerOpen, setPagerIndex, setAblum }) => {
-    const cover = post?.cover
-      ? {
-          id: post.cover.id,
-          data: post.cover,
-          fileType: FileTypeNum.Image,
-          uri: largeUrl(post.cover),
-          detail: {
-            uri: largeUrl(post.cover),
-          },
-        }
-      : undefined;
+    const cover = post?.cover && {
+      id: post.cover.id,
+      data: post.cover,
+      fileType: FileTypeNum.Image,
+      uri: largeSize(post.cover),
+      preview: largeSize(post.cover),
+    };
 
     const images = _.map(
-      _.filter(post?.files || [], (item: any) => {
-        return isImage(item.file.mime) || isVideo(item.file.mime);
-      }) || [],
+      _.filter(post?.attachments || [], (item: any) => isImage(item.mime) || isVideo(item.mime)) ||
+        [],
       (item: any) => {
-        if (isImage(item.file.mime)) {
-          return {
-            id: item.id,
-            data: item,
-            fileType: FileTypeNum.Image,
-            uri: thumbnailUrl(item.file),
-            detail: {
-              uri: largeUrl(item.file),
-            },
-          };
-        } else if (isVideo(item.file.mime)) {
-          return {
-            id: item.id,
-            data: item,
-            fileType: FileTypeNum.Video,
-            uri: thumbnailUrl(item.fileInfo),
-            detail: {
-              uri: videoUrl(item.file),
-            },
-          };
-        }
+        return isImage(item.mime)
+          ? {
+              id: item.id,
+              data: item,
+              fileType: FileTypeNum.Image,
+              uri: thumbnailSize(item),
+              preview: largeSize(item),
+            }
+          : {
+              id: item.id,
+              data: item,
+              fileType: FileTypeNum.Video,
+              uri: thumbnailSize(item),
+              thumbnail: videoThumbnail(item, post?.attachmentExtras || []),
+              preview: largeSize(item),
+            };
       },
     );
 

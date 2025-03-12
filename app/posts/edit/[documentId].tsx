@@ -5,7 +5,6 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
 import { useForm } from 'react-hook-form';
-import { apiServerURL } from '@/api';
 import { editPost, fetchPost } from '@/api/post';
 import PostForm, { postSchema, PostSchema } from '@/components/post-form';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -13,13 +12,14 @@ import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import useCustomToast from '@/components/use-custom-toast';
 import {
-  getFileType,
   isImage,
   isVideo,
   FileTypeNum,
-  largeUrl,
-  thumbnailUrl,
-  videoUrl,
+  largeSize,
+  thumbnailSize,
+  fileUrl,
+  isAudio,
+  videoThumbnail,
 } from '@/utils/file';
 
 const PostEdit = () => {
@@ -38,76 +38,68 @@ const PostEdit = () => {
 
   useEffect(() => {
     if (query.isSuccess) {
-      const { files, author, ...rest } = query.data;
+      const post = query.data;
 
-      const cover = query.data.cover
-        ? {
-            id: query.data.cover.id,
-            data: query.data.cover,
-            fileType: FileTypeNum.Image,
-            uri: largeUrl(query.data.cover),
-            detail: {
-              uri: largeUrl(query.data.cover),
-            },
-          }
-        : undefined;
+      const cover = post?.cover && {
+        id: post.cover.id,
+        data: post.cover,
+        fileType: FileTypeNum.Image,
+        uri: largeSize(post.cover),
+        preview: largeSize(post.cover),
+      };
 
       const images = _.map(
-        _.filter(query.data.files || [], (item: any) => {
-          return isImage(item.file.mime) || isVideo(item.file.mime);
-        }) || [],
+        _.filter(
+          post?.attachments || [],
+          (item: any) => isImage(item.mime) || isVideo(item.mime),
+        ) || [],
         (item: any) => {
-          if (isImage(item.file.mime)) {
-            return {
-              id: item.id,
-              data: item,
-              fileType: FileTypeNum.Image,
-              uri: thumbnailUrl(item.file),
-              detail: {
-                uri: largeUrl(item.file),
-              },
-            };
-          } else if (isVideo(item.file.mime)) {
-            return {
-              id: item.id,
-              data: item,
-              fileType: FileTypeNum.Video,
-              uri: thumbnailUrl(item.fileInfo),
-              detail: {
-                uri: videoUrl(item.file),
-              },
-            };
-          }
+          return isImage(item.mime)
+            ? {
+                id: item.id,
+                data: item,
+                fileType: FileTypeNum.Image,
+                uri: thumbnailSize(item),
+                preview: largeSize(item),
+              }
+            : {
+                id: item.id,
+                data: item,
+                fileType: FileTypeNum.Video,
+                uri: thumbnailSize(item),
+                thumbnail: videoThumbnail(item, post?.attachmentExtras || []),
+                preview: largeSize(item),
+              };
         },
       );
 
       const recordings = _.map(
-        _.filter(files || [], (item: any) => getFileType(item.file.mime) === FileTypeNum.Audio),
+        _.filter(post?.attachments || [], (item: any) => isAudio(item.mime)),
         (item: any) => ({
           id: item.id,
           data: item,
           fileType: FileTypeNum.Audio,
-          uri: `${apiServerURL}${item.file.url}`,
+          uri: fileUrl(item),
         }),
       );
 
-      const post = {
-        ...rest,
-        author: author.documentId,
+      form.reset({
+        ...post,
+        author: post.author.documentId,
         cover,
         images,
         recordings,
         status,
-      };
-
-      form.reset(post);
+      });
     }
   }, [form, query.data, query.isSuccess, status]);
 
   const { setValue, handleSubmit } = form;
 
   const mutation = useMutation({
-    mutationFn: (data: PostSchema) => editPost(data),
+    mutationFn: (data: PostSchema) => {
+      return editPost(data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
       queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
