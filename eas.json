@@ -6,22 +6,31 @@
   "build": {
     "development": {
       "developmentClient": true,
+      "environment": "development",
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "APP_VARIANT": "development"
+      }
     },
-    "development-simulator": {
+    "ios-simulator": {
       "extends": "development",
       "ios": {
         "simulator": true
       },
-      "channel": "development-simulator"
+      "channel": "ios-simulator"
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "environment": "preview",
+      "channel": "preview",
+      "env": {
+        "APP_VARIANT": "preview"
+      }
     },
     "production": {
       "autoIncrement": true,
+      "environment": "production",
       "channel": "production"
     }
   },

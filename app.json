@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "felix-blog",
+    "name": "felixblog",
     "slug": "felix-blog",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,12 +10,12 @@
       "resizeMode": "contain",
       "backgroundColor": "#8FBF9F"
     },
-    "scheme": "myapp",
+    "scheme": "felix-blog",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
+      "bundleIdentifier": "info.yanjia.felixblog",
       "supportsTablet": true,
-      "bundleIdentifier": "info.yanjia.felix-blog",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
@@ -29,14 +29,12 @@
       }
     },
     "android": {
+      "package": "info.yanjia.felixblog",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#8FBF9F"
       },
-      "package": "com.anonymous.felixblog",
       "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
       ]

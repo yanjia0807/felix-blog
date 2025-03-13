@@ -4,6 +4,6 @@ export interface Socket extends BaseSocket {
   userId?: string;
 }
 
-export const socket: Socket = io(process.env.EXPO_PUBLIC_API_SERVER_URL as string, {
+export const socket: Socket = io(process.env.EXPO_PUBLIC_API_SERVER as string, {
   autoConnect: false,
 });
