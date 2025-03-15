@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Edit, Ellipsis, MapPin, StickyNote, Trash, Undo2 } from 'lucide-react-native';
-import { ScrollView } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native';
 import { deletePost, fetchPost, unpublishPost } from '@/api/post';
 import AlbumPagerView from '@/components/album-pager-view';
 import { AuthorInfo, useAuth } from '@/components/auth-context';
@@ -20,7 +20,6 @@ import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Menu, MenuItem, MenuItemLabel, MenuSeparator } from '@/components/ui/menu';
-import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -156,9 +155,9 @@ const PostDetail: React.FC = () => {
 
   const renderTrigger = (triggerProps: any) => {
     return (
-      <Pressable {...triggerProps}>
+      <TouchableOpacity {...triggerProps}>
         <Icon as={Ellipsis} />
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 

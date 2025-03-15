@@ -30,6 +30,7 @@ import {
   fetchRelatedComments,
 } from '@/api/comment';
 import { formatDistance } from '@/utils/date';
+import { thumbnailSize } from '@/utils/file';
 import { useAuth } from './auth-context';
 import PageSpinner from './page-spinner';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
@@ -41,11 +42,10 @@ import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Input } from './ui/input';
-import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
-import { thumbnailSize } from '@/utils/file';
+import { TouchableOpacity } from 'react-native';
 
 const CommentContext = createContext<any>({});
 
@@ -98,8 +98,6 @@ export const CommentIcon = ({ item }: any) => {
 };
 
 export const CommentSheet = memo(() => {
-  console.log('@@render CommentSheet');
-
   const { user } = useAuth();
   const inputRef = useRef<any>(null);
   const queryClient = useQueryClient();
@@ -412,18 +410,18 @@ export const CommentSheet = memo(() => {
               )}
             </HStack>
             <HStack className="flex-1 items-center justify-end" space="md">
-              <Pressable>
+              <TouchableOpacity>
                 <HStack className="items-center" space="sm">
                   <Icon as={Heart} size="sm" />
                   <Text size="xs">{section.likes}</Text>
                 </HStack>
-              </Pressable>
-              <Pressable>
+              </TouchableOpacity>
+              <TouchableOpacity>
                 <HStack className="items-center" space="sm">
                   <Icon as={HeartCrack} size="sm" />
                   <Text size="xs">{section.unlikes}</Text>
                 </HStack>
-              </Pressable>
+              </TouchableOpacity>
             </HStack>
           </HStack>
           {section.relatedComments.count > 0 &&
@@ -521,18 +519,18 @@ export const CommentSheet = memo(() => {
                 )}
               </HStack>
               <HStack className="flex-1 items-center justify-end" space="md">
-                <Pressable>
+                <TouchableOpacity>
                   <HStack className="items-center" space="sm">
                     <Icon as={Heart} size="sm" />
                     <Text size="xs">{item.likes}</Text>
                   </HStack>
-                </Pressable>
-                <Pressable>
+                </TouchableOpacity>
+                <TouchableOpacity>
                   <HStack className="items-center" space="sm">
                     <Icon as={HeartCrack} size="sm" />
                     <Text size="xs">{item.unlikes}</Text>
                   </HStack>
-                </Pressable>
+                </TouchableOpacity>
               </HStack>
             </HStack>
           </VStack>

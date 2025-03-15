@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import { Pressable } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { Button, ButtonGroup, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 import { CloseIcon, Icon } from './ui/icon';
@@ -18,9 +18,9 @@ const Alert = ({ id, action, title, description, close }: any) => {
         </HStack>
         <ToastDescription size="sm">{description}</ToastDescription>
       </VStack>
-      <Pressable onPress={close} className="absolute right-2 top-2">
+      <TouchableOpacity onPress={close} className="absolute right-2 top-2">
         <Icon as={CloseIcon} />
-      </Pressable>
+      </TouchableOpacity>
     </Toast>
   );
 };
@@ -37,9 +37,9 @@ const Confirm = ({ id, onConfirm, title, description, close }: any) => {
         <VStack space="xs">
           <HStack className="items-center justify-between">
             <ToastTitle className="font-semibold">{title}</ToastTitle>
-            <Pressable onPress={close}>
+            <TouchableOpacity onPress={close}>
               <Icon as={CloseIcon} />
-            </Pressable>
+            </TouchableOpacity>
           </HStack>
           <ToastDescription>{description}</ToastDescription>
         </VStack>
@@ -74,9 +74,9 @@ const Custom = ({ id, title, description, actions, close }: any) => {
         <VStack space="xs">
           <HStack className="items-center justify-between">
             <ToastTitle className="font-semibold text-typography-900">{title}</ToastTitle>
-            <Pressable onPress={close}>
+            <TouchableOpacity onPress={close}>
               <Icon as={CloseIcon} className="stroke-background-500" />
-            </Pressable>
+            </TouchableOpacity>
           </HStack>
           <ToastDescription className="text-typography-700">{description}</ToastDescription>
         </VStack>
@@ -97,7 +97,7 @@ const useCustomToast = () => {
 
   const alert = ({ toastId, action, title, description, ...props }: any) => {
     const id = toastId || _.random(0, 999999999);
-    const close = toast.close(id);
+    const close = () => toast.close(id);
 
     if (!toast.isActive(id)) {
       toast.show({
@@ -126,7 +126,7 @@ const useCustomToast = () => {
 
   const confirm = ({ toastId, title = '请确认', description, onConfirm, ...props }: any) => {
     const id = toastId || _.random(0, 999999999);
-    const close = toast.close(id);
+    const close = () => toast.close(id);
 
     if (!toast.isActive(id)) {
       toast.show({
@@ -150,7 +150,7 @@ const useCustomToast = () => {
 
   const custom = ({ toastId, title, description, actions, ...props }: any) => {
     const id = toastId || _.random(0, 999999999);
-    const close = toast.close(id);
+    const close = () => toast.close(id);
 
     if (!toast.isActive(id)) {
       toast.show({

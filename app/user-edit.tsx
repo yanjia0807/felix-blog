@@ -98,7 +98,7 @@ const UserEdit: React.FC = () => {
       return updateMe(formData);
     },
     onSuccess: (data: any) => {
-      queryClient.setQueryData(['users', 'me'], data);
+      queryClient.setQueryData(['users', 'detail', 'me'], data);
       toast.success({ title: '操作完成', description: '您的资料已更新' });
       router.navigate('/profile');
     },

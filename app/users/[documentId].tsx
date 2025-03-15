@@ -10,7 +10,7 @@ import {
   ScanFace,
   Share2,
 } from 'lucide-react-native';
-import { FlatList } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { createChat, fetchChatByUsers, fetchUser, isFollowingUser, updateFollowings } from '@/api';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-context';
@@ -20,13 +20,16 @@ import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar'
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { thumbnailSize } from '@/utils/file';
+
+interface UserDetailProps {
+  user: any;
+}
 
 const UserDetailSkeleton = () => (
   <VStack space="xl">
@@ -36,7 +39,7 @@ const UserDetailSkeleton = () => (
         <SkeletonText _lines={2} className="h-2 w-1/2" />
       </VStack>
     </HStack>
-    <SkeletonText _lines={4} className="h-2" />
+    <SkeletonText _lines={3} className="h-2" />
     <Skeleton variant="rounded" className="my-2 h-20 w-full" />
     <HStack space="sm">
       <Skeleton variant="rounded" className="h-12 flex-1" />
@@ -47,22 +50,25 @@ const UserDetailSkeleton = () => (
   </VStack>
 );
 
-const UserDetailHeader: React.FC = () => {
-  const { user: currentUser } = useAuth();
+const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   const { documentId }: any = useLocalSearchParams();
+  const { user: currentUser } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const userDocumentIds = currentUser ? [currentUser.documentId, documentId] : [];
   const isMe = documentId === currentUser?.documentId;
 
-  const {
-    isLoading: isLoadingUser,
-    isSuccess: isLoadUserSuccess,
-    data: user,
-  } = useQuery({
-    queryKey: ['users', documentId],
-    queryFn: () => fetchUser(documentId),
+  const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
+    queryKey: ['chats', 'list', { userDocumentIds }],
+    enabled: !!currentUser,
+    queryFn: () => fetchChatByUsers({ userDocumentIds }),
+  });
+
+  const { data: isFollowing } = useQuery({
+    queryKey: ['users', 'detail', 'me', 'followings', documentId],
+    enabled: !!currentUser,
+    queryFn: () => isFollowingUser({ following: documentId }),
   });
 
   const { mutate: createChatMutate } = useMutation({
@@ -77,18 +83,6 @@ const UserDetailHeader: React.FC = () => {
     },
   });
 
-  const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
-    queryKey: ['chats', 'list', { userDocumentIds }],
-    enabled: !!currentUser,
-    queryFn: () => fetchChatByUsers({ userDocumentIds }),
-  });
-
-  const { data: isFollowing } = useQuery({
-    queryKey: ['users', 'me', 'followings', documentId],
-    enabled: !!currentUser,
-    queryFn: () => isFollowingUser({ following: documentId }),
-  });
-
   const { isPending: isFollowPending, mutate: followMutate } = useMutation({
     mutationFn: () => {
       const params = { following: user.documentId };
@@ -96,7 +90,7 @@ const UserDetailHeader: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['users', 'me'],
+        queryKey: ['users', 'detail', 'me'],
       });
       toast.success({
         description: isFollowing ? '取消关注成功' : '关注成功',
@@ -146,121 +140,119 @@ const UserDetailHeader: React.FC = () => {
     });
   };
 
-  const renderUser = () => (
-    <>
-      <VStack space="xl">
-        <HStack className="items-center" space="lg">
-          <Avatar size="xl" className="shadow">
-            <AvatarFallbackText>{user.username}</AvatarFallbackText>
-            <AvatarImage
-              source={{
-                uri: thumbnailSize(user.avatar),
-              }}
-            />
-          </Avatar>
-          <VStack space="sm">
-            <Text size="2xl" bold={true}>
-              {user.username}
-            </Text>
-            <HStack space="sm">
-              <HStack className="items-center" space="xs">
-                <Icon size="xs" as={Calendar} />
-                <Text size="xs">{user.birthday}</Text>
-              </HStack>
-              <HStack className="items-center" space="xs">
-                <Icon size="xs" as={ScanFace} />
-                <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
-              </HStack>
-              {user.district && (
-                <HStack className="items-center" space="xs">
-                  <Icon size="xs" as={MapPin} />
-                  <Text size="xs">{`${user.district.provinceName}|${user.district.cityName}|${user.district.districtName}`}</Text>
-                </HStack>
-              )}
-            </HStack>
-          </VStack>
-        </HStack>
-        <HStack className="items-center justify-center">
-          <Text size="sm">{user.bio || '个人签名'}</Text>
-        </HStack>
-        {!isMe && (
-          <HStack className="items-center justify-center" space="2xl">
-            <Button
-              size="md"
-              action="secondary"
-              onPress={() => onChatButtonPressed()}
-              className="items-center justify-center rounded-3xl p-2.5">
-              <ButtonIcon as={MessageCircle} />
-            </Button>
-            <Button
-              disabled={!currentUser}
-              action={isFollowing ? 'secondary' : 'primary'}
-              className="rounded-3xl px-16"
-              onPress={() => onFollowBtnPressed()}>
-              <ButtonText>{isFollowing ? '取消关注' : '关注'}</ButtonText>
-              {isFollowPending && <ButtonSpinner />}
-            </Button>
-            <Button
-              action="secondary"
-              size="md"
-              onPress={() => onShareButtonPressed()}
-              className="items-center justify-center rounded-3xl p-2.5">
-              <ButtonIcon as={Share2} />
-            </Button>
-          </HStack>
-        )}
-
-        <HStack
-          space="md"
-          className="justify-around rounded-lg border-y border-primary-50 bg-primary-100 py-3">
-          <VStack className="items-center justify-center">
-            <Text size="xl" bold={true}>
-              {user.posts?.count}
-            </Text>
-            <Text size="sm">帖子</Text>
-          </VStack>
-          <Pressable onPress={() => onFollowingsBtnPress()}>
-            <VStack className="items-center justify-center">
-              <Text size="xl" bold={true}>
-                {user.followings.count}
-              </Text>
-              <Text size="sm">关注</Text>
-            </VStack>
-          </Pressable>
-          <Pressable onPress={() => onFollowersBtnPress()}>
-            <VStack className="items-center justify-center">
-              <Text size="xl" bold={true}>
-                {user.followers.count}
-              </Text>
-              <Text size="sm">被关注</Text>
-            </VStack>
-          </Pressable>
-        </HStack>
-        <SegmentedControl
-          values={['帖子', '照片墙']}
-          selectedIndex={selectedIndex}
-          onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
-        />
-        {selectedIndex === 0 ? (
-          <PostListView userDocumentId={user.documentId} />
-        ) : (
-          <AlbumListView userDocumentId={user.documentId} />
-        )}
-      </VStack>
-    </>
-  );
-
   return (
-    <VStack className="flex-1 p-4">
-      <PageSpinner isVisiable={isLoadingUser} />
-      {isLoadingUser && <UserDetailSkeleton />}
-      {isLoadUserSuccess && renderUser()}
+    <VStack className="flex-1" space="md">
+      <HStack className="items-center" space="md">
+        <Avatar size="xl">
+          <AvatarFallbackText>{user.username}</AvatarFallbackText>
+          <AvatarImage
+            source={{
+              uri: thumbnailSize(user.avatar),
+            }}
+          />
+        </Avatar>
+        <VStack space="sm">
+          <Text size="2xl" bold={true}>
+            {user.username}
+          </Text>
+          <HStack space="sm">
+            <HStack className="items-center" space="xs">
+              <Icon size="xs" as={Calendar} />
+              <Text size="xs">{user.birthday}</Text>
+            </HStack>
+            <HStack className="items-center" space="xs">
+              <Icon size="xs" as={ScanFace} />
+              <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
+            </HStack>
+            {user.district && (
+              <HStack className="items-center" space="xs">
+                <Icon size="xs" as={MapPin} />
+                <Text size="xs">{`${user.district.provinceName}|${user.district.cityName}|${user.district.districtName}`}</Text>
+              </HStack>
+            )}
+          </HStack>
+        </VStack>
+      </HStack>
+      <HStack className="items-center justify-center">
+        <Text size="sm" numberOfLines={5}>
+          {user.bio || '个人签名'}
+        </Text>
+      </HStack>
+      {!isMe && (
+        <HStack className="items-center justify-center" space="2xl">
+          <Button
+            size="md"
+            action="secondary"
+            onPress={() => onChatButtonPressed()}
+            className="items-center justify-center rounded-3xl p-2.5">
+            <ButtonIcon as={MessageCircle} />
+          </Button>
+          <Button
+            disabled={!currentUser}
+            action={isFollowing ? 'secondary' : 'primary'}
+            className="rounded-3xl px-16"
+            onPress={() => onFollowBtnPressed()}>
+            <ButtonText>{isFollowing ? '取消关注' : '关注'}</ButtonText>
+            {isFollowPending && <ButtonSpinner />}
+          </Button>
+          <Button
+            action="secondary"
+            size="md"
+            onPress={() => onShareButtonPressed()}
+            className="items-center justify-center rounded-3xl p-2.5">
+            <ButtonIcon as={Share2} />
+          </Button>
+        </HStack>
+      )}
+      <HStack className="justify-around rounded-lg border-y border-primary-50 bg-primary-100 py-3">
+        <VStack className="items-center justify-center">
+          <Text size="lg" bold={true}>
+            {user.posts.count}
+          </Text>
+          <Text size="sm">帖子</Text>
+        </VStack>
+        <TouchableOpacity onPress={() => onFollowingsBtnPress()}>
+          <VStack className="items-center justify-center">
+            <Text size="lg" bold={true}>
+              {user.followings.count}
+            </Text>
+            <Text size="sm">关注</Text>
+          </VStack>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onFollowersBtnPress()}>
+          <VStack className="items-center justify-center">
+            <Text size="lg" bold={true}>
+              {user.followers.count}
+            </Text>
+            <Text size="sm">被关注</Text>
+          </VStack>
+        </TouchableOpacity>
+      </HStack>
+      <SegmentedControl
+        values={['帖子', '照片墙']}
+        selectedIndex={selectedIndex}
+        onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
+      />
+      {selectedIndex === 0 ? (
+        <PostListView userDocumentId={user.documentId} />
+      ) : (
+        <AlbumListView userDocumentId={user.documentId} />
+      )}
     </VStack>
   );
 };
 
-const UserDetail: React.FC = () => {
-  const renderListHeader = (props: any) => <UserDetailHeader {...props} />;
+const UserDetailPage: React.FC = () => {
+  const { documentId }: any = useLocalSearchParams();
+
+  const {
+    isLoading,
+    isSuccess,
+    data: user,
+  } = useQuery({
+    queryKey: ['users', 'detail', documentId],
+    queryFn: () => fetchUser(documentId),
+  });
 
   const renderHeaderLeft = () => (
     <Button
@@ -274,8 +266,6 @@ const UserDetail: React.FC = () => {
     </Button>
   );
 
-  const renderItem = () => <></>;
-
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -285,14 +275,12 @@ const UserDetail: React.FC = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <FlatList
-        data={[]}
-        ListHeaderComponent={renderListHeader}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+      <VStack className="flex-1 p-4">
+        <PageSpinner isVisiable={isLoading} />
+        {isLoading ? <UserDetailSkeleton /> : isSuccess ? <UserDetail user={user} /> : <></>}
+      </VStack>
     </SafeAreaView>
   );
 };
 
-export default UserDetail;
+export default UserDetailPage;

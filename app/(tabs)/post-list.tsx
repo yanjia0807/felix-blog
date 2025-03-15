@@ -1,10 +1,10 @@
 import React, { memo, useState } from 'react';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, UseQueryResult } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
-import { FlatList, RefreshControl } from 'react-native';
+import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
 import { fetchPosts, fetchTags } from '@/api';
 import AlbumPagerView from '@/components/album-pager-view';
@@ -32,7 +32,6 @@ import { Fab, FabLabel, FabIcon } from '@/components/ui/fab';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
-import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
@@ -53,24 +52,34 @@ const PostTagItem = ({ item, isLoaded }: any) => {
   const { filters, selectTag } = usePostFilterContext();
 
   return (
-    <Button
-      size="sm"
-      action="secondary"
-      variant={_.includes(filters.tags, item.id) ? 'solid' : 'outline'}
-      className="mx-2"
-      onPress={() => selectTag({ item })}>
-      <ButtonText>{item.name}</ButtonText>
-    </Button>
+    <Box className={`mx-1 ${isLoaded ? 'h-auto w-auto' : 'h-8 w-16'}`}>
+      <Skeleton isLoaded={isLoaded} variant="rounded">
+        {item && (
+          <Button
+            size="sm"
+            action="secondary"
+            variant={_.includes(filters.tags, item.id) ? 'solid' : 'outline'}
+            onPress={() => selectTag({ item })}>
+            <ButtonText>{item.name}</ButtonText>
+          </Button>
+        )}
+      </Skeleton>
+    </Box>
   );
 };
 
-const PostHeader: React.FC = () => {
-  const { isSuccess, data: tags } = useQuery({
-    queryKey: ['tags', 'list'],
-    queryFn: fetchTags,
-  });
+interface PostHeaderProps {
+  tagQuery: UseQueryResult<any, Error>;
+}
 
-  const renderItem = ({ item }: any) => <PostTagItem item={item} isLoaded={isSuccess} />;
+const PostHeader: React.FC<PostHeaderProps> = ({ tagQuery }) => {
+  const renderItem = ({ item }: any) => <PostTagItem item={item} isLoaded={!tagQuery.isLoading} />;
+
+  const tags: any = tagQuery.isLoading
+    ? Array(2).fill(undefined)
+    : tagQuery.isSuccess
+      ? tagQuery.data
+      : [];
 
   return (
     <VStack className="h-32">
@@ -147,8 +156,8 @@ const PostItem: React.FC<any> = memo(
       <Box className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
         <Skeleton variant="rounded" isLoaded={isLoaded}>
           {post && (
-            <Pressable onPress={() => onPostItemPressed({ post, index })} pointerEvents="box-none">
-              <Card variant="elevated">
+            <TouchableOpacity onPress={() => onPostItemPressed({ post, index })}>
+              <Card variant="elevated" size="sm">
                 <VStack space="lg">
                   <VStack space="sm">
                     <HStack className="items-center justify-between">
@@ -160,11 +169,13 @@ const PostItem: React.FC<any> = memo(
                     </Heading>
                     <HStack className="items-center justify-between">
                       <Text size="xs">{formatDistance(post.createdAt)}</Text>
-                      <HStack space="xs" className="items-center justify-end">
+                      <HStack space="xs" className="w-1/2 items-center justify-end">
                         {post.poi?.address && (
                           <HStack className="items-center">
                             <Icon as={MapPin} size="xs" />
-                            <Text size="xs">{post.poi.address}</Text>
+                            <Text size="xs" numberOfLines={1}>
+                              {post.poi.address}
+                            </Text>
                           </HStack>
                         )}
                       </HStack>
@@ -172,7 +183,7 @@ const PostItem: React.FC<any> = memo(
                     <TagList tags={post.tags || []}></TagList>
                   </VStack>
                   {cover && (
-                    <Pressable className="h-36 flex-1" onPress={onCoverPress}>
+                    <TouchableOpacity className="h-36 flex-1" onPress={onCoverPress}>
                       <Image
                         source={{
                           uri: cover.uri,
@@ -185,7 +196,7 @@ const PostItem: React.FC<any> = memo(
                           borderRadius: 8,
                         }}
                       />
-                    </Pressable>
+                    </TouchableOpacity>
                   )}
                   <Text numberOfLines={5}>{post.content}</Text>
                   <ImageList value={images} onPress={onImagePress} />
@@ -227,7 +238,7 @@ const PostItem: React.FC<any> = memo(
                   </VStack>
                 </VStack>
               </Card>
-            </Pressable>
+            </TouchableOpacity>
           )}
         </Skeleton>
       </Box>
@@ -243,28 +254,19 @@ const PostList = function PostList() {
   const [album, setAblum] = useState<any>([]);
   const onPagerClose = () => setIsPagerOpen(false);
 
-  const {
-    data: postData,
-    fetchNextPage,
-    hasNextPage,
-    isLoading,
-    isSuccess,
-    isFetchingNextPage,
-    refetch,
-  } = useInfiniteQuery({
+  const postQuery = useInfiniteQuery({
     queryKey: ['posts', 'list', filters],
     queryFn: fetchPosts,
     initialPageParam: {
       filters,
       pagination: {
         page: 1,
-        pageSize: 20,
+        pageSize: 5,
       },
     },
     getNextPageParam: (lastPage: any) => {
       const {
         meta: {
-          filters,
           pagination: { page, pageSize, pageCount },
         },
       } = lastPage;
@@ -280,22 +282,29 @@ const PostList = function PostList() {
     },
   });
 
-  const posts: any = isSuccess
-    ? _.reduce(postData?.pages, (result: any, item: any) => [...result, ...item.data], [])
-    : Array(5).fill(undefined);
+  const tagQuery = useQuery({
+    queryKey: ['tags', 'list'],
+    queryFn: fetchTags,
+  });
+
+  const posts: any = postQuery.isLoading
+    ? Array(2).fill(undefined)
+    : postQuery.isSuccess
+      ? _.reduce(postQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
+      : [];
 
   const renderPostItem = ({ item, index }: any) => (
     <PostItem
       post={item}
       index={index}
-      isLoaded={!isLoading}
+      isLoaded={!postQuery.isLoading}
       setIsPagerOpen={setIsPagerOpen}
       setPagerIndex={setPagerIndex}
       setAblum={setAblum}
     />
   );
 
-  const renderPostHeader = (props: any) => <PostHeader {...props} />;
+  const renderPostHeader = (props: any) => <PostHeader tagQuery={tagQuery} {...props} />;
 
   const renderEmptyComponent = () => (
     <Box className="flex-1 items-center justify-center">
@@ -304,6 +313,13 @@ const PostList = function PostList() {
   );
 
   const onCreatePostButtonPressed = () => router.push('/posts/create');
+
+  const isLoading = postQuery.isLoading || tagQuery.isLoading;
+
+  const refetchAll = () => {
+    postQuery.refetch();
+    tagQuery.refetch();
+  };
 
   return (
     <>
@@ -318,13 +334,13 @@ const PostList = function PostList() {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            if (postQuery.hasNextPage && !postQuery.isFetchingNextPage) postQuery.fetchNextPage();
           }}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
               onRefresh={() => {
-                if (!isLoading) refetch();
+                if (!isLoading) refetchAll();
               }}
             />
           }

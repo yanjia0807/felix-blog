@@ -39,7 +39,6 @@ import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { Portal } from './ui/portal';
-import { Pressable } from './ui/pressable';
 import { Slider, SliderFilledTrack, SliderTrack } from './ui/slider';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
@@ -409,7 +408,7 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
   return (
     <>
       {value ? (
-        <Pressable className="my-2 h-40" onPress={onPress}>
+        <TouchableOpacity className="my-2 h-40" onPress={onPress}>
           <Image
             style={{
               width: '100%',
@@ -429,15 +428,15 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
             onPress={onClearBtnPress}>
             <ButtonIcon as={CircleX} />
           </Button>
-        </Pressable>
+        </TouchableOpacity>
       ) : (
         <>
           <Input variant="underlined" className="border-0 border-b p-2" isReadOnly={true}>
             <InputField placeholder="请选择封面...." />
             <InputSlot>
-              <Pressable onPress={onInputPress}>
+              <TouchableOpacity onPress={onInputPress}>
                 <InputIcon as={ImageIcon}></InputIcon>
-              </Pressable>
+              </TouchableOpacity>
             </InputSlot>
           </Input>
           <ImageSheet
@@ -457,7 +456,7 @@ export const CoverView = ({ onChange, value, onPress }: any) => {
   return (
     <>
       {value && (
-        <Pressable className="h-36 flex-1" onPress={onPress}>
+        <TouchableOpacity className="h-36 flex-1" onPress={onPress}>
           <Image
             style={{
               width: '100%',
@@ -469,7 +468,7 @@ export const CoverView = ({ onChange, value, onPress }: any) => {
             }}
             alt={value.alternativeText}
           />
-        </Pressable>
+        </TouchableOpacity>
       )}
     </>
   );
@@ -507,16 +506,16 @@ export const AvatarImageInput = ({ onChange, value }: any) => {
 
   return (
     <>
-      <Pressable onPress={() => onInputIconPressed()}>
+      <TouchableOpacity onPress={() => onInputIconPressed()}>
         <Avatar size="xl">
           {source && <AvatarImage source={source} />}
           <AvatarBadge className="items-center justify-center">
-            <Pressable onPress={() => onRemoveIconPressed()}>
+            <TouchableOpacity onPress={() => onRemoveIconPressed()}>
               <Icon as={X} size="xs" />
-            </Pressable>
+            </TouchableOpacity>
           </AvatarBadge>
         </Avatar>
-      </Pressable>
+      </TouchableOpacity>
       <ImageSheet
         isOpen={showActionsheet}
         onClose={onClose}
@@ -634,7 +633,7 @@ export const ImageItem = ({ item, index, onPress, onRemove }: any) => {
   const uri = isVideo(item.fileType) ? item.thumbnail : item.uri;
 
   return (
-    <Pressable onPress={() => onPress(index)}>
+    <TouchableOpacity onPress={() => onPress(index)}>
       <Image
         style={{
           width: '100%',
@@ -652,7 +651,7 @@ export const ImageItem = ({ item, index, onPress, onRemove }: any) => {
         onPress={() => onRemove(item.uri)}>
         <ButtonIcon as={CircleX} />
       </Button>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
@@ -702,7 +701,7 @@ export const ImageList = ({ value = [], onPress }: any) => {
     const uri = isVideo(item.fileType) ? item.thumbnail : item.uri;
 
     return (
-      <Pressable
+      <TouchableOpacity
         onPress={() => onPress(index)}
         className={`mx-1 h-16 w-16 ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}>
         <Image
@@ -717,7 +716,7 @@ export const ImageList = ({ value = [], onPress }: any) => {
             opacity: 0.7,
           }}
         />
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 

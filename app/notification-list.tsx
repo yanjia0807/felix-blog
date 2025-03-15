@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
+import { TouchableOpacity } from 'react-native';
 import { fetchNotifications, updateNotificationState } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
@@ -13,7 +14,6 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FlatList } from '@/components/ui/flat-list';
 import { HStack } from '@/components/ui/hstack';
-import { Pressable } from '@/components/ui/pressable';
 import { RefreshControl } from '@/components/ui/refresh-control';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
@@ -110,7 +110,7 @@ const NotificationList: React.FC = () => {
 
   const renderFollowNotificationItem = ({ item, index }: any) => {
     return (
-      <Pressable onPress={() => onNotificationItemPressed({ item })}>
+      <TouchableOpacity onPress={() => onNotificationItemPressed({ item })}>
         <Card variant="elevated" className="my-6 w-full rounded-lg" size="lg">
           {item.state === 'unread' && (
             <Box className="absolute right-0 top-0 m-4 h-3 w-3 rounded-full bg-green-400" />
@@ -142,7 +142,7 @@ const NotificationList: React.FC = () => {
             </HStack>
           </VStack>
         </Card>
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 

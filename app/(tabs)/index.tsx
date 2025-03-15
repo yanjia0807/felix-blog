@@ -1,12 +1,18 @@
 import React from 'react';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
+  useQuery,
+} from '@tanstack/react-query';
+import { AxiosResponse } from 'axios';
 import { format } from 'date-fns';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
-import { FlatList, Pressable, RefreshControl } from 'react-native';
+import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
 import { AuthorInfo } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
@@ -29,61 +35,39 @@ import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
 import { largeSize, thumbnailSize } from '@/utils/file';
 
-const HomeHeader: React.FC = () => {
-  const {
-    data: featureData,
-    fetchNextPage,
-    hasNextPage,
-    isSuccess: isLoadFeaturesSuccess,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['features', 'list'],
-    queryFn: fetchFeatures,
-    initialPageParam: {
-      pagination: {
-        page: 1,
-        pageSize: 20,
-      },
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { page, pageSize, pageCount },
-        },
-      } = lastPage;
+interface HomeHeaderProps {
+  featureQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
+  authorQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
+}
 
-      if (page < pageCount) {
-        return {
-          pagination: { page: page + 1, pageSize },
-        };
-      }
+const HomeHeader: React.FC<HomeHeaderProps> = ({ featureQuery, authorQuery }) => {
+  const features: any = featureQuery.isLoading
+    ? Array(2).fill(undefined)
+    : featureQuery.isSuccess
+      ? _.reduce(
+          featureQuery.data?.pages,
+          (result: any, item: any) => [...result, ...item.data],
+          [],
+        )
+      : [];
 
-      return null;
-    },
-  });
+  const authors = authorQuery.isLoading
+    ? Array(2).fill(undefined)
+    : authorQuery.isSuccess
+      ? authorQuery.data
+      : [];
 
-  const features: any = isLoadFeaturesSuccess
-    ? _.reduce(featureData?.pages, (result: any, item: any) => [...result, ...item.data], [])
-    : Array(2).fill(undefined);
-
-  const { data: authorsData, isSuccess: isLoadAuthorsSuccess } = useQuery({
-    queryKey: ['posts', 'authors', 'list'],
-    queryFn: fetchPostAuthors,
-  });
-
-  const authors = isLoadAuthorsSuccess ? authorsData : Array(2).fill(undefined);
-
-  const onFeatureItemPressed = ({ post }: any) => {
-    if (post) {
-      router.push(`/posts/${post.documentId}`);
+  const onFeatureItemPressed = ({ item }: any) => {
+    if (item) {
+      router.push(`/posts/${item.documentId}`);
     }
   };
 
   const renderFeatureItem = ({ item, index }: any) => (
     <Box className={`ml-4 h-48 w-80 ${index === 0 ? 'ml-0' : ''}`}>
-      <Skeleton isLoaded={isLoadFeaturesSuccess} variant="rounded">
+      <Skeleton isLoaded={!featureQuery.isLoading} variant="rounded">
         {item && (
-          <Pressable onPress={() => onFeatureItemPressed(item)}>
+          <TouchableOpacity onPress={() => onFeatureItemPressed({ item })}>
             <Image
               recyclingKey={item.assetId}
               source={{
@@ -124,18 +108,18 @@ const HomeHeader: React.FC = () => {
                 </BlurView>
               </Box>
             )}
-          </Pressable>
+          </TouchableOpacity>
         )}
       </Skeleton>
     </Box>
   );
 
-  const onAvatarPress = (documentId: string) => router.push(`/users/${documentId}`);
+  const onAvatarPress = ({ item }: any) => router.push(`/users/${item.documentId}`);
 
   const renderAuthorItem = ({ item, index }: any) => {
     return (
-      <Pressable
-        onPress={() => onAvatarPress(item.documentId)}
+      <TouchableOpacity
+        onPress={() => onAvatarPress({ item })}
         className={`ml-4 ${index === 0 ? 'ml-0' : ''}`}>
         <VStack className="items-center" space="xs">
           <Avatar key={item.id} size="md">
@@ -148,7 +132,7 @@ const HomeHeader: React.FC = () => {
           </Avatar>
           <Text size="sm">{item.username}</Text>
         </VStack>
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 
@@ -162,13 +146,13 @@ const HomeHeader: React.FC = () => {
           horizontal={true}
           showsHorizontalScrollIndicator={false}
           onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
+            if (featureQuery.hasNextPage && !featureQuery.isFetchingNextPage) {
+              featureQuery.fetchNextPage();
             }
           }}
         />
         <Box className="h-[94.7]">
-          <Skeleton variant="rounded" isLoaded={isLoadAuthorsSuccess}>
+          <Skeleton variant="rounded" isLoaded={!authorQuery.isLoading}>
             <VStack space="md">
               <Text bold={true}>最近更新</Text>
               <FlatList
@@ -200,28 +184,28 @@ const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) 
     <Box className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
       <Skeleton variant="rounded" isLoaded={isLoaded}>
         {item && (
-          <Pressable
-            onPress={() => onRecommentItemPressed(item.documentId)}
-            pointerEvents="box-none">
-            <Card variant="elevated" size="md">
+          <TouchableOpacity onPress={() => onRecommentItemPressed(item.documentId)}>
+            <Card variant="elevated" size="sm">
               <VStack space="lg">
                 <VStack space="sm">
-                  <Pressable onPress={() => onAvatarPress(item.author.documentId)}>
+                  <TouchableOpacity onPress={() => onAvatarPress(item.author.documentId)}>
                     <HStack className="items-center justify-between">
                       <AuthorInfo author={item.author} />
                       <PostItemMenu post={item} />
                     </HStack>
-                  </Pressable>
+                  </TouchableOpacity>
                   <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
                     {item.title}
                   </Heading>
                   <HStack className="items-center justify-between">
                     <Text size="xs">{formatDistance(item.createdAt)}</Text>
-                    <HStack space="xs" className="items-center justify-end">
+                    <HStack space="xs" className="w-1/2 items-center justify-end">
                       {item.poi?.address && (
                         <HStack className="items-center">
                           <Icon as={MapPin} size="xs" />
-                          <Text size="xs">{item.poi.address}</Text>
+                          <Text size="xs" numberOfLines={1}>
+                            {item.poi.address}
+                          </Text>
                         </HStack>
                       )}
                     </HStack>
@@ -269,7 +253,7 @@ const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) 
                 </VStack>
               </VStack>
             </Card>
-          </Pressable>
+          </TouchableOpacity>
         )}
       </Skeleton>
     </Box>
@@ -277,21 +261,13 @@ const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) 
 };
 
 const Home: React.FC = () => {
-  const {
-    data: recommentData,
-    fetchNextPage,
-    hasNextPage,
-    isLoading: isLoadingRecomment,
-    isSuccess: isLoadRecommentSuccess,
-    isFetchingNextPage,
-    refetch,
-  } = useInfiniteQuery({
+  const recommentQuery = useInfiniteQuery({
     queryKey: ['posts', 'list', 'recomment'],
     queryFn: fetchRecommendPosts,
     initialPageParam: {
       pagination: {
         page: 1,
-        pageSize: 20,
+        pageSize: 5,
       },
     },
     getNextPageParam: (lastPage: any) => {
@@ -311,15 +287,54 @@ const Home: React.FC = () => {
     },
   });
 
-  const recomments: any = isLoadRecommentSuccess
-    ? _.reduce(recommentData?.pages, (result: any, item: any) => [...result, ...item.data], [])
-    : Array(2).fill(undefined);
+  const featureQuery = useInfiniteQuery({
+    queryKey: ['posts', 'list', 'features'],
+    queryFn: fetchFeatures,
+    initialPageParam: {
+      pagination: {
+        page: 1,
+        pageSize: 5,
+      },
+    },
+    getNextPageParam: (lastPage: any) => {
+      const {
+        meta: {
+          pagination: { page, pageSize, pageCount },
+        },
+      } = lastPage;
+
+      if (page < pageCount) {
+        return {
+          pagination: { page: page + 1, pageSize },
+        };
+      }
+
+      return null;
+    },
+  });
+
+  const authorQuery = useQuery({
+    queryKey: ['posts', 'list', 'authors'],
+    queryFn: fetchPostAuthors,
+  });
+
+  const recomments: any = recommentQuery.isLoading
+    ? Array(2).fill(undefined)
+    : recommentQuery.isSuccess
+      ? _.reduce(
+          recommentQuery.data?.pages,
+          (result: any, item: any) => [...result, ...item.data],
+          [],
+        )
+      : [];
 
   const renderRecommentItem = ({ item, index }: any) => (
-    <RecommentItem item={item} index={index} isLoaded={!isLoadingRecomment} />
+    <RecommentItem item={item} index={index} isLoaded={!recommentQuery.isLoading} />
   );
 
-  const renderListHeader = (props: any) => <HomeHeader {...props}></HomeHeader>;
+  const renderListHeader = (props: any) => (
+    <HomeHeader featureQuery={featureQuery} authorQuery={authorQuery} {...props}></HomeHeader>
+  );
 
   const renderEmptyComponent = (props: any) => (
     <Box className="flex-1 items-center justify-center">
@@ -327,9 +342,17 @@ const Home: React.FC = () => {
     </Box>
   );
 
+  const isLoading = recommentQuery.isLoading || featureQuery.isLoading || authorQuery.isLoading;
+
+  const refetchAll = () => {
+    recommentQuery.refetch();
+    featureQuery.refetch();
+    authorQuery.refetch();
+  };
+
   return (
     <SafeAreaView className="flex-1">
-      <PageSpinner isVisiable={isLoadingRecomment} />
+      <PageSpinner isVisiable={recommentQuery.isLoading} />
       <VStack className="flex-1 px-4" space="md">
         <FlatList
           data={recomments}
@@ -338,13 +361,14 @@ const Home: React.FC = () => {
           renderItem={renderRecommentItem}
           showsVerticalScrollIndicator={false}
           onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            if (recommentQuery.hasNextPage && !recommentQuery.isFetchingNextPage)
+              recommentQuery.fetchNextPage();
           }}
           refreshControl={
             <RefreshControl
-              refreshing={isLoadingRecomment}
+              refreshing={isLoading}
               onRefresh={() => {
-                if (!isLoadingRecomment) refetch();
+                refetchAll();
               }}
             />
           }

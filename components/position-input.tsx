@@ -19,9 +19,9 @@ import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
-import { Pressable } from './ui/pressable';
 import { RefreshControl } from './ui/refresh-control';
 import { VStack } from './ui/vstack';
+import { TouchableOpacity } from 'react-native';
 
 export const PositionInput = ({ value, onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -123,13 +123,13 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
   };
 
   const renderPositionItem = ({ item }: any) => (
-    <Pressable className="p-2" onPress={() => onSelectBtnPressed(item)}>
+    <TouchableOpacity className="p-2" onPress={() => onSelectBtnPressed(item)}>
       <Text size="md" bold={true}>
         {item.name}
       </Text>
       <Text size="sm">{item.address}</Text>
       <Divider></Divider>
-    </Pressable>
+    </TouchableOpacity>
   );
 
   const renderBackdrop = useCallback(

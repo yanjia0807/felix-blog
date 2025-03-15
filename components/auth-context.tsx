@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: any) => {
   const queryClient = useQueryClient();
 
   const { data, isError } = useQuery({
-    queryKey: ['users', 'me'],
+    queryKey: ['users', 'detail', 'me'],
     queryFn: fetchMe,
     enabled: !!accessToken,
   });
@@ -51,11 +51,11 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   const logoutMutation = async () => {
-    await queryClient.setQueryData(['users', 'me'], () => null);
+    await queryClient.setQueryData(['users', 'detail', 'me'], () => null);
     setAccessToken(null);
     await SecureStore.deleteItemAsync('accessToken');
     await queryClient.removeQueries({
-      queryKey: ['users', 'me'],
+      queryKey: ['users', 'detail', 'me'],
     });
     queryClient.clear();
   };

@@ -5,7 +5,7 @@ import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
 import _ from 'lodash';
 import { Check, CircleX, Mic, MicOff, PauseCircle, RotateCcw, Volume2 } from 'lucide-react-native';
-import { Keyboard } from 'react-native';
+import { Keyboard, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -20,7 +20,6 @@ import { Button, ButtonIcon, ButtonSpinner, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
-import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
@@ -38,7 +37,7 @@ const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
   }));
 
   return (
-    <Pressable onPress={doRecording}>
+    <TouchableOpacity onPress={doRecording}>
       <Animated.View entering={BounceIn} exiting={BounceOut}>
         <Animated.View
           className="h-40 w-40 items-center justify-center rounded-full bg-primary-400"
@@ -50,7 +49,7 @@ const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
           )}
         </Animated.View>
       </Animated.View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

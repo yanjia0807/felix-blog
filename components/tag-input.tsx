@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import { Tag, X } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
+import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { twMerge } from 'tailwind-merge';
 import { z } from 'zod';
@@ -22,7 +23,6 @@ import { FormControl } from './ui/form-control';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Input, InputIcon } from './ui/input';
-import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
@@ -86,9 +86,9 @@ export const TagInput = ({ value, onChange }: any) => {
 
   return (
     <>
-      <Pressable onPress={() => onInputIconPressed()}>
+      <TouchableOpacity onPress={() => onInputIconPressed()}>
         <InputIcon as={Tag}></InputIcon>
-      </Pressable>
+      </TouchableOpacity>
       <TagSheet onChange={onChange} value={value} ref={bottomSheetRef} />
     </>
   );
@@ -149,12 +149,12 @@ export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any,
 
   const renderItem = ({ item }: any) => {
     return (
-      <Pressable
+      <TouchableOpacity
         disabled={_.some(selectedTags, ['documentId', item.documentId])}
         className="w-full justify-start py-2"
         onPress={() => onAdd(item)}>
         <Text className="w-full">{item.name}</Text>
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 

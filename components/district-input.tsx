@@ -1,3 +1,4 @@
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -7,7 +8,6 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchDistrict } from '@/api';
 import PageSpinner from './page-spinner';
@@ -16,9 +16,9 @@ import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
-import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
+import { TouchableOpacity } from 'react-native';
 
 export const DistrictInput = ({ value, onChange, placeholder }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -123,9 +123,9 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
 
   const renderItem = ({ item }: any) => {
     return (
-      <Pressable onPress={() => onListItemPressed({ item })}>
+      <TouchableOpacity onPress={() => onListItemPressed({ item })}>
         <Text className="p-2">{item.name}</Text>
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 
@@ -247,9 +247,9 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
         </VStack>
         <HStack space="md">
           {district?.map((item: any, index: number) => (
-            <Pressable onPress={() => onSelectedBtnPressed({ item })} key={index.toString()}>
+            <TouchableOpacity onPress={() => onSelectedBtnPressed({ item })} key={index.toString()}>
               <Text bold={item.level === currentLevel}>{item.name}</Text>
-            </Pressable>
+            </TouchableOpacity>
           ))}
         </HStack>
         <Text bold={true}>{currentLabel?.label}</Text>

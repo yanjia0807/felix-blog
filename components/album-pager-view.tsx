@@ -49,18 +49,9 @@ const ImagePage = forwardRef(
       }, 300);
     };
 
-    const onLoadStart = () => {
-      setLoading(true);
-    };
+    const onLoadStart = () => setLoading(true);
 
-    const onLoad = () => {
-      setLoading(false);
-    };
-
-    const onError = (error: any) => {
-      console.log('Image load error:', error);
-      setLoading(false);
-    };
+    const onLoad = () => setLoading(false);
 
     return (
       <View className="flex-1">
@@ -73,7 +64,6 @@ const ImagePage = forwardRef(
               style={{ width: screenWidth, flex: 1 }}
               onLoadStart={onLoadStart}
               onLoadEnd={onLoad}
-              onError={onError}
             />
           </Zoom>
         </Pressable>
@@ -307,15 +297,28 @@ const AlbumPagerView = ({ isOpen, onClose, value, initIndex = 0 }: any) => {
     setLoadedPages(loaded);
   };
 
+  const onPageScroll = (e: any) => {
+    console.log(e.nativeEvent.position);
+    if (e.nativeEvent.position < 0 || e.nativeEvent.position === value.length) {
+      onClose();
+    }
+  };
+
   const toggleVisible = () => setIsVisible((val) => !val);
 
   return (
-    <Portal isOpen={isOpen} style={{ flex: 1 }}>
-      <Animated.View entering={FadeInUp} exiting={FadeOutUp} className="flex-1 bg-background-50">
+    <Portal isOpen={isOpen} style={{ flex: 1 }} useRNModal={true}>
+      <Animated.View
+        entering={FadeIn.duration(100)}
+        exiting={FadeOut.duration(100)}
+        className="flex-1 bg-background-50">
         <PagerView
           style={{ flex: 1 }}
           initialPage={initIndex}
           onPageSelected={onPageSelected}
+          onPageScroll={onPageScroll}
+          overdrag={true}
+          overScrollMode="always"
           pageMargin={20}>
           {value.map((item: any, index: number) => {
             return (

@@ -39,7 +39,7 @@ const SearchUserList: React.FC = () => {
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['users', documentId, 'list', { keyword }],
+      queryKey: ['users', 'detail', documentId, 'users', { keyword }],
       queryFn: fetchUsers,
       enabled: !!documentId,
       initialPageParam: {

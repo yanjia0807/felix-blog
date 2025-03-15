@@ -3,12 +3,11 @@ import { MasonryFlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import _ from 'lodash';
-import { RefreshControl, useWindowDimensions } from 'react-native';
+import { RefreshControl, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { fetchUserPhotos } from '@/api';
 import { FileTypeNum, isImage, isVideo, largeSize, originSize, thumbnailSize } from '@/utils/file';
 import AlbumPagerView from './album-pager-view';
 import { Box } from './ui/box';
-import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 
 const numColumns = 3;
@@ -95,7 +94,7 @@ const AlbumListView = ({ userDocumentId }: any) => {
 
   const renderItem = ({ item, index }: any) => {
     return (
-      <Pressable onPress={() => onImagePress(index)}>
+      <TouchableOpacity onPress={() => onImagePress(index)}>
         <Image
           recyclingKey={item.assetId}
           source={{ uri: item.uri }}
@@ -107,7 +106,7 @@ const AlbumListView = ({ userDocumentId }: any) => {
           }}
           alt={item.alternativeText}
         />
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 

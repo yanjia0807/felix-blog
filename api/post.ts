@@ -46,44 +46,50 @@ export const fetchPosts = async ({ pageParam }: any) => {
     };
   }
 
-  const query = qs.stringify({
-    populate: {
-      author: {
-        fields: ['username'],
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
+  const query = qs.stringify(
+    {
+      populate: {
+        author: {
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
           },
         },
-      },
-      likedByUsers: {
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
+        likedByUsers: {
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+          fields: ['username'],
+        },
+        tags: true,
+        poi: true,
+        cover: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
+        attachments: true,
+        attachmentExtras: {
+          populate: {
+            attachment: true,
+            thumbnail: true,
           },
         },
-        fields: ['username'],
-      },
-      tags: true,
-      poi: true,
-      cover: {
-        fields: ['alternativeText', 'width', 'height', 'formats'],
-      },
-      attachments: true,
-      attachmentExtras: {
-        populate: {
-          attachment: true,
-          thumbnail: true,
+        comments: {
+          count: true,
         },
       },
-      comments: {
-        count: true,
-      },
+      filters,
+      sort: 'createdAt:desc',
+      pagination,
     },
-    filters,
-    sort: 'createdAt:desc',
-    pagination,
-  });
+    {
+      encodeValuesOnly: false,
+    },
+  );
+  console.log(`/posts?${query}`);
 
   const res = await apiClient.get(`/posts?${query}`);
   return res;
@@ -342,16 +348,19 @@ export const editPost = async (formData: PostData) => {
     _.forEach(formData.images, (item: any) => {
       if (isVideo(item.fileType)) {
         if (item.id) {
-          const extra = _.find(formData.attachmentExtras, (item1: any) => item1.attachment.id === item.id)
+          const extra = _.find(
+            formData.attachmentExtras,
+            (item1: any) => item1.attachment.id === item.id,
+          );
           attachmentExtras.push({
             attachment: extra.attachment.id,
-            thumbnail: extra.thumbnail.id
+            thumbnail: extra.thumbnail.id,
           });
         } else {
           const extra = {
             attachment: _.find(uploadRes, ['uri', item.uri]).id,
             thumbnail: _.find(uploadRes, ['uri', item.thumbnail]).id,
-          }
+          };
           attachmentExtras.push(extra);
         }
       }

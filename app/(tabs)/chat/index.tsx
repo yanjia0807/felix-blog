@@ -3,7 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import _ from 'lodash';
-import { FlatList, RefreshControl, SafeAreaView } from 'react-native';
+import { FlatList, RefreshControl, SafeAreaView, TouchableOpacity } from 'react-native';
 import { fetchChats } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import PageSpinner from '@/components/page-spinner';
@@ -14,7 +14,6 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
-import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { thumbnailSize } from '@/utils/file';
@@ -107,7 +106,7 @@ const ChatList: React.FC = () => {
     const otherUser: any = _.find(item.users, (item: any) => item.id !== user.id);
 
     return (
-      <Pressable onPress={() => onChatItemPressed({ item, index })} pointerEvents="box-none">
+      <TouchableOpacity onPress={() => onChatItemPressed({ item, index })}>
         {item.lastMessage ? (
           <HStack space="sm" className="w-full rounded-lg py-2">
             <Avatar>
@@ -158,7 +157,7 @@ const ChatList: React.FC = () => {
             </Text>
           </HStack>
         )}
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 
