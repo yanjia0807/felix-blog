@@ -23,7 +23,6 @@ import { Heart, HeartCrack } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-import { apiServerURL } from '@/api';
 import {
   createComment,
   deleteComment,
@@ -46,6 +45,7 @@ import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
+import { thumbnailSize } from '@/utils/file';
 
 const CommentContext = createContext<any>({});
 
@@ -375,7 +375,7 @@ export const CommentSheet = memo(() => {
             <AvatarFallbackText>{section.user.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}${section.user.avatar?.formats.thumbnail.url}`,
+                uri: thumbnailSize(section.user.avatar),
               }}
             />
           </Avatar>
@@ -477,9 +477,7 @@ export const CommentSheet = memo(() => {
         <HStack space="sm">
           <Avatar size="xs">
             <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
-            <AvatarImage
-              source={{ uri: `${apiServerURL}${item.user.avatar?.formats.thumbnail.url}` }}
-            />
+            <AvatarImage source={{ uri: thumbnailSize(item.user.avatar) }} />
           </Avatar>
           <VStack className="flex-1">
             <HStack className="items-center" space="sm">

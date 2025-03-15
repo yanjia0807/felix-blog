@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-export const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER;
+const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER;
 
 const config = {
   baseURL: `${apiServerURL}/api`,

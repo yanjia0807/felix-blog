@@ -1,10 +1,10 @@
+import React from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import _ from 'lodash';
-import React from 'react';
 import { FlatList, RefreshControl, SafeAreaView } from 'react-native';
-import { apiServerURL, fetchChats } from '@/api';
+import { fetchChats } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import PageSpinner from '@/components/page-spinner';
 import { useSocket } from '@/components/socket-context';
@@ -17,6 +17,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { thumbnailSize } from '@/utils/file';
 
 const ChatListHeader: React.FC = () => {
   const { user }: any = useAuth();
@@ -31,7 +32,7 @@ const ChatListHeader: React.FC = () => {
           <AvatarFallbackText>{user.username}</AvatarFallbackText>
           <AvatarImage
             source={{
-              uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
+              uri: thumbnailSize(user.avatar),
             }}
           />
         </Avatar>
@@ -113,7 +114,7 @@ const ChatList: React.FC = () => {
               <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
               <AvatarImage
                 source={{
-                  uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
+                  uri: thumbnailSize(otherUser.avatar),
                 }}
               />
             </Avatar>
@@ -148,7 +149,7 @@ const ChatList: React.FC = () => {
               <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
               <AvatarImage
                 source={{
-                  uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
+                  uri: thumbnailSize(otherUser.avatar),
                 }}
               />
             </Avatar>

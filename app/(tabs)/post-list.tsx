@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import { FlatList, RefreshControl } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
-import { apiServerURL, fetchPosts, fetchTags } from '@/api';
+import { fetchPosts, fetchTags } from '@/api';
 import AlbumPagerView from '@/components/album-pager-view';
 import { AuthorInfo, useAuth } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
@@ -44,8 +44,8 @@ import {
   isImage,
   isVideo,
   largeSize,
+  originSize,
   thumbnailSize,
-  fileUrl,
   videoThumbnail,
 } from '@/utils/file';
 
@@ -121,8 +121,8 @@ const PostItem: React.FC<any> = memo(
               data: item,
               fileType: FileTypeNum.Video,
               uri: thumbnailSize(item),
-              thumbnail: videoThumbnail(item, post?.attachmentExtras || []),
-              preview: largeSize(item),
+              thumbnail: videoThumbnail(item, post?.attachmentExtras),
+              preview: originSize(item),
             };
       },
     );
@@ -213,7 +213,7 @@ const PostItem: React.FC<any> = memo(
                                 </AvatarFallbackText>
                                 <AvatarImage
                                   source={{
-                                    uri: `${apiServerURL}${post.lastComment.user.avatar?.formats.thumbnail.url}`,
+                                    uri: thumbnailSize(post.lastComment.user.avatar),
                                   }}
                                 />
                               </Avatar>

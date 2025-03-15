@@ -1,14 +1,14 @@
+import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Search } from 'lucide-react-native';
-import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
-import { apiServerURL, fetchFollowers } from '@/api';
+import { fetchFollowers } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { thumbnailSize } from '@/utils/file';
 
 type FilterFormSchema = z.infer<typeof filterFormSchema>;
 
@@ -138,7 +139,7 @@ const FollowerList: React.FC = () => {
             <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}${item.avatar?.formats.thumbnail.url}`,
+                uri: thumbnailSize(item.avatar),
               }}
             />
           </Avatar>

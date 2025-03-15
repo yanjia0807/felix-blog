@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import { FlatList, Pressable, RefreshControl } from 'react-native';
-import { apiServerURL, fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
+import { fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
 import { AuthorInfo } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
 import { LikeButton } from '@/components/like-button';
@@ -111,7 +111,7 @@ const HomeHeader: React.FC = () => {
                           <AvatarFallbackText>{item.post.author.username}</AvatarFallbackText>
                           <AvatarImage
                             source={{
-                              uri: `${apiServerURL}${item.post.author.avatar?.formats.thumbnail.url}`,
+                              uri: thumbnailSize(item.post.author.avatar),
                             }}
                           />
                         </Avatar>
@@ -142,7 +142,7 @@ const HomeHeader: React.FC = () => {
             <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}${item.formats.thumbnail.url}`,
+                uri: thumbnailSize(item),
               }}
             />
           </Avatar>

@@ -4,8 +4,9 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import _ from 'lodash';
 import { RefreshControl, useWindowDimensions } from 'react-native';
-import GalleryPreview from 'react-native-gallery-preview';
-import { apiServerURL, fetchUserPhotos } from '@/api';
+import { fetchUserPhotos } from '@/api';
+import { FileTypeNum, isImage, isVideo, largeSize, originSize, thumbnailSize } from '@/utils/file';
+import AlbumPagerView from './album-pager-view';
 import { Box } from './ui/box';
 import { Pressable } from './ui/pressable';
 import { Text } from './ui/text';
@@ -13,8 +14,10 @@ import { Text } from './ui/text';
 const numColumns = 3;
 
 const AlbumListView = ({ userDocumentId }: any) => {
-  const [imageIndex, setImageIndex] = useState<number>(0);
-  const [isGalleryPreviewOpen, setIsGalleryPreviewOpen] = useState(false);
+  const [pagerIndex, setPagerIndex] = useState<number>(0);
+  const [isPagerOpen, setIsPagerOpen] = useState(false);
+  const onPagerClose = () => setIsPagerOpen(false);
+
   const { width } = useWindowDimensions();
 
   const renderEmptyComponent = (props: any) => {
@@ -27,7 +30,7 @@ const AlbumListView = ({ userDocumentId }: any) => {
 
   const { data, fetchNextPage, hasNextPage, isLoading, isSuccess, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['posts', 'list', { userDocumentId }, 'photos'],
+      queryKey: ['posts', 'list', { userDocumentId }, 'album'],
       queryFn: fetchUserPhotos,
       initialPageParam: {
         pagination: {
@@ -54,37 +57,36 @@ const AlbumListView = ({ userDocumentId }: any) => {
       },
     });
 
-  const onOpenGallery = async (index: number) => {
-    setImageIndex(index);
-    setIsGalleryPreviewOpen(true);
+  const onImagePress = (index: number) => {
+    setPagerIndex(index);
+    setIsPagerOpen(true);
   };
 
-  const photos: any = isSuccess
+  const images: any = isSuccess
     ? _.reduce(
         data?.pages,
         (result: any, page: any) => {
           return [
             ...result,
-            ...page.data.map((item: any) => ({
-              ...item,
-              uri: `${apiServerURL}${item.formats?.thumbnail.url}` || `${apiServerURL}${item.url}`,
-            })),
-          ];
-        },
-        [],
-      )
-    : [];
-
-  const originPhotos: any = isSuccess
-    ? _.reduce(
-        data?.pages,
-        (result: any, page: any) => {
-          return [
-            ...result,
-            ...page.data.map((item: any) => ({
-              ...item,
-              uri: `${apiServerURL}${item.url}`,
-            })),
+            ..._.filter(
+              page.data || [],
+              (item: any) => isImage(item.mime) || isVideo(item.mime),
+            ).map((item: any) => {
+              return isImage(item.mime)
+                ? {
+                    ...item,
+                    fileType: FileTypeNum.Image,
+                    uri: thumbnailSize(item),
+                    preview: largeSize(item),
+                  }
+                : {
+                    id: item.id,
+                    data: item,
+                    fileType: FileTypeNum.Video,
+                    uri: thumbnailSize(item.attachmentExtras?.thumbnail),
+                    preview: originSize(item),
+                  };
+            }),
           ];
         },
         [],
@@ -93,7 +95,7 @@ const AlbumListView = ({ userDocumentId }: any) => {
 
   const renderItem = ({ item, index }: any) => {
     return (
-      <Pressable onPress={() => onOpenGallery(index)}>
+      <Pressable onPress={() => onImagePress(index)}>
         <Image
           recyclingKey={item.assetId}
           source={{ uri: item.uri }}
@@ -112,7 +114,7 @@ const AlbumListView = ({ userDocumentId }: any) => {
   return (
     <Box className="mr-1/4 flex-1">
       <MasonryFlashList
-        data={photos}
+        data={images}
         getItemType={() => 'image'}
         renderItem={renderItem}
         numColumns={numColumns}
@@ -139,11 +141,11 @@ const AlbumListView = ({ userDocumentId }: any) => {
           return numColumns;
         }}
       />
-      <GalleryPreview
-        images={originPhotos || []}
-        initialIndex={imageIndex}
-        isVisible={isGalleryPreviewOpen}
-        onRequestClose={() => setIsGalleryPreviewOpen(false)}
+      <AlbumPagerView
+        initIndex={pagerIndex}
+        value={images}
+        isOpen={isPagerOpen}
+        onClose={onPagerClose}
       />
     </Box>
   );

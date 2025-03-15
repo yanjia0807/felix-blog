@@ -1,15 +1,15 @@
+import React, { useEffect, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Ellipsis } from 'lucide-react-native';
-import React, { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { apiServerURL, fetchChat, fetchMessagesByChat } from '@/api';
+import { fetchChat, fetchMessagesByChat } from '@/api';
 import { createMessage, updateChatStatus } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
@@ -25,6 +25,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
+import { thumbnailSize } from '@/utils/file';
 
 type MessageFormSchema = z.infer<typeof messageFormSchema>;
 
@@ -210,9 +211,7 @@ const Chat: React.FC = () => {
           <HStack className="items-center" space="sm">
             <Avatar size="md">
               <AvatarFallbackText>{otherUser?.username}</AvatarFallbackText>
-              <AvatarImage
-                source={{ uri: `${apiServerURL}${otherUser?.avatar?.formats.thumbnail.url}` }}
-              />
+              <AvatarImage source={{ uri: thumbnailSize(otherUser?.avatar) }} />
             </Avatar>
             <VStack>
               <Heading size="sm" bold={true}>
@@ -253,7 +252,7 @@ const Chat: React.FC = () => {
           <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
           <AvatarImage
             source={{
-              uri: `${apiServerURL}${otherUser.avatar?.formats.thumbnail.url}`,
+              uri: thumbnailSize(otherUser.avatar),
             }}
           />
         </Avatar>

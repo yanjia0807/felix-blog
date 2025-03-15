@@ -3,7 +3,6 @@ import SegmentedControl from '@react-native-segmented-control/segmented-control'
 import { Redirect, router, Stack } from 'expo-router';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings2 } from 'lucide-react-native';
 import { FlatList, Pressable } from 'react-native';
-import { apiServerURL } from '@/api';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-context';
 import PostListView from '@/components/post-list-view';
@@ -14,6 +13,7 @@ import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { thumbnailSize } from '@/utils/file';
 
 const ProfileHeader: React.FC = () => {
   const { user } = useAuth();
@@ -44,7 +44,7 @@ const ProfileHeader: React.FC = () => {
           <AvatarFallbackText>{user.username}</AvatarFallbackText>
           <AvatarImage
             source={{
-              uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
+              uri: thumbnailSize(user.avatar),
             }}
           />
         </Avatar>

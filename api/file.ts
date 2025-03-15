@@ -1,8 +1,9 @@
 import * as FileSystem from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
-import { apiServerURL } from './api-client';
 import { apiClient } from './api-client';
+
+const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER;
 
 export const uploadFiles = async (files: any) => {
   const config: any = {

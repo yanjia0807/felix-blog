@@ -21,7 +21,6 @@ import { FlatList, TouchableOpacity, useWindowDimensions, View } from 'react-nat
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { apiServerURL } from '@/api';
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -32,7 +31,7 @@ import {
   ActionsheetItemText,
 } from '@/components/ui/actionsheet';
 import { Text } from '@/components/ui/text';
-import { getVideoImage, isImage, isVideo, FileTypeNum } from '@/utils/file';
+import { createVideoThumbnail, isImage, isVideo, FileTypeNum, thumbnailSize } from '@/utils/file';
 import { Avatar, AvatarImage, AvatarBadge } from './ui/avatar';
 import { Box } from './ui/box';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
@@ -170,7 +169,7 @@ export const ImageCamera = ({ isOpen, onClose, onChange, value }: any) => {
         preview: data.uri,
       };
     } else {
-      const thumbnail = await getVideoImage(data.uri);
+      const thumbnail = await createVideoThumbnail(data.uri);
       val = {
         fileType: FileTypeNum.Video,
         uri: data.uri,
@@ -496,7 +495,7 @@ export const AvatarImageInput = ({ onChange, value }: any) => {
 
   if (value) {
     if (value.id) {
-      source = { uri: `${apiServerURL}${value.formats.thumbnail.url}` };
+      source = { uri: thumbnailSize(value) };
     } else if (value.length > 0 && value[0].uri) {
       source = { uri: value[0].uri };
     } else if (value.uri) {
@@ -546,7 +545,7 @@ const selectFromImageLib = async ({ imagePickerOptions, value, onFail }: any) =>
           preview: item.uri,
         });
       } else if (isVideo(item.mimeType)) {
-        const thumbnail = await getVideoImage(item.uri);
+        const thumbnail = await createVideoThumbnail(item.uri);
         val.push({
           assetId: item.assetId,
           name: item.fileName,

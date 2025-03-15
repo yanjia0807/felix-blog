@@ -20,6 +20,7 @@ import {
   fileUrl,
   isAudio,
   videoThumbnail,
+  originSize,
 } from '@/utils/file';
 
 const PostEdit = () => {
@@ -67,8 +68,8 @@ const PostEdit = () => {
                 data: item,
                 fileType: FileTypeNum.Video,
                 uri: thumbnailSize(item),
-                thumbnail: videoThumbnail(item, post?.attachmentExtras || []),
-                preview: largeSize(item),
+                thumbnail: videoThumbnail(item, post?.attachmentExtras),
+                preview: originSize(item),
               };
         },
       );

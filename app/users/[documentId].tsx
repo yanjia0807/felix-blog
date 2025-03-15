@@ -11,14 +11,7 @@ import {
   Share2,
 } from 'lucide-react-native';
 import { FlatList } from 'react-native';
-import {
-  apiServerURL,
-  createChat,
-  fetchChatByUsers,
-  fetchUser,
-  isFollowingUser,
-  updateFollowings,
-} from '@/api';
+import { createChat, fetchChatByUsers, fetchUser, isFollowingUser, updateFollowings } from '@/api';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-context';
 import PageSpinner from '@/components/page-spinner';
@@ -33,6 +26,7 @@ import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
+import { thumbnailSize } from '@/utils/file';
 
 const UserDetailSkeleton = () => (
   <VStack space="xl">
@@ -160,7 +154,7 @@ const UserDetailHeader: React.FC = () => {
             <AvatarFallbackText>{user.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
+                uri: thumbnailSize(user.avatar),
               }}
             />
           </Avatar>

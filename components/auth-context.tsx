@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { twMerge } from 'tailwind-merge';
-import { apiServerURL, fetchMe } from '@/api';
+import { fetchMe } from '@/api';
 import {
   loginUser,
   registerUser,
@@ -17,6 +17,7 @@ import {
   changePassword,
   resetPasswordOtp,
 } from '@/api/auth';
+import { thumbnailSize } from '@/utils/file';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Button, ButtonText } from './ui/button';
 import { Heading } from './ui/heading';
@@ -207,7 +208,7 @@ export const AuthorInfo = ({ author }: any) => {
         <AvatarFallbackText>{author.username}</AvatarFallbackText>
         <AvatarImage
           source={{
-            uri: `${apiServerURL}${author.avatar?.formats.thumbnail.url}`,
+            uri: thumbnailSize(author.avatar),
           }}
         />
       </Avatar>

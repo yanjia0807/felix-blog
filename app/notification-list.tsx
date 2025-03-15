@@ -1,10 +1,10 @@
+import React from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
-import React from 'react';
-import { apiServerURL, fetchNotifications, updateNotificationState } from '@/api';
+import { fetchNotifications, updateNotificationState } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { useSocket } from '@/components/socket-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ import { RefreshControl } from '@/components/ui/refresh-control';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { thumbnailSize } from '@/utils/file';
 
 const NotificationList: React.FC = () => {
   const { user } = useAuth();
@@ -122,7 +123,7 @@ const NotificationList: React.FC = () => {
                   <AvatarFallbackText>{item.data.follower.username}</AvatarFallbackText>
                   <AvatarImage
                     source={{
-                      uri: `${apiServerURL}${item.data.follower.avatar?.formats.thumbnail.url}`,
+                      uri: thumbnailSize(item.data.follower.avatar),
                     }}
                   />
                 </Avatar>

@@ -1,6 +1,6 @@
-import _ from 'lodash';
 import React from 'react';
-import { apiServerURL } from '@/api';
+import _ from 'lodash';
+import { thumbnailSize } from '@/utils/file';
 import { Avatar, AvatarFallbackText, AvatarGroup, AvatarImage } from './ui/avatar';
 
 const UserAvatars = ({ users }: any) => {
@@ -11,7 +11,7 @@ const UserAvatars = ({ users }: any) => {
           <AvatarFallbackText>{user.username}</AvatarFallbackText>
           <AvatarImage
             source={{
-              uri: `${apiServerURL}${user.avatar?.formats.thumbnail.url}`,
+              uri: thumbnailSize(user.avatar),
             }}
           />
         </Avatar>

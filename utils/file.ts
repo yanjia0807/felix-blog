@@ -1,7 +1,8 @@
 import { ImageManipulator } from 'expo-image-manipulator';
 import { createVideoPlayer } from 'expo-video';
 import _ from 'lodash';
-import { apiServerURL } from '@/api';
+
+const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER;
 
 export enum FileTypeNum {
   Image = 'image',
@@ -43,6 +44,16 @@ export const isVideo = (mime: string) => getFileType(mime) === FileTypeNum.Video
 
 export const isAudio = (mime: string) => getFileType(mime) === FileTypeNum.Audio;
 
+export const originSize = (file: any) => {
+  return `${apiServerURL}${file.url}`;
+}
+
+export const fileUrl = (file: any) => {
+  if (!file) return '';
+  let selected = file.url;
+  return `${apiServerURL}${selected}`;
+};
+
 export const largeSize = (file: any) => {
   if (!file) return '';
   const formats = file.formats || {};
@@ -71,18 +82,12 @@ export const thumbnailSize = (file: any) => {
   return `${apiServerURL}${selected}`;
 };
 
-export const videoThumbnail = (file: any, attachmentExtras: any) => {
+export const videoThumbnail = (file: any, attachmentExtras: any = []) => {
   const item = _.find(attachmentExtras, (item: any) => item.attachment.id === file.id);
   return `${apiServerURL}${item.thumbnail.formats.thumbnail.url}`;
 };
 
-export const fileUrl = (file: any) => {
-  if (!file) return '';
-  let selected = file.url;
-  return `${apiServerURL}${selected}`;
-};
-
-export const getVideoImage = async (url: string) => {
+export const createVideoThumbnail = async (url: string) => {
   const player = createVideoPlayer(url);
   const thumbnails = await player.generateThumbnailsAsync(10);
   player.release();
