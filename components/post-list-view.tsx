@@ -3,7 +3,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
-import { FlatList, RefreshControl, TouchableHighlight, View } from 'react-native';
+import { FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Reanimated from 'react-native-reanimated';
 import { fetchUserPosts } from '@/api';
@@ -30,42 +30,35 @@ interface PostItemProps {
   index: number;
 }
 
-const PostItem: React.FC<PostItemProps> = ({ item, index }) => {
-  const router = useRouter();
-  const onItemPress = () => router.push(`/posts/${item.documentId}?status=${item.status}`);
-
-  return (
-    <TouchableHighlight onPress={onItemPress}>
-      <Card size="sm">
-        <VStack space="lg">
-          <VStack space="sm">
-            <HStack className="items-center justify-between">
-              <Heading numberOfLines={1} ellipsizeMode="tail" className="flex-1">
-                {item.title}
-              </Heading>
-            </HStack>
-            <HStack className="items-center justify-between">
-              <Text size="xs" className="items-center">
-                {formatDistance(item.createdAt)}
-              </Text>
-              <HStack space="xs" className="w-1/2 items-center justify-end">
-                {item.poi?.address && (
-                  <>
-                    <Icon as={MapPin} size="xs" />
-                    <Text size="xs" numberOfLines={1}>
-                      {item.poi.address}
-                    </Text>
-                  </>
-                )}
-              </HStack>
-            </HStack>
-          </VStack>
-          <Text numberOfLines={5}>{item.content}</Text>
-        </VStack>
-      </Card>
-    </TouchableHighlight>
-  );
-};
+const PostItem: React.FC<PostItemProps> = ({ item, index }) => (
+  <Card size="sm">
+    <VStack space="lg">
+      <VStack space="sm">
+        <HStack className="items-center justify-between">
+          <Heading numberOfLines={1} ellipsizeMode="tail" className="flex-1">
+            {item.title}
+          </Heading>
+        </HStack>
+        <HStack className="items-center justify-between">
+          <Text size="xs" className="items-center">
+            {formatDistance(item.createdAt)}
+          </Text>
+          <HStack space="xs" className="w-1/2 items-center justify-end">
+            {item.poi?.address && (
+              <>
+                <Icon as={MapPin} size="xs" />
+                <Text size="xs" numberOfLines={1}>
+                  {item.poi.address}
+                </Text>
+              </>
+            )}
+          </HStack>
+        </HStack>
+      </VStack>
+      <Text numberOfLines={5}>{item.content}</Text>
+    </VStack>
+  </Card>
+);
 
 const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
   const [status, setStatus] = useState('published');
@@ -210,14 +203,20 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
   };
 
   const renderItem = ({ item, index }: any) => {
+    const onItemPress = () => router.push(`/posts/${item.documentId}?status=${item.status}`);
+
     return (
       <View className={`mt-6 ${index === 0 ? 'mt-0' : ''}`}>
         {isMe ? (
-          <ReanimatedSwipeable renderRightActions={() => renderRightAction({ item })}>
-            <PostItem item={item} index={index} />
-          </ReanimatedSwipeable>
+          <TouchableOpacity onPress={onItemPress}>
+            <ReanimatedSwipeable renderRightActions={() => renderRightAction({ item })}>
+              <PostItem item={item} index={index} />
+            </ReanimatedSwipeable>
+          </TouchableOpacity>
         ) : (
-          <PostItem item={item} index={index} />
+          <TouchableOpacity onPress={onItemPress}>
+            <PostItem item={item} index={index} />
+          </TouchableOpacity>
         )}
       </View>
     );

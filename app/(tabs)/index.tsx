@@ -9,7 +9,7 @@ import { AxiosResponse } from 'axios';
 import { format } from 'date-fns';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
@@ -41,6 +41,8 @@ interface HomeHeaderProps {
 }
 
 const HomeHeader: React.FC<HomeHeaderProps> = ({ featureQuery, authorQuery }) => {
+  const router = useRouter();
+
   const features: any = featureQuery.isLoading
     ? Array(2).fill(undefined)
     : featureQuery.isSuccess
@@ -58,8 +60,8 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ featureQuery, authorQuery }) =>
       : [];
 
   const onFeatureItemPressed = ({ item }: any) => {
-    if (item) {
-      router.push(`/posts/${item.documentId}`);
+    if (item.post) {
+      router.push(`/posts/${item.post.documentId}`);
     }
   };
 
@@ -176,6 +178,8 @@ interface RecommentItemProps {
 }
 
 const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) => {
+  const router = useRouter();
+
   const onRecommentItemPressed = (documentId: string) => router.push(`/posts/${documentId}`);
 
   const onAvatarPress = (documentId: string) => router.push(`/users/${documentId}`);
