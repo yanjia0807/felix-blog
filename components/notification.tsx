@@ -16,7 +16,7 @@ const Notification = () => {
   const router = useRouter();
 
   const { data, isSuccess } = useQuery({
-    queryKey: ['notifications', 'count'],
+    queryKey: ['user', 'detail', user.documentId, 'notifications', 'count'],
     queryFn: () => fetchNotificationUnreadCount(),
     staleTime: Infinity,
     enabled: !!user,

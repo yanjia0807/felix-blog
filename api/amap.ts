@@ -1,16 +1,16 @@
 import qs from 'qs';
 import { amapClient } from './amap-client';
 
-export const fetchAround = async (params: any) => {
+export const fetchAround = async ({ pageParam }: any) => {
   try {
-    const {
-      pageParam: { location, page_num, page_size },
-    } = params;
+    const { location, page_num, page_size } = pageParam;
     const query = qs.stringify({
-      location,
+      location: `${location?.latitude},${location?.longitude}`,
       page_num,
       page_size,
-      radius: 100,
+      radius: 500,
+    }, {
+      encodeValuesOnly: true,
     });
     const res: any = await amapClient.get(`/v5/place/around?${query}`);
     if (!res.status) {

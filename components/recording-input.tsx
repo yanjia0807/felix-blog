@@ -3,6 +3,7 @@ import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal } from '@gorho
 import { intervalToDuration } from 'date-fns';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Recording, RecordingStatus } from 'expo-av/build/Audio';
+import Constants from 'expo-constants';
 import _ from 'lodash';
 import { Check, CircleX, Mic, MicOff, PauseCircle, RotateCcw, Volume2 } from 'lucide-react-native';
 import { Keyboard, TouchableOpacity } from 'react-native';
@@ -25,6 +26,7 @@ import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
 
 const SELECTION_LIMIT = 5;
+const appName = Constants?.expoConfig?.extra?.name || '';
 
 const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
   const ringStyle = useAnimatedStyle(() => ({
@@ -55,9 +57,25 @@ const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
 
 export const RecordingInput = ({ onChange, value }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const onInputIconPressed = () => {
-    Keyboard.dismiss();
-    bottomSheetRef.current?.present();
+  const toast = useCustomToast();
+  const [audioPermission, requestAudioPermission] = Audio.usePermissions();
+  const onInputIconPressed = async () => {
+    if (audioPermission?.granted) {
+      bottomSheetRef.current?.present();
+      Keyboard.dismiss();
+    } else {
+      const result = await requestAudioPermission();
+      if (result.granted) {
+        bottomSheetRef.current?.present();
+        Keyboard.dismiss();
+      } else {
+        if (!result.canAskAgain) {
+          toast.info({
+            description: `请在 [系统设置] 里允许 ${appName} 访问您的麦克风。`,
+          });
+        }
+      }
+    }
   };
 
   return (
@@ -74,7 +92,6 @@ export const RecordingInput = ({ onChange, value }: any) => {
 export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any, ref: any) {
   const [recording, setRecording] = useState<Recording | null>();
   const [recordingStatus, setRecordingStatus] = useState<any>();
-  const [audioPermission, requestAudioPermission] = Audio.usePermissions();
   const metering = useSharedValue<number>(0);
   const [durationMillis, setDurationMillis] = useState<number>(0);
   const snapPoints = useMemo(() => ['50%'], []);
@@ -197,11 +214,6 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
       return;
     }
 
-    if (audioPermission && audioPermission.status !== 'granted') {
-      console.log('Requesting audio permission..');
-      await requestAudioPermission();
-    }
-
     if (!recordingStatus?.canRecord) {
       startRecording();
     } else {
@@ -213,11 +225,9 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
     }
   }, [
     value,
-    audioPermission,
     recordingStatus?.canRecord,
     recordingStatus?.isRecording,
     toast,
-    requestAudioPermission,
     startRecording,
     resumeRecording,
     stopRecording,

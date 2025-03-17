@@ -11,7 +11,7 @@ import { updateMe } from '@/api';
 import { useAuth } from '@/components/auth-context';
 import { DateInput } from '@/components/date-input';
 import { DistrictInput } from '@/components/district-input';
-import { AvatarImageInput } from '@/components/image-input';
+import { AvatarInput } from '@/components/image-input';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -45,6 +45,8 @@ import { genderEnum } from '@/constants/enum';
 type UserFormSchema = z.infer<typeof userFormSchema>;
 
 const userFormSchema = z.object({
+  username: z.any(),
+  email: z.any(),
   bio: z
     .string()
     .max(200, '简介不能超过 200 个字符')
@@ -81,9 +83,12 @@ const UserEdit: React.FC = () => {
     control,
     formState: { errors },
     handleSubmit,
+    getValues,
   } = useForm<UserFormSchema>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
+      username: user.username,
+      email: user.email,
       bio: user.bio,
       gender: user.gender,
       birthday: user.birthday ? new Date(user.birthday) : null,
@@ -109,7 +114,7 @@ const UserEdit: React.FC = () => {
 
   const renderAvatar = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.avatar}>
-      <AvatarImageInput onChange={onChange} value={value} />
+      <AvatarInput onChange={onChange} value={value} fallbackText={getValues('username')} />
     </FormControl>
   );
 
@@ -242,22 +247,22 @@ const UserEdit: React.FC = () => {
         extraKeyboardSpace={-1 * insets.bottom}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
-        <VStack className="flex-1 px-4" space="lg">
+        <VStack className="flex-1 px-4" space="md">
           <HStack className="h-36 items-center justify-center p-10">
             <Controller name="avatar" control={control} render={renderAvatar} />
           </HStack>
-          <VStack className="flex-1" space="lg">
+          <VStack className="flex-1" space="md">
             <HStack
               className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2"
               space="md">
               <Text className="font-medium text-typography-900">邮箱地址</Text>
-              <Text className="text-typography-400">{user.email}</Text>
+              <Text className="text-typography-400">{getValues('email')}</Text>
             </HStack>
             <HStack
               className="items-center rounded-full border-b border-outline-200 bg-background-50 p-2"
               space="md">
               <Text className="font-medium text-typography-900">用户名</Text>
-              <Text className="text-typography-400">{user.username}</Text>
+              <Text className="text-typography-400">{getValues('username')}</Text>
             </HStack>
             <Controller name="bio" control={control} render={renderBio} />
             <Controller name="gender" control={control} render={renderGender} />

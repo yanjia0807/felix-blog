@@ -36,4 +36,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config.android,
     package: getBundleId(),
   },
+  extra: {
+    ...config.extra,
+    name: getAppName(),
+  }
 });

@@ -163,6 +163,14 @@ const ChatList: React.FC = () => {
 
   const renderItemSeparator = (props: any) => <Divider {...props} className="my-2" />;
 
+  const renderEmptyComponent = (props: any) => {
+    return (
+      <Box className="mt-10 w-full items-center justify-center">
+        <Text size="sm">暂无消息</Text>
+      </Box>
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -177,6 +185,7 @@ const ChatList: React.FC = () => {
           ListHeaderComponent={renderListHeader}
           renderItem={renderItem}
           ItemSeparatorComponent={renderItemSeparator}
+          ListEmptyComponent={renderEmptyComponent}
           showsVerticalScrollIndicator={false}
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) {

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useEvent, useEventListener } from 'expo';
 import { CameraView, CameraType, useCameraPermissions, CameraMode, FlashMode } from 'expo-camera';
+import Constants from 'expo-constants';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -30,9 +31,8 @@ import {
   ActionsheetItem,
   ActionsheetItemText,
 } from '@/components/ui/actionsheet';
-import { Text } from '@/components/ui/text';
 import { createVideoThumbnail, isImage, isVideo, FileTypeNum, thumbnailSize } from '@/utils/file';
-import { Avatar, AvatarImage, AvatarBadge } from './ui/avatar';
+import { Avatar, AvatarImage, AvatarBadge, AvatarFallbackText } from './ui/avatar';
 import { Box } from './ui/box';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
@@ -40,10 +40,10 @@ import { Icon } from './ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { Portal } from './ui/portal';
 import { Slider, SliderFilledTrack, SliderTrack } from './ui/slider';
-import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
 
 const SELECTION_LIMIT = 9;
+const appName = Constants?.expoConfig?.extra?.name || '';
 
 export const ImageCamera = ({ isOpen, onClose, onChange, value }: any) => {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -56,10 +56,8 @@ export const ImageCamera = ({ isOpen, onClose, onChange, value }: any) => {
   const intervalRef = useRef<any>();
   const cameraRef = React.useRef<CameraView>(null);
   const insets = useSafeAreaInsets();
-  const MAX_DURATION = 60;
-
-  const [permission, requestPermission] = useCameraPermissions();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const MAX_DURATION = 60;
 
   const player = useVideoPlayer(data?.uri, (player) => {
     player.timeUpdateEventInterval = 1;
@@ -194,89 +192,31 @@ export const ImageCamera = ({ isOpen, onClose, onChange, value }: any) => {
 
   return (
     <Portal isOpen={isOpen} style={{ flex: 1, backgroundColor: 'white' }}>
-      {!permission?.granted ? (
-        <VStack className="flex-1 items-center justify-center" space="md">
-          <Text className="p-2">我们需要权限来显示相机</Text>
-          <Button onPress={requestPermission} className="rounded">
-            <ButtonText>授权访问相机</ButtonText>
-          </Button>
-        </VStack>
-      ) : (
-        <>
-          {data ? (
-            <>
-              {mode === 'picture' ? (
-                <View className="flex-1 items-center">
-                  <Image
-                    source={{
-                      uri: data.uri,
-                    }}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: 8,
-                    }}>
-                    <HStack
-                      className="absolute bottom-0 w-full items-center justify-center self-center px-4"
-                      style={{
-                        paddingBottom: insets.bottom,
-                      }}
-                      space="4xl">
-                      <Button
-                        size="xl"
-                        variant="solid"
-                        className="rounded-full"
-                        action="secondary"
-                        onPress={onCommit}>
-                        <ButtonIcon as={Check} />
-                      </Button>
-                      <Button
-                        action="negative"
-                        onPress={onUndo}
-                        className="absolute right-4 rounded-full opacity-50">
-                        <ButtonIcon as={Undo} />
-                      </Button>
-                    </HStack>
-                  </Image>
-                </View>
-              ) : (
-                <View className="flex-1 items-center">
-                  <VideoView
-                    style={{ width: '100%', height: '100%' }}
-                    contentFit="cover"
-                    allowsFullscreen={false}
-                    nativeControls={false}
-                    allowsPictureInPicture={false}
-                    player={player}
-                  />
-                  <Animated.View
-                    entering={FadeIn.duration(100)}
-                    exiting={FadeOut.duration(100)}
-                    className="absolute"
-                    style={{
-                      left: screenWidth / 2 - 40,
-                      top: screenHeight / 2 - 40,
-                    }}>
-                    <TouchableOpacity onPress={togglePlay}>
-                      <Ionicons
-                        name={isPlaying ? 'pause-circle-outline' : 'play-circle-outline'}
-                        size={80}
-                        className="opacity-70"
-                        color="white"
-                      />
-                    </TouchableOpacity>
-                  </Animated.View>
+      <>
+        {data ? (
+          <>
+            {mode === 'picture' ? (
+              <View className="flex-1 items-center">
+                <Image
+                  source={{
+                    uri: data.uri,
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: 8,
+                  }}>
                   <HStack
                     className="absolute bottom-0 w-full items-center justify-center self-center px-4"
-                    space="4xl"
                     style={{
                       paddingBottom: insets.bottom,
-                    }}>
+                    }}
+                    space="4xl">
                     <Button
+                      size="xl"
                       variant="solid"
                       className="rounded-full"
                       action="secondary"
-                      size="xl"
                       onPress={onCommit}>
                       <ButtonIcon as={Check} />
                     </Button>
@@ -287,75 +227,124 @@ export const ImageCamera = ({ isOpen, onClose, onChange, value }: any) => {
                       <ButtonIcon as={Undo} />
                     </Button>
                   </HStack>
-                </View>
-              )}
-            </>
-          ) : (
-            <CameraView
-              ref={cameraRef}
-              style={{ flex: 1, width: '100%' }}
-              facing={facing}
-              flash={flash}
-              mode={mode}>
-              <HStack
-                className="absolute top-0 w-full items-center justify-between px-4"
-                style={{
-                  paddingTop: insets.top,
-                }}>
-                <Button
-                  size="lg"
-                  variant="link"
-                  onPress={toggleFacing}
-                  className="rounded-full opacity-50"
-                  action="secondary">
-                  <ButtonIcon as={SwitchCamera} />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="link"
-                  onPress={toggleFlash}
-                  className="rounded-full opacity-50"
-                  action="secondary">
-                  {flash === 'auto' ? (
-                    <ButtonText>auto</ButtonText>
-                  ) : (
-                    <ButtonIcon as={flash === 'on' ? Zap : ZapOff} />
-                  )}
-                </Button>
-              </HStack>
-              <HStack
-                className="absolute bottom-0 w-full items-center justify-center self-center px-4"
-                style={{
-                  paddingBottom: insets.bottom,
-                }}>
-                <GestureDetector gesture={captureGesture}>
-                  <TouchableOpacity className="h-20 w-20 items-center justify-center rounded-full bg-primary-500 opacity-50">
-                    <Icon as={Camera} size={32 as any} />
+                </Image>
+              </View>
+            ) : (
+              <View className="flex-1 items-center">
+                <VideoView
+                  style={{ width: '100%', height: '100%' }}
+                  contentFit="cover"
+                  allowsFullscreen={false}
+                  nativeControls={false}
+                  allowsPictureInPicture={false}
+                  player={player}
+                />
+                <Animated.View
+                  entering={FadeIn.duration(100)}
+                  exiting={FadeOut.duration(100)}
+                  className="absolute"
+                  style={{
+                    left: screenWidth / 2 - 40,
+                    top: screenHeight / 2 - 40,
+                  }}>
+                  <TouchableOpacity onPress={togglePlay}>
+                    <Ionicons
+                      name={isPlaying ? 'pause-circle-outline' : 'play-circle-outline'}
+                      size={80}
+                      className="opacity-70"
+                      color="white"
+                    />
                   </TouchableOpacity>
-                </GestureDetector>
-                <Button
-                  action="negative"
-                  onPress={onClose}
-                  className="absolute right-4 rounded-full opacity-50">
-                  <ButtonIcon as={CircleX} />
-                </Button>
-              </HStack>
-              {mode === 'video' && isRecording && (
-                <Slider
-                  className="absolute top-1/2 w-4/5 flex-1 self-center opacity-70"
-                  isDisabled={false}
-                  value={recordingTime}
-                  maxValue={MAX_DURATION}
-                  size="sm">
-                  <SliderTrack>
-                    <SliderFilledTrack />
-                  </SliderTrack>
-                </Slider>
-              )}
-            </CameraView>
-          )}
-        </>
-      )}
+                </Animated.View>
+                <HStack
+                  className="absolute bottom-0 w-full items-center justify-center self-center px-4"
+                  space="4xl"
+                  style={{
+                    paddingBottom: insets.bottom,
+                  }}>
+                  <Button
+                    variant="solid"
+                    className="rounded-full"
+                    action="secondary"
+                    size="xl"
+                    onPress={onCommit}>
+                    <ButtonIcon as={Check} />
+                  </Button>
+                  <Button
+                    action="negative"
+                    onPress={onUndo}
+                    className="absolute right-4 rounded-full opacity-50">
+                    <ButtonIcon as={Undo} />
+                  </Button>
+                </HStack>
+              </View>
+            )}
+          </>
+        ) : (
+          <CameraView
+            ref={cameraRef}
+            style={{ flex: 1, width: '100%' }}
+            facing={facing}
+            flash={flash}
+            mode={mode}>
+            <HStack
+              className="absolute top-0 w-full items-center justify-between px-4"
+              style={{
+                paddingTop: insets.top,
+              }}>
+              <Button
+                size="lg"
+                variant="link"
+                onPress={toggleFacing}
+                className="rounded-full opacity-50"
+                action="secondary">
+                <ButtonIcon as={SwitchCamera} />
+              </Button>
+              <Button
+                size="lg"
+                variant="link"
+                onPress={toggleFlash}
+                className="rounded-full opacity-50"
+                action="secondary">
+                {flash === 'auto' ? (
+                  <ButtonText>auto</ButtonText>
+                ) : (
+                  <ButtonIcon as={flash === 'on' ? Zap : ZapOff} />
+                )}
+              </Button>
+            </HStack>
+            <HStack
+              className="absolute bottom-0 w-full items-center justify-center self-center px-4"
+              style={{
+                paddingBottom: insets.bottom,
+              }}>
+              <GestureDetector gesture={captureGesture}>
+                <TouchableOpacity className="h-20 w-20 items-center justify-center rounded-full bg-primary-500 opacity-50">
+                  <Icon as={Camera} size={32 as any} />
+                </TouchableOpacity>
+              </GestureDetector>
+              <Button
+                action="negative"
+                onPress={onClose}
+                className="absolute right-4 rounded-full opacity-50">
+                <ButtonIcon as={CircleX} />
+              </Button>
+            </HStack>
+            {mode === 'video' && isRecording && (
+              <Slider
+                className="absolute top-1/2 w-4/5 flex-1 self-center opacity-70"
+                isDisabled={false}
+                value={recordingTime}
+                maxValue={MAX_DURATION}
+                size="sm">
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+              </Slider>
+            )}
+          </CameraView>
+        )}
+      </>
     </Portal>
   );
 };
@@ -393,10 +382,20 @@ export const ImageInput = ({ onChange, value = [] }: any) => {
 
 export const CoverInput = ({ onChange, value, onPress }: any) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const onInputPress = () => setIsOpen(true);
-
+  const onOpen = () => setIsOpen(true);
   const onClose = () => setIsOpen(false);
+
+  let source: any;
+
+  if (value) {
+    if (value.id) {
+      source = { uri: thumbnailSize(value) };
+    } else if (value[0].uri) {
+      source = { uri: value[0].uri };
+    }
+  } else {
+    source = null;
+  }
 
   const imagePickerOptions = {
     mediaTypes: ['images'],
@@ -404,6 +403,14 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
   };
 
   const onClearBtnPress = () => onChange(undefined);
+
+  const handleChange = () => {
+    if (value && value.length > 0) {
+      onChange(value[0]);
+    } else {
+      onChange(null);
+    }
+  };
 
   return (
     <>
@@ -417,9 +424,7 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
             }}
             contentFit="cover"
             contentPosition="center"
-            source={{
-              uri: value.uri,
-            }}
+            source={source}
           />
           <Button
             size="xs"
@@ -434,7 +439,7 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
           <Input variant="underlined" className="border-0 border-b p-2" isReadOnly={true}>
             <InputField placeholder="请选择封面...." />
             <InputSlot>
-              <TouchableOpacity onPress={onInputPress}>
+              <TouchableOpacity onPress={onOpen}>
                 <InputIcon as={ImageIcon}></InputIcon>
               </TouchableOpacity>
             </InputSlot>
@@ -442,12 +447,69 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
           <ImageSheet
             isOpen={isOpen}
             onClose={onClose}
-            value={value ? [value] : []}
-            onChange={onChange}
+            value={value}
+            onChange={handleChange}
             imagePickerOptions={imagePickerOptions}
           />
         </>
       )}
+    </>
+  );
+};
+
+export const AvatarInput = ({ onChange, value, fallbackText }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onOpen = () => setIsOpen(true);
+  const onClose = () => setIsOpen(false);
+  const onRemove = () => {
+    onChange(null);
+  };
+
+  let source: any;
+
+  if (value) {
+    if (value.id) {
+      source = { uri: thumbnailSize(value) };
+    } else if (value[0].uri) {
+      source = { uri: value[0].uri };
+    }
+  } else {
+    source = null;
+  }
+
+  const imagePickerOptions = {
+    allowsMultipleSelection: false,
+    mediaTypes: ['images'],
+  };
+
+  const handleChange = () => {
+    if (value && value.length > 0) {
+      onChange(value[0]);
+    } else {
+      onChange(null);
+    }
+  };
+
+  return (
+    <>
+      <TouchableOpacity onPress={() => onOpen()}>
+        <Avatar size="xl">
+          <AvatarFallbackText>{fallbackText}</AvatarFallbackText>
+          <AvatarImage source={source} />
+          <AvatarBadge className="items-center justify-center">
+            <TouchableOpacity onPress={onRemove}>
+              <Icon as={X} size="lg" />
+            </TouchableOpacity>
+          </AvatarBadge>
+        </Avatar>
+      </TouchableOpacity>
+      <ImageSheet
+        isOpen={isOpen}
+        onClose={onClose}
+        onChange={handleChange}
+        imagePickerOptions={imagePickerOptions}
+      />
     </>
   );
 };
@@ -474,99 +536,9 @@ export const CoverView = ({ onChange, value, onPress }: any) => {
   );
 };
 
-export const AvatarImageInput = ({ onChange, value }: any) => {
-  const [showActionsheet, setShowActionsheet] = useState(false);
-
-  const onInputIconPressed = () => setShowActionsheet(true);
-
-  const onRemoveIconPressed = () => {
-    onChange(null);
-  };
-
-  const onClose = () => setShowActionsheet(false);
-
-  const imagePickerOptions = {
-    allowsMultipleSelection: false,
-    mediaTypes: ['images'],
-  };
-
-  let source: any;
-
-  if (value) {
-    if (value.id) {
-      source = { uri: thumbnailSize(value) };
-    } else if (value.length > 0 && value[0].uri) {
-      source = { uri: value[0].uri };
-    } else if (value.uri) {
-      source = { uri: value.uri };
-    }
-  } else {
-    source = null;
-  }
-
-  return (
-    <>
-      <TouchableOpacity onPress={() => onInputIconPressed()}>
-        <Avatar size="xl">
-          {source && <AvatarImage source={source} />}
-          <AvatarBadge className="items-center justify-center">
-            <TouchableOpacity onPress={() => onRemoveIconPressed()}>
-              <Icon as={X} size="xs" />
-            </TouchableOpacity>
-          </AvatarBadge>
-        </Avatar>
-      </TouchableOpacity>
-      <ImageSheet
-        isOpen={showActionsheet}
-        onClose={onClose}
-        onChange={onChange}
-        imagePickerOptions={imagePickerOptions}
-      />
-    </>
-  );
-};
-
-const selectFromImageLib = async ({ imagePickerOptions, value, onFail }: any) => {
-  const result = await ImagePicker.launchImageLibraryAsync(imagePickerOptions);
-  const val: any = [...value];
-  if (result.canceled) return val;
-
-  for (let i = 0; i < result.assets.length; i++) {
-    const item: any = result.assets[i];
-
-    if (item.assetId && !_.some(val, ['assetId', item.assetId])) {
-      if (isImage(item.mimeType)) {
-        val.push({
-          assetId: item.assetId,
-          name: item.fileName,
-          fileType: FileTypeNum.Image,
-          uri: item.uri,
-          preview: item.uri,
-        });
-      } else if (isVideo(item.mimeType)) {
-        const thumbnail = await createVideoThumbnail(item.uri);
-        val.push({
-          assetId: item.assetId,
-          name: item.fileName,
-          fileType: FileTypeNum.Video,
-          uri: item.uri,
-          thumbnail: thumbnail?.uri,
-          preview: item.uri,
-        });
-      }
-    }
-  }
-
-  if (val.length > SELECTION_LIMIT) {
-    onFail();
-    return value;
-  }
-
-  return val;
-};
-
 export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerOptions }: any) => {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [libraryPermissions, requestLibraryPermission] = ImagePicker.useMediaLibraryPermissions();
   const [cameraIsOpen, setCameraIsOpen] = useState(false);
   const toast = useCustomToast();
 
@@ -574,33 +546,86 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
     toast.info({ description: `最多只能选择${SELECTION_LIMIT}个` });
   };
 
-  const onPressImage = async () => {
-    const val = await selectFromImageLib({ imagePickerOptions, value, onFail });
+  const selectFromLibrary = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync(imagePickerOptions);
 
-    if (val !== null) {
-      if (imagePickerOptions.allowsMultipleSelection) {
-        onChange(val);
-      } else {
-        onChange(val[0]);
+    const val: any = [...value];
+    if (result.canceled) return val;
+
+    for (let i = 0; i < result.assets.length; i++) {
+      const item: any = result.assets[i];
+
+      if (item.assetId && !_.some(val, ['assetId', item.assetId])) {
+        if (isImage(item.mimeType)) {
+          val.push({
+            assetId: item.assetId,
+            name: item.fileName,
+            fileType: FileTypeNum.Image,
+            uri: item.uri,
+            preview: item.uri,
+          });
+        } else if (isVideo(item.mimeType)) {
+          const thumbnail = await createVideoThumbnail(item.uri);
+          val.push({
+            assetId: item.assetId,
+            name: item.fileName,
+            fileType: FileTypeNum.Video,
+            uri: item.uri,
+            thumbnail: thumbnail?.uri,
+            preview: item.uri,
+          });
+        }
       }
     }
 
-    onClose();
+    if (val.length > SELECTION_LIMIT) {
+      onFail();
+      return;
+    }
+
+    if (val !== null) {
+      onChange(val);
+    }
   };
 
-  const onPressCamera = async () => {
+  const openLibrary = async () => {
+    if (libraryPermissions?.granted) {
+      await selectFromLibrary();
+      onClose();
+    } else {
+      const result = await requestLibraryPermission();
+      if (result.granted) {
+        await selectFromLibrary();
+        onClose();
+      } else {
+        if (!result.canAskAgain) {
+          toast.info({
+            description: `请在 [系统设置] 里允许 ${appName} 访问您的照片。`,
+          });
+        }
+      }
+    }
+  };
+
+  const openCamera = async () => {
     if (value.length === SELECTION_LIMIT) {
       onFail();
       return;
     }
 
-    if (!cameraPermission?.granted) {
+    if (cameraPermission?.granted) {
+      setCameraIsOpen(true);
+    } else {
       const result = await requestCameraPermission();
       if (result.granted) {
         setCameraIsOpen(true);
+      } else {
+        if (!result.canAskAgain) {
+          toast.info({
+            description: `请在 [系统设置] 里允许 ${appName} 访问您的相机。`,
+          });
+        }
       }
-    } else {
-      setCameraIsOpen(true);
     }
 
     onClose();
@@ -616,10 +641,10 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
           <ActionsheetDragIndicatorWrapper>
             <ActionsheetDragIndicator />
           </ActionsheetDragIndicatorWrapper>
-          <ActionsheetItem onPress={onPressCamera}>
+          <ActionsheetItem onPress={openCamera}>
             <ActionsheetItemText>拍照</ActionsheetItemText>
           </ActionsheetItem>
-          <ActionsheetItem onPress={onPressImage}>
+          <ActionsheetItem onPress={openLibrary}>
             <ActionsheetItemText>从相册选择</ActionsheetItemText>
           </ActionsheetItem>
         </ActionsheetContent>

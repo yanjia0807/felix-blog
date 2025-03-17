@@ -27,7 +27,7 @@ const NotificationList: React.FC = () => {
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['notifications', 'list'],
+      queryKey: ['user', 'detail', user.documentId, 'notifications', 'list'],
       queryFn: fetchNotifications,
       initialPageParam: {
         pagination: {
@@ -74,18 +74,23 @@ const NotificationList: React.FC = () => {
           oldValue.map((oldItem: any) => (oldItem.id === data.id ? { ...data } : { ...oldItem })),
         );
       } else {
-        queryClient.invalidateQueries({ queryKey: ['notifications', 'count'] });
-        queryClient.setQueryData(['notifications', 'list'], (oldData: any) => {
-          return {
-            ...oldData,
-            pages: _.map(oldData.pages, (page: any) => ({
-              ...page,
-              data: page.data.map((item: any) =>
-                item.documentId === data.documentId ? { ...data } : { ...item },
-              ),
-            })),
-          };
+        queryClient.invalidateQueries({
+          queryKey: ['user', 'detail', user.documentId, 'notifications', 'count'],
         });
+        queryClient.setQueryData(
+          ['user', 'detail', user.documentId, 'notifications', 'list'],
+          (oldData: any) => {
+            return {
+              ...oldData,
+              pages: _.map(oldData.pages, (page: any) => ({
+                ...page,
+                data: page.data.map((item: any) =>
+                  item.documentId === data.documentId ? { ...data } : { ...item },
+                ),
+              })),
+            };
+          },
+        );
       }
     },
   });
