@@ -382,33 +382,23 @@ export const ImageInput = ({ onChange, value = [] }: any) => {
 
 export const CoverInput = ({ onChange, value, onPress }: any) => {
   const [isOpen, setIsOpen] = useState(false);
-  const onOpen = () => setIsOpen(true);
-  const onClose = () => setIsOpen(false);
 
-  let source: any;
-
-  if (value) {
-    if (value.id) {
-      source = { uri: thumbnailSize(value) };
-    } else if (value[0].uri) {
-      source = { uri: value[0].uri };
-    }
-  } else {
-    source = null;
-  }
+  const source = value ? { uri: value.uri } : null;
 
   const imagePickerOptions = {
     mediaTypes: ['images'],
     allowsMultipleSelection: false,
   };
 
-  const onClearBtnPress = () => onChange(undefined);
+  const onOpen = () => setIsOpen(true);
+  const onClose = () => setIsOpen(false);
+  const onRemove = () => onChange(undefined);
 
-  const handleChange = () => {
-    if (value && value.length > 0) {
-      onChange(value[0]);
+  const handleChange = (val: any) => {
+    if (val && val.length > 0) {
+      onChange(val[0]);
     } else {
-      onChange(null);
+      onChange(undefined);
     }
   };
 
@@ -430,7 +420,7 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
             size="xs"
             action="secondary"
             className="absolute right-0 top-0 h-auto p-1"
-            onPress={onClearBtnPress}>
+            onPress={onRemove}>
             <ButtonIcon as={CircleX} />
           </Button>
         </TouchableOpacity>
@@ -466,28 +456,18 @@ export const AvatarInput = ({ onChange, value, fallbackText }: any) => {
     onChange(null);
   };
 
-  let source: any;
-
-  if (value) {
-    if (value.id) {
-      source = { uri: thumbnailSize(value) };
-    } else if (value[0].uri) {
-      source = { uri: value[0].uri };
-    }
-  } else {
-    source = null;
-  }
+  const source = value ? { uri: value.uri } : undefined;
 
   const imagePickerOptions = {
     allowsMultipleSelection: false,
     mediaTypes: ['images'],
   };
 
-  const handleChange = () => {
-    if (value && value.length > 0) {
-      onChange(value[0]);
+  const handleChange = (val: any) => {
+    if (val && val.length > 0) {
+      onChange(val[0]);
     } else {
-      onChange(null);
+      onChange(undefined);
     }
   };
 
@@ -548,7 +528,6 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
 
   const selectFromLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync(imagePickerOptions);
-
     const val: any = [...value];
     if (result.canceled) return val;
 

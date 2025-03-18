@@ -74,9 +74,9 @@ export default function TabLayout() {
           <TabTrigger name="profile" href="/profile" asChild>
             <TabButton title="我的" icon={User2} />
           </TabTrigger>
-          {/* <TabTrigger name="feature" href="/test" asChild>
+          <TabTrigger name="map" href="/test" asChild>
             <TabButton title="测试" icon={Waves} />
-          </TabTrigger> */}
+          </TabTrigger>
         </TabButtonList>
       </TabList>
     </Tabs>

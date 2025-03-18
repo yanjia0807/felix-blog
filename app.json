@@ -19,7 +19,10 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "NSLocationWhenInUseUsageDescription": "允许 $(PRODUCT_NAME) 访问您的位置信息。",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "允许 $(PRODUCT_NAME) 访问您的位置信息。",
+        "NSLocationAlwaysUsageDescription": "允许 $(PRODUCT_NAME) 访问您的位置信息。"
       },
       "config": {
         "usesNonExemptEncryption": false
@@ -31,10 +34,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#8FBF9F"
       },
-      "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.CAMERA"
-      ]
+      "permissions": []
     },
     "web": {
       "bundler": "metro",
@@ -42,6 +42,16 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "react-native-permissions",
+        {
+          "iosPermissions": [
+            "LocationAccuracy",
+            "LocationAlways",
+            "LocationWhenInUse"
+          ]
+        }
+      ],
       "expo-router",
       [
         "expo-image-picker",
@@ -62,13 +72,6 @@
         {
           "configureAndroidBackup": true,
           "faceIDPermission": "允许 $(PRODUCT_NAME) 访问您的面容ID生物识别数据。"
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "允许 $(PRODUCT_NAME) 访问您的位置数据。",
-          "isIosBackgroundLocationEnabled": false
         }
       ],
       "expo-font",

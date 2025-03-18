@@ -71,10 +71,9 @@ export const updateMe = async (params: any) => {
     phoneNumber: params.phoneNumber,
     district: params.district,
   };
-
   if (params.avatar) {
-    if (!params.avatar.documentId) {
-      const uri = params.avatar.uri || params.avatar[0]?.uri;
+    if (!params.avatar.id) {
+      const uri = params.avatar.uri;
       const fileId = await uploadFiles(uri);
       data.avatar = fileId;
     }

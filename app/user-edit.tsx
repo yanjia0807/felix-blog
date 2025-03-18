@@ -41,6 +41,7 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { genderEnum } from '@/constants/enum';
+import { FileTypeNum, largeSize } from '@/utils/file';
 
 type UserFormSchema = z.infer<typeof userFormSchema>;
 
@@ -79,6 +80,14 @@ const UserEdit: React.FC = () => {
   const toast = useCustomToast();
   const insets = useSafeAreaInsets();
 
+  const avatar = user?.avatar && {
+    id: user.avatar.id,
+    data: user.avatar,
+    fileType: FileTypeNum.Image,
+    uri: largeSize(user.avatar),
+    preview: largeSize(user.avatar),
+  };
+
   const {
     control,
     formState: { errors },
@@ -94,7 +103,7 @@ const UserEdit: React.FC = () => {
       birthday: user.birthday ? new Date(user.birthday) : null,
       phoneNumber: user.phoneNumber,
       district: user.district,
-      avatar: user.avatar,
+      avatar,
     },
   });
 
@@ -103,9 +112,14 @@ const UserEdit: React.FC = () => {
       return updateMe(formData);
     },
     onSuccess: (data: any) => {
-      queryClient.setQueryData(['users', 'detail', 'me'], data);
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', 'me'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', user.documentId],
+      });
       toast.success({ title: '操作完成', description: '您的资料已更新' });
-      router.navigate('/profile');
+      router.dismissAll();
     },
     onError(error, variables, context) {
       toast.error({ description: error.message });

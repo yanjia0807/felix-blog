@@ -79,7 +79,6 @@ const ChatList: React.FC = () => {
       },
       staleTime: 0,
     });
-
   const chats: any = isSuccess
     ? _.reduce(
         data.pages,

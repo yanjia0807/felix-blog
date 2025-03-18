@@ -253,7 +253,6 @@ const UserDetailPage: React.FC = () => {
     queryKey: ['users', 'detail', documentId],
     queryFn: () => fetchUser(documentId),
   });
-
   const renderHeaderLeft = () => (
     <Button
       action="secondary"

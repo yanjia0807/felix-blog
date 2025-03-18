@@ -18,7 +18,6 @@ import { thumbnailSize } from '@/utils/file';
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
-
   const onFollowingsBtnPress = () => {
     router.push({
       pathname: '/following-list',

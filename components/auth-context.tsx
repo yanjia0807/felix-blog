@@ -28,7 +28,7 @@ import { VStack } from './ui/vstack';
 const AuthContext = createContext<any>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
-  let [accessToken, setAccessToken] = useState<any>();
+  const [accessToken, setAccessToken] = useState<any>();
   const queryClient = useQueryClient();
 
   const { data, isError } = useQuery({
@@ -192,14 +192,8 @@ export const AuthHeader = ({ className, title, subtitle }: any) => {
 };
 
 export const AuthorInfo = ({ author }: any) => {
-  const { user } = useAuth();
-
   const onAvatarPress = (documentId: string) => {
-    if (user?.documentId === documentId) {
-      router.push('/profile');
-    } else {
-      router.push(`/users/${documentId}`);
-    }
+    router.push(`/users/${documentId}`);
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo, useEffect, useState, useCallback, useRef } from 'react';
+import React, { forwardRef, useMemo, useState, useCallback, useRef } from 'react';
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -7,11 +7,13 @@ import {
 } from '@gorhom/bottom-sheet';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Constants from 'expo-constants';
-import * as Location from 'expo-location';
 import _ from 'lodash';
 import { MapPinIcon } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
+import { init, Geolocation, Position, PositionError } from 'react-native-amap-geolocation';
+import { request, PERMISSIONS, RESULTS, check } from 'react-native-permissions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { amapIosApiKey } from '@/api';
 import { fetchAround } from '@/api/amap';
 import { Text } from '@/components/ui/text';
 import { useAuth } from './auth-context';
@@ -29,27 +31,28 @@ const appName = Constants?.expoConfig?.extra?.name || '';
 
 export const PositionInput = ({ value, onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const [permission, requestPermission] = Location.useForegroundPermissions();
   const toast = useCustomToast();
 
   const onInputButtonPress = async () => {
-    if (permission?.granted) {
+    const status = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+
+    if (status === RESULTS.GRANTED) {
       bottomSheetRef.current?.present();
-    } else {
-      const result = await requestPermission();
-      if (result.granted) {
+    } else if (status === RESULTS.DENIED) {
+      const status = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+      if (status === RESULTS.GRANTED) {
         bottomSheetRef.current?.present();
-      } else {
-        if (!result.canAskAgain) {
-          toast.info({
-            description: `请在 [系统设置] 里允许 ${appName} 访问您的位置。`,
-          });
-        }
       }
+    } else {
+      toast.info({
+        description: `请在 [系统设置] 里允许 ${appName} 访问您的位置。`,
+      });
     }
   };
 
-  const onClearButtonPress = () => onChange(undefined);
+  const onClearButtonPress = () => {
+    onChange(undefined);
+  };
 
   return (
     <>
@@ -76,7 +79,7 @@ export const PositionInput = ({ value, onChange }: any) => {
 };
 
 export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: any) {
-  const [location, setLocation] = useState<any>(null);
+  const [position, setPosition] = useState<Position | null>(null);
   const snapPoints = useMemo(() => ['80%'], []);
   const insets = useSafeAreaInsets();
   const user = useAuth();
@@ -87,8 +90,8 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
       queryFn: fetchAround,
       initialPageParam: {
         location: {
-          latitude: location?.coords?.latitude,
-          longitude: location?.coords?.longitude,
+          latitude: position?.coords?.latitude,
+          longitude: position?.coords?.longitude,
         },
         page_num: 1,
         page_size: 20,
@@ -103,10 +106,34 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
           page_size: lastPageParam['page_size'],
         };
       },
-      enabled: !!location,
+      enabled: !!position,
     });
 
+  const onSheetChange = async (index: number) => {
+    const initPosition = async () => {
+      await init({
+        ios: amapIosApiKey as string,
+        android: '',
+      });
+
+      Geolocation.getCurrentPosition(
+        (position: Position) => {
+          setPosition(position);
+        },
+        (error: PositionError) => {
+          console.error(error);
+        },
+      );
+    };
+    if (index === 0) {
+      initPosition();
+    }
+  };
+
   const places = _.reduce(data?.pages, (result: any, item: any) => [...result, ...item.pois], []);
+
+  const renderSeparatorComponent = () => <Divider />;
+
   const renderEmptyComponent = (props: any) => {
     return (
       <Box className="mt-10 w-full items-center justify-center">
@@ -115,28 +142,17 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
     );
   };
 
-  const onSelectBtnPressed = (item: any) => {
+  const onSelect = (item: any) => {
     onChange(item);
     ref.current?.close();
   };
 
-  const onSheetChange = async (index: number) => {
-    if (index === 0) {
-      const result: any = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Highest,
-      });
-
-      setLocation(result);
-    }
-  };
-
   const renderPositionItem = ({ item }: any) => (
-    <TouchableOpacity className="p-2" onPress={() => onSelectBtnPressed(item)}>
+    <TouchableOpacity className="p-2" onPress={() => onSelect(item)}>
       <Text size="md" bold={true}>
         {item.name}
       </Text>
       <Text size="sm">{item.address}</Text>
-      <Divider></Divider>
     </TouchableOpacity>
   );
 
@@ -173,8 +189,8 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
         </VStack>
         <BottomSheetFlatList
           data={places}
-          keyExtractor={(item: any) => item.id}
           renderItem={renderPositionItem}
+          ItemSeparatorComponent={renderSeparatorComponent}
           ListEmptyComponent={renderEmptyComponent}
           showsVerticalScrollIndicator={false}
           onEndReached={() => {
