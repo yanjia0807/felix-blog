@@ -53,7 +53,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ featureQuery, authorQuery }) =>
         )
       : [];
 
-  const authors = authorQuery.isLoading
+  const authors: any = authorQuery.isLoading
     ? Array(2).fill(undefined)
     : authorQuery.isSuccess
       ? authorQuery.data

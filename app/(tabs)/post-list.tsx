@@ -293,6 +293,8 @@ const PostList = function PostList() {
       ? _.reduce(postQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
       : [];
 
+  console.log(JSON.stringify(posts));
+
   const renderPostItem = ({ item, index }: any) => (
     <PostItem
       post={item}

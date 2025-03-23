@@ -26,10 +26,7 @@ const Notification = () => {
   return (
     <>
       {user && (
-        <Button
-          onPress={() => router.navigate('/notification-list')}
-          action="positive"
-          variant="link">
+        <Button onPress={() => router.navigate('/notification-list')} variant="link">
           {count > 0 && (
             <Box className="hs-4 absolute right-0 top-[-8] w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
               <Text

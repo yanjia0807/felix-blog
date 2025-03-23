@@ -89,7 +89,6 @@ export const fetchPosts = async ({ pageParam }: any) => {
       encodeValuesOnly: false,
     },
   );
-  console.log(`/posts?${query}`);
 
   const res = await apiClient.get(`/posts?${query}`);
   return res;

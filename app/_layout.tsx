@@ -17,6 +17,9 @@ import SocketProvider from '@/components/socket-context';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
 
+// const isHermes = () => !!global.HermesInternal;
+// console.log('isHermes', isHermes());
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -38,15 +38,19 @@ export const PositionInput = ({ value, onChange }: any) => {
 
     if (status === RESULTS.GRANTED) {
       bottomSheetRef.current?.present();
-    } else if (status === RESULTS.DENIED) {
-      const status = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-      if (status === RESULTS.GRANTED) {
-        bottomSheetRef.current?.present();
-      }
-    } else {
+    } else if (status === RESULTS.BLOCKED) {
       toast.info({
         description: `请在 [系统设置] 里允许 ${appName} 访问您的位置。`,
       });
+    } else {
+      const status = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+      if (status === RESULTS.GRANTED) {
+        bottomSheetRef.current?.present();
+      } else {
+        toast.info({
+          description: `请在 [系统设置] 里允许 ${appName} 访问您的位置。`,
+        });
+      }
     }
   };
 
