@@ -3,7 +3,10 @@ import 'expo-dev-client';
 import React, { useEffect, useState } from 'react';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import {
+  ThemeProvider as NavigationThemeProvider,
+  useNavigationState,
+} from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
@@ -34,7 +37,9 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const [theme, setTheme] = useState<Theme>();
   const colorScheme = useColorScheme();
+  const state = useNavigationState((state) => state);
 
+  console.log(state);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -61,6 +66,7 @@ export default function RootLayout() {
 
   const updateTheme = (newTheme: Theme) => {
     setTheme(newTheme);
+
     if (newTheme) {
       AsyncStorage.setItem('theme', newTheme);
     } else {
@@ -82,9 +88,10 @@ export default function RootLayout() {
                 <AuthProvider>
                   <BottomSheetModalProvider>
                     <SocketProvider>
+                      <StatusBar style="auto" />
                       <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                        <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="(tabs)" />
+                        <Stack.Screen name="(auth)" />
                         <Stack.Screen name="+not-found" />
                       </Stack>
                     </SocketProvider>

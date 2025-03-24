@@ -41,7 +41,7 @@ const Setting: React.FC = () => {
       onConfirm: async () => {
         toast.close(toastId);
         await logoutMutation();
-        router.replace('/');
+        router.dismissTo('/');
         toast.success({ description: '退出登录成功' });
       },
     });

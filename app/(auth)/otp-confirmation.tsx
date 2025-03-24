@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth, AuthHeader } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-context';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { FormControl } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
@@ -13,6 +13,7 @@ import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
+import { IconHeader } from '@/components/header';
 
 type OtpSchemaDetails = z.infer<typeof otpSchema>;
 
@@ -168,14 +169,9 @@ const OtpConfirmation: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AuthHeader title="验证码" subtitle="请输入4位验证码" />
+          <IconHeader title="验证码" subtitle="请输入4位验证码" />
           <HStack className="items-center justify-center" space="lg">
             {(['code1', 'code2', 'code3', 'code4'] as const).map((name, index) => (
               <Controller

@@ -204,6 +204,47 @@ export const fetchUserPhotos = async ({ pageParam }: any) => {
   return res;
 };
 
+export const fetchMapPosts = async ({ pageParam }: any) => {
+  const {
+    pagination,
+  } = pageParam;
+
+  const filters: any = {
+    poi: {
+      $notNull: true
+    },
+  };
+
+  const query = qs.stringify(
+    {
+      populate: {
+        author: {
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+        },
+        poi: true,
+        cover: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
+      },
+      filters,
+      fields: ["title"],
+      sort: 'createdAt:desc',
+      pagination,
+    },
+    {
+      encodeValuesOnly: false,
+    },
+  );
+
+  const res = await apiClient.get(`/posts?${query}`);
+  return res;
+};
+
 export const fetchPost = async ({ documentId, status }: any) => {
   const query = qs.stringify(
     {

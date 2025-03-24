@@ -1,11 +1,12 @@
+import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AuthHeader, useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-context';
+import { IconHeader } from '@/components/header';
 import { TermsOfServiceDialog, PrivacyPolicyDialog } from '@/components/infomation-dialog';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
@@ -159,11 +160,6 @@ const Register: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
       <TermsOfServiceDialog
         isOpen={isTermsDialogOpen}
         onClose={() => setIsTermsDialogOpen(false)}
@@ -174,7 +170,7 @@ const Register: React.FC = () => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AuthHeader title="用户注册" />
+          <IconHeader title="用户注册" />
           <VStack space="md">
             <Controller control={control} name="username" render={renderUsername} />
             <Controller control={control} name="email" render={renderEmail} />

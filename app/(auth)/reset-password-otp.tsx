@@ -5,7 +5,8 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth, AuthHeader } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-context';
+import { IconHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -124,14 +125,9 @@ const ResetPassword: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AuthHeader title="设置密码" />
+          <IconHeader title="设置密码" />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="password" render={renderPassword} />
             <Controller

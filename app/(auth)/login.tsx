@@ -1,12 +1,13 @@
+import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { AlertCircleIcon } from 'lucide-react-native';
-import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth, AuthHeader } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-context';
+import { IconHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -118,10 +119,9 @@ const Login: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <Stack.Screen options={{ headerShown: false }} />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AuthHeader title="密码登录" />
+          <IconHeader title="密码登录" />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="identifier" render={renderIdentifier} />
             <Controller control={control} name="password" render={renderPassword} />
@@ -135,7 +135,7 @@ const Login: React.FC = () => {
               variant="link"
               action="secondary"
               onPress={() => {
-                router.dismiss();
+                router.dismissTo('/');
               }}>
               <ButtonText>取消</ButtonText>
             </Button>

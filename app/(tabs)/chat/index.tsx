@@ -1,7 +1,7 @@
 import React from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Redirect, Stack, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import _ from 'lodash';
 import { FlatList, RefreshControl, SafeAreaView, TouchableOpacity } from 'react-native';
 import { fetchChats } from '@/api';
@@ -207,10 +207,4 @@ const ChatList: React.FC = () => {
   );
 };
 
-const ChatListPage: React.FC = () => {
-  const { user }: any = useAuth();
-
-  return user ? <ChatList /> : <Redirect href="/anonymous" />;
-};
-
-export default ChatListPage;
+export default ChatList;

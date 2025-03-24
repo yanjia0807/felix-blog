@@ -12,7 +12,7 @@ import { AuthorInfo, useAuth } from '@/components/auth-context';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
-import MainHeader from '@/components/main-header';
+import { MainHeader } from '@/components/header';
 import PageSpinner from '@/components/page-spinner';
 import {
   PostFilterIcon,

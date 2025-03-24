@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
+
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { twMerge } from 'tailwind-merge';
+
 import { fetchMe } from '@/api';
 import {
   loginUser,
@@ -20,44 +20,35 @@ import {
 import { thumbnailSize } from '@/utils/file';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Button, ButtonText } from './ui/button';
-import { Heading } from './ui/heading';
-import { HStack } from './ui/hstack';
-import { Text } from './ui/text';
+
 import { VStack } from './ui/vstack';
 
 const AuthContext = createContext<any>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
   const [accessToken, setAccessToken] = useState<any>();
+  const [user, setUser] = useState<any>(null);
   const queryClient = useQueryClient();
 
-  const { data, isError } = useQuery({
+  const { data, isError, isSuccess } = useQuery({
     queryKey: ['users', 'detail', 'me'],
     queryFn: fetchMe,
     enabled: !!accessToken,
   });
 
   useEffect(() => {
-    const loadAuthData = async () => {
-      const token = await SecureStore.getItemAsync('accessToken');
-
-      if (token) {
-        console.log('Loaded token:', token);
-        setAccessToken(token);
-      }
-    };
-
-    loadAuthData();
-  }, []);
+    if (isSuccess) {
+      setUser(data);
+    } else if (isError) {
+      setUser(null);
+    }
+  }, [data, isError, isSuccess]);
 
   const logoutMutation = async () => {
-    await queryClient.setQueryData(['users', 'detail', 'me'], () => null);
     setAccessToken(null);
-    await SecureStore.deleteItemAsync('accessToken');
-    await queryClient.removeQueries({
-      queryKey: ['users', 'detail', 'me'],
-    });
+    setUser(null);
     queryClient.clear();
+    SecureStore.deleteItemAsync('accessToken');
   };
 
   const loginMutation = useMutation({
@@ -147,14 +138,10 @@ export const AuthProvider = ({ children }: any) => {
     onError: (error) => {},
   });
 
-  if (isError) {
-    logoutMutation();
-  }
-
   return (
     <AuthContext.Provider
       value={{
-        user: data,
+        user,
         accessToken,
         logoutMutation,
         loginMutation,
@@ -174,22 +161,6 @@ export const AuthProvider = ({ children }: any) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-
-export const AuthHeader = ({ className, title, subtitle }: any) => {
-  return (
-    <HStack className={twMerge('mb-20 items-center', className)} space="md">
-      <Image
-        alt="logo"
-        source={require('../assets/images/icon.png')}
-        style={{ width: 40, height: 40, borderRadius: 6 }}
-      />
-      <VStack>
-        <Heading>{title}</Heading>
-        {subtitle && <Text sub={true}>{subtitle}</Text>}
-      </VStack>
-    </HStack>
-  );
-};
 
 export const AuthorInfo = ({ author }: any) => {
   const onAvatarPress = (documentId: string) => {

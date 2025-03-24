@@ -1,11 +1,12 @@
+import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
-import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth, AuthHeader } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-context';
+import { IconHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -100,14 +101,9 @@ const SendOtp: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AuthHeader title="发送验证码" />
+          <IconHeader title="发送验证码" />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="email" render={renderEmail} />
           </VStack>
