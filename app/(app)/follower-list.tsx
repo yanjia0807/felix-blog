@@ -8,8 +8,8 @@ import { ChevronLeft, Search } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
-import { fetchFollowings } from '@/api';
-import { useAuth } from '@/components/auth-context';
+import { fetchFollowers } from '@/api';
+import { useAuth } from '@/components/auth-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { FormControl } from '@/components/ui/form-control';
@@ -26,13 +26,10 @@ const filterFormSchema = z.object({
   keyword: z.string().optional(),
 });
 
-const FollowingList: React.FC = () => {
+const FollowerList: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId, username } = useLocalSearchParams();
   const [keyword, setKeyword] = useState();
-
-  const isMe = currentUser?.documentId === documentId;
-
   const { control, handleSubmit } = useForm<FilterFormSchema>({
     resolver: zodResolver(filterFormSchema),
     defaultValues: {
@@ -40,10 +37,12 @@ const FollowingList: React.FC = () => {
     },
   });
 
+  const isMe = currentUser?.documentId === documentId;
+
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['users', documentId, 'followings', { keyword }],
-      queryFn: fetchFollowings,
+      queryKey: ['users', documentId, 'followers', { keyword }],
+      queryFn: fetchFollowers,
       enabled: !!documentId,
       initialPageParam: {
         pagination: {
@@ -157,7 +156,7 @@ const FollowingList: React.FC = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: `${isMe ? '我' : username}关注的人`,
+          title: `关注${isMe ? '我' : username}的人`,
           headerShown: true,
           headerLeft: renderHeaderLeft,
         }}
@@ -191,4 +190,8 @@ const FollowingList: React.FC = () => {
   );
 };
 
-export default FollowingList;
+const FollowerListPage = () => {
+  return <FollowerList />;
+};
+
+export default FollowerListPage;

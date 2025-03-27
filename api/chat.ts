@@ -28,6 +28,23 @@ export const fetchChats = async ({ pageParam }: any) => {
       },
     },
     filters: {
+      $and: [
+        {
+          users: {
+            documentId: {
+              $contains: documentId,
+            },
+          },
+        },
+        {
+          users: {
+            documentId: {
+              $notContains: documentId,
+            },
+          },
+        },
+      ],
+
       users: {
         documentId: {
           $contains: documentId,

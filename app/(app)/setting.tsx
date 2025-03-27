@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { router, Stack } from 'expo-router';
+import _ from 'lodash';
 import {
   ChevronLeft,
   ChevronRightIcon,
@@ -10,7 +11,7 @@ import {
   ServerIcon,
 } from 'lucide-react-native';
 import { ScrollView, TouchableOpacity } from 'react-native';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { usePreferences } from '@/components/preferences-provider';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
@@ -28,30 +29,26 @@ const Setting: React.FC = () => {
   const { theme, updateTheme } = usePreferences();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(theme === 'dark');
 
-  const onChangePasswordBtnPress = () => {
-    router.push('/change-password');
-  };
-
-  const toastId = 'toastId';
   const onLogoutBtnPress = () => {
     toast.confirm({
-      toastId,
       title: '退出登录',
       description: `确认要退出登录吗？`,
       onConfirm: async () => {
-        toast.close(toastId);
+        toast.close();
         await logoutMutation();
-        router.dismissTo('/');
-        toast.success({ description: '退出登录成功' });
+        toast.success({
+          description: '退出登录成功',
+          onCloseComplete: () => {
+            router.replace('/');
+          },
+        });
       },
     });
   };
 
   const onThemeSwitch = (value: boolean) => {
-    setIsDarkMode((prev: boolean) => {
-      updateTheme(prev ? 'light' : 'dark');
-      return !prev;
-    });
+    setIsDarkMode(value);
+    updateTheme(value ? 'dark' : 'light');
   };
 
   const renderHeaderLeft = () => (
@@ -88,7 +85,7 @@ const Setting: React.FC = () => {
                   <Switch size="md" value={isDarkMode} onValueChange={onThemeSwitch} />
                 </HStack>
                 <Divider />
-                <TouchableOpacity onPress={() => onChangePasswordBtnPress()}>
+                <TouchableOpacity onPress={() => router.push('/change-password')}>
                   <HStack className="h-14 items-center justify-between p-3">
                     <HStack className="items-center" space="md">
                       <Icon as={KeyRound} size="lg" />
@@ -98,7 +95,7 @@ const Setting: React.FC = () => {
                   </HStack>
                 </TouchableOpacity>
                 <Divider />
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/service-and-policy')}>
                   <HStack className="h-14 items-center justify-between p-3">
                     <HStack className="items-center" space="md">
                       <Icon as={ServerIcon} size="lg" />
@@ -137,4 +134,8 @@ const Setting: React.FC = () => {
   );
 };
 
-export default Setting;
+const SettingPage = () => {
+  return <Setting />;
+};
+
+export default SettingPage;

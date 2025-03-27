@@ -23,7 +23,7 @@ import {
   originSize,
 } from '@/utils/file';
 
-const PostEdit = () => {
+const PostEditPage = () => {
   const { documentId, status } = useLocalSearchParams();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
@@ -181,4 +181,4 @@ const PostEdit = () => {
   );
 };
 
-export default PostEdit;
+export default PostEditPage;

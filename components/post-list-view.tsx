@@ -9,7 +9,7 @@ import Reanimated from 'react-native-reanimated';
 import { fetchUserPosts } from '@/api';
 import { deletePost, unpublishPost } from '@/api/post';
 import { formatDistance } from '@/utils/date';
-import { useAuth } from './auth-context';
+import { useAuth } from './auth-provider';
 import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Card } from './ui/card';
@@ -65,7 +65,6 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const toast = useCustomToast();
-  const toastId = 'toast_id';
   const { user: currentUser } = useAuth();
   const isMe = userDocumentId === currentUser?.documentId;
 
@@ -112,7 +111,7 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
       });
     },
     onError(error, variables, context) {
-      toast.close(toastId);
+      toast.close();
       toast.error({ description: error.message });
     },
   });
@@ -130,7 +129,7 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
       });
     },
     onError(error, variables, context) {
-      toast.close(toastId);
+      toast.close();
       toast.error({ description: error.message });
     },
   });
@@ -145,10 +144,9 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
 
   const onUnpublishBtnPress = ({ item }: any) => {
     toast.confirm({
-      toastId,
       description: `确认要取消发布吗？`,
       onConfirm: async () => {
-        toast.close(toastId);
+        toast.close();
         unpublishMutation.mutate({
           documentId: item.documentId,
         });
@@ -158,10 +156,9 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
 
   const onDeleteBtnPress = ({ item }: any) => {
     toast.confirm({
-      toastId,
       description: `确认要删除吗？`,
       onConfirm: async () => {
-        toast.close(toastId);
+        toast.close();
         deleteMutation.mutate({
           documentId: item.documentId,
         });

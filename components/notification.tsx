@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Bell } from 'lucide-react-native';
 import { fetchNotificationUnreadCount } from '@/api';
-import { useAuth } from './auth-context';
+import { useAuth } from './auth-provider';
 import { useSocket } from './socket-context';
 import { Box } from './ui/box';
 import { Button, ButtonIcon } from './ui/button';

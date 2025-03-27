@@ -8,7 +8,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
 import { fetchUsers } from '@/api';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { FormControl } from '@/components/ui/form-control';
@@ -184,4 +184,8 @@ const SearchUserList: React.FC = () => {
   );
 };
 
-export default SearchUserList;
+const SearchUserListPage = () => {
+  return <SearchUserList />;
+};
+
+export default SearchUserListPage;

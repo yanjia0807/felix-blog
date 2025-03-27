@@ -6,7 +6,7 @@ import { ChevronLeft, Edit, Ellipsis, MapPin, StickyNote, Trash, Undo2 } from 'l
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { deletePost, fetchPost, unpublishPost } from '@/api/post';
 import AlbumPagerView from '@/components/album-pager-view';
-import { AuthorInfo, useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
 import { CoverView, ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
@@ -24,6 +24,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
+import { AuthorInfo } from '@/components/user';
 import { formatDistance } from '@/utils/date';
 import {
   isImage,
@@ -45,7 +46,6 @@ const PostDetail: React.FC = () => {
 
   const queryClient = useQueryClient();
   const toast = useCustomToast();
-  const toastId = 'toastId';
   const { user } = useAuth();
   const navigation = useNavigation<any>();
 
@@ -72,7 +72,7 @@ const PostDetail: React.FC = () => {
       router.back();
     },
     onError(error, variables, context) {
-      toast.close(toastId);
+      toast.close();
       toast.error({ description: error.message });
     },
   });
@@ -94,7 +94,7 @@ const PostDetail: React.FC = () => {
       });
     },
     onError(error, variables, context) {
-      toast.close(toastId);
+      toast.close();
       toast.error({ description: error.message });
     },
   });
@@ -167,10 +167,9 @@ const PostDetail: React.FC = () => {
 
   const onUnpublishBtnPress = () => {
     toast.confirm({
-      toastId,
       description: `确认要取消发布吗？`,
       onConfirm: async () => {
-        toast.close(toastId);
+        toast.close();
         unpublishMutation.mutate({
           documentId,
         });
@@ -180,10 +179,9 @@ const PostDetail: React.FC = () => {
 
   const onDeleteBtnPress = () => {
     toast.confirm({
-      toastId,
       description: `确认要删除吗？`,
       onConfirm: async () => {
-        toast.close(toastId);
+        toast.close();
         deleteMutation.mutate({
           documentId,
         });

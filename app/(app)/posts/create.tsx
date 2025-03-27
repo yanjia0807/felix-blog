@@ -5,14 +5,14 @@ import { router, Stack } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useForm } from 'react-hook-form';
 import { createPost } from '@/api/post';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import PostForm, { postSchema, PostSchema } from '@/components/post-form';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import useCustomToast from '@/components/use-custom-toast';
 
-const PostCreate: React.FC = () => {
+const PostCreatePage: React.FC = () => {
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const { user } = useAuth();
@@ -115,4 +115,4 @@ const PostCreate: React.FC = () => {
   );
 };
 
-export default PostCreate;
+export default PostCreatePage;

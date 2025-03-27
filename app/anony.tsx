@@ -6,23 +6,24 @@ import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 
-const Anonymous: React.FC = () => {
+const Anony: React.FC = () => {
   const renderHeaderLeft = () => (
     <Button
       action="secondary"
       variant="link"
       onPress={() => {
-        router.dismissTo('/');
+        router.dismiss();
       }}>
       <ButtonText>返回</ButtonText>
     </Button>
   );
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          headerShown: true,
           title: '',
+          headerShown: true,
           headerLeft: renderHeaderLeft,
         }}
       />
@@ -45,7 +46,7 @@ const Anonymous: React.FC = () => {
               action="secondary"
               variant="link"
               onPress={() => {
-                router.push('/register-otp');
+                router.push('/otp-register');
               }}>
               <ButtonText>新用户注册</ButtonText>
             </Button>
@@ -53,12 +54,7 @@ const Anonymous: React.FC = () => {
               action="secondary"
               variant="link"
               onPress={() => {
-                router.push({
-                  pathname: '/send-otp',
-                  params: {
-                    purpose: 'verify-email',
-                  },
-                });
+                router.push('/verify-email');
               }}>
               <ButtonText>验证邮箱</ButtonText>
             </Button>
@@ -66,12 +62,7 @@ const Anonymous: React.FC = () => {
               action="secondary"
               variant="link"
               onPress={() => {
-                router.push({
-                  pathname: '/send-otp',
-                  params: {
-                    purpose: 'reset-password',
-                  },
-                });
+                router.push('/reset-password');
               }}>
               <ButtonText>忘记密码</ButtonText>
             </Button>
@@ -82,4 +73,8 @@ const Anonymous: React.FC = () => {
   );
 };
 
-export default Anonymous;
+const AnonyPage = () => {
+  return <Anony />;
+};
+
+export default AnonyPage;

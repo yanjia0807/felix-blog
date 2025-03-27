@@ -4,6 +4,13 @@ import { apiClient } from './api-client';
 export const fetchFeatures = async ({ pageParam }: any) => {
   const { pagination } = pageParam;
   const query = qs.stringify({
+    filters: {
+      post: {
+        author: {
+          $notNull: true,
+        },
+      },
+    },
     populate: {
       image: {
         fields: ['alternativeText', 'width', 'height', 'formats'],

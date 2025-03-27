@@ -26,6 +26,10 @@ export const fetchPosts = async ({ pageParam }: any) => {
         $containsi: authorName,
       },
     };
+  } else {
+    filters.author = {
+      $notNull: true,
+    };
   }
 
   if (!_.isNil(createdAtFrom)) {
@@ -97,6 +101,11 @@ export const fetchPosts = async ({ pageParam }: any) => {
 export const fetchRecommendPosts = async ({ pageParam }: any) => {
   const { pagination } = pageParam;
   const query = qs.stringify({
+    filters: {
+      author: {
+        $notNull: true,
+      },
+    },
     populate: {
       author: {
         fields: ['username'],
@@ -205,13 +214,11 @@ export const fetchUserPhotos = async ({ pageParam }: any) => {
 };
 
 export const fetchMapPosts = async ({ pageParam }: any) => {
-  const {
-    pagination,
-  } = pageParam;
+  const { pagination } = pageParam;
 
   const filters: any = {
     poi: {
-      $notNull: true
+      $notNull: true,
     },
   };
 
@@ -232,7 +239,7 @@ export const fetchMapPosts = async ({ pageParam }: any) => {
         },
       },
       filters,
-      fields: ["title"],
+      fields: ['title'],
       sort: 'createdAt:desc',
       pagination,
     },

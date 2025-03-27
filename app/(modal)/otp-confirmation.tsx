@@ -1,11 +1,12 @@
 import React, { forwardRef, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import _ from 'lodash';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
+import { IconHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { FormControl } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
@@ -13,7 +14,6 @@ import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
-import { IconHeader } from '@/components/header';
 
 type OtpSchemaDetails = z.infer<typeof otpSchema>;
 
@@ -95,6 +95,7 @@ const OtpConfirmation: React.FC = () => {
   const { email, purpose }: any = useLocalSearchParams();
   const { verifyOtpMutation } = useAuth();
   const toast = useCustomToast();
+  const navigation = useNavigation();
   const { mutate, isPending } = verifyOtpMutation;
   const inputRefs = [useRef<any>(null), useRef<any>(null), useRef<any>(null), useRef<any>(null)];
 
@@ -105,25 +106,31 @@ const OtpConfirmation: React.FC = () => {
       purpose,
     };
 
-    console.log(data);
-
     mutate(data, {
       onSuccess: () => {
-        toast.success({
-          title: '操作成功',
-          description: '验证码验证成功',
-        });
-        if (purpose === 'reset-password') {
-          router.replace({
-            pathname: '/reset-password-otp',
-            params: {
-              email,
-              code: `${code1}${code2}${code3}${code4}`,
-              purpose,
+        if (purpose === 'verify-email') {
+          toast.success({
+            title: '操作成功',
+            description: '您已注册完成',
+            onCloseComplete: () => {
+              router.replace('/');
             },
           });
-        } else {
-          router.replace('/');
+        } else if (purpose === 'reset-password') {
+          toast.success({
+            title: '操作成功',
+            description: '验证码验证成功',
+            onCloseComplete: () => {
+              router.push({
+                pathname: '/set-password',
+                params: {
+                  email,
+                  code: `${code1}${code2}${code3}${code4}`,
+                  purpose,
+                },
+              });
+            },
+          });
         }
       },
       onError: (error: any) => {
@@ -167,8 +174,30 @@ const OtpConfirmation: React.FC = () => {
     </FormControl>
   );
 
+  const renderHeaderLeft = () => (
+    <Button
+      action="secondary"
+      variant="link"
+      onPress={() => {
+        router.back();
+      }}>
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
+
+  const onCancel = () => {
+    navigation.getParent()?.goBack();
+  };
+
   return (
     <SafeAreaView className="flex-1">
+      <Stack.Screen
+        options={{
+          title: '',
+          headerShown: true,
+          headerLeft: renderHeaderLeft,
+        }}
+      />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
           <IconHeader title="验证码" subtitle="请输入4位验证码" />
@@ -189,12 +218,7 @@ const OtpConfirmation: React.FC = () => {
             <ButtonText>确定</ButtonText>
             {isPending && <ButtonSpinner />}
           </Button>
-          <Button
-            variant="link"
-            action="secondary"
-            onPress={() => {
-              router.dismiss();
-            }}>
+          <Button variant="link" action="secondary" onPress={onCancel}>
             <ButtonText>取消</ButtonText>
           </Button>
         </KeyboardAwareScrollView>
@@ -203,4 +227,8 @@ const OtpConfirmation: React.FC = () => {
   );
 };
 
-export default OtpConfirmation;
+const OtpConfirmationPage = () => {
+  return <OtpConfirmation />;
+};
+
+export default OtpConfirmationPage;

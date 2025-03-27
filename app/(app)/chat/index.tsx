@@ -5,7 +5,7 @@ import { Stack, useRouter } from 'expo-router';
 import _ from 'lodash';
 import { FlatList, RefreshControl, SafeAreaView, TouchableOpacity } from 'react-native';
 import { fetchChats } from '@/api';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import PageSpinner from '@/components/page-spinner';
 import { useSocket } from '@/components/socket-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
@@ -207,4 +207,8 @@ const ChatList: React.FC = () => {
   );
 };
 
-export default ChatList;
+const ChatListPage = () => {
+  return <ChatList />;
+};
+
+export default ChatListPage;

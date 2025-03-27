@@ -1,12 +1,13 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { router, Stack } from 'expo-router';
-import { AlertCircleIcon, ChevronLeft } from 'lucide-react-native';
 import React from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
+import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth } from '@/components/auth-context';
-import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
+import { useAuth } from '@/components/auth-provider';
+import { IconHeader } from '@/components/header';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
   FormControlError,
@@ -22,54 +23,57 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-type ChangePasswordSchemaDetails = z.infer<typeof changePasswordSchema>;
+type SetPasswordSchemaDetails = z.infer<typeof setPasswordSchema>;
 
-const changePasswordSchema = z.object({
-  currentPassword: z
-    .string({
-      required_error: '当前密码是必填项',
-    })
-    .min(6, '当前密码长度至少为6位'),
-  password: z
-    .string({
-      required_error: '新密码是必填项',
-    })
-    .min(6, '新密码长度至少为6位'),
-  passwordConfirmation: z
-    .string({
-      required_error: '确认密码是必填项',
-    })
-    .min(6, '确认密码长度至少为6位'),
-});
+const setPasswordSchema = z
+  .object({
+    password: z
+      .string({
+        required_error: '新密码是必填项',
+      })
+      .min(6, '新密码长度至少为6位'),
+    passwordConfirmation: z
+      .string({
+        required_error: '确认密码是必填项',
+      })
+      .min(6, '确认密码长度至少为6位'),
+  })
+  .refine((data) => data.password === data.passwordConfirmation, {
+    message: '两次输入的密码不一致',
+    path: ['passwordConfirmation'],
+  });
 
-const ChangePassword: React.FC = () => {
-  const { changePasswordMutation } = useAuth();
-  const { mutate, isPending } = changePasswordMutation;
+const SetPasswordPage: React.FC = () => {
   const toast = useCustomToast();
-
-  const renderHeaderLeft = () => (
-    <Button action="secondary" variant="link" onPress={() => router.back()}>
-      <ButtonIcon as={ChevronLeft} />
-      <ButtonText>返回</ButtonText>
-    </Button>
-  );
+  const { resetPasswordOtpMutation } = useAuth();
+  const { isPending, mutate } = resetPasswordOtpMutation;
+  const { email, code }: any = useLocalSearchParams();
+  const navigation = useNavigation();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<ChangePasswordSchemaDetails>({
-    resolver: zodResolver(changePasswordSchema),
+  } = useForm<SetPasswordSchemaDetails>({
+    resolver: zodResolver(setPasswordSchema),
   });
 
-  const onSubmit = (formData: any) => {
-    mutate(formData, {
+  const onSubmit = ({ password, passwordConfirmation }: any) => {
+    const data = {
+      email,
+      code,
+      password,
+      passwordConfirmation,
+    };
+
+    mutate(data, {
       onSuccess: () => {
         toast.success({
-          description: `修改密码成功`,
+          description: '设置密码成功',
+          onCloseComplete: () => {
+            router.replace('/');
+          },
         });
-
-        router.back();
       },
       onError: (error: any) => {
         toast.error({
@@ -78,30 +82,6 @@ const ChangePassword: React.FC = () => {
       },
     });
   };
-
-  const renderCurrentPassword = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.currentPassword}>
-      <FormControlLabel>
-        <FormControlLabelText>当前密码</FormControlLabelText>
-      </FormControlLabel>
-      <Input variant="rounded">
-        <InputField
-          type="password"
-          placeholder="请输入密码"
-          onBlur={onBlur}
-          onChangeText={onChange}
-          value={value}
-        />
-      </Input>
-      <FormControlHelper className="justify-end">
-        <FormControlHelperText>密码长度至少为6个字符</FormControlHelperText>
-      </FormControlHelper>
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>{errors?.currentPassword?.message}</FormControlErrorText>
-      </FormControlError>
-    </FormControl>
-  );
 
   const renderPassword = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.password}>
@@ -151,15 +131,34 @@ const ChangePassword: React.FC = () => {
     </FormControl>
   );
 
+  const renderHeaderLeft = () => (
+    <Button
+      action="secondary"
+      variant="link"
+      onPress={() => {
+        router.back();
+      }}>
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
+
+  const onCancel = () => {
+    navigation.getParent()?.goBack();
+  };
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
-        options={{ headerShown: true, title: '修改密码', headerLeft: renderHeaderLeft }}
+        options={{
+          title: '',
+          headerShown: true,
+          headerLeft: renderHeaderLeft,
+        }}
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
+          <IconHeader title="设置密码" />
           <VStack space="md" className="mb-10">
-            <Controller control={control} name="currentPassword" render={renderCurrentPassword} />
             <Controller control={control} name="password" render={renderPassword} />
             <Controller
               control={control}
@@ -167,24 +166,17 @@ const ChangePassword: React.FC = () => {
               render={renderPasswordConfirmation}
             />
           </VStack>
-          <VStack>
-            <Button className="rounded" onPress={handleSubmit(onSubmit)} disabled={isPending}>
-              <ButtonText>确定</ButtonText>
-              {isPending && <ButtonSpinner />}
-            </Button>
-            <Button
-              variant="link"
-              action="secondary"
-              onPress={() => {
-                router.dismiss();
-              }}>
-              <ButtonText>取消</ButtonText>
-            </Button>
-          </VStack>
+          <Button className="rounded" onPress={handleSubmit(onSubmit)} disabled={isPending}>
+            <ButtonText>确定</ButtonText>
+            {isPending && <ButtonSpinner />}
+          </Button>
+          <Button variant="link" action="secondary" onPress={onCancel}>
+            <ButtonText>取消</ButtonText>
+          </Button>
         </KeyboardAwareScrollView>
       </VStack>
     </SafeAreaView>
   );
 };
 
-export default ChangePassword;
+export default SetPasswordPage;

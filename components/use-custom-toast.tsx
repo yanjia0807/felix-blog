@@ -62,48 +62,18 @@ const Confirm = ({ id, onConfirm, title, description, close }: any) => {
   );
 };
 
-const Custom = ({ id, title, description, actions, close }: any) => {
-  const nativeID = `toast-${id}`;
-
-  return (
-    <Toast
-      action="error"
-      nativeID={nativeID}
-      className="w-full min-w-[240] max-w-[320] flex-row gap-4 p-4 shadow-hard-2">
-      <VStack space="xl" className="flex-1">
-        <VStack space="xs">
-          <HStack className="items-center justify-between">
-            <ToastTitle className="font-semibold text-typography-900">{title}</ToastTitle>
-            <TouchableOpacity onPress={close}>
-              <Icon as={CloseIcon} className="stroke-background-500" />
-            </TouchableOpacity>
-          </HStack>
-          <ToastDescription className="text-typography-700">{description}</ToastDescription>
-        </VStack>
-        <ButtonGroup className="flex-row gap-3">
-          {_.map(actions, (action: any, index: number) => (
-            <Button key={index} size="sm" className="flex-grow" onPress={() => action['onPress']()}>
-              <ButtonText>{action.buttonText}</ButtonText>
-            </Button>
-          ))}
-        </ButtonGroup>
-      </VStack>
-    </Toast>
-  );
-};
-
 const useCustomToast = () => {
   const toast = useToast();
+  const id = _.random(0, 999999999).toString();
 
   const alert = ({ toastId, action, title, description, ...props }: any) => {
-    const id = toastId || _.random(0, 999999999);
     const close = () => toast.close(id);
 
     if (!toast.isActive(id)) {
       toast.show({
         id,
         placement: 'top',
-        duration: 3000,
+        duration: 1500,
         render: ({ id }: any) => (
           <Alert id={id} title={title} description={description} action={action} close={close} />
         ),
@@ -125,7 +95,6 @@ const useCustomToast = () => {
   };
 
   const confirm = ({ toastId, title = '请确认', description, onConfirm, ...props }: any) => {
-    const id = toastId || _.random(0, 999999999);
     const close = () => toast.close(id);
 
     if (!toast.isActive(id)) {
@@ -148,32 +117,13 @@ const useCustomToast = () => {
     }
   };
 
-  const custom = ({ toastId, title, description, actions, ...props }: any) => {
-    const id = toastId || _.random(0, 999999999);
-    const close = () => toast.close(id);
-
-    if (!toast.isActive(id)) {
-      toast.show({
-        id,
-        placement: 'top',
-        duration: null,
-        close,
-        render: ({ id }) => (
-          <Custom id={id} title={title} description={description} actions={actions} />
-        ),
-        ...props,
-      });
-    }
-  };
-
   return {
     success,
     info,
     error,
     confirm,
-    custom,
-    close: (toastId: string) => {
-      toast.close(toastId);
+    close: () => {
+      toast.close(id);
     },
   };
 };

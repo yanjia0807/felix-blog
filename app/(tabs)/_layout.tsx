@@ -1,4 +1,5 @@
 import { forwardRef, Ref } from 'react';
+import { useRouter } from 'expo-router';
 import {
   TabList,
   TabListProps,
@@ -7,9 +8,10 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { House, MessageCircle, Pentagon, User2, Waves } from 'lucide-react-native';
+import { House, MessageCircle, Pentagon, User2 } from 'lucide-react-native';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/components/auth-provider';
 import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
@@ -19,6 +21,8 @@ import { VStack } from '@/components/ui/vstack';
 export type TabButtonProps = TabTriggerSlotProps & {
   title?: string;
   icon?: any;
+  auth?: boolean;
+  href?: any;
 };
 
 export const TabButtonList = forwardRef(({ children, ...props }: TabListProps, ref: Ref<View>) => {
@@ -31,10 +35,22 @@ export const TabButtonList = forwardRef(({ children, ...props }: TabListProps, r
 
 export const TabButton = forwardRef(
   ({ icon, title, isFocused, ...props }: TabButtonProps, ref: Ref<View>) => {
+    const { user } = useAuth();
+    const router = useRouter();
+
+    const onPress = () => {
+      if (!user && props.auth) {
+        router.push(`/anony`);
+        return;
+      }
+      router.push(props.href);
+    };
+
     return (
       <Pressable
         ref={ref}
         {...props}
+        onPress={onPress}
         className={`rounded-full px-2 py-[2.5] ${isFocused ? 'bg-primary-200' : ''}`}>
         <VStack className="items-center" space="xs">
           <Icon
@@ -68,11 +84,8 @@ export default function TabLayout() {
           <TabTrigger name="post-list" href="/post-list" asChild>
             <TabButton title="发现" icon={Pentagon} />
           </TabTrigger>
-          <TabTrigger name="chat" href="/chat" asChild>
-            <TabButton title="消息" icon={MessageCircle} />
-          </TabTrigger>
           <TabTrigger name="profile" href="/profile" asChild>
-            <TabButton title="我的" icon={User2} />
+            <TabButton title="我的" auth={true} icon={User2} />
           </TabTrigger>
         </TabButtonList>
       </TabList>

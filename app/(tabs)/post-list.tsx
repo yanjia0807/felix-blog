@@ -8,11 +8,11 @@ import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
 import { fetchPosts, fetchTags } from '@/api';
 import AlbumPagerView from '@/components/album-pager-view';
-import { AuthorInfo, useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
+import { MainHeader } from '@/components/header';
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
-import { MainHeader } from '@/components/header';
 import PageSpinner from '@/components/page-spinner';
 import {
   PostFilterIcon,
@@ -36,6 +36,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { AuthorInfo } from '@/components/user';
 import UserAvatars from '@/components/user-avatars';
 import { formatDistance } from '@/utils/date';
 import {
@@ -293,8 +294,6 @@ const PostList = function PostList() {
       ? _.reduce(postQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
       : [];
 
-  console.log(JSON.stringify(posts));
-
   const renderPostItem = ({ item, index }: any) => (
     <PostItem
       post={item}
@@ -380,14 +379,16 @@ const PostListDrawer: React.FC = () => {
   );
 };
 
-const PostListPage: React.FC = () => (
-  <SafeAreaView className="flex-1">
-    <PostFilterProvider>
-      <CommentProvider>
-        <PostListDrawer />
-      </CommentProvider>
-    </PostFilterProvider>
-  </SafeAreaView>
-);
+const PostListPage: React.FC = () => {
+  return (
+    <SafeAreaView className="flex-1">
+      <PostFilterProvider>
+        <CommentProvider>
+          <PostListDrawer />
+        </CommentProvider>
+      </PostFilterProvider>
+    </SafeAreaView>
+  );
+};
 
 export default PostListPage;

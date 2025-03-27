@@ -31,7 +31,7 @@ import {
 } from '@/api/comment';
 import { formatDistance } from '@/utils/date';
 import { thumbnailSize } from '@/utils/file';
-import { useAuth } from './auth-context';
+import { useAuth } from './auth-provider';
 import PageSpinner from './page-spinner';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
 import { Box } from './ui/box';

@@ -1,12 +1,12 @@
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useNavigation } from 'expo-router';
 import _ from 'lodash';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { IconHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
@@ -41,6 +41,7 @@ const Login: React.FC = () => {
   const { loginMutation } = useAuth();
   const { mutate, isPending } = loginMutation;
   const toast = useCustomToast();
+  const navigation = useNavigation();
 
   const {
     control,
@@ -56,11 +57,10 @@ const Login: React.FC = () => {
         toast.success({
           title: '登录成功',
           description: `${data.user.username}，欢迎回来`,
+          onCloseComplete: () => {
+            router.replace('/');
+          },
         });
-
-        _.delay(() => {
-          router.replace('/');
-        }, 1200);
       },
       onError: (error: any) => {
         toast.error({
@@ -117,8 +117,30 @@ const Login: React.FC = () => {
     </FormControl>
   );
 
+  const renderHeaderLeft = () => (
+    <Button
+      action="secondary"
+      variant="link"
+      onPress={() => {
+        router.back();
+      }}>
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
+
+  const onCancel = () => {
+    navigation.getParent()?.goBack();
+  };
+
   return (
     <SafeAreaView className="flex-1">
+      <Stack.Screen
+        options={{
+          title: '',
+          headerShown: true,
+          headerLeft: renderHeaderLeft,
+        }}
+      />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
           <IconHeader title="密码登录" />
@@ -131,12 +153,7 @@ const Login: React.FC = () => {
               <ButtonText>登录</ButtonText>
               {isPending && <ButtonSpinner />}
             </Button>
-            <Button
-              variant="link"
-              action="secondary"
-              onPress={() => {
-                router.dismissTo('/');
-              }}>
+            <Button variant="link" action="secondary" onPress={onCancel}>
               <ButtonText>取消</ButtonText>
             </Button>
           </VStack>
@@ -146,4 +163,8 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+const LoginPage = () => {
+  return <Login />;
+};
+
+export default LoginPage;

@@ -1,11 +1,11 @@
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useNavigation } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { IconHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
@@ -21,9 +21,9 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 
-type SendOtpSchemaDetails = z.infer<typeof sendOtpSchema>;
+export type SendOtpSchemaDetails = z.infer<typeof sendOtpSchema>;
 
-const sendOtpSchema = z.object({
+export const sendOtpSchema = z.object({
   email: z
     .string({
       required_error: '邮箱地址是必填项',
@@ -34,11 +34,16 @@ const sendOtpSchema = z.object({
     ),
 });
 
-const SendOtp: React.FC = () => {
+interface SendOtpFormProps {
+  title: string;
+  purpose: string;
+}
+
+const SendOtpForm: React.FC<SendOtpFormProps> = ({ title, purpose }) => {
   const toast = useCustomToast();
   const { sendOtpMutation } = useAuth();
   const { mutate, isPending } = sendOtpMutation;
-  const { purpose }: any = useLocalSearchParams();
+  const navigation = useNavigation();
 
   const {
     control,
@@ -77,18 +82,16 @@ const SendOtp: React.FC = () => {
       onSuccess: () => {
         toast.success({
           description: '验证码已发送',
+          onCloseComplete: () => {
+            router.push({
+              pathname: '/otp-confirmation',
+              params: {
+                email,
+                purpose,
+              },
+            });
+          },
         });
-        if (purpose) {
-          router.replace({
-            pathname: '/otp-confirmation',
-            params: {
-              email,
-              purpose,
-            },
-          });
-        } else {
-          router.replace('/');
-        }
       },
       onError: (error: any) => {
         toast.error({
@@ -99,11 +102,33 @@ const SendOtp: React.FC = () => {
     });
   };
 
+  const renderHeaderLeft = () => (
+    <Button
+      action="secondary"
+      variant="link"
+      onPress={() => {
+        router.back();
+      }}>
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
+
+  const onCancel = () => {
+    navigation.getParent()?.goBack();
+  };
+
   return (
     <SafeAreaView className="flex-1">
+      <Stack.Screen
+        options={{
+          title: '',
+          headerShown: true,
+          headerLeft: renderHeaderLeft,
+        }}
+      />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <IconHeader title="发送验证码" />
+          <IconHeader title={title} />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="email" render={renderEmail} />
           </VStack>
@@ -112,12 +137,7 @@ const SendOtp: React.FC = () => {
               <ButtonText>发送</ButtonText>
               {isPending && <ButtonSpinner />}
             </Button>
-            <Button
-              variant="link"
-              action="secondary"
-              onPress={() => {
-                router.dismiss();
-              }}>
+            <Button variant="link" action="secondary" onPress={onCancel}>
               <ButtonText>取消</ButtonText>
             </Button>
           </VStack>
@@ -127,4 +147,4 @@ const SendOtp: React.FC = () => {
   );
 };
 
-export default SendOtp;
+export default SendOtpForm;

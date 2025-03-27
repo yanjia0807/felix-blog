@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { updateMe } from '@/api';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { DateInput } from '@/components/date-input';
 import { DistrictInput } from '@/components/district-input';
 import { AvatarInput } from '@/components/image-input';
@@ -298,4 +298,8 @@ const UserEdit: React.FC = () => {
   );
 };
 
-export default UserEdit;
+const UserEditPage = () => {
+  return <UserEdit />;
+};
+
+export default UserEditPage;

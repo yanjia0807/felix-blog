@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useNavigation } from 'expo-router';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { IconHeader } from '@/components/header';
-import { TermsOfServiceDialog, PrivacyPolicyDialog } from '@/components/infomation-dialog';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -51,12 +50,11 @@ const registerSchema = z.object({
     .min(6, '密码长度至少为6位'),
 });
 
-const Register: React.FC = () => {
+const OtpRegisterPage: React.FC = () => {
   const { registerOtpMutation } = useAuth();
   const { mutate, isPending } = registerOtpMutation;
   const toast = useCustomToast();
-  const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
-  const [isPrivacyDialogOpen, setIsPrivacyDialogOpen] = useState(false);
+  const navigation = useNavigation();
 
   const {
     control,
@@ -71,11 +69,13 @@ const Register: React.FC = () => {
       onSuccess: () => {
         toast.success({
           title: '提交成功',
-          description: '我们已向您的邮箱发送了一封验证邮件，请前往查看',
-        });
-        router.replace({
-          pathname: '/otp-confirmation',
-          params: { email: data.email, purpose: 'verify-email' },
+          description: '我们已向您的邮箱发送了一个验证码，请前往查看',
+          onCloseComplete: () => {
+            router.push({
+              pathname: '/otp-confirmation',
+              params: { email: data.email, purpose: 'verify-email' },
+            });
+          },
         });
       },
       onError: (error: any) => {
@@ -158,15 +158,29 @@ const Register: React.FC = () => {
     </FormControl>
   );
 
+  const renderHeaderLeft = () => (
+    <Button
+      action="secondary"
+      variant="link"
+      onPress={() => {
+        router.back();
+      }}>
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
+
+  const onCancel = () => {
+    navigation.getParent()?.goBack();
+  };
+
   return (
     <SafeAreaView className="flex-1">
-      <TermsOfServiceDialog
-        isOpen={isTermsDialogOpen}
-        onClose={() => setIsTermsDialogOpen(false)}
-      />
-      <PrivacyPolicyDialog
-        isOpen={isPrivacyDialogOpen}
-        onClose={() => setIsPrivacyDialogOpen(false)}
+      <Stack.Screen
+        options={{
+          title: '',
+          headerShown: true,
+          headerLeft: renderHeaderLeft,
+        }}
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
@@ -177,14 +191,16 @@ const Register: React.FC = () => {
             <Controller control={control} name="password" render={renderPassword} />
           </VStack>
           <HStack className="my-10 flex-wrap">
-            <Text bold={true}>同意服务条款：</Text>
-            <Text>在点击“注册”按钮前，请阅读并同意我们的</Text>
-            <Link onPress={() => setIsTermsDialogOpen(true)}>
-              <LinkText className="no-underline">服务条款</LinkText>
+            <Text bold={true} className="leading-8">
+              同意服务条款：
+            </Text>
+            <Text className="leading-8">在点击“注册”按钮前，请阅读并同意我们的</Text>
+            <Link onPress={() => router.push('/terms-of-service')}>
+              <LinkText className="leading-8 no-underline">服务条款</LinkText>
             </Link>
-            <Text>和</Text>
-            <Link onPress={() => setIsPrivacyDialogOpen(true)}>
-              <LinkText className="no-underline">隐私政策</LinkText>
+            <Text className="leading-8">和</Text>
+            <Link onPress={() => router.push('/privacy-policy')}>
+              <LinkText className="leading-8 no-underline">隐私政策</LinkText>
             </Link>
           </HStack>
           <VStack>
@@ -192,12 +208,7 @@ const Register: React.FC = () => {
               <ButtonText>注册</ButtonText>
               {isPending && <ButtonSpinner />}
             </Button>
-            <Button
-              variant="link"
-              action="secondary"
-              onPress={() => {
-                router.dismiss();
-              }}>
+            <Button variant="link" action="secondary" onPress={onCancel}>
               <ButtonText>取消</ButtonText>
             </Button>
           </VStack>
@@ -207,4 +218,4 @@ const Register: React.FC = () => {
   );
 };
 
-export default Register;
+export default OtpRegisterPage;

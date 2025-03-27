@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Heart } from 'lucide-react-native';
 import { twMerge } from 'tailwind-merge';
 import { UpdatePostLikedData, updatePostLiked } from '@/api';
-import { useAuth } from './auth-context';
+import { useAuth } from './auth-provider';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 
 export const LikeButton = memo(function LikeButton({ post, className }: any) {

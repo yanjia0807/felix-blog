@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { amapIosApiKey } from '@/api';
 import { fetchAround } from '@/api/amap';
 import { Text } from '@/components/ui/text';
-import { useAuth } from './auth-context';
+import { useAuth } from './auth-provider';
 import PageSpinner from './page-spinner';
 import { Box } from './ui/box';
 import { Button, ButtonIcon, ButtonText } from './ui/button';

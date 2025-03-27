@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-
+import { DeviceEventEmitter } from 'react-native';
 import { fetchMe } from '@/api';
 import {
   loginUser,
@@ -17,11 +16,7 @@ import {
   changePassword,
   resetPasswordOtp,
 } from '@/api/auth';
-import { thumbnailSize } from '@/utils/file';
-import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
-import { Button, ButtonText } from './ui/button';
-
-import { VStack } from './ui/vstack';
+import useCustomToast from './use-custom-toast';
 
 const AuthContext = createContext<any>(undefined);
 
@@ -29,6 +24,8 @@ export const AuthProvider = ({ children }: any) => {
   const [accessToken, setAccessToken] = useState<any>();
   const [user, setUser] = useState<any>(null);
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const toast = useCustomToast();
 
   const { data, isError, isSuccess } = useQuery({
     queryKey: ['users', 'detail', 'me'],
@@ -36,25 +33,16 @@ export const AuthProvider = ({ children }: any) => {
     enabled: !!accessToken,
   });
 
-  useEffect(() => {
-    if (isSuccess) {
-      setUser(data);
-    } else if (isError) {
-      setUser(null);
-    }
-  }, [data, isError, isSuccess]);
-
-  const logoutMutation = async () => {
+  const logoutMutation = useCallback(async () => {
     setAccessToken(null);
     setUser(null);
     queryClient.clear();
-    SecureStore.deleteItemAsync('accessToken');
-  };
+    await SecureStore.deleteItemAsync('accessToken');
+  }, [queryClient]);
 
   const loginMutation = useMutation({
     mutationFn: (data: any) => loginUser(data),
     onSuccess: async (data: any) => {
-      console.log('login successful, token:', data.jwt);
       await SecureStore.setItemAsync('accessToken', data.jwt);
       setAccessToken(data.jwt);
     },
@@ -138,6 +126,35 @@ export const AuthProvider = ({ children }: any) => {
     onError: (error) => {},
   });
 
+  useEffect(() => {
+    const loadData = async () => {
+      const token = await SecureStore.getItemAsync('accessToken');
+      debugger;
+      if (token) {
+        console.log('Loaded token:', token);
+        setAccessToken(token);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (isSuccess) {
+      setUser(data);
+    } else if (isError) {
+      setUser(null);
+    }
+  }, [data, isError, isSuccess]);
+
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener('UNAUTHORIZED', async () => {
+      console.log('登录状态已失效');
+      logoutMutation();
+    });
+    return () => subscription.remove();
+  }, [logoutMutation, router, toast]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -161,25 +178,3 @@ export const AuthProvider = ({ children }: any) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-
-export const AuthorInfo = ({ author }: any) => {
-  const onAvatarPress = (documentId: string) => {
-    router.push(`/users/${documentId}`);
-  };
-
-  return (
-    <Button variant="link" onPress={() => onAvatarPress(author.documentId)}>
-      <Avatar size="sm">
-        <AvatarFallbackText>{author.username}</AvatarFallbackText>
-        <AvatarImage
-          source={{
-            uri: thumbnailSize(author.avatar),
-          }}
-        />
-      </Avatar>
-      <VStack>
-        <ButtonText size="sm">{author.username}</ButtonText>
-      </VStack>
-    </Button>
-  );
-};

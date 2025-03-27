@@ -13,7 +13,7 @@ import {
 import { TouchableOpacity } from 'react-native';
 import { createChat, fetchChatByUsers, fetchUser, isFollowingUser, updateFollowings } from '@/api';
 import AlbumListView from '@/components/album-list-view';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import PageSpinner from '@/components/page-spinner';
 import PostListView from '@/components/post-list-view';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';

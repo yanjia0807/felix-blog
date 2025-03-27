@@ -11,7 +11,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { fetchChat, fetchMessagesByChat } from '@/api';
 import { createMessage, updateChatStatus } from '@/api';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { useSocket } from '@/components/socket-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -330,4 +330,8 @@ const Chat: React.FC = () => {
   );
 };
 
-export default Chat;
+const ChatPage = () => {
+  return <Chat />;
+};
+
+export default ChatPage;

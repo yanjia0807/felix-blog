@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Map } from 'lucide-react-native';
 import { twMerge } from 'tailwind-merge';
-import { useAuth } from './auth-context';
+import { useAuth } from './auth-provider';
 import Notification from './notification';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Heading } from './ui/heading';

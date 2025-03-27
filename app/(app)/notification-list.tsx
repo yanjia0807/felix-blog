@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import { fetchNotifications, updateNotificationState } from '@/api';
-import { useAuth } from '@/components/auth-context';
+import { useAuth } from '@/components/auth-provider';
 import { useSocket } from '@/components/socket-context';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
@@ -201,4 +201,8 @@ const NotificationList: React.FC = () => {
   );
 };
 
-export default NotificationList;
+const NotificationListPage = () => {
+  return <NotificationList />;
+};
+
+export default NotificationListPage;

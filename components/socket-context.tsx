@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Socket, socket } from '@/utils/socket';
-import { useAuth } from './auth-context';
+import { useAuth } from './auth-provider';
 
 type SocketContextType = {
   socket: Socket;
