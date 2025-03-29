@@ -24,7 +24,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
-import { AuthorInfo } from '@/components/user';
+import { UserAvatar } from '@/components/user';
 import { formatDistance } from '@/utils/date';
 import {
   isImage,
@@ -263,7 +263,7 @@ const PostDetail: React.FC = () => {
                 )}
               </HStack>
               <HStack className="items-center justify-between">
-                <AuthorInfo author={post.author} />
+                <UserAvatar user={post.author} />
                 <HStack space="md" className="items-center justify-end">
                   <LikeButton post={post} />
                   <CommentIcon item={post} />

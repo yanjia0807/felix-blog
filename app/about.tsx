@@ -2,7 +2,6 @@ import React from 'react';
 import { router, Stack } from 'expo-router';
 import { SafeAreaView, ScrollView } from 'react-native';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Divider } from '@/components/ui/divider';
 import { VStack } from '@/components/ui/vstack';
 
 const AboutPage = () => {

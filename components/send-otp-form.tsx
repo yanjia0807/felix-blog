@@ -6,7 +6,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-provider';
-import { IconHeader } from '@/components/header';
+import { AuthHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -128,7 +128,7 @@ const SendOtpForm: React.FC<SendOtpFormProps> = ({ title, purpose }) => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <IconHeader title={title} />
+          <AuthHeader title={title} />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="email" render={renderEmail} />
           </VStack>

@@ -1,12 +1,12 @@
 import React from 'react';
 import { router, Stack } from 'expo-router';
-import { IconHeader } from '@/components/header';
+import { AuthHeader } from '@/components/header';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 
-const Anony: React.FC = () => {
+const AnonyPage: React.FC = () => {
   const renderHeaderLeft = () => (
     <Button
       action="secondary"
@@ -28,7 +28,7 @@ const Anony: React.FC = () => {
         }}
       />
       <VStack className="flex-1 p-4" space="xl">
-        <IconHeader
+        <AuthHeader
           title="登录后，体验完整功能"
           subtitle="登录后，您将能享受更多个性化设置和功能"
         />
@@ -71,10 +71,6 @@ const Anony: React.FC = () => {
       </VStack>
     </SafeAreaView>
   );
-};
-
-const AnonyPage = () => {
-  return <Anony />;
 };
 
 export default AnonyPage;

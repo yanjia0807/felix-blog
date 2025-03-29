@@ -6,7 +6,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-provider';
-import { IconHeader } from '@/components/header';
+import { AuthHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { FormControl } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
@@ -200,7 +200,7 @@ const OtpConfirmation: React.FC = () => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <IconHeader title="验证码" subtitle="请输入4位验证码" />
+          <AuthHeader title="验证码" subtitle="请输入4位验证码" />
           <HStack className="items-center justify-center" space="lg">
             {(['code1', 'code2', 'code3', 'code4'] as const).map((name, index) => (
               <Controller

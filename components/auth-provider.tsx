@@ -129,7 +129,6 @@ export const AuthProvider = ({ children }: any) => {
   useEffect(() => {
     const loadData = async () => {
       const token = await SecureStore.getItemAsync('accessToken');
-      debugger;
       if (token) {
         console.log('Loaded token:', token);
         setAccessToken(token);

@@ -15,7 +15,7 @@ import { MapPin } from 'lucide-react-native';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
-import { MainHeader } from '@/components/header';
+import { HeaderLogo, MainHeader } from '@/components/header';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
 import PostItemMenu from '@/components/post-menu-popover';
@@ -30,8 +30,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { AuthorInfo } from '@/components/user';
-import UserAvatars from '@/components/user-avatars';
+import { UserAvatar, UserAvatars } from '@/components/user';
 import { formatDistance } from '@/utils/date';
 import { largeSize, thumbnailSize } from '@/utils/file';
 
@@ -194,7 +193,7 @@ const RecommentItem: React.FC<RecommentItemProps> = ({ item, index, isLoaded }) 
                 <VStack space="sm">
                   <TouchableOpacity onPress={() => onAvatarPress(item.author.documentId)}>
                     <HStack className="items-center justify-between">
-                      <AuthorInfo author={item.author} />
+                      <UserAvatar user={item.author} />
                       <PostItemMenu post={item} />
                     </HStack>
                   </TouchableOpacity>

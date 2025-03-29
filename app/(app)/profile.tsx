@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { router, Stack } from 'expo-router';
-import { Calendar, EditIcon, MapPin, ScanFace, Settings2 } from 'lucide-react-native';
+import { Calendar, EditIcon, MapPin, ScanFace, Settings, Settings2 } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-provider';
@@ -44,42 +44,42 @@ const Profil: React.FC = () => {
       />
       <VStack className="flex-1 p-4" space="md">
         <HStack className="items-center justify-between">
-          <Avatar size="lg">
-            <AvatarFallbackText>{user.username}</AvatarFallbackText>
-            <AvatarImage
-              source={{
-                uri: thumbnailSize(user.avatar),
-              }}
-            />
-          </Avatar>
-          <HStack className="items-center" space="sm">
+          <HStack className="items-center" space="md">
+            <Avatar size="lg">
+              <AvatarFallbackText>{user.username}</AvatarFallbackText>
+              <AvatarImage
+                source={{
+                  uri: thumbnailSize(user.avatar),
+                }}
+              />
+            </Avatar>
+            <Text size="2xl" bold={true}>
+              {user.username}
+            </Text>
+          </HStack>
+          <HStack className="items-center" space="md">
             <Button
-              size="sm"
-              className="rounded-3xl px-6"
-              action="primary"
+              size="md"
+              className="h-8 w-8 rounded-full p-5"
+              action="secondary"
               onPress={() => {
                 router.push('/user-edit');
               }}>
-              <ButtonText>编辑</ButtonText>
               <ButtonIcon as={EditIcon} />
             </Button>
             <Button
-              size="sm"
-              className="rounded-3xl px-6"
+              size="md"
+              className="h-8 w-8 rounded-full p-5"
               action="secondary"
               onPress={() => {
                 router.push('/setting');
               }}>
-              <ButtonText>设置</ButtonText>
-              <ButtonIcon as={Settings2} />
+              <ButtonIcon as={Settings} />
             </Button>
           </HStack>
         </HStack>
         <VStack space="md">
-          <Text size="3xl" bold={true}>
-            {user.username}
-          </Text>
-          <HStack space="md" className="items-center">
+          <HStack space="sm" className="items-center">
             <HStack className="items-center" space="xs">
               <Icon size="xs" as={Calendar} />
               <Text size="xs">{user.birthday || '未设置'}</Text>

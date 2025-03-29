@@ -10,7 +10,7 @@ import { fetchPosts, fetchTags } from '@/api';
 import AlbumPagerView from '@/components/album-pager-view';
 import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
-import { MainHeader } from '@/components/header';
+import { HeaderLogo, MainHeader } from '@/components/header';
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
@@ -36,8 +36,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { AuthorInfo } from '@/components/user';
-import UserAvatars from '@/components/user-avatars';
+import { UserAvatar, UserAvatars } from '@/components/user';
 import { formatDistance } from '@/utils/date';
 import {
   FileTypeNum,
@@ -162,7 +161,7 @@ const PostItem: React.FC<any> = memo(
                 <VStack space="lg">
                   <VStack space="sm">
                     <HStack className="items-center justify-between">
-                      <AuthorInfo author={post.author} />
+                      <UserAvatar user={post.author} />
                       <PostItemMenu post={post} />
                     </HStack>
                     <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>

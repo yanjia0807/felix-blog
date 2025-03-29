@@ -7,7 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { useAuth } from '@/components/auth-provider';
-import { IconHeader } from '@/components/header';
+import { AuthHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -143,7 +143,7 @@ const Login: React.FC = () => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <IconHeader title="密码登录" />
+          <AuthHeader title="密码登录" />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="identifier" render={renderIdentifier} />
             <Controller control={control} name="password" render={renderPassword} />
