@@ -37,43 +37,40 @@ const SearchUserList: React.FC = () => {
     },
   });
 
-  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
-    useInfiniteQuery({
-      queryKey: ['users', 'detail', documentId, 'users', { keyword }],
-      queryFn: fetchUsers,
-      enabled: !!documentId,
-      initialPageParam: {
-        pagination: {
-          page: 1,
-          pageSize: 10,
+  const usersQuery = useInfiniteQuery({
+    queryKey: ['users', 'detail', documentId, 'users', { keyword }],
+    queryFn: fetchUsers,
+    enabled: !!documentId,
+    initialPageParam: {
+      pagination: {
+        page: 1,
+        pageSize: 10,
+      },
+      keyword,
+      documentId,
+    },
+    getNextPageParam: (lastPage: any) => {
+      const {
+        meta: {
+          pagination: { page, pageSize, pageCount },
         },
-        keyword,
-        documentId,
-      },
-      getNextPageParam: (lastPage: any) => {
-        const {
-          meta: {
-            pagination: { page, pageSize, pageCount },
-          },
-        } = lastPage;
+      } = lastPage;
 
-        if (page < pageCount) {
-          return {
-            pagination: { page: page + 1, pageSize },
-            keyword,
-            documentId,
-          };
-        }
+      if (page < pageCount) {
+        return {
+          pagination: { page: page + 1, pageSize },
+          keyword,
+          documentId,
+        };
+      }
 
-        return null;
-      },
-    });
+      return null;
+    },
+  });
 
-  const users: any = _.reduce(
-    data?.pages,
-    (result: any, item: any) => [...result, ...item.data],
-    [],
-  );
+  const users: any = usersQuery.isSuccess
+    ? _.reduce(usersQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
+    : [];
 
   const renderHeaderLeft = () => (
     <Button
@@ -168,13 +165,14 @@ const SearchUserList: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item: any) => item.documentId}
           onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            if (usersQuery.hasNextPage && !usersQuery.isFetchingNextPage)
+              usersQuery.fetchNextPage();
           }}
           refreshControl={
             <RefreshControl
-              refreshing={isLoading}
+              refreshing={usersQuery.isLoading}
               onRefresh={() => {
-                if (!isLoading) refetch();
+                if (!usersQuery.isLoading) usersQuery.refetch();
               }}
             />
           }

@@ -16,16 +16,40 @@ export const UserAvatar = ({ user }: any) => {
     <TouchableOpacity onPress={() => router.push(`/users/${user.documentId}`)}>
       <HStack className="items-center" space="xs">
         <Avatar size="sm">
-          <AvatarFallbackText>{user.username}</AvatarFallbackText>
+          {user.avatar ? (
+            <AvatarImage
+              source={{
+                uri: thumbnailSize(user.avatar),
+              }}
+            />
+          ) : (
+            <AvatarFallbackText>{user.username}</AvatarFallbackText>
+          )}
+        </Avatar>
+        <Text size="sm">{user.username}</Text>
+      </HStack>
+    </TouchableOpacity>
+  );
+};
+
+export const UserLargeAvatar = ({ user }: any) => {
+  return (
+    <HStack className="items-center" space="md">
+      <Avatar size="lg">
+        {user.avatar ? (
           <AvatarImage
             source={{
               uri: thumbnailSize(user.avatar),
             }}
           />
-        </Avatar>
-        <Text size="sm">{user.username}</Text>
-      </HStack>
-    </TouchableOpacity>
+        ) : (
+          <AvatarFallbackText>{user.username}</AvatarFallbackText>
+        )}
+      </Avatar>
+      <Text size="lg" bold={true}>
+        {user.username}
+      </Text>
+    </HStack>
   );
 };
 
@@ -34,12 +58,15 @@ export const UserAvatars = ({ users }: any) => {
     <AvatarGroup>
       {_.map(users, (user: any) => (
         <Avatar size="xs" key={user.documentId}>
-          <AvatarFallbackText>{user.username}</AvatarFallbackText>
-          <AvatarImage
-            source={{
-              uri: thumbnailSize(user.avatar),
-            }}
-          />
+          {user.avatar ? (
+            <AvatarImage
+              source={{
+                uri: thumbnailSize(user.avatar),
+              }}
+            />
+          ) : (
+            <AvatarFallbackText>{user.username}</AvatarFallbackText>
+          )}
         </Avatar>
       ))}
     </AvatarGroup>
@@ -61,12 +88,14 @@ export const UserAvatarDetail = ({ user }: any) => {
           />
         </Avatar>
         <VStack className="justify-between" space="sm">
-          <Text size="md" bold={true}>
-            {user.username}
-          </Text>
           <HStack className="items-center" space="xs">
-            <Icon size="xs" as={ScanFace} />
-            <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
+            <Text size="md" bold={true}>
+              {user.username}
+            </Text>
+            <HStack className="items-center" space="xs">
+              <Icon size="xs" as={ScanFace} />
+              <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
+            </HStack>
           </HStack>
           <HStack className="items-center" space="xs">
             <Icon size="xs" as={Calendar} />

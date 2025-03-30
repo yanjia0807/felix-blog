@@ -14,6 +14,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { thumbnailSize } from '@/utils/file';
+import { UserLargeAvatar } from '@/components/user';
 
 const Profil: React.FC = () => {
   const { user } = useAuth();
@@ -44,19 +45,7 @@ const Profil: React.FC = () => {
       />
       <VStack className="flex-1 p-4" space="md">
         <HStack className="items-center justify-between">
-          <HStack className="items-center" space="md">
-            <Avatar size="lg">
-              <AvatarFallbackText>{user.username}</AvatarFallbackText>
-              <AvatarImage
-                source={{
-                  uri: thumbnailSize(user.avatar),
-                }}
-              />
-            </Avatar>
-            <Text size="2xl" bold={true}>
-              {user.username}
-            </Text>
-          </HStack>
+          <UserLargeAvatar user={user} />
           <HStack className="items-center" space="md">
             <Button
               size="md"

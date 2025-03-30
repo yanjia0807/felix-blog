@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Bell } from 'lucide-react-native';
 import { twMerge } from 'tailwind-merge';
-import { fetchNotificationUnreadCount } from '@/api';
+import { fetchNotificationCount } from '@/api';
 import { useAuth } from './auth-provider';
 import { useSocket } from './socket-context';
 import { Box } from './ui/box';
@@ -32,7 +32,7 @@ export const Notification = () => {
 
   const { data, isSuccess } = useQuery({
     queryKey: ['user', 'detail', user.documentId, 'notifications', 'count'],
-    queryFn: () => fetchNotificationUnreadCount(),
+    queryFn: () => fetchNotificationCount(),
     staleTime: Infinity,
     enabled: !!user,
   });

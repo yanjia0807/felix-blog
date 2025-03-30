@@ -11,7 +11,7 @@ import {
   MessageCircle,
   ScanFace,
   Share2,
-  UserRound,
+  UserRoundMinus,
   UserRoundPlus,
 } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
@@ -21,15 +21,14 @@ import {
   fetchUser,
   isFollowingUser,
   updateFollowings,
-  fetchFriendshipWithUser,
+  fetchFriendship,
   createFriendship,
-  deleteFriendship,
+  cancelFriendship,
 } from '@/api';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-provider';
 import PageSpinner from '@/components/page-spinner';
 import PostListView from '@/components/post-list-view';
-import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -38,7 +37,7 @@ import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
-import { thumbnailSize } from '@/utils/file';
+import { UserLargeAvatar } from '@/components/user';
 
 interface UserDetailProps {
   user: any;
@@ -95,6 +94,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     enabled: !!currentUser,
     queryFn: () => isFollowingUser({ following: documentId }),
   });
+
   const isFollowing = followingQuery.isSuccess && followingQuery.data;
 
   const followMutation = useMutation({
@@ -104,7 +104,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me'],
+        queryKey: ['users', 'detail', 'me', 'followings', documentId],
       });
       toast.success({
         description: isFollowing ? '取消关注成功' : '关注成功',
@@ -117,22 +117,21 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   });
 
   const friendshipsQuery = useQuery({
-    queryKey: ['users', 'detail', 'me', 'friendship', documentId],
+    queryKey: ['users', 'detail', 'me', 'friendships', documentId],
     enabled: !!currentUser,
-    queryFn: () =>
-      fetchFriendshipWithUser({ recipient: documentId, requester: currentUser.documentId }),
+    queryFn: () => fetchFriendship({ receiver: documentId, sender: currentUser.documentId }),
   });
 
-  const isFriend = friendshipsQuery.isSuccess && friendshipsQuery.data > 0;
+  const isFriend = friendshipsQuery.isSuccess && friendshipsQuery.data;
 
   const createFriendMutation = useMutation({
     mutationFn: () => {
-      const params = { recipient: user.documentId };
+      const params = { receiver: user.documentId };
       return createFriendship(params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me'],
+        queryKey: ['users', 'detail', 'me', 'friendships', documentId],
       });
       toast.success({
         description: '已发送好友申请',
@@ -144,14 +143,14 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     },
   });
 
-  const deleteFriendMutation = useMutation({
+  const cancelFriendMutation = useMutation({
     mutationFn: () => {
-      const params = { user: user.documentId };
-      return deleteFriendship(params);
+      const params = { documentId: friendshipsQuery.data.documentId };
+      return cancelFriendship(params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me'],
+        queryKey: ['users', 'detail', 'me', 'friendships', documentId],
       });
       toast.success({
         description: '取消好友成功',
@@ -195,7 +194,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 
   const onFriendBtnPress = () => {
     const description = isFriend
-      ? `要取消和${user.username}的好友关系吗？`
+      ? `取消和${user.username}的好友关系吗？`
       : `向${user.username}发送好友申请吗？`;
 
     toast.confirm({
@@ -203,7 +202,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
       onConfirm: async () => {
         toast.close();
         if (isFriend) {
-          deleteFriendMutation.mutate();
+          cancelFriendMutation.mutate();
         } else {
           createFriendMutation.mutate();
         }
@@ -234,19 +233,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   return (
     <VStack className="flex-1" space="md">
       <HStack className="items-center justify-between">
-        <HStack className="items-center" space="md">
-          <Avatar size="lg">
-            <AvatarFallbackText>{user.username}</AvatarFallbackText>
-            <AvatarImage
-              source={{
-                uri: thumbnailSize(user.avatar),
-              }}
-            />
-          </Avatar>
-          <Text size="2xl" bold={true}>
-            {user.username}
-          </Text>
-        </HStack>
+        <UserLargeAvatar user={user} />
         <HStack className="items-center" space="md">
           <Button
             size="md"
@@ -277,7 +264,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
               size="md"
               className="h-8 w-8 rounded-full p-5"
               onPress={() => onFriendBtnPress()}>
-              <ButtonIcon as={isFriend ? UserRound : UserRoundPlus}></ButtonIcon>
+              <ButtonIcon as={isFriend ? UserRoundMinus : UserRoundPlus}></ButtonIcon>
             </Button>
           )}
         </HStack>

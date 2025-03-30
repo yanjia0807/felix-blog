@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import _ from 'lodash';
 import { Socket, socket } from '@/utils/socket';
 import { useAuth } from './auth-provider';
 
@@ -46,20 +47,26 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     });
 
     socket.on('notification:create', ({ data }: any) => {
-      setNotifications((oldData: any) => {
-        return [data, ...oldData];
+      setNotifications((val: any) => {
+        return [data, ...val];
       });
+
+      if (_.includes(['friendship-feedback', 'friendship-cancel'], data.type)) {
+        queryClient.invalidateQueries({
+          queryKey: ['users', 'detail', 'me', 'friendships'],
+        });
+      }
     });
 
     socket.on('message:create', ({ data, unreadCount }: any) => {
-      setMessages((oldData: any) => {
-        return [data, ...oldData];
+      setMessages((val: any) => {
+        return [data, ...val];
       });
 
-      queryClient.setQueryData(['chats', 'list'], (oldData: any) => {
+      queryClient.setQueryData(['chats', 'list'], (val: any) => {
         return {
-          ...oldData,
-          pages: oldData.pages.map((page: any) => ({
+          ...val,
+          pages: val.pages.map((page: any) => ({
             ...page,
             data: page.data.map((item: any) =>
               item.id === data.chat.id

@@ -7,6 +7,7 @@ export const fetchTags = async ({ name }: any) => {
         filters: { name: { $contains: name } },
       })
     : '';
+
   const res = await apiClient.get(`/tags?${query}`);
   return res.data;
 };

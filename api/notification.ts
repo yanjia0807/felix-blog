@@ -21,9 +21,9 @@ export const fetchNotifications = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchNotificationUnreadCount = async () => {
-  const res = await apiClient.get(`/notifications/unread-count`);
-  return res;
+export const fetchNotificationCount = async () => {
+  const res = await apiClient.get(`/notifications/count`);
+  return res.data;
 };
 
 export const updateNotificationState = async ({ documentId, data }: any) => {
@@ -43,5 +43,15 @@ export const fetchNotification = async ({ documentId }: any) => {
     },
   );
   const res = await apiClient.get(`/notifications/${documentId}?${query}`);
+  return res.data;
+};
+
+export const updateFriendshipNotification = async ({ documentId, friendship, state }: any) => {
+  const res = await apiClient.put(`/notifications/${documentId}/friendship`, {
+    data: {
+      friendship,
+      state,
+    },
+  });
   return res.data;
 };
