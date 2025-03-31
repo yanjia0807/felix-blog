@@ -6,14 +6,12 @@ import { TouchableOpacity } from 'react-native';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-provider';
 import PostListView from '@/components/post-list-view';
-import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Button, ButtonIcon } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { thumbnailSize } from '@/utils/file';
 import { UserLargeAvatar } from '@/components/user';
 
 const Profil: React.FC = () => {

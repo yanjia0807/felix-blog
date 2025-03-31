@@ -113,7 +113,7 @@ const OtpConfirmation: React.FC = () => {
             title: '操作成功',
             description: '您已注册完成',
             onCloseComplete: () => {
-              router.replace('/');
+              router.replace('/login');
             },
           });
         } else if (purpose === 'reset-password') {

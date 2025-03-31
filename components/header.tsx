@@ -7,7 +7,7 @@ import { Bell } from 'lucide-react-native';
 import { twMerge } from 'tailwind-merge';
 import { fetchNotificationCount } from '@/api';
 import { useAuth } from './auth-provider';
-import { useSocket } from './socket-context';
+import { useSocket } from './socket-provider';
 import { Box } from './ui/box';
 import { Button, ButtonText, ButtonIcon } from './ui/button';
 import { Heading } from './ui/heading';
@@ -60,8 +60,7 @@ export const Notification = () => {
 };
 
 export const MainHeader = () => {
-  const { user } = useAuth();
-  const router = useRouter();
+  const { isLogin } = useAuth();
 
   return (
     <HStack className="mb-4 w-full items-center justify-between">
@@ -71,10 +70,7 @@ export const MainHeader = () => {
         style={{ width: 40, height: 40, borderRadius: 8 }}
       />
       <HStack className="items-center" space="md">
-        {user && <Notification />}
-        {/* <Button onPress={() => router.navigate('/map')} variant="link">
-          <ButtonIcon as={Map} size={22 as any} className="text-secondary-900" />
-        </Button> */}
+        {isLogin && <Notification />}
       </HStack>
     </HStack>
   );

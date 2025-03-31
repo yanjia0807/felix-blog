@@ -1,5 +1,5 @@
-import { Share2 } from 'lucide-react-native';
 import React from 'react';
+import { Share2 } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { useAuth } from './auth-provider';

@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { fetchChat, fetchMessagesByChat } from '@/api';
 import { createMessage, updateChatStatus } from '@/api';
 import { useAuth } from '@/components/auth-provider';
-import { useSocket } from '@/components/socket-context';
+import { useSocket } from '@/components/socket-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

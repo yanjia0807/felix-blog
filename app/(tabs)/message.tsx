@@ -9,7 +9,7 @@ import { fetchChats, fetchFriends } from '@/api';
 import { useAuth } from '@/components/auth-provider';
 import { MainHeader } from '@/components/header';
 import PageSpinner from '@/components/page-spinner';
-import { useSocket } from '@/components/socket-context';
+import { useSocket } from '@/components/socket-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';

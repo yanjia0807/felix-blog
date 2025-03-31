@@ -7,7 +7,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { TouchableOpacity, View } from 'react-native';
 import { fetchNotifications, updateFriendshipNotification, updateNotificationState } from '@/api';
 import { useAuth } from '@/components/auth-provider';
-import { useSocket } from '@/components/socket-context';
+import { useSocket } from '@/components/socket-provider';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

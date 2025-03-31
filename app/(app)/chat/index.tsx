@@ -7,7 +7,7 @@ import { FlatList, RefreshControl, SafeAreaView, TouchableOpacity } from 'react-
 import { fetchChats } from '@/api';
 import { useAuth } from '@/components/auth-provider';
 import PageSpinner from '@/components/page-spinner';
-import { useSocket } from '@/components/socket-context';
+import { useSocket } from '@/components/socket-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';

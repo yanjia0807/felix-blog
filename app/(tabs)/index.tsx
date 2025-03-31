@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  UseInfiniteQueryResult,
-  useQuery,
-} from '@tanstack/react-query';
+import { InfiniteData, useInfiniteQuery, UseInfiniteQueryResult } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import { format } from 'date-fns';
 import { BlurView } from 'expo-blur';
@@ -13,9 +8,9 @@ import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import { fetchFeatures, fetchRecommendPosts, fetchPostAuthors } from '@/api';
+import { fetchFeatures, fetchRecommendPosts } from '@/api';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
-import { HeaderLogo, MainHeader } from '@/components/header';
+import { MainHeader } from '@/components/header';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
 import PostItemMenu from '@/components/post-menu-popover';
@@ -39,7 +34,7 @@ interface HomeHeaderProps {
   authorQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
 }
 
-const HomeHeader: React.FC<HomeHeaderProps> = ({ featureQuery, authorQuery }) => {
+const HomeHeader: React.FC<HomeHeaderProps> = ({ featureQuery }) => {
   const router = useRouter();
 
   const features: any = featureQuery.isLoading
@@ -50,12 +45,6 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ featureQuery, authorQuery }) =>
           (result: any, item: any) => [...result, ...item.data],
           [],
         )
-      : [];
-
-  const authors: any = authorQuery.isLoading
-    ? Array(2).fill(undefined)
-    : authorQuery.isSuccess
-      ? authorQuery.data
       : [];
 
   const onFeatureItemPressed = ({ item }: any) => {
@@ -115,57 +104,20 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ featureQuery, authorQuery }) =>
     </Box>
   );
 
-  const onAvatarPress = ({ item }: any) => router.push(`/users/${item.documentId}`);
-
-  const renderAuthorItem = ({ item, index }: any) => {
-    return (
-      <TouchableOpacity
-        onPress={() => onAvatarPress({ item })}
-        className={`ml-4 ${index === 0 ? 'ml-0' : ''}`}>
-        <VStack className="items-center" space="xs">
-          <Avatar key={item.id} size="md">
-            <AvatarFallbackText>{item.username}</AvatarFallbackText>
-            <AvatarImage
-              source={{
-                uri: thumbnailSize(item),
-              }}
-            />
-          </Avatar>
-          <Text size="sm">{item.username}</Text>
-        </VStack>
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <VStack space="xl" className="mb-10">
       <MainHeader />
-      <VStack space="xl">
-        <FlatList
-          data={features}
-          renderItem={renderFeatureItem}
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-          onEndReached={() => {
-            if (featureQuery.hasNextPage && !featureQuery.isFetchingNextPage) {
-              featureQuery.fetchNextPage();
-            }
-          }}
-        />
-        <Box className="h-[94.7]">
-          <Skeleton variant="rounded" isLoaded={!authorQuery.isLoading}>
-            <VStack space="md">
-              <Text bold={true}>最近更新</Text>
-              <FlatList
-                data={authors}
-                renderItem={renderAuthorItem}
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-              />
-            </VStack>
-          </Skeleton>
-        </Box>
-      </VStack>
+      <FlatList
+        data={features}
+        renderItem={renderFeatureItem}
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        onEndReached={() => {
+          if (featureQuery.hasNextPage && !featureQuery.isFetchingNextPage) {
+            featureQuery.fetchNextPage();
+          }
+        }}
+      />
     </VStack>
   );
 };
@@ -316,11 +268,6 @@ const Home: React.FC = () => {
     },
   });
 
-  const authorQuery = useQuery({
-    queryKey: ['posts', 'list', 'authors'],
-    queryFn: fetchPostAuthors,
-  });
-
   const recomments: any = recommentQuery.isLoading
     ? Array(2).fill(undefined)
     : recommentQuery.isSuccess
@@ -336,7 +283,7 @@ const Home: React.FC = () => {
   );
 
   const renderListHeader = (props: any) => (
-    <HomeHeader featureQuery={featureQuery} authorQuery={authorQuery} {...props}></HomeHeader>
+    <HomeHeader featureQuery={featureQuery} {...props}></HomeHeader>
   );
 
   const renderEmptyComponent = (props: any) => (
@@ -345,12 +292,11 @@ const Home: React.FC = () => {
     </Box>
   );
 
-  const isLoading = recommentQuery.isLoading || featureQuery.isLoading || authorQuery.isLoading;
+  const isLoading = recommentQuery.isLoading || featureQuery.isLoading;
 
   const refetchAll = () => {
     recommentQuery.refetch();
     featureQuery.refetch();
-    authorQuery.refetch();
   };
 
   return (

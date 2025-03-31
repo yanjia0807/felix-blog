@@ -7,7 +7,7 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { Badge, Hexagon, House, MessageCircle, Pentagon, User2 } from 'lucide-react-native';
+import { Badge, Hexagon, MessageCircle, Pentagon } from 'lucide-react-native';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui/card';

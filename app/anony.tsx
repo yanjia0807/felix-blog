@@ -12,7 +12,7 @@ const AnonyPage: React.FC = () => {
       action="secondary"
       variant="link"
       onPress={() => {
-        router.dismiss();
+        router.replace('/');
       }}>
       <ButtonText>返回</ButtonText>
     </Button>

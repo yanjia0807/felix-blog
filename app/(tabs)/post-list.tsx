@@ -10,7 +10,7 @@ import { fetchPosts, fetchTags } from '@/api';
 import AlbumPagerView from '@/components/album-pager-view';
 import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
-import { HeaderLogo, MainHeader } from '@/components/header';
+import { MainHeader } from '@/components/header';
 import { ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';

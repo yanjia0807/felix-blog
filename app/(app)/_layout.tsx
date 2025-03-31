@@ -3,6 +3,6 @@ import { useAuth } from '@/components/auth-provider';
 import AnonyPage from '../anony';
 
 export default function Root() {
-  const { user } = useAuth();
-  return user ? <Stack /> : <AnonyPage />;
+  const { isLogin } = useAuth();
+  return isLogin ? <Stack /> : <AnonyPage />;
 }

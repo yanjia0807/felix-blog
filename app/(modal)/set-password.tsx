@@ -71,7 +71,7 @@ const SetPasswordPage: React.FC = () => {
         toast.success({
           description: '设置密码成功',
           onCloseComplete: () => {
-            router.replace('/');
+            router.replace('/login');
           },
         });
       },

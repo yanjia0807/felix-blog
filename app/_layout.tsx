@@ -13,7 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider } from '@/components/auth-provider';
 import { PreferencesProvider, Theme } from '@/components/preferences-provider';
-import SocketProvider from '@/components/socket-context';
+import SocketProvider from '@/components/socket-provider';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
 
