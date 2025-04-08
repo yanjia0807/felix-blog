@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
-import { Calendar, MapPin, ScanFace } from 'lucide-react-native';
+import { ScanFace } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import { thumbnailSize } from '@/utils/file';
 import { Avatar, AvatarFallbackText, AvatarGroup, AvatarImage } from './ui/avatar';
@@ -36,15 +36,12 @@ export const UserLargeAvatar = ({ user }: any) => {
   return (
     <HStack className="items-center" space="md">
       <Avatar size="lg">
-        {user.avatar ? (
-          <AvatarImage
-            source={{
-              uri: thumbnailSize(user.avatar),
-            }}
-          />
-        ) : (
-          <AvatarFallbackText>{user.username}</AvatarFallbackText>
-        )}
+        <AvatarImage
+          source={{
+            uri: thumbnailSize(user.avatar),
+          }}
+        />
+        <AvatarFallbackText>{user.username}</AvatarFallbackText>
       </Avatar>
       <Text size="lg" bold={true}>
         {user.username}
@@ -73,41 +70,30 @@ export const UserAvatars = ({ users }: any) => {
   );
 };
 
-export const UserAvatarDetail = ({ user }: any) => {
+export const UserAvatarNotice = ({ user }: any) => {
   const router = useRouter();
 
   return (
     <TouchableOpacity onPress={() => router.push(`/users/${user.documentId}`)}>
       <HStack className="flex-1 items-center overflow-hidden" space="sm">
         <Avatar size="md">
-          <AvatarFallbackText>{user.username}</AvatarFallbackText>
-          <AvatarImage
-            source={{
-              uri: thumbnailSize(user.avatar),
-            }}
-          />
+          {user.avatar ? (
+            <AvatarImage
+              source={{
+                uri: thumbnailSize(user.avatar),
+              }}
+            />
+          ) : (
+            <AvatarFallbackText>{user.username}</AvatarFallbackText>
+          )}
         </Avatar>
         <VStack className="justify-between" space="sm">
+          <Text size="md" bold={true}>
+            {user.username}
+          </Text>
           <HStack className="items-center" space="xs">
-            <Text size="md" bold={true}>
-              {user.username}
-            </Text>
-            <HStack className="items-center" space="xs">
-              <Icon size="xs" as={ScanFace} />
-              <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
-            </HStack>
-          </HStack>
-          <HStack className="items-center" space="xs">
-            <Icon size="xs" as={Calendar} />
-            <Text size="xs">{user.birthday || '未设置'}</Text>
-          </HStack>
-          <HStack className="items-center" space="xs">
-            <Icon size="xs" as={MapPin} />
-            <Text size="xs" className="text-clip">
-              {user.district
-                ? `${user.district.provinceName}|${user.district.cityName}|${user.district.districtName}`
-                : '未设置'}
-            </Text>
+            <Icon size="xs" as={ScanFace} />
+            <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
           </HStack>
         </VStack>
       </HStack>

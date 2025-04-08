@@ -31,7 +31,7 @@ export const Notification = () => {
   const router = useRouter();
 
   const { data, isSuccess } = useQuery({
-    queryKey: ['user', 'detail', user.documentId, 'notifications', 'count'],
+    queryKey: ['notifications', 'count'],
     queryFn: () => fetchNotificationCount(),
     staleTime: Infinity,
     enabled: !!user,
@@ -59,11 +59,11 @@ export const Notification = () => {
   );
 };
 
-export const MainHeader = () => {
+export const MainHeader = ({ className }: { className?: string }) => {
   const { isLogin } = useAuth();
 
   return (
-    <HStack className="mb-4 w-full items-center justify-between">
+    <HStack className={twMerge(['w-full items-center justify-between'], className)}>
       <Image
         alt="logo"
         source={require('../assets/images/icon.png')}

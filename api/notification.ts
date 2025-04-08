@@ -46,10 +46,14 @@ export const fetchNotification = async ({ documentId }: any) => {
   return res.data;
 };
 
-export const updateFriendshipNotification = async ({ documentId, friendship, state }: any) => {
-  const res = await apiClient.put(`/notifications/${documentId}/friendship`, {
+export const updateFriendRequestNotification = async ({
+  documentId,
+  friendRequest,
+  state,
+}: any) => {
+  const res = await apiClient.put(`/notifications/${documentId}/friend-request`, {
     data: {
-      friendship,
+      friendRequest,
       state,
     },
   });

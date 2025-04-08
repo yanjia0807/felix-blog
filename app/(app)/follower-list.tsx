@@ -28,7 +28,7 @@ const filterFormSchema = z.object({
 
 const FollowerList: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const { documentId, username } = useLocalSearchParams();
+  const { userDocumentId, username } = useLocalSearchParams();
   const [keyword, setKeyword] = useState();
   const { control, handleSubmit } = useForm<FilterFormSchema>({
     resolver: zodResolver(filterFormSchema),
@@ -37,19 +37,18 @@ const FollowerList: React.FC = () => {
     },
   });
 
-  const isMe = currentUser?.documentId === documentId;
+  const isMe = currentUser?.documentId === userDocumentId;
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['users', documentId, 'followers', { keyword }],
+      queryKey: ['followers', 'list', { userDocumentId }],
       queryFn: fetchFollowers,
-      enabled: !!documentId,
       initialPageParam: {
         pagination: {
           page: 1,
           pageSize: 20,
         },
-        documentId,
+        userDocumentId,
         keyword,
       },
       getNextPageParam: (lastPage: any) => {
@@ -62,7 +61,7 @@ const FollowerList: React.FC = () => {
         if (page < pageCount) {
           return {
             pagination: { page: page + 1, pageSize },
-            documentId,
+            userDocumentId,
             keyword,
           };
         }
@@ -82,7 +81,7 @@ const FollowerList: React.FC = () => {
       action="secondary"
       variant="link"
       onPress={() => {
-        router.dismissAll();
+        router.back();
       }}>
       <ButtonIcon as={ChevronLeft} />
       <ButtonText>返回</ButtonText>

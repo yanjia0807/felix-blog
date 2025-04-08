@@ -90,7 +90,7 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['user', 'detail', user.documentId, 'location', 'list'],
+      queryKey: ['users', 'detail', user.documentId, 'location', 'list'],
       queryFn: fetchAround,
       initialPageParam: {
         location: {
@@ -147,7 +147,14 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
   };
 
   const onSelect = (item: any) => {
-    onChange(item);
+    const { location, parent, ...rest } = item;
+    const [longitude, latitude] = location.split(',');
+    const data = {
+      longitude,
+      latitude,
+      ...rest,
+    };
+    onChange(data);
     ref.current?.close();
   };
 

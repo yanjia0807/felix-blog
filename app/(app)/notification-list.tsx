@@ -5,7 +5,11 @@ import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
 import { TouchableOpacity, View } from 'react-native';
-import { fetchNotifications, updateFriendshipNotification, updateNotificationState } from '@/api';
+import {
+  fetchNotifications,
+  updateFriendRequestNotification,
+  updateNotificationState,
+} from '@/api';
 import { useAuth } from '@/components/auth-provider';
 import { useSocket } from '@/components/socket-provider';
 import { Box } from '@/components/ui/box';
@@ -19,7 +23,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
-import { UserAvatarDetail } from '@/components/user';
+import { UserAvatarNotice } from '@/components/user';
 
 const NotificationList: React.FC = () => {
   const { user } = useAuth();
@@ -28,7 +32,7 @@ const NotificationList: React.FC = () => {
   const { notifications: newNotifications, setNotifications } = useSocket();
 
   const notificationQuery = useInfiniteQuery({
-    queryKey: ['users', 'detail', 'me', 'notifications', 'list'],
+    queryKey: ['notifications', 'list'],
     queryFn: fetchNotifications,
     initialPageParam: {
       pagination: {
@@ -98,17 +102,17 @@ const NotificationList: React.FC = () => {
     },
   });
 
-  const updateFriendshipMutation = useMutation({
-    mutationFn: ({ documentId, friendship, state }: any) => {
-      const params = { documentId, friendship, state };
-      return updateFriendshipNotification(params);
+  const updateFriendRequestMutation = useMutation({
+    mutationFn: ({ documentId, friendRequest, state }: any) => {
+      const params = { documentId, friendRequest, state };
+      return updateFriendRequestNotification(params);
     },
-    onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me', 'friendships'],
+    onSuccess: async (data, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: ['friends', 'list'],
       });
 
-      queryClient.setQueryData(['users', 'detail', 'me', 'notifications', 'count'], (val: any) => {
+      queryClient.setQueryData(['notifications', 'count'], (val: any) => {
         return val - 1;
       });
 
@@ -117,7 +121,7 @@ const NotificationList: React.FC = () => {
           val.map((item: any) => (item.id === data.id ? { ...data } : { ...item })),
         );
       } else {
-        queryClient.setQueryData(['users', 'detail', 'me', 'notifications', 'list'], (val: any) => {
+        queryClient.setQueryData(['notifications', 'list'], (val: any) => {
           return {
             ...val,
             pages: _.map(val.pages, (page: any) => ({
@@ -130,7 +134,7 @@ const NotificationList: React.FC = () => {
         });
       }
     },
-    onError(error, variables, context) {
+    onError(error) {
       toast.error(error.message);
       console.error(error);
     },
@@ -154,18 +158,20 @@ const NotificationList: React.FC = () => {
     }
   };
 
-  const onFrinedshipAccept = ({ item }: any) => {
-    updateFriendshipMutation.mutate({
+  const onFrinedRequestAccept = ({ item }: any) => {
+    updateFriendRequestMutation.mutate({
       documentId: item.documentId,
-      friendship: item.data.documentId,
+      friendRequest: item.data.friendRequest.documentId,
+      sender: item.data.friendRequest.sender.documentId,
       state: 'accepted',
     });
   };
 
-  const onFrinedshipReject = ({ item }: any) => {
-    updateFriendshipMutation.mutate({
+  const onFrinedRequestReject = ({ item }: any) => {
+    updateFriendRequestMutation.mutate({
       documentId: item.documentId,
-      friendship: item.data.documentId,
+      friendRequest: item.data.friendRequest.documentId,
+      sender: item.data.friendRequest.sender.documentId,
       state: 'rejected',
     });
   };
@@ -184,7 +190,7 @@ const NotificationList: React.FC = () => {
               )}
             </HStack>
             <HStack className="items-center justify-between">
-              <UserAvatarDetail user={item.data.follower} />
+              <UserAvatarNotice user={item.data.follower} />
               <Text>{item.data.isFollowing ? '关注了你' : '取消了关注你'}</Text>
             </HStack>
           </VStack>
@@ -193,7 +199,7 @@ const NotificationList: React.FC = () => {
     );
   };
 
-  const renderFriendshipItem = ({ item, index }: any) => {
+  const renderFriendRequestItem = ({ item, index }: any) => {
     return (
       <TouchableOpacity onPress={() => onItemPress({ item })}>
         <Card>
@@ -207,7 +213,7 @@ const NotificationList: React.FC = () => {
               )}
             </HStack>
             <HStack className="items-center justify-between">
-              <UserAvatarDetail user={item.data.sender} />
+              <UserAvatarNotice user={item.data.friendRequest.sender} />
               <Text>
                 {!item.feedback
                   ? '申请添加你为好友'
@@ -222,14 +228,14 @@ const NotificationList: React.FC = () => {
                   variant="link"
                   action="positive"
                   size="sm"
-                  onPress={() => onFrinedshipAccept({ item })}>
+                  onPress={() => onFrinedRequestAccept({ item })}>
                   <ButtonText>同意</ButtonText>
                 </Button>
                 <Button
                   variant="link"
                   action="negative"
                   size="sm"
-                  onPress={() => onFrinedshipReject({ item })}>
+                  onPress={() => onFrinedRequestReject({ item })}>
                   <ButtonText>拒绝</ButtonText>
                 </Button>
               </HStack>
@@ -240,7 +246,7 @@ const NotificationList: React.FC = () => {
     );
   };
 
-  const renderFriendshipFeedbackItem = ({ item, index }: any) => {
+  const renderFriendFeedbackItem = ({ item, index }: any) => {
     return (
       <TouchableOpacity onPress={() => onItemPress({ item })}>
         <Card>
@@ -254,8 +260,10 @@ const NotificationList: React.FC = () => {
               )}
             </HStack>
             <HStack className="items-center justify-between">
-              <UserAvatarDetail user={item.data.receiver} />
-              <Text>{item.data.state === 'accepted' ? '已同意添加好友' : '已拒绝添加好友'}</Text>
+              <UserAvatarNotice user={item.data.friendRequest.receiver} />
+              <Text>
+                {item.data.friendRequest.state === 'accepted' ? '已同意添加好友' : '已拒绝添加好友'}
+              </Text>
             </HStack>
           </VStack>
         </Card>
@@ -263,7 +271,7 @@ const NotificationList: React.FC = () => {
     );
   };
 
-  const renderFriendshipCancelItem = ({ item, index }: any) => {
+  const renderFriendCancelItem = ({ item, index }: any) => {
     return (
       <TouchableOpacity onPress={() => onItemPress({ item })}>
         <Card>
@@ -277,7 +285,7 @@ const NotificationList: React.FC = () => {
               )}
             </HStack>
             <HStack className="items-center justify-between">
-              <UserAvatarDetail user={item.data.user} />
+              <UserAvatarNotice user={item.data.user} />
               <Text>删除了好友</Text>
             </HStack>
           </VStack>
@@ -294,12 +302,12 @@ const NotificationList: React.FC = () => {
     switch (item.type) {
       case 'following':
         return renderFollowItem({ item, index });
-      case 'friendship':
-        return renderFriendshipItem({ item, index });
-      case 'friendship-feedback':
-        return renderFriendshipFeedbackItem({ item, index });
-      case 'friendship-cancel':
-        return renderFriendshipCancelItem({ item, index });
+      case 'friend-request':
+        return renderFriendRequestItem({ item, index });
+      case 'friend-feedback':
+        return renderFriendFeedbackItem({ item, index });
+      case 'friend-cancel':
+        return renderFriendCancelItem({ item, index });
       default:
         return renderDefaultItem({ item, index });
     }
@@ -307,7 +315,7 @@ const NotificationList: React.FC = () => {
 
   const renderEmptyComponent = (props: any) => {
     return (
-      <Box className="mt-10 w-full items-center justify-center">
+      <Box className="flex-1 items-center justify-center">
         <Text size="sm">暂无通知</Text>
       </Box>
     );
@@ -328,6 +336,7 @@ const NotificationList: React.FC = () => {
         <VStack className="flex-1 p-4">
           <FlatList
             data={notifications}
+            contentContainerClassName="flex-grow"
             renderItem={renderItem}
             ItemSeparatorComponent={renderItemSeparator}
             ListEmptyComponent={renderEmptyComponent}

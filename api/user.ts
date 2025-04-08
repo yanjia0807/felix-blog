@@ -117,9 +117,9 @@ export const updateFollowings = async (params: any) => {
   return res.data;
 };
 
-export const isFollowingUser = async (params: any) => {
+export const fetchIsFollowing = async (params: any) => {
   const query: any = qs.stringify({ following: params.following });
-  const res = await apiClient.get(`/users/custom/is-following-user?${query}`);
+  const res = await apiClient.get(`/users/custom/is-following?${query}`);
   return res.data;
 };
 
@@ -196,10 +196,10 @@ export const fetchUsers = async ({ pageParam }: any) => {
 };
 
 export const fetchFollowings = async ({ pageParam }: any) => {
-  const { pagination, documentId, keyword } = pageParam;
+  const { pagination, userDocumentId, keyword } = pageParam;
   const filters = {
     keyword,
-    documentId,
+    userDocumentId,
   };
   const populate = {
     avatar: {
@@ -218,10 +218,10 @@ export const fetchFollowings = async ({ pageParam }: any) => {
 };
 
 export const fetchFollowers = async ({ pageParam }: any) => {
-  const { pagination, documentId, keyword } = pageParam;
+  const { pagination, userDocumentId, keyword } = pageParam;
   const filters = {
     keyword,
-    documentId,
+    userDocumentId,
   };
   const populate = {
     avatar: {
@@ -237,4 +237,33 @@ export const fetchFollowers = async ({ pageParam }: any) => {
 
   const res = await apiClient.get(`/users/custom/followers?${query}`);
   return res;
+};
+
+export const fetchFriends = async ({ pageParam }: any) => {
+  const { pagination } = pageParam;
+
+  try {
+    const query = qs.stringify({
+      pagination,
+    });
+
+    const res = await apiClient.get(`/users/custom/friends?${query}`);
+    return res;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const fetchIsFriend = async (params: any) => {
+  const query: any = qs.stringify(params);
+  const res = await apiClient.get(`/users/custom/is-friend?${query}`);
+
+  return res.data;
+};
+
+export const cancelFriend = async (params: any) => {
+  const res = await apiClient.put(`/users/custom/cancel-friend`, {
+    data: params,
+  });
+  return res.data;
 };

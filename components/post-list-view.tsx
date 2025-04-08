@@ -221,9 +221,9 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
 
   const renderEmptyComponent = (props: any) => {
     return (
-      <Box className="mt-10 w-full items-center justify-center">
+      <View className="flex-1 items-center justify-center">
         <Text size="sm">没有数据</Text>
-      </Box>
+      </View>
     );
   };
 
@@ -248,6 +248,7 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
       )}
       <FlatList
         data={posts}
+        contentContainerClassName="flex-grow"
         nestedScrollEnabled={true}
         renderItem={renderItem}
         keyExtractor={(item: any) => item.documentId}

@@ -119,7 +119,7 @@ const UserEdit: React.FC = () => {
         queryKey: ['users', 'detail', user.documentId],
       });
       toast.success({ title: '操作完成', description: '您的资料已更新' });
-      router.dismissAll();
+      router.back();
     },
     onError(error, variables, context) {
       toast.error({ description: error.message });

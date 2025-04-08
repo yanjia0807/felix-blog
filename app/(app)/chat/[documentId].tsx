@@ -33,7 +33,7 @@ const messageFormSchema = z.object({
   content: z.string().min(1, '内容不能为空').max(100, '内容不能多余5000个字符'),
 });
 
-const Chat: React.FC = () => {
+const ChatPage: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId }: any = useLocalSearchParams();
   const flatListRef = useRef<FlatList>(null);
@@ -134,7 +134,7 @@ const Chat: React.FC = () => {
     isSuccess: isQueryMessageSuccess,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['chats', 'detail', chatData?.documentId, 'messsages'],
+    queryKey: ['chats', 'detail', documentId, 'messsages'],
     queryFn: fetchMessagesByChat,
     enabled: !!chatData?.documentId,
     initialPageParam: {
@@ -204,9 +204,9 @@ const Chat: React.FC = () => {
     <>
       {isQueryChatSuccess ? (
         <HStack className="items-center" space="xl">
-          <Button action="secondary" variant="link" onPress={() => router.navigate('/chat')}>
+          <Button action="secondary" variant="link" onPress={() => router.back()}>
             <ButtonIcon as={ChevronLeft} />
-            <ButtonText>聊天列表</ButtonText>
+            <ButtonText>返回</ButtonText>
           </Button>
           <HStack className="items-center" space="sm">
             <Avatar size="md">
@@ -328,10 +328,6 @@ const Chat: React.FC = () => {
       </VStack>
     </SafeAreaView>
   );
-};
-
-const ChatPage = () => {
-  return <Chat />;
 };
 
 export default ChatPage;

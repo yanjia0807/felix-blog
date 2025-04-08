@@ -1,7 +1,7 @@
+import React, { useEffect, useState } from 'react';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { Calendar } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import {
   Actionsheet,
@@ -11,7 +11,6 @@ import {
   ActionsheetDragIndicatorWrapper,
 } from './ui/actionsheet';
 import { Button, ButtonText } from './ui/button';
-import { Divider } from './ui/divider';
 import { HStack } from './ui/hstack';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { VStack } from './ui/vstack';
@@ -89,11 +88,7 @@ export const DateInput: React.FC<MyComponentProps> = ({
               onChange={onDateTimeChange}
               locale="zh-CN"
             />
-            <HStack className="items-center justify-around p-2">
-              <Button className="flex-1" action="negative" variant="link" onPress={() => onClear()}>
-                <ButtonText>清除</ButtonText>
-              </Button>
-              <Divider orientation="vertical"></Divider>
+            <HStack className="items-center justify-center" space="md">
               <Button
                 className="flex-1"
                 onPress={() => {
@@ -101,6 +96,9 @@ export const DateInput: React.FC<MyComponentProps> = ({
                 }}
                 action="positive">
                 <ButtonText>确定</ButtonText>
+              </Button>
+              <Button className="flex-1" action="negative" onPress={() => onClear()}>
+                <ButtonText>清除</ButtonText>
               </Button>
             </HStack>
           </VStack>

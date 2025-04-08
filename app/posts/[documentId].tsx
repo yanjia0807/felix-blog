@@ -62,7 +62,6 @@ const PostDetail: React.FC = () => {
     mutationFn: ({ documentId }: any) => deletePost({ documentId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
       queryClient.invalidateQueries({
         queryKey: ['posts', 'detail', documentId],
       });
@@ -81,7 +80,6 @@ const PostDetail: React.FC = () => {
     mutationFn: ({ documentId }: any) => unpublishPost({ documentId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
       queryClient.invalidateQueries({
         queryKey: ['posts', 'detail', documentId],
         refetchType: 'none',

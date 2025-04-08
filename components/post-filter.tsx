@@ -20,6 +20,7 @@ import { HStack } from './ui/hstack';
 import { Input, InputField } from './ui/input';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FilterContextType {
   isDrawerOpen: boolean;
@@ -115,6 +116,7 @@ type PostFilterSchema = z.infer<typeof postFilterSchema>;
 
 export const PostFilterContent = () => {
   const { filters, setFilters, setIsDrawerOpen, isDrawerOpen } = usePostFilterContext();
+  const insets = useSafeAreaInsets();
 
   const {
     control,
@@ -182,7 +184,7 @@ export const PostFilterContent = () => {
           value={value}
           onChange={onChange}
           defaultDate={new Date()}
-          placeholder="开始日期...."
+          placeholder="发布日期"
           variant="underlined"
           className="flex-1"
         />
@@ -200,7 +202,7 @@ export const PostFilterContent = () => {
         <DateInput
           value={value}
           onChange={onChange}
-          placeholder="结束日期...."
+          placeholder="发布日期"
           defaultDate={new Date()}
           variant="underlined"
           className="flex-1"
@@ -216,18 +218,11 @@ export const PostFilterContent = () => {
   const renderTags = ({ field: { onChange, onBlur, value } }: any) => {
     return (
       <FormControl isInvalid={!!errors.tags}>
-        <VStack space="md">
-          <HStack className="justify-between">
-            <FormControlLabel>
-              <FormControlLabelText>标签</FormControlLabelText>
-            </FormControlLabel>
-          </HStack>
-          <TagSelect value={value} onChange={onChange} />
-          <FormControlError>
-            <FormControlErrorIcon as={AlertCircle} />
-            <FormControlErrorText>{errors?.tags?.message}</FormControlErrorText>
-          </FormControlError>
-        </VStack>
+        <TagSelect value={value} onChange={onChange} />
+        <FormControlError>
+          <FormControlErrorIcon as={AlertCircle} />
+          <FormControlErrorText>{errors?.tags?.message}</FormControlErrorText>
+        </FormControlError>
       </FormControl>
     );
   };
@@ -242,7 +237,7 @@ export const PostFilterContent = () => {
   };
 
   return (
-    <VStack className="flex-1 bg-background-100 p-4">
+    <VStack className="flex-1 bg-background-50 px-4" style={{ paddingTop: insets.top }}>
       <KeyboardAwareScrollView className="flex-1">
         <VStack className="flex-1" space="lg">
           <Controller name="title" control={control} render={renderTitle} />
@@ -253,12 +248,14 @@ export const PostFilterContent = () => {
             <Controller name="createdAtTo" control={control} render={renderCreatedAtTo} />
           </HStack>
           <Controller name="tags" control={control} render={renderTags} />
-          <Button action="primary" className="mt-8 rounded-full" onPress={handleSubmit(onSubmit)}>
-            <ButtonText>搜索</ButtonText>
-          </Button>
-          <Button action="default" variant="link" onPress={() => onClearFilterBtnPress()}>
-            <ButtonText>重置</ButtonText>
-          </Button>
+          <VStack className="mt-8" space="md">
+            <Button action="positive" onPress={handleSubmit(onSubmit)}>
+              <ButtonText>搜索</ButtonText>
+            </Button>
+            <Button action="negative" onPress={() => onClearFilterBtnPress()}>
+              <ButtonText>重置</ButtonText>
+            </Button>
+          </VStack>
         </VStack>
       </KeyboardAwareScrollView>
     </VStack>

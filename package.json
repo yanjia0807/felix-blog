@@ -10,7 +10,10 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "dev:web": "cd web && npm run dev",
+    "build:web": "cd web && npm run build",
+    "sync:web": "ts-node scripts/sync-web.ts"
   },
   "jest": {
     "preset": "jest-expo"

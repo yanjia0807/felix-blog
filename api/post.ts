@@ -137,6 +137,38 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
   return res;
 };
 
+export const fetchNearbyPosts = async ({ pageParam }: any) => {
+  const { pagination, filters } = pageParam;
+
+  const query = qs.stringify(
+    {
+      populate: {
+        author: {
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+        },
+        tags: true,
+        poi: true,
+        cover: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
+      },
+      sort: 'createdAt:desc',
+      pagination,
+    },
+    {
+      encodeValuesOnly: false,
+    },
+  );
+
+  const res = await apiClient.get(`/posts?${query}`);
+  return res;
+};
+
 export const fetchUserPosts = async ({ pageParam }: any) => {
   const { pagination, userDocumentId, status } = pageParam;
 
@@ -326,12 +358,12 @@ export const createPost = async (formData: PostData) => {
         });
       }
     });
-
     const poi =
       formData.poi &&
       _.pick(formData.poi, [
         'name',
-        'location',
+        'longitude',
+        'latitude',
         'type',
         'typecode',
         'pname',

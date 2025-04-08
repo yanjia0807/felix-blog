@@ -28,7 +28,7 @@ const SocketContext = createContext<SocketContextType>({
 export const useSocket = () => useContext(SocketContext);
 
 const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const socket = useRef<Socket | undefined>();
+  const socketRef = useRef<Socket | undefined>();
   const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState<any>([]);
   const [messages, setMessages] = useState<any>([]);
@@ -39,33 +39,28 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
       const accessToken = await SecureStore.getItemAsync('accessToken');
       if (!accessToken) return;
 
-      socket.current = io(process.env.EXPO_PUBLIC_API_SERVER as string, {
+      socketRef.current = io(process.env.EXPO_PUBLIC_API_SERVER as string, {
         auth: { token: accessToken },
       });
+      const socket = socketRef.current as Socket;
 
-      socket.current.onAny((event, ...args) => {
+      socket.onAny((event, ...args) => {
         console.log('socket', event, args);
       });
 
-      socket.current.on('session', ({ userId }: any) => {
-        if (socket.current) {
-          socket.current.userId = userId;
+      socket.on('session', ({ userId }: any) => {
+        if (socket) {
+          socket.userId = userId;
         }
       });
 
-      socket.current.on('notification:create', ({ data }: any) => {
+      socket.on('notification:create', ({ data }: any) => {
         setNotifications((val: any) => {
           return [data, ...val];
         });
-
-        if (_.includes(['friendship-feedback', 'friendship-cancel'], data.type)) {
-          queryClient.invalidateQueries({
-            queryKey: ['users', 'detail', 'me', 'friendships'],
-          });
-        }
       });
 
-      socket.current.on('message:create', ({ data, unreadCount }: any) => {
+      socket.on('message:create', ({ data, unreadCount }: any) => {
         setMessages((val: any) => {
           return [data, ...val];
         });
@@ -93,12 +88,66 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
         });
       });
 
-      socket.current.emit('user:online:add', socket.current.userId);
+      socket.on('friend:add', ({ data }: any) => {
+        queryClient.invalidateQueries({
+          queryKey: ['friends', 'list'],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ['friends', 'detail', { userDocumentId: data.documentId }],
+        });
+      });
+
+      socket.on('friend:cancel', ({ data }: any) => {
+        queryClient.invalidateQueries({
+          queryKey: ['friends', 'list'],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ['friends', 'detail', { userDocumentId: data.documentId }],
+        });
+      });
+
+      socket.on('user:online', ({ data }: any) => {
+        const state = queryClient.getQueryState(['friends', 'list']);
+
+        if (state) {
+          queryClient.setQueryData(['friends', 'list'], (val: any) => {
+            return {
+              ...val,
+              pages: _.map(val.pages, (page: any) => ({
+                ...page,
+                data: page.data.map((item: any) =>
+                  item.documentId === data.documentId ? { ...item, isOnline: '1' } : { ...item },
+                ),
+              })),
+            };
+          });
+        }
+      });
+
+      socket.on('user:offline', ({ data }: any) => {
+        const state = queryClient.getQueryState(['friends', 'list']);
+
+        if (state) {
+          queryClient.setQueryData(['friends', 'list'], (val: any) => {
+            return {
+              ...val,
+              pages: _.map(val.pages, (page: any) => ({
+                ...page,
+                data: page.data.map((item: any) =>
+                  item.documentId === data.documentId ? { ...item, isOnline: '0' } : { ...item },
+                ),
+              })),
+            };
+          });
+        }
+      });
     };
 
     const close = () => {
-      if (socket.current?.connected) {
-        socket.current?.close();
+      if (socketRef.current?.connected) {
+        socketRef.current?.close();
       }
     };
 
@@ -109,16 +158,16 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     }
 
     return () => {
-      socket.current?.off('session');
-      socket.current?.off('notification:create');
-      socket.current?.off('message:create');
+      socketRef.current?.off('session');
+      socketRef.current?.off('notification:create');
+      socketRef.current?.off('message:create');
     };
-  }, [isLogin]);
+  }, [isLogin, queryClient]);
 
   const value = {
     messages,
     notifications,
-    socket: socket.current,
+    socket: socketRef.current as Socket,
     setNotifications,
     setMessages,
   };

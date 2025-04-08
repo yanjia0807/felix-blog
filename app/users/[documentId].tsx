@@ -19,11 +19,11 @@ import {
   createChat,
   fetchChatByUsers,
   fetchUser,
-  isFollowingUser,
+  fetchIsFollowing,
   updateFollowings,
-  fetchFriendship,
-  createFriendship,
-  cancelFriendship,
+  createFriendRequest,
+  cancelFriend,
+  fetchIsFriend,
 } from '@/api';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-provider';
@@ -72,30 +72,25 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   const isMe = documentId === currentUser?.documentId;
 
   const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
-    queryKey: ['chats', 'list', { userDocumentIds }],
+    queryKey: ['users', 'detail', 'me', 'chats', 'list', documentId],
     enabled: !!currentUser,
     queryFn: () => fetchChatByUsers({ userDocumentIds }),
-  });
-
-  const createChatMutation = useMutation({
-    mutationFn: () =>
-      createChat({
-        userDocumentIds,
-      }),
-    onSuccess: async (data, variables, context) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['chats', 'list'],
-      });
-    },
   });
 
   const followingQuery = useQuery({
     queryKey: ['users', 'detail', 'me', 'followings', documentId],
     enabled: !!currentUser,
-    queryFn: () => isFollowingUser({ following: documentId }),
+    queryFn: () => fetchIsFollowing({ following: documentId }),
+  });
+  const isFollowing = followingQuery.isSuccess && followingQuery.data;
+
+  const friendQuery = useQuery({
+    queryKey: ['friends', 'detail', { userDocumentId: documentId }],
+    enabled: !!currentUser,
+    queryFn: () => fetchIsFriend({ userDocumentId: documentId }),
   });
 
-  const isFollowing = followingQuery.isSuccess && followingQuery.data;
+  const isFriend = friendQuery.isSuccess && friendQuery.data;
 
   const followMutation = useMutation({
     mutationFn: () => {
@@ -116,23 +111,12 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     },
   });
 
-  const friendshipsQuery = useQuery({
-    queryKey: ['users', 'detail', 'me', 'friendships', documentId],
-    enabled: !!currentUser,
-    queryFn: () => fetchFriendship({ receiver: documentId, sender: currentUser.documentId }),
-  });
-
-  const isFriend = friendshipsQuery.isSuccess && friendshipsQuery.data;
-
-  const createFriendMutation = useMutation({
+  const createFriendRequestMutation = useMutation({
     mutationFn: () => {
-      const params = { receiver: user.documentId };
-      return createFriendship(params);
+      const params = { receiverDocumentId: user.documentId };
+      return createFriendRequest(params);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me', 'friendships', documentId],
-      });
       toast.success({
         description: '已发送好友申请',
       });
@@ -145,20 +129,33 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 
   const cancelFriendMutation = useMutation({
     mutationFn: () => {
-      const params = { documentId: friendshipsQuery.data.documentId };
-      return cancelFriendship(params);
+      const params = { userDocumentId: documentId };
+      return cancelFriend(params);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me', 'friendships', documentId],
-      });
       toast.success({
         description: '取消好友成功',
       });
+
+      return queryClient.invalidateQueries({
+        queryKey: ['friends', 'list'],
+      });
     },
-    onError(error, variables, context) {
+    onError(error) {
       toast.error(error.message);
       console.error(error);
+    },
+  });
+
+  const createChatMutation = useMutation({
+    mutationFn: () =>
+      createChat({
+        userDocumentIds,
+      }),
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: ['chats', 'list'],
+      });
     },
   });
 
@@ -204,7 +201,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
         if (isFriend) {
           cancelFriendMutation.mutate();
         } else {
-          createFriendMutation.mutate();
+          createFriendRequestMutation.mutate();
         }
       },
     });
@@ -214,7 +211,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     router.push({
       pathname: '/following-list',
       params: {
-        documentId: user.documentId,
+        userDocumentId: user.documentId,
         username: user.username,
       },
     });
@@ -224,7 +221,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     router.push({
       pathname: '/follower-list',
       params: {
-        documentId: user.documentId,
+        userDocumentId: user.documentId,
         username: user.username,
       },
     });

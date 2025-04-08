@@ -3,8 +3,6 @@ import axios from 'axios';
 export const amapWebApiUrl = process.env.EXPO_PUBLIC_AMAP_WEB_API_URL;
 export const amapWebApiKey = process.env.EXPO_PUBLIC_AMAP_WEB_API_KEY;
 export const amapIosApiKey = process.env.EXPO_PUBLIC_AMAP_IOS_KEY;
-export const amapIosJsKey = process.env.EXPO_PUBLIC_AMAP_JS_KEY;
-export const amapIosJsCode = process.env.EXPO_PUBLIC_AMAP_JS_CODE;
 
 const config = {
   baseURL: amapWebApiUrl,

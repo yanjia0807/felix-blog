@@ -475,8 +475,11 @@ export const AvatarInput = ({ onChange, value, fallbackText }: any) => {
     <>
       <TouchableOpacity onPress={() => onOpen()}>
         <Avatar size="xl">
-          <AvatarFallbackText>{fallbackText}</AvatarFallbackText>
-          <AvatarImage source={source} />
+          {source ? (
+            <AvatarImage source={source} />
+          ) : (
+            <AvatarFallbackText>{fallbackText}</AvatarFallbackText>
+          )}
           <AvatarBadge className="items-center justify-center">
             <TouchableOpacity onPress={onRemove}>
               <Icon as={X} size="lg" />

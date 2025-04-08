@@ -103,7 +103,6 @@ const PostEditPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
       queryClient.invalidateQueries({
         queryKey: ['posts', 'detail', documentId],
       });

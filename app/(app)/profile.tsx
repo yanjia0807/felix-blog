@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings, Settings2 } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import AlbumListView from '@/components/album-list-view';
@@ -14,14 +14,15 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserLargeAvatar } from '@/components/user';
 
-const Profil: React.FC = () => {
+const Profile: React.FC = () => {
   const { user } = useAuth();
+  console.log(user.avatar);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const onFollowingsBtnPress = () => {
     router.push({
       pathname: '/following-list',
       params: {
-        documentId: user.documentId,
+        userDocumentId: user.documentId,
       },
     });
   };
@@ -30,10 +31,11 @@ const Profil: React.FC = () => {
     router.push({
       pathname: '/follower-list',
       params: {
-        documentId: user.documentId,
+        userDocumentId: user.documentId,
       },
     });
   };
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -50,7 +52,7 @@ const Profil: React.FC = () => {
               className="h-8 w-8 rounded-full p-5"
               action="secondary"
               onPress={() => {
-                router.push('/user-edit');
+                router.push(`/user-edit?timestamp=${Date.now()}`);
               }}>
               <ButtonIcon as={EditIcon} />
             </Button>
@@ -125,4 +127,4 @@ const Profil: React.FC = () => {
   );
 };
 
-export default Profil;
+export default Profile;

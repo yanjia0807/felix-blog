@@ -21,7 +21,6 @@ const PostCreatePage: React.FC = () => {
     mutationFn: (data: PostSchema) => createPost(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({ queryKey: ['posts', 'authors'] });
       toast.success({
         description: '保存成功',
       });

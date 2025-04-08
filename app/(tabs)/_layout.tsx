@@ -7,7 +7,23 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { Badge, Hexagon, MessageCircle, Pentagon } from 'lucide-react-native';
+import {
+  Badge,
+  CircleUserRound,
+  Handshake,
+  Hexagon,
+  House,
+  Map,
+  MessageCircle,
+  MessageCircleDashed,
+  MessageCircleHeart,
+  MessageSquare,
+  Pentagon,
+  ScrollText,
+  User,
+  UserCircle,
+  UserRound,
+} from 'lucide-react-native';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui/card';
@@ -63,16 +79,16 @@ export default function TabLayout() {
       <TabList asChild style={{ paddingBottom: insets.bottom }}>
         <TabButtonList>
           <TabTrigger name="home" href="/" asChild>
-            <TabButton title="主页" icon={Hexagon} />
+            <TabButton title="主页" icon={House} />
           </TabTrigger>
-          <TabTrigger name="post-list" href="/post-list" asChild>
-            <TabButton title="发现" icon={Pentagon} />
+          <TabTrigger name="nearby" href="/nearby" asChild>
+            <TabButton title="附近" icon={Map} />
           </TabTrigger>
           <TabTrigger name="message" href="/message" asChild>
             <TabButton title="消息" icon={MessageCircle} />
           </TabTrigger>
           <TabTrigger name="profile" href="/profile" asChild>
-            <TabButton title="我的" icon={Badge} />
+            <TabButton title="我的" icon={User} />
           </TabTrigger>
         </TabButtonList>
       </TabList>

@@ -122,7 +122,7 @@ export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any,
   }, [value]);
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['tags', { name: getValues() }],
+    queryKey: ['tags', 'list', { name: getValues() }],
     queryFn: () => fetchTags(getValues()),
   });
 
