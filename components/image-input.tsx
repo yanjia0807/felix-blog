@@ -17,12 +17,12 @@ import {
   Check,
   Zap,
   ZapOff,
-  CirclePlay,
 } from 'lucide-react-native';
 import { FlatList, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { twMerge } from 'tailwind-merge';
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -405,9 +405,7 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
   return (
     <>
       {value ? (
-        <View className="h-40">
-          <ImageItem item={value} onPress={onPress} onRemove={onRemove} />
-        </View>
+        <ImageItem item={value} onPress={onPress} onRemove={onRemove} className="h-40" />
       ) : (
         <>
           <Pressable onPress={onOpen} pointerEvents="box-only">
@@ -478,14 +476,6 @@ export const AvatarInput = ({ onChange, value, fallbackText }: any) => {
         imagePickerOptions={imagePickerOptions}
       />
     </>
-  );
-};
-
-export const CoverView = ({ value, onPress }: any) => {
-  return (
-    <View className="h-36 flex-1">
-      <ImageItem item={value} onPress={() => onPress(value)} />
-    </View>
   );
 };
 
@@ -609,35 +599,40 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
   );
 };
 
-export const ImageItem = ({ item, onPress, onRemove }: any) => {
+export const ImageItem = ({ item, onPress, onRemove, className, style }: any) => {
   return (
-    <TouchableOpacity onPress={onPress}>
-      <Image
-        style={{
-          width: '100%',
-          height: '100%',
-          borderRadius: 6,
-          opacity: 0.7,
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        alt={item.alternativeText || item.name}
-        source={item.thumbnail}>
-        {isVideo(item.fileType) && (
-          <Icon as={CirclePlay} color="white" size={36 as any} className="opacity-80" />
-        )}
-      </Image>
-      {onRemove && (
-        <Button
-          size="xs"
-          action="secondary"
-          className="absolute right-0 top-0 h-auto p-1 opacity-80"
-          onPress={onRemove}>
-          <ButtonIcon as={CircleX} />
-        </Button>
-      )}
-    </TouchableOpacity>
+    <View className={twMerge([className])} style={style}>
+      <TouchableOpacity onPress={onPress}>
+        <View className="items-center justify-center">
+          <Image
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: 6,
+              opacity: 0.7,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            alt={item.alternativeText || item.name}
+            source={item.thumbnail}></Image>
+          {isVideo(item.fileType) && (
+            <View className="absolute">
+              <Ionicons name="play-circle-outline" size={24} className="opacity-50" color="white" />
+            </View>
+          )}
+          {onRemove && (
+            <Button
+              size="xs"
+              action="secondary"
+              className="absolute right-0 top-0 h-auto p-1 opacity-80"
+              onPress={onRemove}>
+              <ButtonIcon as={CircleX} />
+            </Button>
+          )}
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -655,38 +650,33 @@ export const ImageGrid = ({ value = [], onPress, onChange }: any) => {
   if (value.length > 0) {
     return (
       <HStack className="flex-wrap">
-        {value.map((item: any, index: number) => {
-          return (
-            <View
-              key={item.uri}
-              className="my-2"
-              style={{
-                width: imageSize,
-                height: imageSize,
-                marginRight: (index + 1) % numColumns === 0 ? 0 : spacing,
-              }}>
-              <ImageItem
-                item={item}
-                onPress={() => onPress(index)}
-                onRemove={() => onRemove(item.uri)}
-              />
-            </View>
-          );
-        })}
+        {value.map((item: any, index: number) => (
+          <ImageItem
+            key={item.uri}
+            className="my-2"
+            style={{
+              width: imageSize,
+              height: imageSize,
+              marginRight: (index + 1) % numColumns === 0 ? 0 : spacing,
+            }}
+            item={item}
+            onPress={() => onPress(index)}
+            onRemove={() => onRemove(item.uri)}
+          />
+        ))}
       </HStack>
     );
   }
 };
 
 export const ImageList = ({ value = [], onPress }: any) => {
-  const renderItem = ({ item, index }: any) => {
-    return (
-      <View
-        className={`mx-1 h-16 w-16 ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}>
-        <ImageItem item={item} onPress={() => onPress(index)} />
-      </View>
-    );
-  };
+  const renderItem = ({ item, index }: any) => (
+    <ImageItem
+      item={item}
+      onPress={() => onPress(index)}
+      className={`mx-1 h-16 w-16 ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}
+    />
+  );
 
   return value?.length > 0 ? (
     <FlatList

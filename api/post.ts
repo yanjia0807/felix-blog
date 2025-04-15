@@ -160,6 +160,12 @@ export const fetchClzPosts = async ({ pageParam }: any) => {
           },
           fields: ['username'],
         },
+        attachmentExtras: {
+          populate: {
+            attachment: true,
+            thumbnail: true,
+          },
+        },
       },
       sort: 'createdAt:desc',
       pagination,
@@ -339,7 +345,7 @@ export const createPost = async (formData: PostData) => {
     if (formData.cover) {
       coverId = (await uploadFiles(formData.cover.uri)).id;
 
-      if (isVideo(formData.cover.fileType)) {
+      if (isVideo(formData.cover.mime)) {
         const thumbnailId = (await uploadFiles(formData.cover.thumbnail)).id;
         attachmentExtras.push({
           attachment: coverId,
@@ -351,7 +357,7 @@ export const createPost = async (formData: PostData) => {
     const uploadUris: any = [];
     _.forEach(formData.images, (item: any) => {
       uploadUris.push(item.uri);
-      if (isVideo(item.fileType)) {
+      if (isVideo(item.mime)) {
         uploadUris.push(item.thumbnail);
       }
     });
@@ -367,7 +373,7 @@ export const createPost = async (formData: PostData) => {
     );
 
     _.forEach(formData.images, (item: any) => {
-      if (isVideo(item.fileType)) {
+      if (isVideo(item.mime)) {
         attachmentExtras.push({
           attachment: _.find(uploadRes, ['uri', item.uri]).id,
           thumbnail: _.find(uploadRes, ['uri', item.thumbnail]).id,
@@ -421,19 +427,21 @@ export const editPost = async (formData: PostData) => {
       if (formData.cover.id) {
         coverId = formData.cover.id;
 
-        const extra = _.find(
-          formData.attachmentExtras,
-          (item1: any) => item1.attachment.id === formData.cover.id,
-        );
+        if (isVideo(formData.cover.mime)) {
+          const extra = _.find(
+            formData.attachmentExtras,
+            (item1: any) => item1.attachment.id === formData.cover.id,
+          );
 
-        attachmentExtras.push({
-          attachment: extra.attachment.id,
-          thumbnail: extra.thumbnail.id,
-        });
+          attachmentExtras.push({
+            attachment: extra.attachment.id,
+            thumbnail: extra.thumbnail.id,
+          });
+        }
       } else {
         coverId = (await uploadFiles(formData.cover.uri)).id;
 
-        if (isVideo(formData.cover.fileType)) {
+        if (isVideo(formData.cover.mime)) {
           const thumbnailId = (await uploadFiles(formData.cover.thumbnail)).id;
           attachmentExtras.push({
             attachment: coverId,
@@ -447,7 +455,7 @@ export const editPost = async (formData: PostData) => {
     _.forEach(formData.images, (item: any) => {
       if (!item.id) {
         uploadUris.push(item.uri);
-        if (isVideo(item.fileType)) {
+        if (isVideo(item.mime)) {
           uploadUris.push(item.thumbnail);
         }
       }
@@ -466,7 +474,7 @@ export const editPost = async (formData: PostData) => {
     );
 
     _.forEach(formData.images, (item: any) => {
-      if (isVideo(item.fileType)) {
+      if (isVideo(item.mime)) {
         if (item.id) {
           const extra = _.find(
             formData.attachmentExtras,

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import {
   InfiniteData,
@@ -8,11 +8,9 @@ import {
 } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import { format } from 'date-fns';
-import { useEvent, useEventListener } from 'expo';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import {
@@ -231,93 +229,50 @@ const CommentItem: React.FC<any> = ({ item }) => {
   );
 };
 
-const ImageItem: React.FC<any> = ({ data }) => {
+export const ImageCover: React.FC<any> = ({ item }) => {
   const { width: screenWidth } = useWindowDimensions();
 
-  const format = imageFormat(data, 'l', 's');
-  const actualRatio = format.height / format.width;
-  const imageWidth = screenWidth - CONTAINER_PADDING * 2 - CARD_PADDING * 2;
-  const imageHeight = Math.min(Math.max(imageWidth * actualRatio, 220), 280);
-  const uri = format.fullUrl;
+  const format = imageFormat(item.cover, 'l', 's');
+  const aspectRadio = format.width / format.height;
+  const width = screenWidth - CONTAINER_PADDING * 2 - CARD_PADDING * 2;
+  const height = Math.min(Math.max(width / aspectRadio, (width / 4) * 3), (width / 16) * 9);
 
   return (
     <Image
       source={{
-        uri,
+        uri: item.cover.thumbnail,
       }}
       contentFit="cover"
       style={{
-        width: imageWidth,
-        height: imageHeight,
+        width,
+        height,
         borderRadius: 6,
       }}
     />
   );
 };
 
-const VideoItem: React.FC<any> = ({ id, data, currentPlayingId, setCurrentPlayingId }) => {
+export const VideoCover: React.FC<any> = ({ item }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const [isPlayToEnd, setIsPlayToEnd] = useState(false);
-  const itemWidth = screenWidth - CONTAINER_PADDING * 2 - CARD_PADDING * 2;
-  const itemHeight = (itemWidth / 16) * 9;
-
-  const player = useVideoPlayer(data.uri, (player) => {
-    player.muted = true;
-    player.loop = false;
-    player.bufferOptions = {
-      minBufferForPlayback: 0,
-      preferredForwardBufferDuration: 5,
-      maxBufferBytes: 0,
-      prioritizeTimeOverSizeThreshold: false,
-      waitsToMinimizeStalling: true,
-    };
-  });
-
-  const { isPlaying } = useEvent(player, 'playingChange', {
-    isPlaying: player.playing,
-  });
-
-  useEventListener(player, 'playToEnd', () => {
-    setIsPlayToEnd(true);
-    setCurrentPlayingId(null);
-  });
-
-  const togglePlay = () => {
-    if (isPlaying && !isPlayToEnd) {
-      player.pause();
-      setCurrentPlayingId(null);
-    } else {
-      if (isPlayToEnd) {
-        setIsPlayToEnd(false);
-        player.replay();
-      }
-      player.play();
-      setCurrentPlayingId(id);
-    }
-  };
-
-  useEffect(() => {
-    if (currentPlayingId !== id) {
-      player.pause();
-    }
-  }, [currentPlayingId, id, player]);
+  const width = screenWidth - CONTAINER_PADDING * 2 - CARD_PADDING * 2;
+  const height = (width / 16) * 9;
 
   return (
     <View className="flex-1 items-center justify-center">
-      <VideoView
+      <Image
+        source={{
+          uri: item.cover.thumbnail,
+        }}
         contentFit="cover"
-        nativeControls={false}
-        player={player}
-        style={{ width: itemWidth, height: itemHeight, borderRadius: 6 }}
+        style={{
+          width,
+          height,
+          borderRadius: 6,
+        }}
       />
-      <TouchableOpacity onPress={togglePlay} className="absolute">
-        <Ionicons
-          name={isPlaying ? 'pause-circle-outline' : 'play-circle-outline'}
-          size={42}
-          className="opacity-70"
-          color="white"
-        />
-      </TouchableOpacity>
+      <View className="absolute">
+        <Ionicons name="play-circle-outline" size={42} className="opacity-50" color="white" />
+      </View>
     </View>
   );
 };
@@ -328,8 +283,6 @@ export const PostItem: React.FC<any> = ({
   setIsPagerOpen,
   setPagerIndex,
   setAblum,
-  currentPlayingId,
-  setCurrentPlayingId,
 }) => {
   const router = useRouter();
 
@@ -349,7 +302,7 @@ export const PostItem: React.FC<any> = ({
 
   return (
     <Pressable onPress={() => onPostItemPressed({ item, index })}>
-      <Card size="sm" className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
+      <Card size="sm" className={`mt-6 rounded-lg`}>
         <VStack space="lg">
           <VStack space="sm">
             <HStack className="items-center justify-between">
@@ -376,16 +329,7 @@ export const PostItem: React.FC<any> = ({
           </VStack>
           {item.cover && (
             <TouchableOpacity onPress={onCoverPress}>
-              {isImage(item.cover.mime) ? (
-                <ImageItem data={item.cover} />
-              ) : (
-                <VideoItem
-                  id={item.id}
-                  data={item.cover}
-                  currentPlayingId={currentPlayingId}
-                  setCurrentPlayingId={setCurrentPlayingId}
-                />
-              )}
+              {isImage(item.cover.mime) ? <ImageCover item={item} /> : <VideoCover item={item} />}
             </TouchableOpacity>
           )}
           <Text numberOfLines={5}>{item.content}</Text>
@@ -410,25 +354,9 @@ const PostList: React.FC<any> = () => {
   const { filters } = usePostFilterContext();
   const [isPagerOpen, setIsPagerOpen] = useState(false);
   const [pagerIndex, setPagerIndex] = useState<number>(0);
-  const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
   const [album, setAblum] = useState<any>([]);
   const router = useRouter();
   const { user } = useAuth();
-  const currentPlayingIdRef = useRef(currentPlayingId);
-
-  const viewabilityConfig = {
-    itemVisiblePercentThreshold: 50,
-    minimumViewTime: 500,
-    waitForInteraction: false,
-  };
-
-  const onViewableItemsChanged = ({ changed }: any) => {
-    _.forEach(changed, (changedItem: any) => {
-      if (!changedItem.isViewable && changedItem.item.id === currentPlayingIdRef.current) {
-        setCurrentPlayingId(null);
-      }
-    });
-  };
 
   const onPagerClose = () => setIsPagerOpen(false);
 
@@ -565,8 +493,6 @@ const PostList: React.FC<any> = () => {
       setIsPagerOpen={setIsPagerOpen}
       setPagerIndex={setPagerIndex}
       setAblum={setAblum}
-      setCurrentPlayingId={setCurrentPlayingId}
-      currentPlayingId={currentPlayingId}
     />
   );
 
@@ -584,10 +510,6 @@ const PostList: React.FC<any> = () => {
     tagsQuery.refetch();
   };
 
-  useEffect(() => {
-    currentPlayingIdRef.current = currentPlayingId;
-  }, [currentPlayingId]);
-
   return (
     <SafeAreaView className="flex-1">
       <PageSpinner isVisiable={isLoading} />
@@ -598,9 +520,6 @@ const PostList: React.FC<any> = () => {
           ListHeaderComponent={renderListHeader}
           ListEmptyComponent={renderEmptyComponent}
           renderItem={renderListItem}
-          viewabilityConfig={viewabilityConfig}
-          onViewableItemsChanged={onViewableItemsChanged}
-          extraData={currentPlayingId}
           showsVerticalScrollIndicator={false}
           onEndReached={() => {
             if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage)

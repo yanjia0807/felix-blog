@@ -26,7 +26,7 @@ const PostEditPage = () => {
   const queryClient = useQueryClient();
   const toast = useCustomToast();
 
-  const query = useQuery({
+  const postQuery = useQuery({
     queryKey: ['posts', 'detail', documentId],
     queryFn: () => fetchPost({ documentId, status }),
   });
@@ -36,33 +36,33 @@ const PostEditPage = () => {
   });
 
   useEffect(() => {
-    if (query.isSuccess) {
-      const post = query.data;
+    if (postQuery.isSuccess) {
+      const postData = postQuery.data;
 
       let cover = undefined;
-      if (post?.cover) {
-        if (isImage(post.cover.mime)) {
+      if (postData.cover) {
+        if (isImage(postData.cover.mime)) {
           cover = {
-            ...post.cover,
+            ...postData.cover,
             fileType: FileTypeNum.Image,
-            uri: fileFullUrl(post.cover),
-            thumbnail: imageFormat(post.cover, 's', 's')?.fullUrl,
-            preview: imageFormat(post.cover, 'l')?.fullUrl,
+            uri: fileFullUrl(postData.cover),
+            thumbnail: imageFormat(postData.cover, 's', 's')?.fullUrl,
+            preview: imageFormat(postData.cover, 'l')?.fullUrl,
           };
         } else {
           cover = {
-            ...post.cover,
+            ...postData.cover,
             fileType: FileTypeNum.Video,
-            uri: fileFullUrl(post.cover),
-            thumbnail: videoThumbnailUrl(post.cover, post.attachmentExtras),
-            preview: fileFullUrl(post.cover),
+            uri: fileFullUrl(postData.cover),
+            thumbnail: videoThumbnailUrl(postData.cover, postData.attachmentExtras),
+            preview: fileFullUrl(postData.cover),
           };
         }
       }
 
       const images = _.map(
         _.filter(
-          post?.attachments || [],
+          postData.attachments || [],
           (item: any) => isImage(item.mime) || isVideo(item.mime),
         ) || [],
         (item: any) => {
@@ -78,14 +78,14 @@ const PostEditPage = () => {
                 ...item,
                 fileType: FileTypeNum.Video,
                 uri: fileFullUrl(item),
-                thumbnail: videoThumbnailUrl(item, post.attachmentExtras),
+                thumbnail: videoThumbnailUrl(item, postData.attachmentExtras),
                 preview: fileFullUrl(item),
               };
         },
       );
 
       const recordings = _.map(
-        _.filter(post?.attachments || [], (item: any) => isAudio(item.mime)),
+        _.filter(postData?.attachments || [], (item: any) => isAudio(item.mime)),
         (item: any) => ({
           id: item.id,
           data: item,
@@ -95,15 +95,15 @@ const PostEditPage = () => {
       );
 
       form.reset({
-        ...post,
-        author: post.author.documentId,
+        ...postData,
+        author: postData.author.documentId,
         cover,
         images,
         recordings,
         status,
       });
     }
-  }, [form, query.data, query.isSuccess, status]);
+  }, [form, postQuery.data, postQuery.isSuccess, status]);
 
   const { setValue, handleSubmit } = form;
 
@@ -185,7 +185,7 @@ const PostEditPage = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      <PostForm mode="edit" form={form} query={query} mutation={mutation} />
+      <PostForm mode="edit" form={form} query={postQuery} mutation={mutation} />
     </SafeAreaView>
   );
 };

@@ -220,7 +220,7 @@ const VideoPage: React.FC<any> = ({
       <GestureDetector gesture={Gesture.Exclusive(doubleTap, tap)}>
         <VideoView
           style={{ width: '100%', height: '100%' }}
-          contentFit="contain"
+          contentFit="cover"
           allowsFullscreen={false}
           nativeControls={false}
           allowsPictureInPicture={false}

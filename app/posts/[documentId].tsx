@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Edit, Ellipsis, MapPin, StickyNote, Trash, Undo2 } from 'lucide-react-native';
-import { ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { deletePost, fetchPost, unpublishPost } from '@/api/post';
 import AlbumPagerView from '@/components/album-pager-view';
 import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
-import { CoverView, ImageList } from '@/components/image-input';
+import { ImageItem, ImageList } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
 import { RecordingList } from '@/components/recording-input';
@@ -36,6 +38,35 @@ import {
   videoThumbnailUrl,
 } from '@/utils/file';
 
+const PostCover = ({ item, onPress }: any) => {
+  return (
+    <View className="h-36 w-full">
+      <TouchableOpacity onPress={onPress}>
+        <View className="items-center justify-center">
+          <Image
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: 6,
+              opacity: 0.7,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            alt={item.cover.alternativeText || item.cover.name}
+            source={item.cover.thumbnail}
+          />
+          {isVideo(item.cover.fileType) && (
+            <View className="absolute">
+              <Ionicons name="play-circle-outline" size={42} className="opacity-50" color="white" />
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 const PostDetail: React.FC = () => {
   const { documentId, status } = useLocalSearchParams();
   const [isPagerOpen, setIsPagerOpen] = useState(false);
@@ -47,11 +78,7 @@ const PostDetail: React.FC = () => {
   const { user } = useAuth();
   const navigation = useNavigation<any>();
 
-  const {
-    isLoading,
-    isSuccess,
-    data: post,
-  } = useQuery({
+  const postQuery = useQuery({
     queryKey: ['posts', 'detail', documentId],
     queryFn: () => fetchPost({ documentId, status }),
   });
@@ -95,60 +122,76 @@ const PostDetail: React.FC = () => {
     },
   });
 
-  let cover = undefined;
-  if (post?.cover) {
-    if (isImage(post.cover.mime)) {
-      cover = {
-        ...post.cover,
-        fileType: FileTypeNum.Image,
-        uri: fileFullUrl(post.cover),
-        thumbnail: imageFormat(post.cover, 's', 's')?.fullUrl,
-        preview: imageFormat(post.cover, 'l')?.fullUrl,
-      };
-    } else {
-      cover = {
-        ...post.cover,
-        fileType: FileTypeNum.Video,
-        uri: fileFullUrl(post.cover),
-        thumbnail: videoThumbnailUrl(post.cover, post.attachmentExtras),
-        preview: fileFullUrl(post.cover),
-      };
+  let post: any;
+
+  if (postQuery.isSuccess) {
+    const postData = postQuery.data;
+
+    let cover = undefined;
+    if (postData.cover) {
+      if (isImage(postData.cover.mime)) {
+        cover = {
+          ...postData.cover,
+          fileType: FileTypeNum.Image,
+          uri: fileFullUrl(postData.cover),
+          thumbnail: imageFormat(postData.cover, 's', 's')?.fullUrl,
+          preview: imageFormat(postData.cover, 'l')?.fullUrl,
+        };
+      } else {
+        cover = {
+          ...postData.cover,
+          fileType: FileTypeNum.Video,
+          uri: fileFullUrl(postData.cover),
+          thumbnail: videoThumbnailUrl(postData.cover, postData.attachmentExtras),
+          preview: fileFullUrl(postData.cover),
+        };
+      }
     }
+
+    const images = _.map(
+      _.filter(
+        postData.attachments || [],
+        (item: any) => isImage(item.mime) || isVideo(item.mime),
+      ) || [],
+      (item: any) => {
+        return isImage(item.mime)
+          ? {
+              ...item,
+              fileType: FileTypeNum.Image,
+              uri: fileFullUrl(item),
+              thumbnail: imageFormat(item, 's', 's')?.fullUrl,
+              preview: imageFormat(item, 'l')?.fullUrl,
+            }
+          : {
+              ...item,
+              fileType: FileTypeNum.Video,
+              uri: fileFullUrl(item),
+              thumbnail: videoThumbnailUrl(item, postData.attachmentExtras),
+              preview: fileFullUrl(item),
+            };
+      },
+    );
+
+    const album = _.concat(cover ? cover : [], images);
+
+    const recordings = _.map(
+      _.filter(postData.attachments || [], (item: any) => isAudio(item.mime)),
+      (item: any) => ({
+        id: item.id,
+        data: item,
+        fileType: FileTypeNum.Audio,
+        uri: fileFullUrl(item),
+      }),
+    );
+
+    post = {
+      ...postData,
+      cover,
+      images,
+      album,
+      recordings,
+    };
   }
-
-  const images = _.map(
-    _.filter(post?.attachments || [], (item: any) => isImage(item.mime) || isVideo(item.mime)) ||
-      [],
-    (item: any) => {
-      return isImage(item.mime)
-        ? {
-            ...item,
-            fileType: FileTypeNum.Image,
-            uri: fileFullUrl(item),
-            thumbnail: imageFormat(item, 's', 's')?.fullUrl,
-            preview: imageFormat(item, 'l')?.fullUrl,
-          }
-        : {
-            ...item,
-            fileType: FileTypeNum.Video,
-            uri: fileFullUrl(item),
-            thumbnail: videoThumbnailUrl(item, post?.attachmentExtras),
-            preview: fileFullUrl(item),
-          };
-    },
-  );
-
-  const album = _.concat(cover ? cover : [], images);
-
-  const recordings = _.map(
-    _.filter(post?.attachments || [], (item: any) => isAudio(item.mime)),
-    (item: any) => ({
-      id: item.id,
-      data: item,
-      fileType: FileTypeNum.Audio,
-      uri: fileFullUrl(item),
-    }),
-  );
 
   const renderHeaderLeft = () => (
     <Button action="secondary" variant="link" onPress={() => router.back()}>
@@ -203,7 +246,7 @@ const PostDetail: React.FC = () => {
   };
 
   const onImagePress = (index: number) => {
-    setPagerIndex(index + (cover ? 1 : 0));
+    setPagerIndex(index + (post.cover ? 1 : 0));
     setIsPagerOpen(true);
   };
 
@@ -217,86 +260,88 @@ const PostDetail: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      <PageSpinner isVisiable={isLoading} />
-      {isSuccess && (
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
-          <VStack className="flex-1 p-4" space="lg">
-            <CoverView value={cover} onPress={onCoverPress} />
-            <HStack className="items-center justify-between" space="xl">
-              <Heading size="lg" className="flex-1">
-                {post.title}
-              </Heading>
-              {status === 'draft' && (
-                <HStack className="items-center" space="xs">
-                  <Icon as={StickyNote} size="sm" />
-                  <Text size="sm" className="text-gray-400">
-                    未发布
-                  </Text>
-                </HStack>
-              )}
-              {user?.documentId === post?.author?.documentId && (
-                <Menu placement="left" trigger={renderTrigger}>
-                  {status === 'draft' ? (
-                    <MenuItem key="Edit" textValue="编辑" onPress={() => onEditBtnPress()}>
-                      <Icon as={Edit} size="xs" className="mr-2" />
-                      <MenuItemLabel size="xs">编辑</MenuItemLabel>
+      <PageSpinner isVisiable={postQuery.isLoading} />
+      {postQuery.isSuccess && (
+        <>
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
+            <VStack className="flex-1 p-4" space="lg">
+              <PostCover item={post} onPress={onCoverPress} />
+              <HStack className="items-center justify-between" space="xl">
+                <Heading size="lg" className="flex-1">
+                  {post.title}
+                </Heading>
+                {status === 'draft' && (
+                  <HStack className="items-center" space="xs">
+                    <Icon as={StickyNote} size="sm" />
+                    <Text size="sm" className="text-gray-400">
+                      未发布
+                    </Text>
+                  </HStack>
+                )}
+                {user?.documentId === post?.author?.documentId && (
+                  <Menu placement="left" trigger={renderTrigger}>
+                    {status === 'draft' ? (
+                      <MenuItem key="Edit" textValue="编辑" onPress={() => onEditBtnPress()}>
+                        <Icon as={Edit} size="xs" className="mr-2" />
+                        <MenuItemLabel size="xs">编辑</MenuItemLabel>
+                      </MenuItem>
+                    ) : (
+                      <MenuItem
+                        key="Unpublish"
+                        textValue="取消发布"
+                        onPress={() => onUnpublishBtnPress()}>
+                        <Icon as={Undo2} size="xs" className="mr-2" />
+                        <MenuItemLabel size="xs">取消发布</MenuItemLabel>
+                      </MenuItem>
+                    )}
+                    <MenuSeparator />
+                    <MenuItem key="Delete" textValue="删除" onPress={() => onDeleteBtnPress()}>
+                      <Icon as={Trash} size="xs" className="mr-2" />
+                      <MenuItemLabel size="xs">删除</MenuItemLabel>
                     </MenuItem>
-                  ) : (
-                    <MenuItem
-                      key="Unpublish"
-                      textValue="取消发布"
-                      onPress={() => onUnpublishBtnPress()}>
-                      <Icon as={Undo2} size="xs" className="mr-2" />
-                      <MenuItemLabel size="xs">取消发布</MenuItemLabel>
-                    </MenuItem>
-                  )}
-                  <MenuSeparator />
-                  <MenuItem key="Delete" textValue="删除" onPress={() => onDeleteBtnPress()}>
-                    <Icon as={Trash} size="xs" className="mr-2" />
-                    <MenuItemLabel size="xs">删除</MenuItemLabel>
-                  </MenuItem>
-                </Menu>
-              )}
-            </HStack>
-            <HStack className="items-center justify-between">
-              <Text size="xs">{formatDistance(post?.createdAt)}</Text>
-              {post.poi?.address && (
-                <HStack className="items-center">
-                  <Icon as={MapPin} size="xs" />
-                  <Text size="xs" className="flex-wrap">
-                    {post.poi.address}
-                  </Text>
+                  </Menu>
+                )}
+              </HStack>
+              <HStack className="items-center justify-between">
+                <Text size="xs">{formatDistance(post?.createdAt)}</Text>
+                {post.poi?.address && (
+                  <HStack className="items-center">
+                    <Icon as={MapPin} size="xs" />
+                    <Text size="xs" className="flex-wrap">
+                      {post.poi.address}
+                    </Text>
+                  </HStack>
+                )}
+              </HStack>
+              <HStack className="items-center justify-between">
+                <UserAvatar user={post.author} />
+                <HStack space="md" className="items-center justify-end">
+                  <LikeButton post={post} />
+                  <CommentIcon item={post} />
                 </HStack>
-              )}
-            </HStack>
-            <HStack className="items-center justify-between">
-              <UserAvatar user={post.author} />
-              <HStack space="md" className="items-center justify-end">
-                <LikeButton post={post} />
-                <CommentIcon item={post} />
               </HStack>
-            </HStack>
-            <TagList value={post.tags} readonly={true} />
-            <ImageList value={images} onPress={onImagePress} />
-            <RecordingList value={recordings} readonly={true} />
-            <Divider />
-            <Text size="lg">{post.content}</Text>
-            <Divider />
-            <HStack className="items-center justify-end">
-              <HStack space="md" className="items-center justify-end">
-                <LikeButton post={post} />
-                <CommentIcon item={post} />
+              <TagList value={post.tags} readonly={true} />
+              <ImageList value={post.images} onPress={onImagePress} />
+              <RecordingList value={post.recordings} readonly={true} />
+              <Divider />
+              <Text size="lg">{post.content}</Text>
+              <Divider />
+              <HStack className="items-center justify-end">
+                <HStack space="md" className="items-center justify-end">
+                  <LikeButton post={post} />
+                  <CommentIcon item={post} />
+                </HStack>
               </HStack>
-            </HStack>
-          </VStack>
-        </ScrollView>
+            </VStack>
+          </ScrollView>
+          <AlbumPagerView
+            initIndex={pagerIndex}
+            value={post.album}
+            isOpen={isPagerOpen}
+            onClose={onPagerClose}
+          />
+        </>
       )}
-      <AlbumPagerView
-        initIndex={pagerIndex}
-        value={album}
-        isOpen={isPagerOpen}
-        onClose={onPagerClose}
-      />
     </SafeAreaView>
   );
 };

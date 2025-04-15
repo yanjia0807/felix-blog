@@ -1,12 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { MasonryFlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useEvent, useEventListener } from 'expo';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import _ from 'lodash';
 import { Pressable, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { fetchClzPosts } from '@/api';
@@ -25,33 +23,8 @@ import { fileFullUrl, FileTypeNum, imageFormat, isImage, videoThumbnailUrl } fro
 const CONTAINER_PADDING = 14;
 const ITEM_SPACING = 14;
 
-interface ExploreMasonryListProps {
-  data: any[];
-  currentPlayingId: string | null;
-  setCurrentPlayingId: React.Dispatch<React.SetStateAction<string | null>>;
-}
-
-const ExploreMasonryList: React.FC<ExploreMasonryListProps> = ({
-  data,
-  currentPlayingId,
-  setCurrentPlayingId,
-}) => {
+const ExploreMasonryList: React.FC<any> = ({ data, segments, selectedIndex, setSelectedIndex }) => {
   const [{ height, measured }, onLayout] = useLayout();
-  const currentPlayingIdRef = useRef(currentPlayingId);
-
-  const viewabilityConfig = {
-    itemVisiblePercentThreshold: 50,
-    minimumViewTime: 500,
-    waitForInteraction: false,
-  };
-
-  const onViewableItemsChanged = ({ changed }: any) => {
-    _.forEach(changed, (changedItem: any) => {
-      if (!changedItem.isViewable && changedItem.item.id === currentPlayingIdRef.current) {
-        setCurrentPlayingId(null);
-      }
-    });
-  };
 
   const renderEmptyComponent = (props: any) => {
     if (!measured) return null;
@@ -62,28 +35,24 @@ const ExploreMasonryList: React.FC<ExploreMasonryListProps> = ({
     );
   };
 
-  const renderListItem = (props: any) => (
-    <ExploreItem
+  const renderListItem = (props: any) => <ExploreItem {...props} />;
+
+  const renderHeaderComponent = (props: any) => (
+    <ExploreHeader
       {...props}
-      currentPlayingId={currentPlayingId}
-      setCurrentPlayingId={setCurrentPlayingId}
+      segments={segments}
+      selectedIndex={selectedIndex}
+      setSelectedIndex={setSelectedIndex}
     />
   );
 
-  useEffect(() => {
-    currentPlayingIdRef.current = currentPlayingId;
-  }, [currentPlayingId]);
-
   return (
     <MasonryFlashList
-      keyExtractor={(item) => item.id}
+      ListHeaderComponent={renderHeaderComponent}
       ListEmptyComponent={renderEmptyComponent}
-      viewabilityConfig={viewabilityConfig}
-      onViewableItemsChanged={onViewableItemsChanged}
       onLayout={(e) => {
         if (!measured) onLayout(e);
       }}
-      extraData={currentPlayingId}
       data={data}
       numColumns={2}
       removeClippedSubviews={true}
@@ -94,12 +63,7 @@ const ExploreMasonryList: React.FC<ExploreMasonryListProps> = ({
   );
 };
 
-const ExploreItem: React.FC<any> = ({
-  item,
-  columnIndex,
-  currentPlayingId,
-  setCurrentPlayingId,
-}) => {
+const ExploreItem: React.FC<any> = ({ item, columnIndex }) => {
   const router = useRouter();
   return (
     <Pressable onPress={() => router.push(`/posts/${item.documentId}`)}>
@@ -111,16 +75,7 @@ const ExploreItem: React.FC<any> = ({
           marginRight: columnIndex === 1 ? 0 : 7,
         }}>
         <View className="flex-1 items-center justify-end">
-          {isImage(item.cover.mime) ? (
-            <ImageItem data={item.cover} />
-          ) : (
-            <VideoItem
-              id={item.id}
-              data={item.cover}
-              currentPlayingId={currentPlayingId}
-              setCurrentPlayingId={setCurrentPlayingId}
-            />
-          )}
+          {isImage(item.cover.mime) ? <ImageCover item={item} /> : <VideoCover item={item} />}
           <HStack className="absolute z-20 w-full items-center justify-between px-2">
             <LikeButton post={item} />
             <UserAvatars users={item.likedByUsers} />
@@ -139,91 +94,49 @@ const ExploreItem: React.FC<any> = ({
   );
 };
 
-const ImageItem: React.FC<any> = ({ data }) => {
+const ImageCover: React.FC<any> = ({ item }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const format = imageFormat(data, 'l', 's');
-  const actualRatio = format.height / format.width;
-  const imageWidth = (screenWidth - CONTAINER_PADDING * 2 - ITEM_SPACING) / 2;
-  const imageHeight = Math.min(Math.max(imageWidth * actualRatio, 220), 280);
-  const uri = format.fullUrl;
+  const format = imageFormat(item.cover, 'l', 's');
+  const aspectRadio = format.width / format.height;
+  const width = (screenWidth - CONTAINER_PADDING * 2 - ITEM_SPACING) / 2;
+  const height = Math.min(Math.max(width / aspectRadio, (width / 3) * 4), (width / 9) * 16);
 
   return (
     <Image
       source={{
-        uri,
+        uri: item.cover.thumbnail,
       }}
       contentFit="cover"
       style={{
-        width: imageWidth,
-        height: imageHeight,
+        width,
+        height,
         borderRadius: 6,
       }}
     />
   );
 };
 
-const VideoItem: React.FC<any> = ({ id, data, currentPlayingId, setCurrentPlayingId }) => {
-  const [isPlayToEnd, setIsPlayToEnd] = useState(false);
+const VideoCover: React.FC<any> = ({ item }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const itemWidth = (screenWidth - CONTAINER_PADDING * 2 - ITEM_SPACING) / 2;
-  const itemHeight = (itemWidth / 9) * 16;
-  const player = useVideoPlayer(data.uri, (player) => {
-    player.muted = true;
-    player.loop = false;
-    player.bufferOptions = {
-      minBufferForPlayback: 0,
-      preferredForwardBufferDuration: 5,
-      maxBufferBytes: 0,
-      prioritizeTimeOverSizeThreshold: false,
-      waitsToMinimizeStalling: true,
-    };
-  });
-
-  const { isPlaying } = useEvent(player, 'playingChange', {
-    isPlaying: player.playing,
-  });
-
-  useEventListener(player, 'playToEnd', () => {
-    setIsPlayToEnd(true);
-    setCurrentPlayingId(null);
-  });
-
-  const togglePlay = () => {
-    if (isPlaying && !isPlayToEnd) {
-      player.pause();
-      setCurrentPlayingId(null);
-    } else {
-      if (isPlayToEnd) {
-        setIsPlayToEnd(false);
-        player.replay();
-      }
-      player.play();
-      setCurrentPlayingId(id);
-    }
-  };
-
-  useEffect(() => {
-    if (currentPlayingId !== id) {
-      player.pause();
-    }
-  }, [currentPlayingId, id, player]);
+  const width = (screenWidth - CONTAINER_PADDING * 2 - ITEM_SPACING) / 2;
+  const height = (width / 9) * 16;
 
   return (
     <View className="flex-1 items-center justify-center">
-      <VideoView
+      <Image
+        source={{
+          uri: item.cover.thumbnail,
+        }}
         contentFit="cover"
-        nativeControls={false}
-        player={player}
-        style={{ width: itemWidth, height: itemHeight, borderRadius: 6 }}
+        style={{
+          width,
+          height,
+          borderRadius: 6,
+        }}
       />
-      <TouchableOpacity onPress={togglePlay} className="absolute">
-        <Ionicons
-          name={isPlaying ? 'pause-circle-outline' : 'play-circle-outline'}
-          size={42}
-          className="opacity-70"
-          color="white"
-        />
-      </TouchableOpacity>
+      <View className="absolute">
+        <Ionicons name="play-circle-outline" size={42} className="opacity-50" color="white" />
+      </View>
     </View>
   );
 };
@@ -244,7 +157,7 @@ const ExploreHeader: React.FC<any> = ({ segments, selectedIndex, setSelectedInde
 
 const ExplorePage: React.FC<any> = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
+
   const segments = [
     {
       key: 'trending',
@@ -320,22 +233,14 @@ const ExplorePage: React.FC<any> = () => {
       )
     : [];
 
-  useEffect(() => {
-    return () => setCurrentPlayingId(null);
-  }, [selectedIndex]);
-
   return (
     <SafeAreaView className="flex-1">
       <VStack className="flex-1 px-4">
-        <ExploreHeader
+        <ExploreMasonryList
+          data={posts}
           segments={segments}
           selectedIndex={selectedIndex}
           setSelectedIndex={setSelectedIndex}
-        />
-        <ExploreMasonryList
-          data={posts}
-          currentPlayingId={currentPlayingId}
-          setCurrentPlayingId={setCurrentPlayingId}
         />
       </VStack>
     </SafeAreaView>

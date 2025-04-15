@@ -117,7 +117,7 @@ export const createVideoThumbnail = async (url: string) => {
     const image = await (
       await ImageManipulator.manipulate(thumbnail).renderAsync()
     ).saveAsync({
-      compress: 0.8,
+      compress: 1,
     });
     return image;
   }
