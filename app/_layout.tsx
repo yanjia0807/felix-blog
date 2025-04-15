@@ -9,6 +9,7 @@ import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
+import { AutocompleteDropdownContextProvider } from 'react-native-autocomplete-dropdown';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider } from '@/components/auth-provider';
@@ -38,7 +39,7 @@ export default function RootLayout() {
   // console.log(state);
 
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require('../assets/fonts/MaShanZheng-Regular.ttf'),
   });
 
   useEffect(() => {
@@ -84,12 +85,14 @@ export default function RootLayout() {
               <GluestackUIProvider mode={theme}>
                 <AuthProvider>
                   <BottomSheetModalProvider>
-                    <SocketProvider>
-                      <StatusBar style="auto" />
-                      <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
-                      </Stack>
-                    </SocketProvider>
+                    <AutocompleteDropdownContextProvider>
+                      <SocketProvider>
+                        <StatusBar style="auto" />
+                        <Stack screenOptions={{ headerShown: false }}>
+                          <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
+                        </Stack>
+                      </SocketProvider>
+                    </AutocompleteDropdownContextProvider>
                   </BottomSheetModalProvider>
                   <StatusBar style="auto" />
                 </AuthProvider>

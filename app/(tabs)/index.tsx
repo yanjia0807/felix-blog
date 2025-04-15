@@ -1,4 +1,5 @@
-import React, { memo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -7,14 +8,22 @@ import {
 } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import { format } from 'date-fns';
+import { useEvent, useEventListener } from 'expo';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
-import { FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { Drawer } from 'react-native-drawer-layout';
-import { fetchBanners, fetchPosts, fetchTags } from '@/api';
+import { fetchBanners, fetchPosts, fetchAllTags } from '@/api';
 import AlbumPagerView from '@/components/album-pager-view';
 import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
@@ -30,9 +39,9 @@ import {
   usePostFilterContext,
 } from '@/components/post-filter';
 import PostItemMenu from '@/components/post-menu-popover';
+import { usePreferences } from '@/components/preferences-provider';
 import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
@@ -40,6 +49,7 @@ import { Fab, FabIcon, FabLabel } from '@/components/ui/fab';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
@@ -50,30 +60,37 @@ import {
   FileTypeNum,
   isImage,
   isVideo,
-  largeSize,
-  originSize,
-  thumbnailSize,
-  videoThumbnail,
+  imageFormat,
+  fileFullUrl,
+  videoThumbnailUrl,
 } from '@/utils/file';
 
+const CONTAINER_PADDING = 14;
+const CARD_PADDING = 10.5;
+
 interface HomeHeaderProps {
-  bannerQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
-  tagQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
+  bannersQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
+  tagsQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
 }
 
-const HomeHeader: React.FC<HomeHeaderProps> = ({ bannerQuery, tagQuery }) => {
+const HomeHeader: React.FC<HomeHeaderProps> = ({ bannersQuery, tagsQuery }) => {
   const router = useRouter();
+  const { theme } = usePreferences();
 
-  const banners: any = bannerQuery.isLoading
+  const banners: any = bannersQuery.isLoading
     ? Array(2).fill(undefined)
-    : bannerQuery.isSuccess
-      ? _.reduce(bannerQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
+    : bannersQuery.isSuccess
+      ? _.reduce(
+          bannersQuery.data?.pages,
+          (result: any, item: any) => [...result, ...item.data],
+          [],
+        )
       : [];
 
-  const tags: any = tagQuery.isLoading
+  const tags: any = tagsQuery.isLoading
     ? Array(2).fill(undefined)
-    : tagQuery.isSuccess
-      ? tagQuery.data
+    : tagsQuery.isSuccess
+      ? tagsQuery.data
       : [];
 
   const onBannerItemPress = ({ item }: any) => {
@@ -85,23 +102,23 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ bannerQuery, tagQuery }) => {
   };
 
   const renderBannerItem = ({ item, index }: any) => (
-    <Box className={`ml-4 h-48 w-80 ${index === 0 ? 'ml-0' : ''}`}>
-      <Skeleton isLoaded={!bannerQuery.isLoading} variant="rounded">
+    <View className={`ml-4 h-48 w-80 ${index === 0 ? 'ml-0' : ''}`}>
+      <Skeleton isLoaded={!bannersQuery.isLoading} variant="rounded">
         {item && (
           <TouchableOpacity onPress={() => onBannerItemPress({ item })}>
             <Image
               recyclingKey={item.assetId}
               source={{
-                uri: largeSize(item.image),
+                uri: imageFormat(item.image, 'l')?.fullUrl,
               }}
               style={{
                 width: '100%',
                 height: '100%',
-                borderRadius: 8,
+                borderRadius: 6,
               }}
             />
-            <Box className="absolute bottom-0 z-10 w-full overflow-hidden rounded-md">
-              <BlurView intensity={10} tint="light">
+            <View className="absolute bottom-0 z-10 w-full overflow-hidden rounded-md">
+              <BlurView intensity={10} tint={theme === 'light' ? 'light' : 'dark'}>
                 <VStack space="md" className="p-2">
                   <Text size="lg" bold={true} className="text-white" numberOfLines={2}>
                     {item.title}
@@ -115,7 +132,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ bannerQuery, tagQuery }) => {
                         <AvatarFallbackText>{item.author.username}</AvatarFallbackText>
                         <AvatarImage
                           source={{
-                            uri: thumbnailSize(item.author.avatar),
+                            uri: imageFormat(item.author, 's', 't')?.fullUrl,
                           }}
                         />
                       </Avatar>
@@ -126,14 +143,14 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ bannerQuery, tagQuery }) => {
                   </HStack>
                 </VStack>
               </BlurView>
-            </Box>
+            </View>
           </TouchableOpacity>
         )}
       </Skeleton>
-    </Box>
+    </View>
   );
 
-  const renderTagItem = ({ item }: any) => <TagItem item={item} isLoaded={!tagQuery.isLoading} />;
+  const renderTagItem = ({ item }: any) => <TagItem item={item} isLoaded={!tagsQuery.isLoading} />;
 
   return (
     <VStack space="xl">
@@ -144,12 +161,11 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ bannerQuery, tagQuery }) => {
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         onEndReached={() => {
-          if (bannerQuery.hasNextPage && !bannerQuery.isFetchingNextPage) {
-            bannerQuery.fetchNextPage();
+          if (bannersQuery.hasNextPage && !bannersQuery.isFetchingNextPage) {
+            bannersQuery.fetchNextPage();
           }
         }}
       />
-
       <HStack className="items-center justify-between" space="md">
         <FlatList
           data={tags}
@@ -167,7 +183,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ bannerQuery, tagQuery }) => {
   );
 };
 
-const TagItem = ({ item, isLoaded }: any) => {
+const TagItem: React.FC<any> = ({ item, isLoaded }) => {
   const { filters, selectTag } = usePostFilterContext();
 
   return (
@@ -187,160 +203,236 @@ const TagItem = ({ item, isLoaded }: any) => {
   );
 };
 
-const PostItem: React.FC<any> = memo(
-  ({ post, index, isLoaded, setIsPagerOpen, setPagerIndex, setAblum }) => {
-    const router = useRouter();
-    const cover = post?.cover && {
-      id: post.cover.id,
-      data: post.cover,
-      fileType: FileTypeNum.Image,
-      uri: largeSize(post.cover),
-      preview: largeSize(post.cover),
+const CommentItem: React.FC<any> = ({ item }) => {
+  return (
+    <>
+      <HStack space="xs" className="items-center">
+        <Text className="flex-1" size="sm" numberOfLines={3}>
+          {item.content}
+        </Text>
+      </HStack>
+      <HStack className="items-center justify-end" space="md">
+        <HStack className="items-center" space="xs">
+          <HStack className="items-center" space="xs">
+            <Avatar size="xs">
+              <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
+              <AvatarImage
+                source={{
+                  uri: imageFormat(item.user.avatar, 's', 't')?.fullUrl,
+                }}
+              />
+            </Avatar>
+            <Text size="sm">{item.user.username}</Text>
+          </HStack>
+          <Text size="xs">{formatDistance(item.createdAt)}</Text>
+        </HStack>
+      </HStack>
+    </>
+  );
+};
+
+const ImageItem: React.FC<any> = ({ data }) => {
+  const { width: screenWidth } = useWindowDimensions();
+
+  const format = imageFormat(data, 'l', 's');
+  const actualRatio = format.height / format.width;
+  const imageWidth = screenWidth - CONTAINER_PADDING * 2 - CARD_PADDING * 2;
+  const imageHeight = Math.min(Math.max(imageWidth * actualRatio, 220), 280);
+  const uri = format.fullUrl;
+
+  return (
+    <Image
+      source={{
+        uri,
+      }}
+      contentFit="cover"
+      style={{
+        width: imageWidth,
+        height: imageHeight,
+        borderRadius: 6,
+      }}
+    />
+  );
+};
+
+const VideoItem: React.FC<any> = ({ id, data, currentPlayingId, setCurrentPlayingId }) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const [isPlayToEnd, setIsPlayToEnd] = useState(false);
+  const itemWidth = screenWidth - CONTAINER_PADDING * 2 - CARD_PADDING * 2;
+  const itemHeight = (itemWidth / 16) * 9;
+
+  const player = useVideoPlayer(data.uri, (player) => {
+    player.muted = true;
+    player.loop = false;
+    player.bufferOptions = {
+      minBufferForPlayback: 0,
+      preferredForwardBufferDuration: 5,
+      maxBufferBytes: 0,
+      prioritizeTimeOverSizeThreshold: false,
+      waitsToMinimizeStalling: true,
     };
+  });
 
-    const images = _.map(
-      _.filter(post?.attachments || [], (item: any) => isImage(item.mime) || isVideo(item.mime)) ||
-        [],
-      (item: any) => {
-        return isImage(item.mime)
-          ? {
-              id: item.id,
-              data: item,
-              fileType: FileTypeNum.Image,
-              uri: thumbnailSize(item),
-              preview: largeSize(item),
-            }
-          : {
-              id: item.id,
-              data: item,
-              fileType: FileTypeNum.Video,
-              uri: thumbnailSize(item),
-              thumbnail: videoThumbnail(item, post?.attachmentExtras),
-              preview: originSize(item),
-            };
-      },
-    );
+  const { isPlaying } = useEvent(player, 'playingChange', {
+    isPlaying: player.playing,
+  });
 
-    const album = _.concat(cover ? cover : [], images);
+  useEventListener(player, 'playToEnd', () => {
+    setIsPlayToEnd(true);
+    setCurrentPlayingId(null);
+  });
 
-    const onPostItemPressed = ({ item }: any) => router.push(`/posts/${post.documentId}`);
+  const togglePlay = () => {
+    if (isPlaying && !isPlayToEnd) {
+      player.pause();
+      setCurrentPlayingId(null);
+    } else {
+      if (isPlayToEnd) {
+        setIsPlayToEnd(false);
+        player.replay();
+      }
+      player.play();
+      setCurrentPlayingId(id);
+    }
+  };
 
-    const onCoverPress = () => {
-      setAblum(album);
-      setPagerIndex(0);
-      setIsPagerOpen(true);
-    };
+  useEffect(() => {
+    if (currentPlayingId !== id) {
+      player.pause();
+    }
+  }, [currentPlayingId, id, player]);
 
-    const onImagePress = (index: number) => {
-      setAblum(album);
-      setPagerIndex(index + (cover ? 1 : 0));
-      setIsPagerOpen(true);
-    };
+  return (
+    <View className="flex-1 items-center justify-center">
+      <VideoView
+        contentFit="cover"
+        nativeControls={false}
+        player={player}
+        style={{ width: itemWidth, height: itemHeight, borderRadius: 6 }}
+      />
+      <TouchableOpacity onPress={togglePlay} className="absolute">
+        <Ionicons
+          name={isPlaying ? 'pause-circle-outline' : 'play-circle-outline'}
+          size={42}
+          className="opacity-70"
+          color="white"
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
-    return (
-      <View className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
-        <Skeleton variant="rounded" isLoaded={isLoaded}>
-          {post && (
-            <TouchableOpacity onPress={() => onPostItemPressed({ post, index })}>
-              <Card variant="elevated" size="sm">
-                <VStack space="lg">
-                  <VStack space="sm">
-                    <HStack className="items-center justify-between">
-                      <UserAvatar user={post.author} />
-                      <PostItemMenu post={post} />
-                    </HStack>
-                    <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
-                      {post.title}
-                    </Heading>
-                    <HStack className="items-center justify-between">
-                      <Text size="xs">{formatDistance(post.createdAt)}</Text>
-                      <HStack space="xs" className="w-1/2 items-center justify-end">
-                        {post.poi?.address && (
-                          <HStack className="items-center">
-                            <Icon as={MapPin} size="xs" />
-                            <Text size="xs" numberOfLines={1}>
-                              {post.poi.address}
-                            </Text>
-                          </HStack>
-                        )}
-                      </HStack>
-                    </HStack>
-                    <TagList tags={post.tags || []}></TagList>
-                  </VStack>
-                  {cover && (
-                    <TouchableOpacity className="h-36 flex-1" onPress={onCoverPress}>
-                      <Image
-                        source={{
-                          uri: cover.uri,
-                        }}
-                        contentFit="cover"
-                        alt={''}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          borderRadius: 8,
-                        }}
-                      />
-                    </TouchableOpacity>
-                  )}
-                  <Text numberOfLines={5}>{post.content}</Text>
-                  <ImageList value={images} onPress={onImagePress} />
-                  <HStack className="h-6 items-center justify-between">
-                    <LikeButton post={post} />
-                    <UserAvatars users={post.likedByUsers} />
+export const PostItem: React.FC<any> = ({
+  item,
+  index,
+  setIsPagerOpen,
+  setPagerIndex,
+  setAblum,
+  currentPlayingId,
+  setCurrentPlayingId,
+}) => {
+  const router = useRouter();
+
+  const onPostItemPressed = ({ item }: any) => router.push(`/posts/${item.documentId}`);
+
+  const onCoverPress = () => {
+    setAblum(item.album);
+    setPagerIndex(0);
+    setIsPagerOpen(true);
+  };
+
+  const onImagePress = (index: number) => {
+    setAblum(item.album);
+    setPagerIndex(index + (item.cover ? 1 : 0));
+    setIsPagerOpen(true);
+  };
+
+  return (
+    <Pressable onPress={() => onPostItemPressed({ item, index })}>
+      <Card size="sm" className={`mt-6 rounded-lg ${index === 0 ? 'mt-0' : ''}`}>
+        <VStack space="lg">
+          <VStack space="sm">
+            <HStack className="items-center justify-between">
+              <UserAvatar user={item.author} />
+              <PostItemMenu post={item} />
+            </HStack>
+            <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
+              {item.title}
+            </Heading>
+            <HStack className="items-center justify-between">
+              <Text size="xs">{formatDistance(item.createdAt)}</Text>
+              <HStack space="xs" className="w-1/2 items-center justify-end">
+                {item.poi?.address && (
+                  <HStack className="items-center">
+                    <Icon as={MapPin} size="xs" />
+                    <Text size="xs" numberOfLines={1}>
+                      {item.poi.address}
+                    </Text>
                   </HStack>
-                  <VStack space="sm">
-                    <HStack className="items-center justify-end">
-                      <CommentIcon item={post} />
-                    </HStack>
-                    {post.lastComment && (
-                      <>
-                        <HStack space="xs" className="items-center">
-                          <Text className="flex-1" size="sm" numberOfLines={3}>
-                            {post.lastComment.content}
-                          </Text>
-                        </HStack>
-                        <HStack className="items-center justify-end" space="md">
-                          <HStack className="items-center" space="xs">
-                            <HStack className="items-center" space="xs">
-                              <Avatar size="xs">
-                                <AvatarFallbackText>
-                                  {post.lastComment.user.username}
-                                </AvatarFallbackText>
-                                <AvatarImage
-                                  source={{
-                                    uri: thumbnailSize(post.lastComment.user.avatar),
-                                  }}
-                                />
-                              </Avatar>
-                              <Text size="sm">{post.lastComment.user.username}</Text>
-                            </HStack>
-                            <Text size="xs">{formatDistance(post.lastComment.createdAt)}</Text>
-                          </HStack>
-                        </HStack>
-                      </>
-                    )}
-                  </VStack>
-                </VStack>
-              </Card>
+                )}
+              </HStack>
+            </HStack>
+            <TagList tags={item.tags || []}></TagList>
+          </VStack>
+          {item.cover && (
+            <TouchableOpacity onPress={onCoverPress}>
+              {isImage(item.cover.mime) ? (
+                <ImageItem data={item.cover} />
+              ) : (
+                <VideoItem
+                  id={item.id}
+                  data={item.cover}
+                  currentPlayingId={currentPlayingId}
+                  setCurrentPlayingId={setCurrentPlayingId}
+                />
+              )}
             </TouchableOpacity>
           )}
-        </Skeleton>
-      </View>
-    );
-  },
-);
+          <Text numberOfLines={5}>{item.content}</Text>
+          <ImageList value={item.mediaList} onPress={onImagePress} />
+          <HStack className="h-6 items-center justify-between">
+            <LikeButton post={item} />
+            <UserAvatars users={item.likedByUsers} />
+          </HStack>
+          <VStack space="sm">
+            <HStack className="items-center justify-end">
+              <CommentIcon item={item} />
+            </HStack>
+            {item.lastComment && <CommentItem item={item.lastComment} />}
+          </VStack>
+        </VStack>
+      </Card>
+    </Pressable>
+  );
+};
 
-const PostList: React.FC = () => {
+const PostList: React.FC<any> = () => {
   const { filters } = usePostFilterContext();
   const [isPagerOpen, setIsPagerOpen] = useState(false);
   const [pagerIndex, setPagerIndex] = useState<number>(0);
+  const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
   const [album, setAblum] = useState<any>([]);
   const router = useRouter();
   const { user } = useAuth();
+  const currentPlayingIdRef = useRef(currentPlayingId);
+
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 50,
+    minimumViewTime: 500,
+    waitForInteraction: false,
+  };
+
+  const onViewableItemsChanged = ({ changed }: any) => {
+    _.forEach(changed, (changedItem: any) => {
+      if (!changedItem.isViewable && changedItem.item.id === currentPlayingIdRef.current) {
+        setCurrentPlayingId(null);
+      }
+    });
+  };
+
   const onPagerClose = () => setIsPagerOpen(false);
 
-  const postQuery = useInfiniteQuery({
+  const postsQuery = useInfiniteQuery({
     queryKey: ['posts', 'list', filters],
     queryFn: fetchPosts,
     initialPageParam: {
@@ -368,7 +460,7 @@ const PostList: React.FC = () => {
     },
   });
 
-  const bannerQuery = useInfiniteQuery({
+  const bannersQuery = useInfiniteQuery({
     queryKey: ['banners', 'list'],
     queryFn: fetchBanners,
     initialPageParam: {
@@ -394,29 +486,87 @@ const PostList: React.FC = () => {
     },
   });
 
-  const tagQuery = useQuery({
+  const tagsQuery = useQuery({
     queryKey: ['tags', 'list'],
-    queryFn: fetchTags,
+    queryFn: fetchAllTags,
   });
 
-  const posts: any = postQuery.isLoading
-    ? Array(2).fill(undefined)
-    : postQuery.isSuccess
-      ? _.reduce(postQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
-      : [];
+  const posts: any = postsQuery.isSuccess
+    ? _.reduce(
+        postsQuery.data?.pages,
+        (result: any, page: any) => [
+          ...result,
+          ...page.data.map((item: any) => {
+            const cover = !item.cover
+              ? undefined
+              : isImage(item.cover.mime)
+                ? {
+                    ...item.cover,
+                    fileType: FileTypeNum.Image,
+                    uri: fileFullUrl(item.cover),
+                    thumbnail: imageFormat(item.cover, 's', 's')?.fullUrl,
+                    preview: imageFormat(item.cover, 'l')?.fullUrl,
+                  }
+                : {
+                    ...item.cover,
+                    fileType: FileTypeNum.Video,
+                    uri: fileFullUrl(item.cover),
+                    thumbnail: videoThumbnailUrl(item.cover, item.attachmentExtras),
+                    preview: fileFullUrl(item.cover),
+                  };
+
+            const mediaList = _.map(
+              _.filter(
+                item.attachments || [],
+                (item: any) => isImage(item.mime) || isVideo(item.mime),
+              ),
+              (image: any) => {
+                return isImage(image.mime)
+                  ? {
+                      ...image,
+                      fileType: FileTypeNum.Image,
+                      uri: fileFullUrl(image),
+                      thumbnail: imageFormat(image, 's', 's')?.fullUrl,
+                      preview: imageFormat(image, 'l')?.fullUrl,
+                    }
+                  : {
+                      ...image,
+                      fileType: FileTypeNum.Video,
+                      uri: fileFullUrl(image),
+                      thumbnail: videoThumbnailUrl(image, item.attachmentExtras),
+                      preview: fileFullUrl(image),
+                    };
+              },
+            );
+
+            const album = _.concat(cover ? cover : [], mediaList);
+
+            return {
+              ...item,
+              cover,
+              mediaList,
+              album,
+            };
+          }),
+        ],
+        [],
+      )
+    : [];
 
   const renderListHeader = (props: any) => (
-    <HomeHeader bannerQuery={bannerQuery} tagQuery={tagQuery} {...props}></HomeHeader>
+    <HomeHeader bannersQuery={bannersQuery} tagsQuery={tagsQuery} {...props}></HomeHeader>
   );
 
   const renderListItem = ({ item, index }: any) => (
     <PostItem
-      post={item}
+      item={item}
       index={index}
-      isLoaded={!postQuery.isLoading}
+      isLoaded={!postsQuery.isLoading}
       setIsPagerOpen={setIsPagerOpen}
       setPagerIndex={setPagerIndex}
       setAblum={setAblum}
+      setCurrentPlayingId={setCurrentPlayingId}
+      currentPlayingId={currentPlayingId}
     />
   );
 
@@ -426,13 +576,17 @@ const PostList: React.FC = () => {
     </View>
   );
 
-  const isLoading = postQuery.isLoading || bannerQuery.isLoading || tagQuery.isLoading;
+  const isLoading = postsQuery.isLoading || bannersQuery.isLoading || tagsQuery.isLoading;
 
   const refetchAll = () => {
-    postQuery.refetch();
-    bannerQuery.refetch();
-    tagQuery.refetch();
+    postsQuery.refetch();
+    bannersQuery.refetch();
+    tagsQuery.refetch();
   };
+
+  useEffect(() => {
+    currentPlayingIdRef.current = currentPlayingId;
+  }, [currentPlayingId]);
 
   return (
     <SafeAreaView className="flex-1">
@@ -444,13 +598,17 @@ const PostList: React.FC = () => {
           ListHeaderComponent={renderListHeader}
           ListEmptyComponent={renderEmptyComponent}
           renderItem={renderListItem}
+          viewabilityConfig={viewabilityConfig}
+          onViewableItemsChanged={onViewableItemsChanged}
+          extraData={currentPlayingId}
           showsVerticalScrollIndicator={false}
           onEndReached={() => {
-            if (postQuery.hasNextPage && !postQuery.isFetchingNextPage) postQuery.fetchNextPage();
+            if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage)
+              postsQuery.fetchNextPage();
           }}
           refreshControl={
             <RefreshControl
-              refreshing={postQuery.isLoading}
+              refreshing={postsQuery.isLoading}
               onRefresh={() => {
                 refetchAll();
               }}
@@ -474,7 +632,7 @@ const PostList: React.FC = () => {
   );
 };
 
-const PostDrawer: React.FC = () => {
+const PostDrawer: React.FC<any> = () => {
   const { isDrawerOpen, setIsDrawerOpen } = usePostFilterContext();
   const renderDrawerContent = () => <PostFilterContent />;
 
@@ -489,9 +647,8 @@ const PostDrawer: React.FC = () => {
   );
 };
 
-const HomePage: React.FC = () => {
+const HomePage: React.FC<any> = () => {
   console.log('@render HomePage');
-
   return (
     <PostFilterProvider>
       <CommentProvider>

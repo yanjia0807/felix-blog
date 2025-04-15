@@ -25,7 +25,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
-import { thumbnailSize } from '@/utils/file';
+import { imageFormat } from '@/utils/file';
 
 type MessageFormSchema = z.infer<typeof messageFormSchema>;
 
@@ -211,7 +211,7 @@ const ChatPage: React.FC = () => {
           <HStack className="items-center" space="sm">
             <Avatar size="md">
               <AvatarFallbackText>{otherUser?.username}</AvatarFallbackText>
-              <AvatarImage source={{ uri: thumbnailSize(otherUser?.avatar) }} />
+              <AvatarImage source={{ uri: imageFormat(otherUser.avatar, 's', 't')?.fullUrl }} />
             </Avatar>
             <VStack>
               <Heading size="sm" bold={true}>
@@ -252,7 +252,7 @@ const ChatPage: React.FC = () => {
           <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
           <AvatarImage
             source={{
-              uri: thumbnailSize(otherUser.avatar),
+              uri: imageFormat(otherUser.avatar, 's', 't')?.fullUrl,
             }}
           />
         </Avatar>

@@ -21,6 +21,7 @@ import _ from 'lodash';
 import { MessageCircle } from 'lucide-react-native';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
+import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import {
@@ -30,7 +31,7 @@ import {
   fetchRelatedComments,
 } from '@/api/comment';
 import { formatDistance } from '@/utils/date';
-import { thumbnailSize } from '@/utils/file';
+import { imageFormat } from '@/utils/file';
 import { useAuth } from './auth-provider';
 import PageSpinner from './page-spinner';
 import { Avatar, AvatarFallbackText, AvatarImage } from './ui/avatar';
@@ -45,7 +46,6 @@ import { Input } from './ui/input';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 import useCustomToast from './use-custom-toast';
-import { TouchableOpacity } from 'react-native';
 
 const CommentContext = createContext<any>({});
 
@@ -373,7 +373,7 @@ export const CommentSheet = memo(() => {
             <AvatarFallbackText>{section.user.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: thumbnailSize(section.user.avatar),
+                uri: imageFormat(section.user.avatar, 's', 't')?.fullUrl,
               }}
             />
           </Avatar>
@@ -475,7 +475,7 @@ export const CommentSheet = memo(() => {
         <HStack space="sm">
           <Avatar size="xs">
             <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
-            <AvatarImage source={{ uri: thumbnailSize(item.user.avatar) }} />
+            <AvatarImage source={{ uri: imageFormat(item.user.avatar, 's', 't')?.fullUrl }} />
           </Avatar>
           <VStack className="flex-1">
             <HStack className="items-center" space="sm">

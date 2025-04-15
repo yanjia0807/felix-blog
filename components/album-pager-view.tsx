@@ -296,7 +296,7 @@ const PageContent: React.FC<any> = ({
   isVisible,
   toggleVisible,
   onClose,
-}: any) => {
+}) => {
   return (
     <View className="w-full flex-1">
       {item.fileType === FileTypeNum.Image ? (

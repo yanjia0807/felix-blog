@@ -18,7 +18,7 @@ import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { thumbnailSize } from '@/utils/file';
+import { imageFormat } from '@/utils/file';
 
 interface MessageHeaderProps {
   friendsQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
@@ -45,7 +45,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ friendsQuery }) => {
             <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: thumbnailSize(item.avatar),
+                uri: imageFormat(item.avatar, 's', 't')?.fullUrl,
               }}
             />
             {item.isOnline === '1' && <AvatarBadge />}
@@ -77,7 +77,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ friendsQuery }) => {
   };
 
   return (
-    <VStack space="xl">
+    <VStack space="xl" className="mb-4">
       <MainHeader />
       <HStack className="">
         <Card size="sm" className="flex-1 px-4">
@@ -194,7 +194,7 @@ const Message: React.FC = () => {
               {otherUser.avatar ? (
                 <AvatarImage
                   source={{
-                    uri: thumbnailSize(otherUser.avatar),
+                    uri: imageFormat(otherUser.avatar, 's', 't')?.fullUrl,
                   }}
                 />
               ) : (
@@ -232,7 +232,7 @@ const Message: React.FC = () => {
               {otherUser.avatar ? (
                 <AvatarImage
                   source={{
-                    uri: thumbnailSize(otherUser.avatar),
+                    uri: imageFormat(otherUser.avatar, 's', 't')?.fullUrl,
                   }}
                 />
               ) : (

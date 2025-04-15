@@ -71,9 +71,7 @@ export const fetchPosts = async ({ pageParam }: any) => {
         },
         tags: true,
         poi: true,
-        cover: {
-          fields: ['alternativeText', 'width', 'height', 'formats'],
-        },
+        cover: true,
         attachments: true,
         attachmentExtras: {
           populate: {
@@ -137,7 +135,7 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchNearbyPosts = async ({ pageParam }: any) => {
+export const fetchClzPosts = async ({ pageParam }: any) => {
   const { pagination, filters } = pageParam;
 
   const query = qs.stringify(
@@ -153,8 +151,14 @@ export const fetchNearbyPosts = async ({ pageParam }: any) => {
         },
         tags: true,
         poi: true,
-        cover: {
-          fields: ['alternativeText', 'width', 'height', 'formats'],
+        cover: true,
+        likedByUsers: {
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+          fields: ['username'],
         },
       },
       sort: 'createdAt:desc',
@@ -329,7 +333,20 @@ export const fetchPost = async ({ documentId, status }: any) => {
 
 export const createPost = async (formData: PostData) => {
   try {
-    const coverId = formData.cover && (await uploadFiles(formData.cover.uri)).id;
+    let coverId = null;
+    const attachmentExtras: any = [];
+
+    if (formData.cover) {
+      coverId = (await uploadFiles(formData.cover.uri)).id;
+
+      if (isVideo(formData.cover.fileType)) {
+        const thumbnailId = (await uploadFiles(formData.cover.thumbnail)).id;
+        attachmentExtras.push({
+          attachment: coverId,
+          thumbnail: thumbnailId,
+        });
+      }
+    }
 
     const uploadUris: any = [];
     _.forEach(formData.images, (item: any) => {
@@ -349,7 +366,6 @@ export const createPost = async (formData: PostData) => {
       (item: any) => _.find(uploadRes, ['uri', item.uri]).id,
     );
 
-    const attachmentExtras: any = [];
     _.forEach(formData.images, (item: any) => {
       if (isVideo(item.fileType)) {
         attachmentExtras.push({
@@ -358,6 +374,7 @@ export const createPost = async (formData: PostData) => {
         });
       }
     });
+
     const poi =
       formData.poi &&
       _.pick(formData.poi, [
@@ -397,9 +414,34 @@ export const createPost = async (formData: PostData) => {
 
 export const editPost = async (formData: PostData) => {
   try {
-    const coverId = formData.cover
-      ? formData.cover.id || (await uploadFiles(formData.cover.uri)).id
-      : null;
+    let coverId = null;
+    const attachmentExtras: any = [];
+
+    if (formData.cover) {
+      if (formData.cover.id) {
+        coverId = formData.cover.id;
+
+        const extra = _.find(
+          formData.attachmentExtras,
+          (item1: any) => item1.attachment.id === formData.cover.id,
+        );
+
+        attachmentExtras.push({
+          attachment: extra.attachment.id,
+          thumbnail: extra.thumbnail.id,
+        });
+      } else {
+        coverId = (await uploadFiles(formData.cover.uri)).id;
+
+        if (isVideo(formData.cover.fileType)) {
+          const thumbnailId = (await uploadFiles(formData.cover.thumbnail)).id;
+          attachmentExtras.push({
+            attachment: coverId,
+            thumbnail: thumbnailId,
+          });
+        }
+      }
+    }
 
     const uploadUris: any = [];
     _.forEach(formData.images, (item: any) => {
@@ -423,7 +465,6 @@ export const editPost = async (formData: PostData) => {
       item.id ? item.id : _.find(uploadRes, ['uri', item.uri]).id,
     );
 
-    const attachmentExtras: any = [];
     _.forEach(formData.images, (item: any) => {
       if (isVideo(item.fileType)) {
         if (item.id) {
@@ -431,6 +472,7 @@ export const editPost = async (formData: PostData) => {
             formData.attachmentExtras,
             (item1: any) => item1.attachment.id === item.id,
           );
+
           attachmentExtras.push({
             attachment: extra.attachment.id,
             thumbnail: extra.thumbnail.id,

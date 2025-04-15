@@ -8,9 +8,7 @@ import { Icon } from './ui/icon';
 export const ShareButton = ({ className, ...props }: any) => {
   const { user } = useAuth();
 
-  const onShareButtonPressed = () => {
-    console.log(user);
-  };
+  const onShareButtonPressed = () => {};
 
   return (
     <TouchableOpacity className={twMerge(className)} onPress={() => onShareButtonPressed()}>

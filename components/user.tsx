@@ -2,31 +2,31 @@ import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { ScanFace } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
-import { thumbnailSize } from '@/utils/file';
+import { imageFormat } from '@/utils/file';
 import { Avatar, AvatarFallbackText, AvatarGroup, AvatarImage } from './ui/avatar';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-export const UserAvatar = ({ user }: any) => {
+export const UserAvatar = ({ user, size = 'sm' }: any) => {
   const router = useRouter();
 
   return (
     <TouchableOpacity onPress={() => router.push(`/users/${user.documentId}`)}>
-      <HStack className="items-center" space="xs">
-        <Avatar size="sm">
+      <HStack className="items-center" space={size}>
+        <Avatar size={size}>
           {user.avatar ? (
             <AvatarImage
               source={{
-                uri: thumbnailSize(user.avatar),
+                uri: imageFormat(user.avatar, 's', 't')?.fullUrl,
               }}
             />
           ) : (
             <AvatarFallbackText>{user.username}</AvatarFallbackText>
           )}
         </Avatar>
-        <Text size="sm">{user.username}</Text>
+        <Text size={size}>{user.username}</Text>
       </HStack>
     </TouchableOpacity>
   );
@@ -38,7 +38,7 @@ export const UserLargeAvatar = ({ user }: any) => {
       <Avatar size="lg">
         <AvatarImage
           source={{
-            uri: thumbnailSize(user.avatar),
+            uri: imageFormat(user.avatar, 's', 't')?.fullUrl,
           }}
         />
         <AvatarFallbackText>{user.username}</AvatarFallbackText>
@@ -58,7 +58,7 @@ export const UserAvatars = ({ users }: any) => {
           {user.avatar ? (
             <AvatarImage
               source={{
-                uri: thumbnailSize(user.avatar),
+                uri: imageFormat(user.avatar, 's', 't')?.fullUrl,
               }}
             />
           ) : (
@@ -80,7 +80,7 @@ export const UserAvatarNotice = ({ user }: any) => {
           {user.avatar ? (
             <AvatarImage
               source={{
-                uri: thumbnailSize(user.avatar),
+                uri: imageFormat(user.avatar, 's', 't')?.fullUrl,
               }}
             />
           ) : (

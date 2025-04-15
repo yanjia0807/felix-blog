@@ -18,7 +18,7 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { thumbnailSize } from '@/utils/file';
+import { imageFormat } from '@/utils/file';
 
 type FilterFormSchema = z.infer<typeof filterFormSchema>;
 
@@ -138,7 +138,7 @@ const FollowerList: React.FC = () => {
             <AvatarFallbackText>{item.username}</AvatarFallbackText>
             <AvatarImage
               source={{
-                uri: thumbnailSize(item.avatar),
+                uri: imageFormat(item.avatar, 's', 't')?.fullUrl,
               }}
             />
           </Avatar>

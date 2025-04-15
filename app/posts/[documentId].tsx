@@ -30,12 +30,10 @@ import {
   isImage,
   isVideo,
   FileTypeNum,
-  largeSize,
-  thumbnailSize,
-  fileUrl,
+  imageFormat,
+  fileFullUrl,
   isAudio,
-  videoThumbnail,
-  originSize,
+  videoThumbnailUrl,
 } from '@/utils/file';
 
 const PostDetail: React.FC = () => {
@@ -97,13 +95,26 @@ const PostDetail: React.FC = () => {
     },
   });
 
-  const cover = post?.cover && {
-    id: post.cover.id,
-    data: post.cover,
-    fileType: FileTypeNum.Image,
-    uri: largeSize(post.cover),
-    preview: largeSize(post.cover),
-  };
+  let cover = undefined;
+  if (post?.cover) {
+    if (isImage(post.cover.mime)) {
+      cover = {
+        ...post.cover,
+        fileType: FileTypeNum.Image,
+        uri: fileFullUrl(post.cover),
+        thumbnail: imageFormat(post.cover, 's', 's')?.fullUrl,
+        preview: imageFormat(post.cover, 'l')?.fullUrl,
+      };
+    } else {
+      cover = {
+        ...post.cover,
+        fileType: FileTypeNum.Video,
+        uri: fileFullUrl(post.cover),
+        thumbnail: videoThumbnailUrl(post.cover, post.attachmentExtras),
+        preview: fileFullUrl(post.cover),
+      };
+    }
+  }
 
   const images = _.map(
     _.filter(post?.attachments || [], (item: any) => isImage(item.mime) || isVideo(item.mime)) ||
@@ -111,19 +122,18 @@ const PostDetail: React.FC = () => {
     (item: any) => {
       return isImage(item.mime)
         ? {
-            id: item.id,
-            data: item,
+            ...item,
             fileType: FileTypeNum.Image,
-            uri: thumbnailSize(item),
-            preview: largeSize(item),
+            uri: fileFullUrl(item),
+            thumbnail: imageFormat(item, 's', 's')?.fullUrl,
+            preview: imageFormat(item, 'l')?.fullUrl,
           }
         : {
-            id: item.id,
-            data: item,
+            ...item,
             fileType: FileTypeNum.Video,
-            uri: thumbnailSize(item),
-            thumbnail: videoThumbnail(item, post?.attachmentExtras),
-            preview: originSize(item),
+            uri: fileFullUrl(item),
+            thumbnail: videoThumbnailUrl(item, post?.attachmentExtras),
+            preview: fileFullUrl(item),
           };
     },
   );
@@ -136,7 +146,7 @@ const PostDetail: React.FC = () => {
       id: item.id,
       data: item,
       fileType: FileTypeNum.Audio,
-      uri: fileUrl(item),
+      uri: fileFullUrl(item),
     }),
   );
 
@@ -210,69 +220,65 @@ const PostDetail: React.FC = () => {
       <PageSpinner isVisiable={isLoading} />
       {isSuccess && (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
-          <VStack className="flex-1 p-4" space="4xl">
-            <VStack space="lg">
-              <HStack className="items-center justify-between" space="xl">
-                <Heading size="lg" className="flex-1">
-                  {post.title}
-                </Heading>
-                {status === 'draft' && (
-                  <HStack className="items-center" space="xs">
-                    <Icon as={StickyNote} size="sm" />
-                    <Text size="sm" className="text-gray-400">
-                      未发布
-                    </Text>
-                  </HStack>
-                )}
-                {user?.documentId === post?.author?.documentId && (
-                  <Menu placement="left" trigger={renderTrigger}>
-                    {status === 'draft' ? (
-                      <MenuItem key="Edit" textValue="编辑" onPress={() => onEditBtnPress()}>
-                        <Icon as={Edit} size="xs" className="mr-2" />
-                        <MenuItemLabel size="xs">编辑</MenuItemLabel>
-                      </MenuItem>
-                    ) : (
-                      <MenuItem
-                        key="Unpublish"
-                        textValue="取消发布"
-                        onPress={() => onUnpublishBtnPress()}>
-                        <Icon as={Undo2} size="xs" className="mr-2" />
-                        <MenuItemLabel size="xs">取消发布</MenuItemLabel>
-                      </MenuItem>
-                    )}
-                    <MenuSeparator />
-                    <MenuItem key="Delete" textValue="删除" onPress={() => onDeleteBtnPress()}>
-                      <Icon as={Trash} size="xs" className="mr-2" />
-                      <MenuItemLabel size="xs">删除</MenuItemLabel>
-                    </MenuItem>
-                  </Menu>
-                )}
-              </HStack>
-              <TagList value={post.tags} readonly={true} />
-              <HStack className="items-center justify-between">
-                <Text size="xs">{formatDistance(post?.createdAt)}</Text>
-                {post.poi?.address && (
-                  <HStack className="items-center">
-                    <Icon as={MapPin} size="xs" />
-                    <Text size="xs" className="flex-wrap">
-                      {post.poi.address}
-                    </Text>
-                  </HStack>
-                )}
-              </HStack>
-              <HStack className="items-center justify-between">
-                <UserAvatar user={post.author} />
-                <HStack space="md" className="items-center justify-end">
-                  <LikeButton post={post} />
-                  <CommentIcon item={post} />
+          <VStack className="flex-1 p-4" space="lg">
+            <CoverView value={cover} onPress={onCoverPress} />
+            <HStack className="items-center justify-between" space="xl">
+              <Heading size="lg" className="flex-1">
+                {post.title}
+              </Heading>
+              {status === 'draft' && (
+                <HStack className="items-center" space="xs">
+                  <Icon as={StickyNote} size="sm" />
+                  <Text size="sm" className="text-gray-400">
+                    未发布
+                  </Text>
                 </HStack>
+              )}
+              {user?.documentId === post?.author?.documentId && (
+                <Menu placement="left" trigger={renderTrigger}>
+                  {status === 'draft' ? (
+                    <MenuItem key="Edit" textValue="编辑" onPress={() => onEditBtnPress()}>
+                      <Icon as={Edit} size="xs" className="mr-2" />
+                      <MenuItemLabel size="xs">编辑</MenuItemLabel>
+                    </MenuItem>
+                  ) : (
+                    <MenuItem
+                      key="Unpublish"
+                      textValue="取消发布"
+                      onPress={() => onUnpublishBtnPress()}>
+                      <Icon as={Undo2} size="xs" className="mr-2" />
+                      <MenuItemLabel size="xs">取消发布</MenuItemLabel>
+                    </MenuItem>
+                  )}
+                  <MenuSeparator />
+                  <MenuItem key="Delete" textValue="删除" onPress={() => onDeleteBtnPress()}>
+                    <Icon as={Trash} size="xs" className="mr-2" />
+                    <MenuItemLabel size="xs">删除</MenuItemLabel>
+                  </MenuItem>
+                </Menu>
+              )}
+            </HStack>
+            <HStack className="items-center justify-between">
+              <Text size="xs">{formatDistance(post?.createdAt)}</Text>
+              {post.poi?.address && (
+                <HStack className="items-center">
+                  <Icon as={MapPin} size="xs" />
+                  <Text size="xs" className="flex-wrap">
+                    {post.poi.address}
+                  </Text>
+                </HStack>
+              )}
+            </HStack>
+            <HStack className="items-center justify-between">
+              <UserAvatar user={post.author} />
+              <HStack space="md" className="items-center justify-end">
+                <LikeButton post={post} />
+                <CommentIcon item={post} />
               </HStack>
-            </VStack>
-            <VStack space="lg">
-              <CoverView value={cover} onPress={onCoverPress} />
-              <ImageList value={images} onPress={onImagePress} />
-              <RecordingList value={recordings} readonly={true} />
-            </VStack>
+            </HStack>
+            <TagList value={post.tags} readonly={true} />
+            <ImageList value={images} onPress={onImagePress} />
+            <RecordingList value={recordings} readonly={true} />
             <Divider />
             <Text size="lg">{post.content}</Text>
             <Divider />

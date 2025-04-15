@@ -38,7 +38,11 @@ export const postSchema = z.object({
     })
     .min(2, '标题不能少于2个字符')
     .max(200, '标题不能超过200个字符'),
-  content: z.string().max(maxCharCount, `内容最多不能超过${maxCharCount}个字符`).optional(),
+  content: z
+    .string()
+    .max(maxCharCount, `内容最多不能超过${maxCharCount}个字符`)
+    .optional()
+    .nullable(),
   author: z.string(),
   poi: z.any(),
   cover: z.any(),
@@ -46,8 +50,8 @@ export const postSchema = z.object({
   recordings: z.array(z.any()),
   tags: z.array(z.any()),
   status: z.enum(['draft', 'published']),
-  attachments: z.array(z.any()),
-  attachmentExtras: z.array(z.any()),
+  attachments: z.array(z.any()).optional().nullable(),
+  attachmentExtras: z.array(z.any()).optional().nullable(),
 });
 
 type PostFormProps = {
@@ -69,7 +73,6 @@ const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
     watch,
     formState: { errors },
   } = form;
-
   const formData: any = watch();
 
   const album = _.concat(formData?.cover ? formData.cover : [], formData.images);
@@ -160,7 +163,7 @@ const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
 
   const renderImageGrid = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.images} size="md">
-      <ImageGrid value={value} cover={formData.cover} onChange={onChange} onPress={onImagePress} />
+      <ImageGrid value={value} onChange={onChange} onPress={onImagePress} />
     </FormControl>
   );
 

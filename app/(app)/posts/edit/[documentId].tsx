@@ -15,12 +15,10 @@ import {
   isImage,
   isVideo,
   FileTypeNum,
-  largeSize,
-  thumbnailSize,
-  fileUrl,
+  imageFormat,
+  fileFullUrl,
   isAudio,
-  videoThumbnail,
-  originSize,
+  videoThumbnailUrl,
 } from '@/utils/file';
 
 const PostEditPage = () => {
@@ -41,13 +39,26 @@ const PostEditPage = () => {
     if (query.isSuccess) {
       const post = query.data;
 
-      const cover = post?.cover && {
-        id: post.cover.id,
-        data: post.cover,
-        fileType: FileTypeNum.Image,
-        uri: largeSize(post.cover),
-        preview: largeSize(post.cover),
-      };
+      let cover = undefined;
+      if (post?.cover) {
+        if (isImage(post.cover.mime)) {
+          cover = {
+            ...post.cover,
+            fileType: FileTypeNum.Image,
+            uri: fileFullUrl(post.cover),
+            thumbnail: imageFormat(post.cover, 's', 's')?.fullUrl,
+            preview: imageFormat(post.cover, 'l')?.fullUrl,
+          };
+        } else {
+          cover = {
+            ...post.cover,
+            fileType: FileTypeNum.Video,
+            uri: fileFullUrl(post.cover),
+            thumbnail: videoThumbnailUrl(post.cover, post.attachmentExtras),
+            preview: fileFullUrl(post.cover),
+          };
+        }
+      }
 
       const images = _.map(
         _.filter(
@@ -57,19 +68,18 @@ const PostEditPage = () => {
         (item: any) => {
           return isImage(item.mime)
             ? {
-                id: item.id,
-                data: item,
+                ...item,
                 fileType: FileTypeNum.Image,
-                uri: thumbnailSize(item),
-                preview: largeSize(item),
+                uri: fileFullUrl(item),
+                thumbnail: imageFormat(item, 's', 's')?.fullUrl,
+                preview: imageFormat(item, 'l')?.fullUrl,
               }
             : {
-                id: item.id,
-                data: item,
+                ...item,
                 fileType: FileTypeNum.Video,
-                uri: thumbnailSize(item),
-                thumbnail: videoThumbnail(item, post?.attachmentExtras),
-                preview: originSize(item),
+                uri: fileFullUrl(item),
+                thumbnail: videoThumbnailUrl(item, post.attachmentExtras),
+                preview: fileFullUrl(item),
               };
         },
       );
@@ -80,7 +90,7 @@ const PostEditPage = () => {
           id: item.id,
           data: item,
           fileType: FileTypeNum.Audio,
-          uri: fileUrl(item),
+          uri: fileFullUrl(item),
         }),
       );
 

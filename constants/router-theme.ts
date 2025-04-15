@@ -4,7 +4,7 @@ import { fonts } from '@react-navigation/native/src/theming/fonts';
 export const DefaultTheme: Theme = {
   dark: false,
   colors: {
-    primary: '#43865C',
+    primary: '#bedcc5',
     background: '#f6f6f6',
     card: '#F2F1F1',
     text: '#525252',
@@ -17,7 +17,7 @@ export const DefaultTheme: Theme = {
 export const DarkTheme: Theme = {
   dark: true,
   colors: {
-    primary: '#43865C',
+    primary: '#214430',
     background: '#272625',
     card: '#414040',
     text: '#dbdbdc',

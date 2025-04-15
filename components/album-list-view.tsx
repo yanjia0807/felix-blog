@@ -5,13 +5,13 @@ import { Image } from 'expo-image';
 import _ from 'lodash';
 import { RefreshControl, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { fetchUserPhotos } from '@/api';
-import { FileTypeNum, isImage, isVideo, largeSize, originSize, thumbnailSize } from '@/utils/file';
+import { FileTypeNum, isImage, isVideo, imageFormat, fileFullUrl } from '@/utils/file';
 import AlbumPagerView from './album-pager-view';
 import { Box } from './ui/box';
 import { Text } from './ui/text';
 import { useLayout } from './use-layout';
 
-const numColumns = 2;
+const numColumns = 3;
 
 const AlbumListView = ({ userDocumentId }: any) => {
   const [pagerIndex, setPagerIndex] = useState<number>(0);
@@ -78,15 +78,15 @@ const AlbumListView = ({ userDocumentId }: any) => {
                 ? {
                     ...item,
                     fileType: FileTypeNum.Image,
-                    uri: thumbnailSize(item),
-                    preview: largeSize(item),
+                    uri: imageFormat(item, 's', 't')?.fullUrl,
+                    preview: imageFormat(item, 'l')?.fullUrl,
                   }
                 : {
                     id: item.id,
                     data: item,
                     fileType: FileTypeNum.Video,
-                    uri: thumbnailSize(item.attachmentExtras?.thumbnail),
-                    preview: originSize(item),
+                    uri: imageFormat(item.attachmentExtras?.thumbnail, 's', 't')?.fullUrl,
+                    preview: fileFullUrl(item),
                   };
             }),
           ];
@@ -144,9 +144,6 @@ const AlbumListView = ({ userDocumentId }: any) => {
           />
         }
         showsVerticalScrollIndicator={false}
-        getColumnFlex={(items, index, maxColumns, extraData) => {
-          return numColumns;
-        }}
       />
       <AlbumPagerView
         initIndex={pagerIndex}

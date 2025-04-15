@@ -17,6 +17,7 @@ import {
   Check,
   Zap,
   ZapOff,
+  CirclePlay,
 } from 'lucide-react-native';
 import { FlatList, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -31,14 +32,14 @@ import {
   ActionsheetItem,
   ActionsheetItemText,
 } from '@/components/ui/actionsheet';
-import { createVideoThumbnail, isImage, isVideo, FileTypeNum, thumbnailSize } from '@/utils/file';
+import { createVideoThumbnail, isImage, isVideo, FileTypeNum } from '@/utils/file';
 import { Avatar, AvatarImage, AvatarBadge, AvatarFallbackText } from './ui/avatar';
-import { Box } from './ui/box';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { Portal } from './ui/portal';
+import { Pressable } from './ui/pressable';
 import { Slider, SliderFilledTrack, SliderTrack } from './ui/slider';
 import useCustomToast from './use-custom-toast';
 
@@ -163,6 +164,7 @@ export const ImageCamera = ({ isOpen, onClose, onChange, value }: any) => {
       val = {
         fileType: FileTypeNum.Image,
         uri: data.uri,
+        thumbnail: data.uri,
         preview: data.uri,
       };
     } else {
@@ -383,10 +385,8 @@ export const ImageInput = ({ onChange, value = [] }: any) => {
 export const CoverInput = ({ onChange, value, onPress }: any) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const source = value ? { uri: value.uri } : null;
-
   const imagePickerOptions = {
-    mediaTypes: ['images'],
+    mediaTypes: ['images', 'videos', 'livePhotos'],
     allowsMultipleSelection: false,
   };
 
@@ -405,35 +405,19 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
   return (
     <>
       {value ? (
-        <TouchableOpacity className="my-2 h-40" onPress={onPress}>
-          <Image
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: 8,
-            }}
-            contentFit="cover"
-            contentPosition="center"
-            source={source}
-          />
-          <Button
-            size="xs"
-            action="secondary"
-            className="absolute right-0 top-0 h-auto p-1"
-            onPress={onRemove}>
-            <ButtonIcon as={CircleX} />
-          </Button>
-        </TouchableOpacity>
+        <View className="h-40">
+          <ImageItem item={value} onPress={onPress} onRemove={onRemove} />
+        </View>
       ) : (
         <>
-          <Input variant="underlined" className="border-0 border-b p-2" isReadOnly={true}>
-            <InputField placeholder="请选择封面...." />
-            <InputSlot>
-              <TouchableOpacity onPress={onOpen}>
+          <Pressable onPress={onOpen} pointerEvents="box-only">
+            <Input variant="underlined" className="border-0 border-b p-2" isReadOnly={true}>
+              <InputField placeholder="请选择封面...." />
+              <InputSlot>
                 <InputIcon as={ImageIcon}></InputIcon>
-              </TouchableOpacity>
-            </InputSlot>
-          </Input>
+              </InputSlot>
+            </Input>
+          </Pressable>
           <ImageSheet
             isOpen={isOpen}
             onClose={onClose}
@@ -497,25 +481,11 @@ export const AvatarInput = ({ onChange, value, fallbackText }: any) => {
   );
 };
 
-export const CoverView = ({ onChange, value, onPress }: any) => {
+export const CoverView = ({ value, onPress }: any) => {
   return (
-    <>
-      {value && (
-        <TouchableOpacity className="h-36 flex-1" onPress={onPress}>
-          <Image
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: 8,
-            }}
-            source={{
-              uri: value.uri,
-            }}
-            alt={value.alternativeText}
-          />
-        </TouchableOpacity>
-      )}
-    </>
+    <View className="h-36 flex-1">
+      <ImageItem item={value} onPress={() => onPress(value)} />
+    </View>
   );
 };
 
@@ -543,7 +513,9 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
             assetId: item.assetId,
             name: item.fileName,
             fileType: FileTypeNum.Image,
+            mime: item.mimeType,
             uri: item.uri,
+            thumbnail: item.uri,
             preview: item.uri,
           });
         } else if (isVideo(item.mimeType)) {
@@ -552,6 +524,7 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
             assetId: item.assetId,
             name: item.fileName,
             fileType: FileTypeNum.Video,
+            mime: item.mimeType,
             uri: item.uri,
             thumbnail: thumbnail?.uri,
             preview: item.uri,
@@ -636,34 +609,39 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
   );
 };
 
-export const ImageItem = ({ item, index, onPress, onRemove }: any) => {
-  const uri = isVideo(item.fileType) ? item.thumbnail : item.uri;
-
+export const ImageItem = ({ item, onPress, onRemove }: any) => {
   return (
-    <TouchableOpacity onPress={() => onPress(index)}>
+    <TouchableOpacity onPress={onPress}>
       <Image
         style={{
           width: '100%',
           height: '100%',
-          borderRadius: 8,
+          borderRadius: 6,
           opacity: 0.7,
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
-        alt={''}
-        source={uri}
-      />
-      <Button
-        size="xs"
-        action="secondary"
-        className="absolute right-0 top-0 h-auto p-1"
-        onPress={() => onRemove(item.uri)}>
-        <ButtonIcon as={CircleX} />
-      </Button>
+        alt={item.alternativeText || item.name}
+        source={item.thumbnail}>
+        {isVideo(item.fileType) && (
+          <Icon as={CirclePlay} color="white" size={36 as any} className="opacity-80" />
+        )}
+      </Image>
+      {onRemove && (
+        <Button
+          size="xs"
+          action="secondary"
+          className="absolute right-0 top-0 h-auto p-1 opacity-80"
+          onPress={onRemove}>
+          <ButtonIcon as={CircleX} />
+        </Button>
+      )}
     </TouchableOpacity>
   );
 };
 
-export const ImageGrid = ({ value = [], onPress, cover, onChange }: any) => {
-  const [selectedImage, setSelectedImage] = useState<any>(null);
+export const ImageGrid = ({ value = [], onPress, onChange }: any) => {
   const { width: screenWidth } = useWindowDimensions();
   const numColumns = 4;
   const spacing = 16;
@@ -677,27 +655,24 @@ export const ImageGrid = ({ value = [], onPress, cover, onChange }: any) => {
   if (value.length > 0) {
     return (
       <HStack className="flex-wrap">
-        {value.map((item: any, index: number) => (
-          <Box
-            key={item.id || item.assetId || item.uri}
-            className="my-2"
-            style={{
-              width: imageSize,
-              height: imageSize,
-              marginRight: (index + 1) % numColumns === 0 ? 0 : spacing,
-              aspectRatio: 1,
-              borderRadius: 8,
-            }}>
-            <ImageItem
-              item={item}
-              index={index}
-              onPress={onPress}
-              onRemove={onRemove}
-              selectedImage={selectedImage}
-              setSelectedImage={setSelectedImage}
-            />
-          </Box>
-        ))}
+        {value.map((item: any, index: number) => {
+          return (
+            <View
+              key={item.uri}
+              className="my-2"
+              style={{
+                width: imageSize,
+                height: imageSize,
+                marginRight: (index + 1) % numColumns === 0 ? 0 : spacing,
+              }}>
+              <ImageItem
+                item={item}
+                onPress={() => onPress(index)}
+                onRemove={() => onRemove(item.uri)}
+              />
+            </View>
+          );
+        })}
       </HStack>
     );
   }
@@ -705,25 +680,11 @@ export const ImageGrid = ({ value = [], onPress, cover, onChange }: any) => {
 
 export const ImageList = ({ value = [], onPress }: any) => {
   const renderItem = ({ item, index }: any) => {
-    const uri = isVideo(item.fileType) ? item.thumbnail : item.uri;
-
     return (
-      <TouchableOpacity
-        onPress={() => onPress(index)}
+      <View
         className={`mx-1 h-16 w-16 ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}>
-        <Image
-          source={{
-            uri,
-          }}
-          alt={item.alternativeText}
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: 8,
-            opacity: 0.7,
-          }}
-        />
-      </TouchableOpacity>
+        <ImageItem item={item} onPress={() => onPress(index)} />
+      </View>
     );
   };
 

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { Calendar, EditIcon, MapPin, ScanFace, Settings, Settings2 } from 'lucide-react-native';
+import { router, Stack } from 'expo-router';
+import { Calendar, EditIcon, MapPin, ScanFace, Settings } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-provider';

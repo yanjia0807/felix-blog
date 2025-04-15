@@ -15,7 +15,7 @@ import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { twMerge } from 'tailwind-merge';
 import { z } from 'zod';
-import { fetchTags } from '@/api/tag';
+import { fetchAllTags } from '@/api/tag';
 import PageSpinner from './page-spinner';
 import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
@@ -29,7 +29,7 @@ import { VStack } from './ui/vstack';
 export const TagSelect = ({ value = [], onChange }: any) => {
   const { data: tags } = useQuery({
     queryKey: ['tags', 'list'],
-    queryFn: fetchTags,
+    queryFn: fetchAllTags,
   });
 
   const onTagItemPress = (item: any) => {
@@ -123,7 +123,7 @@ export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any,
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['tags', 'list', { name: getValues() }],
-    queryFn: () => fetchTags(getValues()),
+    queryFn: () => fetchAllTags(getValues()),
   });
 
   const onSubmit = useCallback((data: any) => refetch(data), [refetch]);

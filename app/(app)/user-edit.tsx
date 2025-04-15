@@ -41,7 +41,7 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/components/use-custom-toast';
 import { genderEnum } from '@/constants/enum';
-import { FileTypeNum, largeSize } from '@/utils/file';
+import { FileTypeNum, imageFormat } from '@/utils/file';
 
 type UserFormSchema = z.infer<typeof userFormSchema>;
 
@@ -84,8 +84,8 @@ const UserEdit: React.FC = () => {
     id: user.avatar.id,
     data: user.avatar,
     fileType: FileTypeNum.Image,
-    uri: largeSize(user.avatar),
-    preview: largeSize(user.avatar),
+    uri: imageFormat(user.avatar, 'l', 's')?.fullUrl,
+    preview: imageFormat(user.avatar, 'l')?.fullUrl,
   };
 
   const {

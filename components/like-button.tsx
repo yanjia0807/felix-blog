@@ -5,9 +5,9 @@ import { Heart } from 'lucide-react-native';
 import { twMerge } from 'tailwind-merge';
 import { UpdatePostLikedData, updatePostLiked } from '@/api';
 import { useAuth } from './auth-provider';
-import { Button, ButtonIcon, ButtonText } from './ui/button';
+import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
 
-export const LikeButton = memo(function LikeButton({ post, className }: any) {
+export const LikeButton = memo(function LikeButton({ post, className, size = 'sm' }: any) {
   const { user } = useAuth();
   const userDocumentId = user?.documentId;
   const queryClient = useQueryClient();
@@ -60,8 +60,14 @@ export const LikeButton = memo(function LikeButton({ post, className }: any) {
 
   return (
     <Button onPress={() => onLikedButtonPress()} variant="link">
-      <ButtonIcon as={Heart} className={twMerge(likedByMe && 'text-red-500', className)} />
-      <ButtonText size="xs">{post?.likedByUsers.length}</ButtonText>
+      <ButtonGroup className="flex-row items-center" space={size}>
+        <ButtonIcon
+          as={Heart}
+          size={size}
+          className={twMerge(likedByMe && 'text-red-500', className)}
+        />
+        <ButtonText size={size}>{post?.likedByUsers.length}</ButtonText>
+      </ButtonGroup>
     </Button>
   );
 });
