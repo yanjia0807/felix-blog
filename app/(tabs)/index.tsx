@@ -1,12 +1,11 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { OverlayProvider } from '@gluestack-ui/overlay';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
-import { Filter, MapPin } from 'lucide-react-native';
+import { Filter, MapPin, Search } from 'lucide-react-native';
 import {
   FlatList,
   RefreshControl,
@@ -14,32 +13,24 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Drawer } from 'react-native-drawer-layout';
-import { useDebounce } from 'use-debounce';
-import { fetchBanners, fetchPosts, fetchPostsOutline } from '@/api';
+import { fetchBanners, fetchPosts } from '@/api';
 import AlbumPagerView from '@/components/album-pager-view';
 import { useAuth } from '@/components/auth-provider';
-import Autocomplete from '@/components/autocomplete';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
 import { MainHeader } from '@/components/header';
 import { ImageCover, ImageList, VideoCover } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
-import {
-  PostFilterContent,
-  PostFilterProvider,
-  usePostFilterContext,
-} from '@/components/post-filter';
 import PostItemMenu from '@/components/post-menu-popover';
 import { usePreferences } from '@/components/preferences-provider';
 import { TagList } from '@/components/tag-input';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Fab, FabIcon, FabLabel } from '@/components/ui/fab';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { AddIcon, Icon } from '@/components/ui/icon';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -196,80 +187,6 @@ export const PostItem: React.FC<any> = memo(
   },
 );
 
-const AutocompleteOutline: React.FC<any> = ({ autocompleteRef }) => {
-  const [keyword, setKeyword] = useState('');
-  const filters = { keyword: useDebounce(keyword, 1000) };
-  const context = usePostFilterContext();
-  if (!context) {
-    throw new Error('usePostFilterContext must be used within a PostFilterProvider');
-  }
-  const { setIsDrawerOpen } = context;
-
-  const outlineQuery = useInfiniteQuery({
-    queryKey: ['posts', 'list', 'outline', filters],
-    queryFn: fetchPostsOutline,
-    enabled: !!keyword,
-    initialPageParam: {
-      filters,
-      pagination: {
-        page: 1,
-        pageSize: 10,
-      },
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { page, pageSize, pageCount },
-        },
-      } = lastPage;
-
-      if (page < pageCount) {
-        return {
-          filters,
-          pagination: { page: page + 1, pageSize },
-        };
-      }
-
-      return null;
-    },
-  });
-
-  const outlines: any = outlineQuery.isSuccess
-    ? _.reduce(outlineQuery.data?.pages, (result: any, page: any) => [...result, ...page.data], [])
-    : [];
-
-  const fetchNextPage = () => {
-    if (outlineQuery.hasNextPage && !outlineQuery.isFetchingNextPage) {
-      outlineQuery.fetchNextPage();
-    }
-  };
-
-  const renderIcon = () => {
-    return (
-      <Button
-        variant="link"
-        action="secondary"
-        onPress={() => setIsDrawerOpen(true)}
-        pointerEvents="box-only">
-        <ButtonIcon as={Filter} className="text-secondary-900" />
-      </Button>
-    );
-  };
-
-  return (
-    <Autocomplete
-      data={outlines}
-      isLoading={outlineQuery.isLoading}
-      isSuccess={outlineQuery.isSuccess}
-      value={keyword}
-      onChange={setKeyword}
-      renderIcon={renderIcon}
-      fetchNextPage={fetchNextPage}
-      ref={autocompleteRef}
-    />
-  );
-};
-
 const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
   useEffect(() => console.log('@render HomeHeader'));
 
@@ -369,9 +286,24 @@ const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
   );
 
   return (
-    <VStack space="xl" className="overflow-visible">
+    <VStack space="xl">
       <MainHeader />
-      <AutocompleteOutline autocompleteRef={autocompleteRef} />
+      <TouchableOpacity onPress={() => router.push('/posts/search')}>
+        <Input
+          size="lg"
+          variant="rounded"
+          className="w-full"
+          isReadOnly={true}
+          pointerEvents="none">
+          <InputSlot className="ml-3">
+            <InputIcon as={Search} />
+          </InputSlot>
+          <InputField placeholder="搜索帖子..." />
+          <InputSlot className="mx-3">
+            <InputIcon as={Filter} />
+          </InputSlot>
+        </Input>
+      </TouchableOpacity>
       <FlatList
         data={banners}
         renderItem={renderBannerItem}
@@ -388,24 +320,19 @@ const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
 });
 
 const PostList: React.FC<any> = () => {
-  const postFilterContext = usePostFilterContext();
-  const filters = postFilterContext?.filters || {};
-
   const [isPagerOpen, setIsPagerOpen] = useState(false);
   const [pagerIndex, setPagerIndex] = useState<number>(0);
   const [album, setAblum] = useState<any>([]);
   const router = useRouter();
   const { user } = useAuth();
-  const autocompleteRef = useRef<any>();
 
   const postsQuery = useInfiniteQuery({
-    queryKey: ['posts', 'list', filters],
+    queryKey: ['posts', 'list'],
     queryFn: fetchPosts,
     initialPageParam: {
-      filters,
       pagination: {
         page: 1,
-        pageSize: 5,
+        pageSize: 10,
       },
     },
     getNextPageParam: (lastPage: any) => {
@@ -417,7 +344,6 @@ const PostList: React.FC<any> = () => {
 
       if (page < pageCount) {
         return {
-          filters,
           pagination: { page: page + 1, pageSize },
         };
       }
@@ -490,7 +416,7 @@ const PostList: React.FC<any> = () => {
   }, [postsQuery.data, postsQuery.isSuccess]);
 
   const renderListHeader = useCallback((props: any) => {
-    return <HomeHeader {...props} autocompleteRef={autocompleteRef}></HomeHeader>;
+    return <HomeHeader {...props}></HomeHeader>;
   }, []);
 
   const renderListItem = useCallback(
@@ -515,6 +441,10 @@ const PostList: React.FC<any> = () => {
     </View>
   );
 
+  const onEndReached = () => {
+    if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) postsQuery.fetchNextPage();
+  };
+
   const onPagerClose = () => setIsPagerOpen(false);
 
   return (
@@ -529,12 +459,7 @@ const PostList: React.FC<any> = () => {
           ListEmptyComponent={renderEmptyComponent}
           renderItem={renderListItem}
           showsVerticalScrollIndicator={false}
-          onEndReached={() => {
-            if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage)
-              postsQuery.fetchNextPage();
-          }}
-          onScroll={() => autocompleteRef.current?.updatePosition()}
-          scrollEventThrottle={16}
+          onEndReached={onEndReached}
           refreshControl={
             <RefreshControl
               refreshing={postsQuery.isLoading}
@@ -563,40 +488,14 @@ const PostList: React.FC<any> = () => {
   );
 };
 
-const PostDrawer: React.FC<any> = () => {
-  useEffect(() => console.log('@render PostDrawer'));
-
-  const context = usePostFilterContext();
-  if (!context) {
-    throw new Error('usePostFilterContext must be used within a PostFilterProvider');
-  }
-  const { isDrawerOpen, setIsDrawerOpen } = context;
-
-  const renderDrawerContent = () => <PostFilterContent />;
-
-  return (
-    <Drawer
-      open={isDrawerOpen}
-      onOpen={() => setIsDrawerOpen(true)}
-      onClose={() => setIsDrawerOpen(false)}
-      renderDrawerContent={renderDrawerContent}>
-      <OverlayProvider>
-        <PostList />
-      </OverlayProvider>
-    </Drawer>
-  );
-};
-
 const HomePage: React.FC<any> = () => {
   useEffect(() => console.log('@render HomePage'));
 
   return (
-    <PostFilterProvider>
-      <CommentProvider>
-        <PostDrawer />
-        <CommentSheet />
-      </CommentProvider>
-    </PostFilterProvider>
+    <CommentProvider>
+      <PostList />
+      <CommentSheet />
+    </CommentProvider>
   );
 };
 

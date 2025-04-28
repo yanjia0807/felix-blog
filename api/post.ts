@@ -8,6 +8,54 @@ export type PostData = any;
 export type UpdatePostLikedData = any;
 
 export const fetchPosts = async ({ pageParam }: any) => {
+  const { pagination } = pageParam;
+
+  const query = qs.stringify(
+    {
+      populate: {
+        author: {
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+        },
+        likedByUsers: {
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+          fields: ['username'],
+        },
+        tags: true,
+        poi: true,
+        cover: true,
+        attachments: true,
+        attachmentExtras: {
+          populate: {
+            attachment: true,
+            thumbnail: true,
+          },
+        },
+        comments: {
+          count: true,
+        },
+      },
+      sort: 'createdAt:desc',
+      pagination,
+    },
+    {
+      encodeValuesOnly: false,
+    },
+  );
+
+  const res = await apiClient.get(`/posts?${query}`);
+  return res;
+};
+
+export const fetchPostsOutline = async ({ pageParam }: any) => {
   const {
     pagination,
     filters: { title, authorName, createdAtFrom, createdAtTo, tags },
@@ -49,64 +97,6 @@ export const fetchPosts = async ({ pageParam }: any) => {
       $in: tags,
     };
   }
-
-  const query = qs.stringify(
-    {
-      populate: {
-        author: {
-          fields: ['username'],
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
-          },
-        },
-        likedByUsers: {
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
-          },
-          fields: ['username'],
-        },
-        tags: true,
-        poi: true,
-        cover: true,
-        attachments: true,
-        attachmentExtras: {
-          populate: {
-            attachment: true,
-            thumbnail: true,
-          },
-        },
-        comments: {
-          count: true,
-        },
-      },
-      filters,
-      sort: 'createdAt:desc',
-      pagination,
-    },
-    {
-      encodeValuesOnly: false,
-    },
-  );
-
-  const res = await apiClient.get(`/posts?${query}`);
-  return res;
-};
-
-export const fetchPostsOutline = async ({ pageParam }: any) => {
-  const {
-    pagination,
-    filters: { keyword },
-  } = pageParam;
-
-  const filters: any = {
-    title: {
-      $containsi: keyword,
-    },
-  };
 
   const query = qs.stringify(
     {
