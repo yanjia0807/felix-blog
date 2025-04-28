@@ -96,6 +96,43 @@ export const fetchPosts = async ({ pageParam }: any) => {
   return res;
 };
 
+export const fetchPostsOutline = async ({ pageParam }: any) => {
+  const {
+    pagination,
+    filters: { keyword },
+  } = pageParam;
+
+  const filters: any = {
+    title: {
+      $containsi: keyword,
+    },
+  };
+
+  const query = qs.stringify(
+    {
+      populate: {
+        author: {
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+        },
+      },
+      filters,
+      sort: 'createdAt:desc',
+      pagination,
+    },
+    {
+      encodeValuesOnly: false,
+    },
+  );
+
+  const res = await apiClient.get(`/posts?${query}`);
+  return res;
+};
+
 export const fetchRecommendPosts = async ({ pageParam }: any) => {
   const { pagination } = pageParam;
   const query = qs.stringify({

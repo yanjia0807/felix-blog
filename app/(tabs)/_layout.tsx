@@ -101,9 +101,6 @@ export default function TabLayout() {
           <TabTrigger name="profile" href="/profile" asChild reset="never">
             <TabButton title="我的" icon={User2} />
           </TabTrigger>
-          {/* <TabTrigger name="feed" href="/feed" asChild reset="never">
-            <TabButton title="测试" icon={User} />
-          </TabTrigger> */}
         </TabButtonList>
       </TabList>
     </Tabs>

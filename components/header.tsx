@@ -4,11 +4,11 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Bell } from 'lucide-react-native';
+import { View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { fetchNotificationCount } from '@/api';
 import { useAuth } from './auth-provider';
 import { useSocket } from './socket-provider';
-import { Box } from './ui/box';
 import { Button, ButtonText, ButtonIcon } from './ui/button';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
@@ -20,7 +20,7 @@ export const HeaderLogo = () => {
     <Image
       alt="logo"
       source={require('../assets/images/icon.png')}
-      style={{ width: 40, height: 40, borderRadius: 8 }}
+      style={{ width: 40, height: 40 }}
     />
   );
 };
@@ -43,14 +43,14 @@ export const Notification = () => {
       {user && (
         <Button onPress={() => router.navigate('/notification-list')} variant="link">
           {count > 0 && (
-            <Box className="absolute right-0 top-[-2] h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
+            <View className="absolute right-0 top-[-2] h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 className="text-[8px] leading-none text-white">
                 {count}
               </Text>
-            </Box>
+            </View>
           )}
           <ButtonIcon as={Bell} size={22 as any} className="text-secondary-900" />
         </Button>
@@ -63,7 +63,7 @@ export const MainHeader = ({ className }: { className?: string }) => {
   const { isLogin } = useAuth();
 
   return (
-    <HStack className={twMerge(['w-full items-center justify-between'], className)}>
+    <HStack className={twMerge(['w-full items-center justify-between overflow-auto'], className)}>
       <Image
         alt="logo"
         source={require('../assets/images/icon.png')}

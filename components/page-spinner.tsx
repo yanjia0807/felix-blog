@@ -1,20 +1,13 @@
 import React from 'react';
-import { useWindowDimensions } from 'react-native';
+import { View } from 'react-native';
 import { Spinner } from './ui/spinner';
 
 const PageSpinner = ({ isVisiable }: any) => {
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const SPINNER_SIZE = 20;
-
   return (
     isVisiable && (
-      <Spinner
-        style={{
-          position: 'absolute',
-          left: (screenWidth - SPINNER_SIZE) / 2,
-          top: (screenHeight - SPINNER_SIZE) / 2,
-        }}
-      />
+      <View className="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2">
+        <Spinner />
+      </View>
     )
   );
 };

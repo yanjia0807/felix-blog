@@ -32,7 +32,7 @@ import {
   ActionsheetItem,
   ActionsheetItemText,
 } from '@/components/ui/actionsheet';
-import { createVideoThumbnail, isImage, isVideo, FileTypeNum } from '@/utils/file';
+import { createVideoThumbnail, isImage, isVideo, FileTypeNum, imageFormat } from '@/utils/file';
 import { Avatar, AvatarImage, AvatarBadge, AvatarFallbackText } from './ui/avatar';
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
@@ -687,5 +687,46 @@ export const ImageList = ({ value = [], onPress }: any) => {
     />
   ) : (
     <></>
+  );
+};
+
+export const ImageCover: React.FC<any> = ({ item, width, height, onPress }) => {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <Image
+        source={{
+          uri: item.cover.thumbnail,
+        }}
+        contentFit="cover"
+        style={{
+          width,
+          height,
+          borderRadius: 6,
+        }}
+      />
+    </TouchableOpacity>
+  );
+};
+
+export const VideoCover: React.FC<any> = ({ item, width, height, onPress }) => {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <View className="flex-1 items-center justify-center">
+        <Image
+          source={{
+            uri: item.cover.thumbnail,
+          }}
+          contentFit="cover"
+          style={{
+            width,
+            height,
+            borderRadius: 6,
+          }}
+        />
+        <View className="absolute">
+          <Ionicons name="play-circle-outline" size={42} className="opacity-50" color="white" />
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 };

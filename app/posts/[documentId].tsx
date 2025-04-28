@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft, Edit, Ellipsis, MapPin, StickyNote, Trash, Undo2 } from 'lucide-react-native';
-import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { deletePost, fetchPost, unpublishPost } from '@/api/post';
 import AlbumPagerView from '@/components/album-pager-view';
 import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
-import { ImageItem, ImageList } from '@/components/image-input';
+import { ImageCover, ImageList, VideoCover } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
 import { RecordingList } from '@/components/recording-input';
@@ -38,91 +36,24 @@ import {
   videoThumbnailUrl,
 } from '@/utils/file';
 
-const PostCover = ({ item, onPress }: any) => {
-  return (
-    <View className="h-36 w-full">
-      <TouchableOpacity onPress={onPress}>
-        <View className="items-center justify-center">
-          <Image
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: 6,
-              opacity: 0.7,
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            alt={item.cover.alternativeText || item.cover.name}
-            source={item.cover.thumbnail}
-          />
-          {isVideo(item.cover.fileType) && (
-            <View className="absolute">
-              <Ionicons name="play-circle-outline" size={42} className="opacity-50" color="white" />
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
 const PostDetail: React.FC = () => {
-  const { documentId, status } = useLocalSearchParams();
+  const CONTAINER_PADDING = 14;
   const [isPagerOpen, setIsPagerOpen] = useState(false);
   const [pagerIndex, setPagerIndex] = useState<number>(0);
-  const onPagerClose = () => setIsPagerOpen(false);
-
+  const { documentId, status } = useLocalSearchParams();
+  const { width: screenWidth } = useWindowDimensions();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const { user } = useAuth();
   const navigation = useNavigation<any>();
-
   const postQuery = useQuery({
     queryKey: ['posts', 'detail', documentId],
     queryFn: () => fetchPost({ documentId, status }),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: ({ documentId }: any) => deletePost({ documentId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', documentId],
-      });
-      toast.success({
-        description: '删除成功',
-      });
-      router.back();
-    },
-    onError(error, variables, context) {
-      toast.close();
-      toast.error({ description: error.message });
-    },
-  });
-
-  const unpublishMutation = useMutation({
-    mutationFn: ({ documentId }: any) => unpublishPost({ documentId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', documentId],
-        refetchType: 'none',
-      });
-      toast.success({
-        description: '取消发布成功',
-      });
-      navigation.setParams({
-        status: 'draft',
-      });
-    },
-    onError(error, variables, context) {
-      toast.close();
-      toast.error({ description: error.message });
-    },
-  });
-
   let post: any;
+  const itemWidth = screenWidth - CONTAINER_PADDING * 2;
+  const itemHeight = (itemWidth / 16) * 9;
 
   if (postQuery.isSuccess) {
     const postData = postQuery.data;
@@ -193,6 +124,45 @@ const PostDetail: React.FC = () => {
     };
   }
 
+  const deleteMutation = useMutation({
+    mutationFn: ({ documentId }: any) => deletePost({ documentId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
+      queryClient.invalidateQueries({
+        queryKey: ['posts', 'detail', documentId],
+      });
+      toast.success({
+        description: '删除成功',
+      });
+      router.back();
+    },
+    onError(error, variables, context) {
+      toast.close();
+      toast.error({ description: error.message });
+    },
+  });
+
+  const unpublishMutation = useMutation({
+    mutationFn: ({ documentId }: any) => unpublishPost({ documentId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
+      queryClient.invalidateQueries({
+        queryKey: ['posts', 'detail', documentId],
+        refetchType: 'none',
+      });
+      toast.success({
+        description: '取消发布成功',
+      });
+      navigation.setParams({
+        status: 'draft',
+      });
+    },
+    onError(error, variables, context) {
+      toast.close();
+      toast.error({ description: error.message });
+    },
+  });
+
   const renderHeaderLeft = () => (
     <Button action="secondary" variant="link" onPress={() => router.back()}>
       <ButtonIcon as={ChevronLeft} />
@@ -211,6 +181,8 @@ const PostDetail: React.FC = () => {
       </TouchableOpacity>
     );
   };
+
+  const onPagerClose = () => setIsPagerOpen(false);
 
   const onEditBtnPress = () => {
     router.push(`/posts/edit/${documentId}?status=${status}`);
@@ -265,7 +237,22 @@ const PostDetail: React.FC = () => {
         <>
           <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
             <VStack className="flex-1 p-4" space="lg">
-              <PostCover item={post} onPress={onCoverPress} />
+              {post.cover && isImage(post.cover.mime) && (
+                <ImageCover
+                  item={post}
+                  width={itemWidth}
+                  height={itemHeight}
+                  onPress={onCoverPress}
+                />
+              )}
+              {post.cover && isVideo(post.cover.mime) && (
+                <VideoCover
+                  item={post}
+                  width={itemWidth}
+                  height={itemHeight}
+                  onPress={onCoverPress}
+                />
+              )}
               <HStack className="items-center justify-between" space="xl">
                 <Heading size="lg" className="flex-1">
                   {post.title}
@@ -317,7 +304,7 @@ const PostDetail: React.FC = () => {
                 <UserAvatar user={post.author} />
                 <HStack space="md" className="items-center justify-end">
                   <LikeButton post={post} />
-                  <CommentIcon item={post} />
+                  <CommentIcon post={post} />
                 </HStack>
               </HStack>
               <TagList value={post.tags} readonly={true} />
@@ -329,7 +316,7 @@ const PostDetail: React.FC = () => {
               <HStack className="items-center justify-end">
                 <HStack space="md" className="items-center justify-end">
                   <LikeButton post={post} />
-                  <CommentIcon item={post} />
+                  <CommentIcon post={post} />
                 </HStack>
               </HStack>
             </VStack>

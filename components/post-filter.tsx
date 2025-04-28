@@ -1,9 +1,10 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import _ from 'lodash';
-import { AlertCircle, Eraser, Filter } from 'lucide-react-native';
+import { AlertCircle, Filter } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { DateInput } from './date-input';
 import { TagSelect } from './tag-input';
@@ -13,22 +14,17 @@ import {
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
-  FormControlLabel,
-  FormControlLabelText,
 } from './ui/form-control';
 import { HStack } from './ui/hstack';
 import { Input, InputField } from './ui/input';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FilterContextType {
   isDrawerOpen: boolean;
   setIsDrawerOpen: any;
   filters: any;
   setFilters: any;
-  selectTag: any;
-  clearFilterTags: any;
 }
 
 const defaultValues = {
@@ -39,67 +35,37 @@ const defaultValues = {
   tags: [],
 };
 
-const FilterContext = createContext<FilterContextType>({} as any);
+const FilterContext = createContext<FilterContextType | undefined>(undefined);
+
 export const usePostFilterContext = () => useContext(FilterContext);
 
 export const PostFilterProvider = ({ children }: any) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [filters, setFilters] = useState<any>(defaultValues);
 
-  const selectTag = useCallback(
-    ({ item }: any) => {
-      if (_.includes(filters.tags, item.id)) {
-        setFilters((val: any) => ({
-          ...val,
-          tags: _.filter([...filters.tags], (val: any) => val !== item.id),
-        }));
-      } else {
-        setFilters((val: any) => ({
-          ...val,
-          tags: [...filters.tags, item.id],
-        }));
-      }
-    },
-    [filters.tags],
+  const value = useMemo(
+    () => ({
+      isDrawerOpen,
+      setIsDrawerOpen,
+      filters,
+      setFilters,
+    }),
+    [filters, isDrawerOpen],
   );
-
-  const clearFilterTags = useCallback(
-    () =>
-      setFilters((val: any) => ({
-        ...val,
-        tags: [],
-      })),
-    [],
-  );
-
-  const value = {
-    isDrawerOpen,
-    setIsDrawerOpen,
-    filters,
-    setFilters,
-    selectTag,
-    clearFilterTags,
-  };
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;
 };
 
 export const PostFilterIcon = () => {
-  const { setIsDrawerOpen } = usePostFilterContext();
+  const context = usePostFilterContext();
+  if (!context) {
+    throw new Error('usePostFilterContext must be used within a PostFilterProvider');
+  }
+  const { setIsDrawerOpen } = context;
 
   return (
     <Button variant="link" action="secondary" onPress={() => setIsDrawerOpen(true)}>
-      <ButtonIcon as={Filter} className="text-tertiary-500" />
-    </Button>
-  );
-};
-
-export const ResetFilterIcon = () => {
-  const { clearFilterTags } = usePostFilterContext();
-
-  return (
-    <Button variant="link" action="secondary" onPress={() => clearFilterTags()}>
-      <ButtonIcon as={Eraser} className="text-tertiary-500" />
+      <ButtonIcon as={Filter} className="text-secondary-900" />
     </Button>
   );
 };
@@ -115,7 +81,11 @@ const postFilterSchema = z.object({
 type PostFilterSchema = z.infer<typeof postFilterSchema>;
 
 export const PostFilterContent = () => {
-  const { filters, setFilters, setIsDrawerOpen, isDrawerOpen } = usePostFilterContext();
+  const context = usePostFilterContext();
+  if (!context) {
+    throw new Error('usePostFilterContext must be used within a PostFilterProvider');
+  }
+  const { filters, setFilters, setIsDrawerOpen } = context;
   const insets = useSafeAreaInsets();
 
   const {
@@ -123,15 +93,10 @@ export const PostFilterContent = () => {
     formState: { errors },
     handleSubmit,
     reset,
-    setValue,
   } = useForm<PostFilterSchema>({
     resolver: zodResolver(postFilterSchema),
     defaultValues: filters,
   });
-
-  useEffect(() => {
-    setValue('tags', filters.tags);
-  }, [filters.tags, setValue, isDrawerOpen]);
 
   const renderTitle = ({ field: { onChange, onBlur, value } }: any) => {
     return (
