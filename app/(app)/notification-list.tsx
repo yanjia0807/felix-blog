@@ -22,8 +22,8 @@ import { RefreshControl } from '@/components/ui/refresh-control';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
 import { UserAvatarNotice } from '@/components/user';
+import useCustomToast from '@/hooks/use-custom-toast';
 
 const NotificationList: React.FC = () => {
   const { user } = useAuth();
@@ -78,7 +78,7 @@ const NotificationList: React.FC = () => {
   const updateNotificationMutation = useMutation({
     mutationFn: updateNotificationState,
     onSuccess: (data, variables, context) => {
-      queryClient.setQueryData(['users', 'detail', 'me', 'notifications', 'count'], (val: any) => {
+      queryClient.setQueryData(['notifications', 'count'], (val: any) => {
         return val - 1;
       });
 
@@ -87,7 +87,7 @@ const NotificationList: React.FC = () => {
           val.map((item: any) => (item.id === data.id ? { ...data } : { ...item })),
         );
       } else {
-        queryClient.setQueryData(['users', 'detail', 'me', 'notifications', 'list'], (val: any) => {
+        queryClient.setQueryData(['notifications', 'list'], (val: any) => {
           return {
             ...val,
             pages: _.map(val.pages, (page: any) => ({
@@ -107,9 +107,25 @@ const NotificationList: React.FC = () => {
       const params = { documentId, friendRequest, state };
       return updateFriendRequestNotification(params);
     },
-    onSuccess: async (data, variables) => {
-      await queryClient.invalidateQueries({
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', 'me'],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', { documentId: variables.sender }],
+      });
+
+      queryClient.invalidateQueries({
         queryKey: ['friends', 'list'],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['followings', 'list'],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['followers', 'list'],
       });
 
       queryClient.setQueryData(['notifications', 'count'], (val: any) => {
@@ -323,6 +339,12 @@ const NotificationList: React.FC = () => {
 
   const renderItemSeparator = (props: any) => <Divider {...props} />;
 
+  const onEndReached = () => {
+    if (notificationQuery.hasNextPage && !notificationQuery.isFetchingNextPage) {
+      notificationQuery.fetchNextPage();
+    }
+  };
+
   return (
     <>
       <Stack.Screen
@@ -341,11 +363,7 @@ const NotificationList: React.FC = () => {
             ItemSeparatorComponent={renderItemSeparator}
             ListEmptyComponent={renderEmptyComponent}
             showsVerticalScrollIndicator={false}
-            onEndReached={() => {
-              if (notificationQuery.hasNextPage && !notificationQuery.isFetchingNextPage) {
-                notificationQuery.fetchNextPage();
-              }
-            }}
+            onEndReached={onEndReached}
             refreshControl={
               <RefreshControl
                 refreshing={notificationQuery.isLoading}

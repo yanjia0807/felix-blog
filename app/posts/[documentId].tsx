@@ -23,7 +23,7 @@ import { Menu, MenuItem, MenuItemLabel, MenuSeparator } from '@/components/ui/me
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
+import useCustomToast from '@/hooks/use-custom-toast';
 import { UserAvatar } from '@/components/user';
 import { formatDistance } from '@/utils/date';
 import {

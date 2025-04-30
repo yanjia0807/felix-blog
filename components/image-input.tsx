@@ -41,7 +41,7 @@ import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { Portal } from './ui/portal';
 import { Pressable } from './ui/pressable';
 import { Slider, SliderFilledTrack, SliderTrack } from './ui/slider';
-import useCustomToast from './use-custom-toast';
+import useCustomToast from '../hooks/use-custom-toast';
 
 const SELECTION_LIMIT = 9;
 const appName = Constants?.expoConfig?.extra?.name || '';
@@ -690,9 +690,25 @@ export const ImageList = ({ value = [], onPress }: any) => {
   );
 };
 
-export const ImageCover: React.FC<any> = ({ item, width, height, onPress }) => {
+export const ImageCover: React.FC<any> = ({ item, width = '100%', height = '100%' }) => {
   return (
-    <TouchableOpacity onPress={onPress}>
+    <Image
+      source={{
+        uri: item.cover.thumbnail,
+      }}
+      contentFit="cover"
+      style={{
+        width,
+        height,
+        borderRadius: 6,
+      }}
+    />
+  );
+};
+
+export const VideoCover: React.FC<any> = ({ item, width = '100%', height = '100%' }) => {
+  return (
+    <View className="flex-1 items-center justify-center">
       <Image
         source={{
           uri: item.cover.thumbnail,
@@ -704,29 +720,9 @@ export const ImageCover: React.FC<any> = ({ item, width, height, onPress }) => {
           borderRadius: 6,
         }}
       />
-    </TouchableOpacity>
-  );
-};
-
-export const VideoCover: React.FC<any> = ({ item, width, height, onPress }) => {
-  return (
-    <TouchableOpacity onPress={onPress}>
-      <View className="flex-1 items-center justify-center">
-        <Image
-          source={{
-            uri: item.cover.thumbnail,
-          }}
-          contentFit="cover"
-          style={{
-            width,
-            height,
-            borderRadius: 6,
-          }}
-        />
-        <View className="absolute">
-          <Ionicons name="play-circle-outline" size={42} className="opacity-50" color="white" />
-        </View>
+      <View className="absolute">
+        <Ionicons name="play-circle-outline" size={42} className="opacity-50" color="white" />
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };

@@ -24,7 +24,7 @@ import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
+import useCustomToast from '@/hooks/use-custom-toast';
 import { imageFormat } from '@/utils/file';
 
 type MessageFormSchema = z.infer<typeof messageFormSchema>;

@@ -5,14 +5,14 @@ import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native';
-import { fetchFollowings } from '@/api';
+import { fetchFriends } from '@/api';
 import { useAuth } from '@/components/auth-provider';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import UserList from '@/components/user-list';
 import useDebounce from '@/hooks/use-debounce';
 
-const FollowingListPage: React.FC = () => {
+const FriendListPage: React.FC = () => {
   const [keywords, setKeywords] = useState<string>('');
   const { user: currentUser } = useAuth();
   const { userDocumentId, username } = useLocalSearchParams();
@@ -26,8 +26,8 @@ const FollowingListPage: React.FC = () => {
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['followings', 'list', filters],
-      queryFn: fetchFollowings,
+      queryKey: ['friends', 'list', filters],
+      queryFn: fetchFriends,
       placeholderData: (prev) => prev,
       initialPageParam: {
         pagination: {
@@ -76,7 +76,7 @@ const FollowingListPage: React.FC = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: `${isMe ? '我' : username}关注的人`,
+          title: `${isMe ? '我' : username}的好友`,
           headerShown: true,
           headerLeft: renderHeaderLeft,
         }}
@@ -97,4 +97,4 @@ const FollowingListPage: React.FC = () => {
   );
 };
 
-export default FollowingListPage;
+export default FriendListPage;

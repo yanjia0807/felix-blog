@@ -90,21 +90,52 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
 
       socket.on('friend:add', ({ data }: any) => {
         queryClient.invalidateQueries({
+          queryKey: ['users', 'detail', 'me'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['users', 'detail', { documentId: data.friend.documentId }],
+        });
+        queryClient.invalidateQueries({
           queryKey: ['friends', 'list'],
         });
-
         queryClient.invalidateQueries({
-          queryKey: ['friends', 'detail', { userDocumentId: data.documentId }],
+          queryKey: ['followings', 'list'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['followers', 'list'],
         });
       });
 
       socket.on('friend:cancel', ({ data }: any) => {
         queryClient.invalidateQueries({
+          queryKey: ['users', 'detail', 'me'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['users', 'detail', { documentId: data.friend.documentId }],
+        });
+        queryClient.invalidateQueries({
           queryKey: ['friends', 'list'],
         });
-
         queryClient.invalidateQueries({
-          queryKey: ['friends', 'detail', { userDocumentId: data.documentId }],
+          queryKey: ['followings', 'list'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['followers', 'list'],
+        });
+      });
+
+      socket.on('following:update', ({ data }: any) => {
+        queryClient.invalidateQueries({
+          queryKey: ['users', 'detail', 'me'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['users', 'detail', { documentId: data.follower.documentId }],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['followings', 'list'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['followers', 'list'],
         });
       });
 

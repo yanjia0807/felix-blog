@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import _ from 'lodash';
 import {
   Calendar,
-  ChevronLeft,
   Eye,
   EyeClosed,
   MapPin,
@@ -19,11 +19,9 @@ import {
   createChat,
   fetchChatByUsers,
   fetchUser,
-  fetchIsFollowing,
   updateFollowings,
   createFriendRequest,
   cancelFriend,
-  fetchIsFriend,
 } from '@/api';
 import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-provider';
@@ -36,8 +34,8 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
 import { UserLargeAvatar } from '@/components/user';
+import useCustomToast from '@/hooks/use-custom-toast';
 
 interface UserDetailProps {
   user: any;
@@ -70,37 +68,34 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   const toast = useCustomToast();
   const userDocumentIds = currentUser ? [currentUser.documentId, documentId] : [];
   const isMe = documentId === currentUser?.documentId;
+  const isFollowing = _.some(currentUser.followings, { documentId });
+  const isFriend = _.some(currentUser.friends, { documentId });
 
   const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
-    queryKey: ['users', 'detail', 'me', 'chats', 'list', documentId],
+    queryKey: ['chats', 'list', { userDocumentIds }],
     enabled: !!currentUser,
     queryFn: () => fetchChatByUsers({ userDocumentIds }),
   });
 
-  const followingQuery = useQuery({
-    queryKey: ['users', 'detail', 'me', 'followings', documentId],
-    enabled: !!currentUser,
-    queryFn: () => fetchIsFollowing({ following: documentId }),
-  });
-  const isFollowing = followingQuery.isSuccess && followingQuery.data;
-
-  const friendQuery = useQuery({
-    queryKey: ['friends', 'detail', { userDocumentId: documentId }],
-    enabled: !!currentUser,
-    queryFn: () => fetchIsFriend({ userDocumentId: documentId }),
-  });
-
-  const isFriend = friendQuery.isSuccess && friendQuery.data;
-
   const followMutation = useMutation({
     mutationFn: () => {
-      const params = { following: user.documentId };
+      const params = { following: documentId };
       return updateFollowings(params);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me', 'followings', documentId],
+        queryKey: ['users', 'detail', 'me'],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', { documentId }],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followings', 'list'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followers', 'list'],
+      });
+
       toast.success({
         description: isFollowing ? '取消关注成功' : '关注成功',
       });
@@ -113,10 +108,13 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 
   const createFriendRequestMutation = useMutation({
     mutationFn: () => {
-      const params = { receiverDocumentId: user.documentId };
+      const params = { receiver: documentId };
       return createFriendRequest(params);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['friendRequest', 'list', { receiver: documentId }],
+      });
       toast.success({
         description: '已发送好友申请',
       });
@@ -129,16 +127,32 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 
   const cancelFriendMutation = useMutation({
     mutationFn: () => {
-      const params = { userDocumentId: documentId };
+      const params = { friend: documentId };
       return cancelFriend(params);
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
       toast.success({
         description: '取消好友成功',
       });
 
-      return queryClient.invalidateQueries({
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', 'me'],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', { documentId }],
+      });
+
+      queryClient.invalidateQueries({
         queryKey: ['friends', 'list'],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['followings', 'list'],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['followers', 'list'],
       });
     },
     onError(error) {
@@ -159,9 +173,9 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     },
   });
 
-  const onShareButtonPress = () => {};
+  const onShare = () => {};
 
-  const onChatButtonPress = () => {
+  const onShowChat = () => {
     if (isQueryChatSuccess) {
       if (chatData) {
         router.push(`/chat/${chatData.documentId}`);
@@ -175,7 +189,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     }
   };
 
-  const onFollowBtnPress = () => {
+  const onModifyFollowing = () => {
     const description = isFollowing
       ? `要取消关注${user.username}吗？`
       : `要关注${user.username}吗？`;
@@ -189,10 +203,10 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     });
   };
 
-  const onFriendBtnPress = () => {
+  const onModifyFriend = () => {
     const description = isFriend
-      ? `取消和${user.username}的好友关系吗？`
-      : `向${user.username}发送好友申请吗？`;
+      ? `要取消和${user.username}的好友关系吗？`
+      : `向${user.username}发送添加好友申请吗？`;
 
     toast.confirm({
       description,
@@ -207,7 +221,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     });
   };
 
-  const onFollowingsBtnPress = () => {
+  const onShowFollowings = () => {
     router.push({
       pathname: '/following-list',
       params: {
@@ -217,9 +231,19 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     });
   };
 
-  const onFollowersBtnPress = () => {
+  const onShowFollowers = () => {
     router.push({
       pathname: '/follower-list',
+      params: {
+        userDocumentId: user.documentId,
+        username: user.username,
+      },
+    });
+  };
+
+  const onShowFriends = () => {
+    router.push({
+      pathname: '/friend-list',
       params: {
         userDocumentId: user.documentId,
         username: user.username,
@@ -235,23 +259,23 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
           <Button
             size="md"
             action="secondary"
-            onPress={() => onChatButtonPress()}
+            onPress={() => onShowChat()}
             className="h-8 w-8 rounded-full p-5">
             <ButtonIcon as={MessageCircle} />
           </Button>
           <Button
             action="secondary"
             size="md"
-            onPress={() => onShareButtonPress()}
+            onPress={() => onShare()}
             className="h-8 w-8 rounded-full p-5">
             <ButtonIcon as={Share2} />
           </Button>
-          {!isMe && (
+          {!isMe && !isFriend && (
             <Button
               action={isFollowing ? 'primary' : 'secondary'}
               size="md"
               className="h-8 w-8 rounded-full p-5"
-              onPress={() => onFollowBtnPress()}>
+              onPress={() => onModifyFollowing()}>
               <ButtonIcon as={isFollowing ? Eye : EyeClosed} />
             </Button>
           )}
@@ -260,27 +284,29 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
               action={isFriend ? 'primary' : 'secondary'}
               size="md"
               className="h-8 w-8 rounded-full p-5"
-              onPress={() => onFriendBtnPress()}>
+              onPress={() => onModifyFriend()}>
               <ButtonIcon as={isFriend ? UserRoundMinus : UserRoundPlus}></ButtonIcon>
             </Button>
           )}
         </HStack>
       </HStack>
-      <HStack space="sm">
+      <HStack space="sm" className="items-center">
         <HStack className="items-center" space="xs">
           <Icon size="xs" as={Calendar} />
-          <Text size="xs">{user.birthday || '未设置'}</Text>
+          <Text size="xs">{_.isNil(user.birthday) ? '未设置' : user.birthday}</Text>
         </HStack>
         <HStack className="items-center" space="xs">
           <Icon size="xs" as={ScanFace} />
-          <Text size="xs">{user.gender === 'male' ? '男' : '女'}</Text>
+          <Text size="xs">
+            {_.isNil(user.gender) ? '未设置' : user.gender === 'male' ? '男' : '女'}
+          </Text>
         </HStack>
         <HStack className="items-center" space="xs">
           <Icon size="xs" as={MapPin} />
           <Text size="xs">
-            {user.district
-              ? `${user.district.provinceName}|${user.district.cityName}|${user.district.districtName}`
-              : '未设置'}
+            {_.isNil(user.district)
+              ? '未设置'
+              : `${user.district.provinceName}|${user.district.cityName}|${user.district.districtName}`}
           </Text>
         </HStack>
       </HStack>
@@ -289,27 +315,29 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
           {user.bio || '个人签名'}
         </Text>
       </HStack>
-      <HStack className="justify-around rounded-lg border-y border-primary-50 bg-primary-100 py-3">
-        <VStack className="items-center justify-center">
-          <Text size="lg" bold={true}>
-            {user.posts.count}
-          </Text>
-          <Text size="sm">帖子</Text>
-        </VStack>
-        <TouchableOpacity onPress={() => onFollowingsBtnPress()}>
+      <HStack className="justify-around rounded-full bg-primary-100 py-3">
+        <TouchableOpacity onPress={() => onShowFollowings()}>
           <VStack className="items-center justify-center">
             <Text size="lg" bold={true}>
-              {user.followings.count}
+              {user.followings.length}
             </Text>
             <Text size="sm">关注</Text>
           </VStack>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => onFollowersBtnPress()}>
+        <TouchableOpacity onPress={() => onShowFollowers()}>
           <VStack className="items-center justify-center">
             <Text size="lg" bold={true}>
-              {user.followers.count}
+              {user.followers.length}
             </Text>
             <Text size="sm">被关注</Text>
+          </VStack>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onShowFriends()}>
+          <VStack className="items-center justify-center">
+            <Text size="lg" bold={true}>
+              {user.friends.length}
+            </Text>
+            <Text size="sm">好友</Text>
           </VStack>
         </TouchableOpacity>
       </HStack>
@@ -335,9 +363,10 @@ const UserDetailPage: React.FC = () => {
     isSuccess,
     data: user,
   } = useQuery({
-    queryKey: ['users', 'detail', documentId],
+    queryKey: ['users', 'detail', { documentId }],
     queryFn: () => fetchUser(documentId),
   });
+
   const renderHeaderLeft = () => (
     <Button
       action="secondary"
@@ -345,7 +374,6 @@ const UserDetailPage: React.FC = () => {
       onPress={() => {
         router.back();
       }}>
-      <ButtonIcon as={ChevronLeft} />
       <ButtonText>返回</ButtonText>
     </Button>
   );

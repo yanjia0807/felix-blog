@@ -14,13 +14,22 @@ export const fetchMe = async () => {
           },
           district: true,
           followers: {
-            count: true,
+            fields: ['id', 'documentId'],
           },
           followings: {
-            count: true,
+            fields: ['id', 'documentId'],
+          },
+          friends: {
+            fields: ['id', 'documentId'],
+          },
+          chats: {
+            fields: ['id', 'documentId'],
           },
           posts: {
-            count: true,
+            fields: ['id', 'documentId'],
+          },
+          likePosts: {
+            fields: ['id', 'documentId'],
           },
         },
       },
@@ -131,13 +140,19 @@ export const fetchUser = async (id: string): Promise<any> => {
           fields: ['formats', 'name', 'alternativeText'],
         },
         followers: {
-          count: true,
+          fields: ['id', 'documentId'],
         },
         followings: {
-          count: true,
+          fields: ['id', 'documentId'],
+        },
+        friends: {
+          fields: ['id', 'documentId'],
         },
         posts: {
-          count: true,
+          fields: ['id', 'documentId'],
+        },
+        chats: {
+          fields: ['id', 'documentId'],
         },
       },
     });
@@ -196,11 +211,8 @@ export const fetchUsers = async ({ pageParam }: any) => {
 };
 
 export const fetchFollowings = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId, keyword } = pageParam;
-  const filters = {
-    keyword,
-    userDocumentId,
-  };
+  const { pagination, filters } = pageParam;
+
   const populate = {
     avatar: {
       fields: ['alternativeText', 'width', 'height', 'formats'],
@@ -218,11 +230,8 @@ export const fetchFollowings = async ({ pageParam }: any) => {
 };
 
 export const fetchFollowers = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId, keyword } = pageParam;
-  const filters = {
-    keyword,
-    userDocumentId,
-  };
+  const { pagination, filters } = pageParam;
+
   const populate = {
     avatar: {
       fields: ['alternativeText', 'width', 'height', 'formats'],
@@ -240,18 +249,22 @@ export const fetchFollowers = async ({ pageParam }: any) => {
 };
 
 export const fetchFriends = async ({ pageParam }: any) => {
-  const { pagination } = pageParam;
+  const { pagination, filters } = pageParam;
 
-  try {
-    const query = qs.stringify({
-      pagination,
-    });
+  const populate = {
+    avatar: {
+      fields: ['alternativeText', 'width', 'height', 'formats'],
+    },
+  };
 
-    const res = await apiClient.get(`/users/custom/friends?${query}`);
-    return res;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+  const query = qs.stringify({
+    populate,
+    pagination,
+    filters,
+  });
+
+  const res = await apiClient.get(`/users/custom/friends?${query}`);
+  return res;
 };
 
 export const fetchIsFriend = async (params: any) => {

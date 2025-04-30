@@ -25,7 +25,7 @@ import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { RefreshControl } from './ui/refresh-control';
 import { VStack } from './ui/vstack';
-import useCustomToast from './use-custom-toast';
+import useCustomToast from '../hooks/use-custom-toast';
 
 const appName = Constants?.expoConfig?.extra?.name || '';
 
@@ -90,7 +90,16 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['users', 'detail', user.documentId, 'location', 'list'],
+      queryKey: [
+        'location',
+        'list',
+        {
+          location: {
+            latitude: position?.coords?.latitude,
+            longitude: position?.coords?.longitude,
+          },
+        },
+      ],
       queryFn: fetchAround,
       initialPageParam: {
         location: {

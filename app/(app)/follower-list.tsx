@@ -1,55 +1,40 @@
 import React, { useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import { ChevronLeft, Search } from 'lucide-react-native';
-import { Controller, useForm } from 'react-hook-form';
-import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import { z } from 'zod';
+import { ChevronLeft } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native';
 import { fetchFollowers } from '@/api';
 import { useAuth } from '@/components/auth-provider';
-import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { FormControl } from '@/components/ui/form-control';
-import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { imageFormat } from '@/utils/file';
+import UserList from '@/components/user-list';
+import useDebounce from '@/hooks/use-debounce';
 
-type FilterFormSchema = z.infer<typeof filterFormSchema>;
-
-const filterFormSchema = z.object({
-  keyword: z.string().optional(),
-});
-
-const FollowerList: React.FC = () => {
+const FollowerListPage: React.FC = () => {
+  const [keywords, setKeywords] = useState<string>('');
   const { user: currentUser } = useAuth();
   const { userDocumentId, username } = useLocalSearchParams();
-  const [keyword, setKeyword] = useState();
-  const { control, handleSubmit } = useForm<FilterFormSchema>({
-    resolver: zodResolver(filterFormSchema),
-    defaultValues: {
-      keyword: undefined,
-    },
-  });
-
   const isMe = currentUser?.documentId === userDocumentId;
+
+  const debounceKeywords = useDebounce(keywords, 500);
+  const filters = {
+    userDocumentId,
+    keywords: debounceKeywords,
+  };
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['followers', 'list', { userDocumentId }],
+      queryKey: ['followers', 'list', filters],
       queryFn: fetchFollowers,
+      placeholderData: (prev) => prev,
       initialPageParam: {
         pagination: {
           page: 1,
           pageSize: 20,
         },
-        userDocumentId,
-        keyword,
+        filters,
       },
       getNextPageParam: (lastPage: any) => {
         const {
@@ -61,8 +46,7 @@ const FollowerList: React.FC = () => {
         if (page < pageCount) {
           return {
             pagination: { page: page + 1, pageSize },
-            userDocumentId,
-            keyword,
+            filters,
           };
         }
 
@@ -88,69 +72,6 @@ const FollowerList: React.FC = () => {
     </Button>
   );
 
-  const onSubmit = (formData: any) => {
-    setKeyword(formData.keyword);
-  };
-
-  const renderInput = ({ field: { onBlur, onChange, value } }: any) => {
-    return (
-      <FormControl size="lg" className="flex-1">
-        <Input className="my-2 w-full border p-3">
-          <InputSlot>
-            <InputIcon as={Search} />
-          </InputSlot>
-          <InputField
-            placeholder="用户名/邮箱地址"
-            inputMode="text"
-            autoCapitalize="none"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            returnKeyType="search"
-            onSubmitEditing={handleSubmit(onSubmit)}
-          />
-        </Input>
-      </FormControl>
-    );
-  };
-
-  const renderListHeader = () => {
-    return (
-      <HStack className="w-full items-center justify-between" space="md">
-        <Controller name="keyword" control={control} render={renderInput} />
-      </HStack>
-    );
-  };
-
-  const onItemPress = (item: any) => {
-    router.push(`/users/${item.documentId}`);
-  };
-
-  const renderItem = ({ item, index }: any) => {
-    return (
-      <TouchableOpacity
-        className={`rounded-lg py-2 ${index === 0 ? 'mt-0' : ''} border-b-hairline border-outline-200`}
-        onPress={() => {
-          onItemPress(item);
-        }}>
-        <HStack className={`items-center`} space="md">
-          <Avatar size="sm">
-            <AvatarFallbackText>{item.username}</AvatarFallbackText>
-            <AvatarImage
-              source={{
-                uri: imageFormat(item.avatar, 's', 't')?.fullUrl,
-              }}
-            />
-          </Avatar>
-          <VStack>
-            <Text bold={true}>{item.username}</Text>
-            <Text size="sm">{item.email}</Text>
-          </VStack>
-        </HStack>
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -160,37 +81,20 @@ const FollowerList: React.FC = () => {
           headerLeft: renderHeaderLeft,
         }}
       />
-      <VStack className="flex-1 px-4">
-        <FlatList
+      <VStack className="flex-1 p-4">
+        <UserList
           data={users}
-          ListHeaderComponent={renderListHeader}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item: any) => item.documentId}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={() => {
-                if (!isLoading) {
-                  refetch();
-                }
-              }}
-            />
-          }
+          isLoading={isLoading}
+          refetch={refetch}
+          fetchNextPage={fetchNextPage}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          value={keywords}
+          onChange={setKeywords}
         />
       </VStack>
     </SafeAreaView>
   );
-};
-
-const FollowerListPage = () => {
-  return <FollowerList />;
 };
 
 export default FollowerListPage;

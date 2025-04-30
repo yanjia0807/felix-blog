@@ -10,7 +10,7 @@ import PostForm, { postSchema, PostSchema } from '@/components/post-form';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import useCustomToast from '@/components/use-custom-toast';
+import useCustomToast from '@/hooks/use-custom-toast';
 
 const PostCreatePage: React.FC = () => {
   const queryClient = useQueryClient();

@@ -9,7 +9,6 @@ import { FileTypeNum, isImage, isVideo, imageFormat, fileFullUrl } from '@/utils
 import AlbumPagerView from './album-pager-view';
 import { Box } from './ui/box';
 import { Text } from './ui/text';
-import { useLayout } from './use-layout';
 
 const numColumns = 3;
 
@@ -17,14 +16,12 @@ const AlbumListView = ({ userDocumentId }: any) => {
   const [pagerIndex, setPagerIndex] = useState<number>(0);
   const [isPagerOpen, setIsPagerOpen] = useState(false);
   const onPagerClose = () => setIsPagerOpen(false);
-  const [{ height, measured }, onLayout] = useLayout();
 
   const { width } = useWindowDimensions();
 
   const renderEmptyComponent = (props: any) => {
-    if (!measured) return null;
     return (
-      <View className="flex-1 items-center justify-center" style={{ height }}>
+      <View className="mt-28 flex-1 items-center justify-center">
         <Text size="sm">暂无消息</Text>
       </View>
     );
@@ -118,11 +115,6 @@ const AlbumListView = ({ userDocumentId }: any) => {
       <MasonryFlashList
         data={images}
         getItemType={() => 'image'}
-        onLayout={(e) => {
-          if (!measured) {
-            onLayout(e);
-          }
-        }}
         renderItem={renderItem}
         numColumns={numColumns}
         ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}

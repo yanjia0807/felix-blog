@@ -13,7 +13,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
+import useCustomToast from '@/hooks/use-custom-toast';
 
 type OtpSchemaDetails = z.infer<typeof otpSchema>;
 

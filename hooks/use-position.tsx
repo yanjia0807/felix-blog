@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 import { init, Geolocation, Position, PositionError } from 'react-native-amap-geolocation';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { amapIosApiKey } from '@/api';
-import useCustomToast from '@/components/use-custom-toast';
+import useCustomToast from '@/hooks/use-custom-toast';
 
 type UsePositionReturn = {
   position: Position | null;

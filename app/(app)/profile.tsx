@@ -18,7 +18,8 @@ const Profile: React.FC = () => {
   const { user } = useAuth();
   console.log(user.avatar);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const onFollowingsBtnPress = () => {
+
+  const onShowFollowings = () => {
     router.push({
       pathname: '/following-list',
       params: {
@@ -27,9 +28,18 @@ const Profile: React.FC = () => {
     });
   };
 
-  const onFollowersBtnPress = () => {
+  const onShowFollowers = () => {
     router.push({
       pathname: '/follower-list',
+      params: {
+        userDocumentId: user.documentId,
+      },
+    });
+  };
+
+  const onShowFriends = () => {
+    router.push({
+      pathname: '/friend-list',
       params: {
         userDocumentId: user.documentId,
       },
@@ -88,27 +98,29 @@ const Profile: React.FC = () => {
           </HStack>
           <Text size="sm">{user?.bio || '个人签名'}</Text>
         </VStack>
-        <HStack className="justify-around rounded-lg border-y border-primary-50 bg-primary-100 py-3">
-          <VStack className="items-center justify-center">
-            <Text size="lg" bold={true}>
-              {user.posts.count}
-            </Text>
-            <Text size="sm">帖子</Text>
-          </VStack>
-          <TouchableOpacity onPress={() => onFollowingsBtnPress()}>
+        <HStack className="justify-around rounded-full bg-primary-100 py-3">
+          <TouchableOpacity onPress={() => onShowFollowings()}>
             <VStack className="items-center justify-center">
               <Text size="lg" bold={true}>
-                {user.followings.count}
+                {user.followings.length}
               </Text>
               <Text size="sm">关注</Text>
             </VStack>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => onFollowersBtnPress()}>
+          <TouchableOpacity onPress={() => onShowFollowers()}>
             <VStack className="items-center justify-center">
               <Text size="lg" bold={true}>
-                {user.followers.count}
+                {user.followers.length}
               </Text>
               <Text size="sm">被关注</Text>
+            </VStack>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onShowFriends()}>
+            <VStack className="items-center justify-center">
+              <Text size="lg" bold={true}>
+                {user.friends.length}
+              </Text>
+              <Text size="sm">好友</Text>
             </VStack>
           </TouchableOpacity>
         </HStack>

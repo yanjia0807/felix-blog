@@ -39,8 +39,8 @@ import {
 import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
 import { genderEnum } from '@/constants/enum';
+import useCustomToast from '@/hooks/use-custom-toast';
 import { FileTypeNum, imageFormat } from '@/utils/file';
 
 type UserFormSchema = z.infer<typeof userFormSchema>;
@@ -116,8 +116,9 @@ const UserEdit: React.FC = () => {
         queryKey: ['users', 'detail', 'me'],
       });
       queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', user.documentId],
+        queryKey: ['users', 'detail', { documentId: user.documentId }],
       });
+
       toast.success({ title: '操作完成', description: '您的资料已更新' });
       router.back();
     },
@@ -203,7 +204,6 @@ const UserEdit: React.FC = () => {
       <DistrictInput value={value} onChange={onChange} placeholder="请选择所在地区" />
       <FormControlError>
         <FormControlErrorIcon as={AlertCircle} />
-        <FormControlErrorText>{errors?.district?.message}</FormControlErrorText>
       </FormControlError>
     </FormControl>
   );

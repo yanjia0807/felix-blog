@@ -19,7 +19,7 @@ import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import useCustomToast from './use-custom-toast';
+import useCustomToast from '../hooks/use-custom-toast';
 
 interface PostListViewProps {
   userDocumentId: string;

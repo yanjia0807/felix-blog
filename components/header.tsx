@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -59,11 +59,13 @@ export const Notification = () => {
   );
 };
 
-export const MainHeader = ({ className }: { className?: string }) => {
+export const MainHeader: React.FC<any> = memo(() => {
+  useEffect(() => console.log('@render MainHeader'));
+
   const { isLogin } = useAuth();
 
   return (
-    <HStack className={twMerge(['w-full items-center justify-between overflow-auto'], className)}>
+    <HStack className="w-full items-center justify-between overflow-auto">
       <Image
         alt="logo"
         source={require('../assets/images/icon.png')}
@@ -74,7 +76,7 @@ export const MainHeader = ({ className }: { className?: string }) => {
       </HStack>
     </HStack>
   );
-};
+});
 
 export const AuthHeader = ({ className, title, subtitle }: any) => {
   return (

@@ -53,7 +53,7 @@ import { Icon } from './ui/icon';
 import { Input, InputField } from './ui/input';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import useCustomToast from './use-custom-toast';
+import useCustomToast from '../hooks/use-custom-toast';
 
 type CommentContextType =
   | {

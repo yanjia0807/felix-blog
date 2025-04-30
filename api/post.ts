@@ -162,8 +162,48 @@ export const fetchRecommendPosts = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchClzPosts = async ({ pageParam }: any) => {
-  const { pagination, filters } = pageParam;
+export const fetchTrendingPosts = async ({ pageParam }: any) => {
+  const { pagination } = pageParam;
+  const query = qs.stringify(
+    {
+      pagination,
+    },
+    {
+      encodeValuesOnly: false,
+    },
+  );
+
+  const res = await apiClient.get(`/posts/trending?${query}`);
+  return res;
+};
+
+export const fetchFollowingPosts = async ({ pageParam }: any) => {
+  const { pagination } = pageParam;
+  const query = qs.stringify(
+    {
+      pagination,
+    },
+    {
+      encodeValuesOnly: false,
+    },
+  );
+
+  const res = await apiClient.get(`/posts/trending?${query}`);
+  return res;
+};
+
+export const fetchDiscoverPosts = async ({ pageParam }: any) => {
+  const {
+    pagination,
+    filters: { tags },
+  } = pageParam;
+
+  const filters: any = {};
+  if (!_.isNil(tags) && !_.isEmpty(tags)) {
+    filters.tags = {
+      $in: tags,
+    };
+  }
 
   const query = qs.stringify(
     {
@@ -176,9 +216,6 @@ export const fetchClzPosts = async ({ pageParam }: any) => {
             },
           },
         },
-        tags: true,
-        poi: true,
-        cover: true,
         likedByUsers: {
           populate: {
             avatar: {
@@ -187,6 +224,8 @@ export const fetchClzPosts = async ({ pageParam }: any) => {
           },
           fields: ['username'],
         },
+        cover: true,
+        attachments: true,
         attachmentExtras: {
           populate: {
             attachment: true,
@@ -194,6 +233,7 @@ export const fetchClzPosts = async ({ pageParam }: any) => {
           },
         },
       },
+      filters,
       sort: 'createdAt:desc',
       pagination,
     },
@@ -204,6 +244,18 @@ export const fetchClzPosts = async ({ pageParam }: any) => {
 
   const res = await apiClient.get(`/posts?${query}`);
   return res;
+};
+
+export const fetchExplorePosts = async ({ pageParam }: any) => {
+  const { postType } = pageParam;
+
+  if (postType === 'trending') {
+    return await fetchTrendingPosts({ pageParam });
+  } else if (postType === 'following') {
+    return await fetchFollowingPosts({ pageParam });
+  } else if (postType === 'discover') {
+    return await fetchDiscoverPosts({ pageParam });
+  }
 };
 
 export const fetchUserPosts = async ({ pageParam }: any) => {

@@ -1,6 +1,6 @@
 import { useRef, useCallback } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import useWebviewHTML from './use-webview-html';
+import useWebviewHTML from '../hooks/use-webview-html';
 
 type WebEvent = {
   type: 'EDITOR_READY' | 'CONTENT_CHANGE';

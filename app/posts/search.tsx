@@ -177,6 +177,7 @@ const PostSearchHeader: React.FC<any> = ({ value, onChange, onSubmitEditing, isL
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="search"
+            placeholder="搜索帖子..."
           />
           {isLoading && (
             <InputSlot className="mx-3">

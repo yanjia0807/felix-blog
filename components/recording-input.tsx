@@ -23,7 +23,7 @@ import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import useCustomToast from './use-custom-toast';
+import useCustomToast from '../hooks/use-custom-toast';
 
 const SELECTION_LIMIT = 5;
 const appName = Constants?.expoConfig?.extra?.name || '';

@@ -24,7 +24,7 @@ import { Link, LinkText } from '@/components/ui/link';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/components/use-custom-toast';
+import useCustomToast from '@/hooks/use-custom-toast';
 
 type RegisterSchemaDetails = z.infer<typeof registerSchema>;
 
