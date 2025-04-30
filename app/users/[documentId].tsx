@@ -315,7 +315,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
           {user.bio || '个人签名'}
         </Text>
       </HStack>
-      <HStack className="justify-around rounded-full bg-primary-100 py-3">
+      <HStack className="justify-around rounded-lg bg-primary-100 py-3">
         <TouchableOpacity onPress={() => onShowFollowings()}>
           <VStack className="items-center justify-center">
             <Text size="lg" bold={true}>

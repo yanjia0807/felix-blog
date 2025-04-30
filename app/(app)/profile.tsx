@@ -98,7 +98,7 @@ const Profile: React.FC = () => {
           </HStack>
           <Text size="sm">{user?.bio || '个人签名'}</Text>
         </VStack>
-        <HStack className="justify-around rounded-full bg-primary-100 py-3">
+        <HStack className="justify-around rounded-lg bg-primary-100 py-3">
           <TouchableOpacity onPress={() => onShowFollowings()}>
             <VStack className="items-center justify-center">
               <Text size="lg" bold={true}>
