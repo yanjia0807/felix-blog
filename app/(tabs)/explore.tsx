@@ -86,8 +86,8 @@ const TagItem: React.FC<any> = ({ item, isLoaded, selectFilterTags, filterTags }
         {item && (
           <Button
             size="sm"
-            action="secondary"
-            variant={_.includes(filterTags, item.id) ? 'solid' : 'outline'}
+            action={_.includes(filterTags, item.id) ? 'primary' : 'secondary'}
+            variant="solid"
             onPress={() => selectFilterTags({ item })}>
             <ButtonText>{item.name}</ButtonText>
           </Button>

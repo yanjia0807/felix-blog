@@ -16,17 +16,17 @@ export const UserAvatar = ({ user, size = 'sm' }: any) => {
     <TouchableOpacity onPress={() => router.push(`/users/${user.documentId}`)}>
       <HStack className="items-center" space={size}>
         <Avatar size={size}>
-          {user.avatar ? (
+          {user?.avatar ? (
             <AvatarImage
               source={{
                 uri: imageFormat(user.avatar, 's', 't')?.fullUrl,
               }}
             />
           ) : (
-            <AvatarFallbackText>{user.username}</AvatarFallbackText>
+            <AvatarFallbackText>{user?.username}</AvatarFallbackText>
           )}
         </Avatar>
-        <Text size={size}>{user.username}</Text>
+        <Text size={size}>{user?.username}</Text>
       </HStack>
     </TouchableOpacity>
   );

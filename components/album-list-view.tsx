@@ -16,16 +16,7 @@ const AlbumListView = ({ userDocumentId }: any) => {
   const [pagerIndex, setPagerIndex] = useState<number>(0);
   const [isPagerOpen, setIsPagerOpen] = useState(false);
   const onPagerClose = () => setIsPagerOpen(false);
-
   const { width } = useWindowDimensions();
-
-  const renderEmptyComponent = (props: any) => {
-    return (
-      <View className="mt-32 flex-1 items-center">
-        <Text size="sm">暂无消息</Text>
-      </View>
-    );
-  };
 
   const { data, fetchNextPage, hasNextPage, isLoading, isSuccess, isFetchingNextPage, refetch } =
     useInfiniteQuery({
@@ -118,7 +109,12 @@ const AlbumListView = ({ userDocumentId }: any) => {
         renderItem={renderItem}
         numColumns={numColumns}
         ItemSeparatorComponent={() => <Box style={{ marginBottom: 1 }} />}
-        ListEmptyComponent={renderEmptyComponent}
+        ListEmptyComponent={
+          <View className="mt-32 flex-1 items-center justify-center">
+            <Text size="sm">暂无数据</Text>
+          </View>
+        }
+        showsVerticalScrollIndicator={false}
         estimatedItemSize={width / numColumns}
         onEndReached={() => {
           if (hasNextPage && !isFetchingNextPage) {
@@ -135,7 +131,6 @@ const AlbumListView = ({ userDocumentId }: any) => {
             }}
           />
         }
-        showsVerticalScrollIndicator={false}
       />
       <AlbumPagerView
         initIndex={pagerIndex}
