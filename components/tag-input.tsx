@@ -64,7 +64,7 @@ export const TagList = ({ value = [], onChange, className, readonly = false }: a
       <HStack space="sm" className={twMerge('flex-wrap', className)}>
         {value.map((item: any) => (
           <Button
-            size="xs"
+            size="sm"
             action="secondary"
             onPress={() => !readonly && onRemove(item.documentId)}
             key={item.documentId}>

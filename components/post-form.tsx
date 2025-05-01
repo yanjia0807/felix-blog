@@ -45,7 +45,9 @@ export const postSchema = z.object({
     .nullable(),
   author: z.any(),
   poi: z.any(),
-  cover: z.any(),
+  cover: z
+    .unknown({})
+    .refine((val) => val !== null && val !== undefined, { message: '封面不能为空' }),
   images: z.array(z.any()),
   recordings: z.array(z.any()),
   tags: z.array(z.any()),
@@ -112,6 +114,10 @@ const PostForm = ({ mode, form, query, mutation }: PostFormProps) => {
   const renderCover = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.cover} size="md">
       <CoverInput value={value} onChange={onChange} onPress={onCoverPress} />
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircle} />
+        <FormControlErrorText>{errors?.cover?.message}</FormControlErrorText>
+      </FormControlError>
     </FormControl>
   );
 
