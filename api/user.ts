@@ -126,12 +126,6 @@ export const updateFollowings = async (params: any) => {
   return res.data;
 };
 
-export const fetchIsFollowing = async (params: any) => {
-  const query: any = qs.stringify({ following: params.following });
-  const res = await apiClient.get(`/users/custom/is-following?${query}`);
-  return res.data;
-};
-
 export const fetchUser = async (id: string): Promise<any> => {
   try {
     const query = qs.stringify({
@@ -210,6 +204,28 @@ export const fetchUsers = async ({ pageParam }: any) => {
   return res;
 };
 
+export const fetchOnlineUsers = async ({ pageParam }: any) => {
+  const { pagination, userDocumentId } = pageParam;
+
+  const query = qs.stringify({
+    populate: {
+      avatar: {
+        fields: ['alternativeText', 'width', 'height', 'formats'],
+      },
+    },
+    filters: {
+      isOnline: true,
+      documentId: {
+        $notIn: [userDocumentId],
+      },
+    },
+    pagination,
+  });
+
+  const res = await apiClient.get(`/users/custom?${query}`);
+  return res;
+};
+
 export const fetchFollowings = async ({ pageParam }: any) => {
   const { pagination, filters } = pageParam;
 
@@ -265,13 +281,6 @@ export const fetchFriends = async ({ pageParam }: any) => {
 
   const res = await apiClient.get(`/users/custom/friends?${query}`);
   return res;
-};
-
-export const fetchIsFriend = async (params: any) => {
-  const query: any = qs.stringify(params);
-  const res = await apiClient.get(`/users/custom/is-friend?${query}`);
-
-  return res.data;
 };
 
 export const cancelFriend = async (params: any) => {

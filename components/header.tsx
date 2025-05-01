@@ -5,22 +5,19 @@ import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Bell } from 'lucide-react-native';
 import { View } from 'react-native';
-import { twMerge } from 'tailwind-merge';
 import { fetchNotificationCount } from '@/api';
 import { useAuth } from './auth-provider';
 import { useSocket } from './socket-provider';
 import { Button, ButtonText, ButtonIcon } from './ui/button';
-import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Text } from './ui/text';
-import { VStack } from './ui/vstack';
 
 export const HeaderLogo = () => {
   return (
     <Image
       alt="logo"
       source={require('../assets/images/icon.png')}
-      style={{ width: 40, height: 40 }}
+      style={{ width: 40, height: 40, borderRadius: 8 }}
     />
   );
 };
@@ -66,11 +63,7 @@ export const MainHeader: React.FC<any> = memo(() => {
 
   return (
     <HStack className="w-full items-center justify-between overflow-auto">
-      <Image
-        alt="logo"
-        source={require('../assets/images/icon.png')}
-        style={{ width: 40, height: 40, borderRadius: 8 }}
-      />
+      <HeaderLogo />
       <HStack className="items-center" space="md">
         {isLogin && <Notification />}
       </HStack>
@@ -78,24 +71,9 @@ export const MainHeader: React.FC<any> = memo(() => {
   );
 });
 
-export const AuthHeader = ({ className, title, subtitle }: any) => {
-  return (
-    <HStack className={twMerge('mb-20 items-center', className)} space="md">
-      <Image
-        alt="logo"
-        source={require('../assets/images/icon.png')}
-        style={{ width: 40, height: 40, borderRadius: 6 }}
-      />
-      <VStack>
-        <Heading>{title}</Heading>
-        {subtitle && <Text sub={true}>{subtitle}</Text>}
-      </VStack>
-    </HStack>
-  );
-};
-
 export const BackButton = () => {
   const router = useRouter();
+
   const onPress = () => {
     if (router.canGoBack()) {
       router.back();
@@ -105,6 +83,7 @@ export const BackButton = () => {
       router.replace('/');
     }
   };
+
   return (
     <Button action="secondary" variant="link" onPress={onPress}>
       <ButtonText>返回</ButtonText>

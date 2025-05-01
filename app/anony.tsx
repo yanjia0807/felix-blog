@@ -1,6 +1,6 @@
 import React from 'react';
 import { router, Stack } from 'expo-router';
-import { AuthHeader } from '@/components/header';
+import { AnonyLogoBox } from '@/components/anony';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
@@ -28,7 +28,7 @@ const AnonyPage: React.FC = () => {
         }}
       />
       <VStack className="flex-1 p-4" space="xl">
-        <AuthHeader
+        <AnonyLogoBox
           title="登录后，体验完整功能"
           subtitle="登录后，您将能享受更多个性化设置和功能"
         />

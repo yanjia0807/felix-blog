@@ -1,28 +1,26 @@
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetFooter,
   BottomSheetModal,
-  BottomSheetTextInput,
+  useBottomSheetInternal,
 } from '@gorhom/bottom-sheet';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Tag, X } from 'lucide-react-native';
-import { Controller, useForm } from 'react-hook-form';
-import { TouchableOpacity } from 'react-native';
+import { Search, Tag } from 'lucide-react-native';
+import { NativeSyntheticEvent, TextInputFocusEventData, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { twMerge } from 'tailwind-merge';
-import { z } from 'zod';
 import { fetchAllTags } from '@/api/tag';
+import useDebounce from '@/hooks/use-debounce';
 import PageSpinner from './page-spinner';
 import { Button, ButtonText } from './ui/button';
 import { Divider } from './ui/divider';
-import { FormControl } from './ui/form-control';
 import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
-import { Input, InputIcon } from './ui/input';
+import { Input, InputField, InputIcon, InputSlot } from './ui/input';
+import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
@@ -47,8 +45,8 @@ export const TagSelect = ({ value = [], onChange }: any) => {
           onPress={() => onTagItemPress(item)}
           key={item.id}
           size="sm"
-          action="secondary"
-          variant={_.includes(value, item.id) ? 'solid' : 'outline'}>
+          action={_.includes(value, item.id) ? 'primary' : 'secondary'}
+          variant="solid">
           <ButtonText>{item.name}</ButtonText>
         </Button>
       ))}
@@ -94,44 +92,84 @@ export const TagInput = ({ value, onChange }: any) => {
   );
 };
 
-type FilterFormSchema = z.infer<typeof filterFormSchema>;
+export const TagSearchInput: React.FC<any> = memo(
+  forwardRef<any, any>(({ onFocus, onBlur, onChange, value, isLoading }, ref) => {
+    console.log('@render TagSearchInput');
 
-const filterFormSchema = z.object({
-  name: z.string().max(100, '内容不能超过100个字符').nullable(),
-});
+    const { shouldHandleKeyboardEvents } = useBottomSheetInternal();
+
+    const handleOnFocus = useCallback(
+      (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
+        shouldHandleKeyboardEvents.value = true;
+        if (onFocus) {
+          onFocus(args);
+        }
+      },
+      [onFocus, shouldHandleKeyboardEvents],
+    );
+
+    const handleOnBlur = useCallback(
+      (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
+        shouldHandleKeyboardEvents.value = false;
+        if (onBlur) {
+          onBlur(args);
+        }
+      },
+      [onBlur, shouldHandleKeyboardEvents],
+    );
+
+    useEffect(() => {
+      return () => {
+        shouldHandleKeyboardEvents.value = false;
+      };
+    }, [shouldHandleKeyboardEvents]);
+
+    return (
+      <Input variant="rounded" className="w-full">
+        <InputSlot className="ml-3">
+          <InputIcon as={Search} />
+        </InputSlot>
+        <InputField
+          ref={ref}
+          inputMode="text"
+          autoCapitalize="none"
+          returnKeyType="send"
+          placeholder="搜索标签..."
+          value={value}
+          onBlur={handleOnBlur}
+          onFocus={handleOnFocus}
+          onChangeText={onChange}
+        />
+        {isLoading && (
+          <InputSlot className="mx-3">
+            <InputIcon as={Spinner} />
+          </InputSlot>
+        )}
+      </Input>
+    );
+  }),
+);
 
 export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any, ref: any) {
+  const [keywords, setKeywords] = useState(undefined);
   const [selectedTags, setSelectedTags] = useState<any>([]);
   const snapPoints = useMemo(() => ['80%'], []);
   const insets = useSafeAreaInsets();
-
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    getValues,
-  } = useForm<FilterFormSchema>({
-    resolver: zodResolver(filterFormSchema),
-    defaultValues: {
-      name: '',
-    },
-  });
+  const inputRef = useRef<any>(null);
+  const debounceKeywords = useDebounce(keywords, 500);
+  const filters = {
+    keywords: debounceKeywords,
+  };
 
   useEffect(() => {
     setSelectedTags([...value]);
   }, [value]);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['tags', 'list', { name: getValues() }],
-    queryFn: () => fetchAllTags(getValues()),
+  const { data, isLoading } = useQuery({
+    queryKey: ['tags', 'list', filters],
+    queryFn: () => fetchAllTags(filters),
+    placeholderData: (prev) => prev,
   });
-
-  const onSubmit = useCallback((data: any) => refetch(data), [refetch]);
-
-  const debouncedSubmit = React.useMemo(
-    () => _.debounce(handleSubmit(onSubmit), 1000),
-    [handleSubmit, onSubmit],
-  );
 
   const onAdd = (tag: any) => {
     setSelectedTags((prev: any) => [...prev, tag]);
@@ -188,25 +226,6 @@ export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any,
     );
   };
 
-  const renderInput = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl className="flex-1" isInvalid={!!errors.name} size="md">
-      <Input className="bg-background-50" variant="rounded">
-        <BottomSheetTextInput
-          inputMode="text"
-          className="h-full flex-1 px-3"
-          returnKeyType="search"
-          placeholder="搜索标签..."
-          value={value}
-          onBlur={onBlur}
-          onChangeText={(e) => {
-            onChange(e);
-            debouncedSubmit();
-          }}
-        />
-      </Input>
-    </FormControl>
-  );
-
   return (
     <BottomSheetModal
       ref={ref}
@@ -216,13 +235,17 @@ export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any,
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
       <VStack className="flex-1 bg-background-100 p-4" space="md">
-        <PageSpinner isVisiable={isLoading} />
         <VStack className="mb-4 items-center">
           <Heading className="p-2">请选择标签</Heading>
           <Divider />
         </VStack>
         <HStack className="bg-background-100">
-          <Controller name="name" control={control} render={renderInput} />
+          <TagSearchInput
+            ref={inputRef}
+            value={keywords}
+            onChange={(text: any) => setKeywords(text)}
+            isLoading={isLoading}
+          />
         </HStack>
         <TagList value={selectedTags} onChange={onChange} />
         <BottomSheetFlatList

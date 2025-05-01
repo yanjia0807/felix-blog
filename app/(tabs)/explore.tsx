@@ -7,6 +7,8 @@ import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { FlatList, Pressable, RefreshControl, useWindowDimensions, View } from 'react-native';
 import { fetchAllTags, fetchExplorePosts } from '@/api';
+import { AnonyBox } from '@/components/anony';
+import { useAuth } from '@/components/auth-provider';
 import { MainHeader } from '@/components/header';
 import { ImageCover, VideoCover } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
@@ -18,7 +20,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { UserAvatar, UserAvatars } from '@/components/user';
+import { UserAvatar } from '@/components/user';
 import { fileFullUrl, FileTypeNum, imageFormat, isImage, videoThumbnailUrl } from '@/utils/file';
 
 const ExploreItem: React.FC<any> = ({ item, columnIndex }) => {
@@ -142,36 +144,51 @@ const ExploreHeader: React.FC<any> = ({
   );
 };
 
+const segments = [
+  {
+    key: 'trending',
+    name: '热点',
+  },
+  {
+    key: 'following',
+    name: '关注',
+  },
+  {
+    key: 'discover',
+    name: '发现',
+  },
+];
+
 const ExplorePage: React.FC<any> = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filterTags, setFilterTags] = useState<any>([]);
-  const [segments, setSegments] = useState([
-    {
-      key: 'trending',
-      name: '热点',
-    },
-    {
-      key: 'following',
-      name: '关注',
-    },
-    {
-      key: 'discover',
-      name: '发现',
-    },
-  ]);
-  const postType = segments[selectedIndex].key;
-  const filters = postType === 'discover' ? { tags: filterTags } : undefined;
+  const { isLogin, user } = useAuth();
+  const filterType = segments[selectedIndex].key;
+  let filters: any;
+  switch (filterType) {
+    case 'discover':
+      filters = { tags: filterTags };
+      break;
+    case 'following':
+      filters = { followings: _.map(user?.followings || [], (item: any) => item.documentId) };
+      break;
+    default:
+      filters = undefined;
+      break;
+  }
+
+  const isShow = isLogin || (!isLogin && segments[selectedIndex].key !== 'following');
 
   const postsQuery = useInfiniteQuery({
-    queryKey: ['posts', 'list', { postType, filters }],
+    queryKey: ['posts', 'list', { filterType, filters }],
     queryFn: fetchExplorePosts,
     placeholderData: keepPreviousData,
     initialPageParam: {
       pagination: {
         page: 1,
-        pageSize: 5,
+        pageSize: 10,
       },
-      postType,
+      filterType,
       filters,
     },
     getNextPageParam: (lastPage: any) => {
@@ -184,7 +201,7 @@ const ExplorePage: React.FC<any> = () => {
       if (page < pageCount) {
         return {
           pagination: { page: page + 1, pageSize },
-          postType,
+          filterType,
           filters,
         };
       }
@@ -244,39 +261,41 @@ const ExplorePage: React.FC<any> = () => {
   return (
     <SafeAreaView className="flex-1">
       <VStack className="flex-1 px-4">
-        <MasonryFlashList
-          ListHeaderComponent={
-            <ExploreHeader
-              filterTags={filterTags}
-              selectFilterTags={selectFilterTags}
-              segments={segments}
-              selectedIndex={selectedIndex}
-              setSelectedIndex={setSelectedIndex}
-            />
-          }
-          ListEmptyComponent={
-            <View className="mt-28 flex-1 items-center justify-center">
-              <Text size="sm">暂无数据</Text>
-            </View>
-          }
-          keyExtractor={(item: any) => item.documentId}
-          data={posts}
-          numColumns={2}
-          renderItem={renderListItem}
-          estimatedItemSize={260}
-          showsVerticalScrollIndicator={false}
-          onEndReached={onEndReached}
-          refreshControl={
-            <RefreshControl
-              refreshing={postsQuery.isLoading}
-              onRefresh={() => {
-                if (postsQuery.hasNextPage && !postsQuery.isLoading) {
-                  postsQuery.refetch();
-                }
-              }}
-            />
-          }
+        <ExploreHeader
+          filterTags={filterTags}
+          selectFilterTags={selectFilterTags}
+          segments={segments}
+          selectedIndex={selectedIndex}
+          setSelectedIndex={setSelectedIndex}
         />
+        {isShow ? (
+          <MasonryFlashList
+            renderItem={renderListItem}
+            ListEmptyComponent={
+              <View className="mt-32 flex-1 items-center justify-center">
+                <Text size="sm">暂无数据</Text>
+              </View>
+            }
+            keyExtractor={(item: any) => item.documentId}
+            data={posts}
+            numColumns={2}
+            estimatedItemSize={260}
+            showsVerticalScrollIndicator={false}
+            onEndReached={onEndReached}
+            refreshControl={
+              <RefreshControl
+                refreshing={postsQuery.isLoading}
+                onRefresh={() => {
+                  if (postsQuery.hasNextPage && !postsQuery.isLoading) {
+                    postsQuery.refetch();
+                  }
+                }}
+              />
+            }
+          />
+        ) : (
+          <AnonyBox />
+        )}
       </VStack>
     </SafeAreaView>
   );

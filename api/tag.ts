@@ -1,10 +1,10 @@
 import qs from 'qs';
 import { apiClient } from './api-client';
 
-export const fetchAllTags = async ({ name }: any) => {
-  const query = name
+export const fetchAllTags = async ({ keywords }: any) => {
+  const query = keywords
     ? qs.stringify({
-        filters: { name: { $contains: name } },
+        filters: { name: { $contains: keywords } },
       })
     : '';
 

@@ -5,8 +5,8 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
+import { AnonyLogoBox } from '@/components/anony';
 import { useAuth } from '@/components/auth-provider';
-import { AuthHeader } from '@/components/header';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -184,7 +184,7 @@ const OtpRegisterPage: React.FC = () => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AuthHeader title="用户注册" />
+          <AnonyLogoBox title="用户注册" />
           <VStack space="md">
             <Controller control={control} name="username" render={renderUsername} />
             <Controller control={control} name="email" render={renderEmail} />

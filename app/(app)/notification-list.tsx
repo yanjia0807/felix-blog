@@ -331,9 +331,9 @@ const NotificationList: React.FC = () => {
 
   const renderEmptyComponent = (props: any) => {
     return (
-      <Box className="flex-1 items-center justify-center">
+      <View className="mt-32 flex-1 items-center">
         <Text size="sm">暂无通知</Text>
-      </Box>
+      </View>
     );
   };
 

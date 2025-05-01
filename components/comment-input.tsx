@@ -675,7 +675,7 @@ export const CommentSheet = memo(() => {
 
   const renderEmptyComponent = useCallback(() => {
     return (
-      <Box className="mt-10 w-full items-center justify-center">
+      <Box className="mt-32 w-full items-center">
         <Text size="sm">暂无评论</Text>
       </Box>
     );

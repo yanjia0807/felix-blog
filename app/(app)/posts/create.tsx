@@ -2,12 +2,11 @@ import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
 import { useForm } from 'react-hook-form';
 import { createPost } from '@/api/post';
 import { useAuth } from '@/components/auth-provider';
 import PostForm, { postSchema, PostSchema } from '@/components/post-form';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import useCustomToast from '@/hooks/use-custom-toast';
@@ -19,10 +18,10 @@ const PostCreatePage: React.FC = () => {
 
   const mutation = useMutation({
     mutationFn: (data: PostSchema) => createPost(data),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
       toast.success({
-        description: '保存成功',
+        description: variables.isPublished ? '发布成功' : '保存成功',
       });
       router.dismiss();
     },
@@ -40,9 +39,9 @@ const PostCreatePage: React.FC = () => {
     images: [],
     recordings: [],
     tags: [],
-    status: 'published',
     attachments: [],
     attachmentExtras: [],
+    isPublished: false,
   };
 
   const form = useForm<PostSchema>({
@@ -63,7 +62,6 @@ const PostCreatePage: React.FC = () => {
       onPress={() => {
         router.back();
       }}>
-      <ButtonIcon as={ChevronLeft} />
       <ButtonText>返回</ButtonText>
     </Button>
   );
@@ -72,30 +70,30 @@ const PostCreatePage: React.FC = () => {
     <HStack space="md" className="items-center">
       <Button
         size="md"
-        action="secondary"
+        action="primary"
         variant="link"
         isDisabled={mutation.isPending}
-        onPress={onSaveDraftBtnPress}>
-        <ButtonText>[存草稿]</ButtonText>
+        onPress={onSaveDraft}>
+        <ButtonText>存草稿</ButtonText>
       </Button>
       <Button
         action="primary"
         size="md"
         variant="link"
-        onPress={onSaveBtnPress}
+        onPress={onSave}
         isDisabled={mutation.isPending}>
         <ButtonText>发布</ButtonText>
       </Button>
     </HStack>
   );
 
-  function onSaveDraftBtnPress(): void {
-    setValue('status', 'draft');
+  function onSaveDraft(): void {
+    setValue('isPublished', false);
     handleSubmit(onSubmit)();
   }
 
-  function onSaveBtnPress(): void {
-    setValue('status', 'published');
+  function onSave(): void {
+    setValue('isPublished', true);
     handleSubmit(onSubmit)();
   }
 

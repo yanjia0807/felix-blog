@@ -52,8 +52,8 @@ export const usePostFilterContext = () => {
 const postFilterSchema = z.object({
   title: z.string().optional(),
   authorName: z.string().optional(),
-  createdAtFrom: z.date().optional(),
-  createdAtTo: z.date().optional(),
+  publishDateFrom: z.date().optional(),
+  publishDateTo: z.date().optional(),
   tags: z.array(z.any()),
 });
 
@@ -63,8 +63,8 @@ export const PostFilterProvider = ({ children }: any) => {
   const [filters, setFilters] = useState<any>({
     title: undefined,
     authorName: undefined,
-    createdAtFrom: undefined,
-    createdAtTo: undefined,
+    publishDateFrom: undefined,
+    publishDateTo: undefined,
     tags: [],
   });
   const [searchFrom, setSearchFrom] = useState<'keywords' | 'filters'>('keywords');
@@ -75,8 +75,8 @@ export const PostFilterProvider = ({ children }: any) => {
     return (
       (!_.isNil(filters.title) && _.trim(filters.title) !== '') ||
       (!_.isNil(filters.authorName) && _.trim(filters.authorName) !== '') ||
-      !_.isNil(filters.createdAtFrom) ||
-      !_.isNil(filters.createdAtTo) ||
+      !_.isNil(filters.publishDateFrom) ||
+      !_.isNil(filters.publishDateTo) ||
       filters.tags.length > 0
     );
   }, [filters]);
@@ -85,8 +85,8 @@ export const PostFilterProvider = ({ children }: any) => {
     setFilters({
       title: undefined,
       authorName: undefined,
-      createdAtFrom: undefined,
-      createdAtTo: undefined,
+      publishDateFrom: undefined,
+      publishDateTo: undefined,
       tags: [],
     });
   }, []);
@@ -275,7 +275,7 @@ const PostFilterContent: React.FC<any> = memo(() => {
 
   const renderCreatedAtFrom = ({ field: { onChange, onBlur, value } }: any) => {
     return (
-      <FormControl isInvalid={!!errors.createdAtFrom} className="flex-1">
+      <FormControl isInvalid={!!errors.publishDateFrom} className="flex-1">
         <DateInput
           value={value}
           onChange={onChange}
@@ -286,7 +286,7 @@ const PostFilterContent: React.FC<any> = memo(() => {
         />
         <FormControlError>
           <FormControlErrorIcon as={AlertCircle} />
-          <FormControlErrorText>{errors?.createdAtFrom?.message}</FormControlErrorText>
+          <FormControlErrorText>{errors?.publishDateFrom?.message}</FormControlErrorText>
         </FormControlError>
       </FormControl>
     );
@@ -294,7 +294,7 @@ const PostFilterContent: React.FC<any> = memo(() => {
 
   const renderCreatedAtTo = ({ field: { onChange, onBlur, value } }: any) => {
     return (
-      <FormControl isInvalid={!!errors.createdAtTo} className="flex-1">
+      <FormControl isInvalid={!!errors.publishDateTo} className="flex-1">
         <DateInput
           value={value}
           onChange={onChange}
@@ -305,7 +305,7 @@ const PostFilterContent: React.FC<any> = memo(() => {
         />
         <FormControlError>
           <FormControlErrorIcon as={AlertCircle} />
-          <FormControlErrorText>{errors?.createdAtTo?.message}</FormControlErrorText>
+          <FormControlErrorText>{errors?.publishDateTo?.message}</FormControlErrorText>
         </FormControlError>
       </FormControl>
     );
@@ -345,9 +345,9 @@ const PostFilterContent: React.FC<any> = memo(() => {
           <Controller name="title" control={control} render={renderTitle} />
           <Controller name="authorName" control={control} render={renderAuthorName} />
           <HStack className="items-center" space="lg">
-            <Controller name="createdAtFrom" control={control} render={renderCreatedAtFrom} />
+            <Controller name="publishDateFrom" control={control} render={renderCreatedAtFrom} />
             <Text>--</Text>
-            <Controller name="createdAtTo" control={control} render={renderCreatedAtTo} />
+            <Controller name="publishDateTo" control={control} render={renderCreatedAtTo} />
           </HStack>
           <Controller name="tags" control={control} render={renderTags} />
           <VStack className="mt-8" space="md">
@@ -440,7 +440,7 @@ const PostSearch = memo(() => {
   const renderItem = ({ item }: any) => <PostOutlineItem item={item} />;
 
   const renderEmptyComponent = (
-    <View className="flex-1 items-center justify-center">
+    <View className="mt-32 flex-1 items-center">
       <Text>暂无数据</Text>
     </View>
   );

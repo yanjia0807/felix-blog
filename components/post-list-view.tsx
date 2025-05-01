@@ -7,10 +7,9 @@ import { FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Reanimated from 'react-native-reanimated';
 import { fetchUserPosts } from '@/api';
-import { deletePost, unpublishPost } from '@/api/post';
+import { deletePost, editPublish } from '@/api/post';
 import { formatDistance } from '@/utils/date';
 import { useAuth } from './auth-provider';
-import { Box } from './ui/box';
 import { Button, ButtonText } from './ui/button';
 import { Card } from './ui/card';
 import { Divider } from './ui/divider';
@@ -67,10 +66,11 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
   const toast = useCustomToast();
   const { user: currentUser } = useAuth();
   const isMe = userDocumentId === currentUser?.documentId;
+  const isPublished = status === 'published';
 
   const { data, fetchNextPage, hasNextPage, isLoading, isSuccess, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ['posts', 'list', { userDocumentId, status }],
+      queryKey: ['posts', 'list', { userDocumentId, isPublished }],
       queryFn: fetchUserPosts,
       initialPageParam: {
         pagination: {
@@ -78,7 +78,7 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
           pageSize: 5,
         },
         userDocumentId,
-        status,
+        isPublished,
       },
       getNextPageParam: (lastPage: any) => {
         const {
@@ -91,7 +91,7 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
           return {
             pagination: { page: page + 1, pageSize },
             userDocumentId,
-            status,
+            isPublished,
           };
         }
 
@@ -116,16 +116,15 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
     },
   });
 
-  const unpublishMutation = useMutation({
-    mutationFn: ({ documentId }: any) => unpublishPost({ documentId }),
+  const editPublishMutation = useMutation({
+    mutationFn: ({ documentId, isPublished }: any) => editPublish({ documentId, isPublished }),
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
       queryClient.invalidateQueries({
         queryKey: ['posts', 'detail', variables.documentId],
-        refetchType: 'none',
       });
       toast.success({
-        description: '取消发布成功',
+        description: variables.isPublished ? '发布成功' : '取消发布成功',
       });
     },
     onError(error, variables, context) {
@@ -138,17 +137,31 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
     ? _.reduce(data?.pages, (result: any, item: any) => [...result, ...item.data], [])
     : [];
 
-  const onEditBtnPress = ({ item }: any) => {
-    router.push(`/posts/edit/${item.documentId}?status=${item.status}`);
+  const onEdit = ({ item }: any) => {
+    router.push(`/posts/edit/${item.documentId}`);
   };
 
-  const onUnpublishBtnPress = ({ item }: any) => {
+  const onPublish = ({ item }: any) => {
     toast.confirm({
-      description: `确认要取消发布吗？`,
+      description: `确定要发布吗？`,
       onConfirm: async () => {
         toast.close();
-        unpublishMutation.mutate({
+        editPublishMutation.mutate({
           documentId: item.documentId,
+          isPublished: true,
+        });
+      },
+    });
+  };
+
+  const onUnpublish = ({ item }: any) => {
+    toast.confirm({
+      description: `确定要取消发布吗？`,
+      onConfirm: async () => {
+        toast.close();
+        editPublishMutation.mutate({
+          documentId: item.documentId,
+          isPublished: false,
         });
       },
     });
@@ -170,23 +183,30 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
     return (
       <Reanimated.View>
         <HStack className="h-full">
-          {status === 'draft' ? (
+          {item.isPublished ? (
             <Button
               size="sm"
               className="h-full rounded-none"
               action="secondary"
-              onPress={() => onEditBtnPress({ item })}>
-              <ButtonText>编辑</ButtonText>
+              onPress={() => onUnpublish({ item })}>
+              <ButtonText>取消发布</ButtonText>
             </Button>
           ) : (
             <Button
               size="sm"
               className="h-full rounded-none"
               action="secondary"
-              onPress={() => onUnpublishBtnPress({ item })}>
-              <ButtonText>取消发布</ButtonText>
+              onPress={() => onPublish({ item })}>
+              <ButtonText>发布</ButtonText>
             </Button>
           )}
+          <Button
+            size="sm"
+            className="h-full rounded-none"
+            action="secondary"
+            onPress={() => onEdit({ item })}>
+            <ButtonText>编辑</ButtonText>
+          </Button>
           <Button
             size="sm"
             className="h-full rounded-bl-none rounded-tl-none"
@@ -200,7 +220,7 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
   };
 
   const renderItem = ({ item, index }: any) => {
-    const onItemPress = () => router.push(`/posts/${item.documentId}?status=${item.status}`);
+    const onItemPress = () => router.push(`/posts/${item.documentId}`);
 
     return (
       <View className={`mt-6 ${index === 0 ? 'mt-0' : ''}`}>
@@ -221,14 +241,14 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
 
   const renderEmptyComponent = (props: any) => {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="mt-32 flex-1 items-center">
         <Text size="sm">没有数据</Text>
       </View>
     );
   };
 
   return (
-    <Box className="flex-1">
+    <View className="flex-1">
       {isMe && (
         <HStack className="items-center justify-end" space="sm">
           <Button
@@ -271,7 +291,7 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
           />
         }
       />
-    </Box>
+    </View>
   );
 };
 

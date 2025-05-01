@@ -1,12 +1,11 @@
 import React from 'react';
-import { InfiniteData, useInfiniteQuery, UseInfiniteQueryResult } from '@tanstack/react-query';
-import { AxiosResponse } from 'axios';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Plus } from 'lucide-react-native';
 import { TouchableOpacity, FlatList, RefreshControl, SafeAreaView, View } from 'react-native';
-import { fetchChats, fetchFriends } from '@/api';
+import { fetchChats, fetchOnlineUsers } from '@/api';
 import { useAuth } from '@/components/auth-provider';
 import { MainHeader } from '@/components/header';
 import PageSpinner from '@/components/page-spinner';
@@ -20,15 +19,45 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { imageFormat } from '@/utils/file';
 
-interface MessageHeaderProps {
-  friendsQuery: UseInfiniteQueryResult<InfiniteData<AxiosResponse<any, any>, unknown>, Error>;
-}
-
-const MessageHeader: React.FC<MessageHeaderProps> = ({ friendsQuery }) => {
+const MessageHeader: React.FC<any> = () => {
   const router = useRouter();
+  const { user } = useAuth();
+  const userDocumentId = user.documentId;
 
-  const friends = friendsQuery.isSuccess
-    ? _.reduce(friendsQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
+  const onlineUsersQuery = useInfiniteQuery({
+    queryKey: ['users', 'list', 'online'],
+    queryFn: fetchOnlineUsers,
+    initialPageParam: {
+      pagination: {
+        page: 1,
+        pageSize: 25,
+      },
+      userDocumentId,
+    },
+    getNextPageParam: (lastPage: any) => {
+      const {
+        meta: {
+          pagination: { page, pageSize, pageCount },
+        },
+      } = lastPage;
+
+      if (page < pageCount) {
+        return {
+          pagination: { page: page + 1, pageSize },
+          userDocumentId,
+        };
+      }
+
+      return null;
+    },
+  });
+
+  const onlineUsers = onlineUsersQuery.isSuccess
+    ? _.reduce(
+        onlineUsersQuery.data?.pages,
+        (result: any, item: any) => [...result, ...item.data],
+        [],
+      )
     : [];
 
   const onItemPress = ({ item }: any) => {
@@ -48,7 +77,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ friendsQuery }) => {
                 uri: imageFormat(item.avatar, 's', 't')?.fullUrl,
               }}
             />
-            {item.isOnline === '1' && <AvatarBadge />}
+            <AvatarBadge />
           </Avatar>
           <Text size="xs">{item.username}</Text>
         </VStack>
@@ -58,7 +87,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ friendsQuery }) => {
 
   const renderEmptyComponent = () => (
     <View className="flex-1 items-center justify-center">
-      <Text>未添加好友</Text>
+      <Text>没有其他人在线</Text>
     </View>
   );
 
@@ -82,14 +111,9 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ friendsQuery }) => {
       <HStack className="">
         <Card size="sm" className="flex-1 px-4">
           <VStack space="md">
-            <HStack className="h-8 items-center justify-between">
-              <Text>我的好友</Text>
-              <Button variant="link" size="sm">
-                <ButtonText>查看全部</ButtonText>
-              </Button>
-            </HStack>
+            <Text>在线用户</Text>
             <FlatList
-              data={friends}
+              data={onlineUsers}
               ListHeaderComponent={renderHeader}
               ListEmptyComponent={renderEmptyComponent}
               renderItem={renderItem}
@@ -107,32 +131,6 @@ const Message: React.FC = () => {
   const { user } = useAuth();
   const { messages: newMessages } = useSocket();
   const router = useRouter();
-
-  const friendsQuery = useInfiniteQuery({
-    queryKey: ['friends', 'list'],
-    queryFn: fetchFriends,
-    initialPageParam: {
-      pagination: {
-        page: 1,
-        pageSize: 25,
-      },
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { page, pageSize, pageCount },
-        },
-      } = lastPage;
-
-      if (page < pageCount) {
-        return {
-          pagination: { page: page + 1, pageSize },
-        };
-      }
-
-      return null;
-    },
-  });
 
   const messageQuery = useInfiniteQuery({
     queryKey: ['chats', 'list'],
@@ -252,7 +250,7 @@ const Message: React.FC = () => {
 
   const renderEmptyComponent = () => {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="mt-32 flex-1 items-center">
         <Text size="sm">暂无消息</Text>
       </View>
     );
@@ -262,7 +260,7 @@ const Message: React.FC = () => {
     <SafeAreaView className="flex-1">
       <PageSpinner isVisiable={messageQuery.isLoading} />
       <VStack className="flex-1 px-4">
-        <MessageHeader friendsQuery={friendsQuery} />
+        <MessageHeader />
         <FlatList
           contentContainerClassName="flex-grow"
           data={messages}

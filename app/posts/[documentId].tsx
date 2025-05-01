@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import { ChevronLeft, Edit, Ellipsis, MapPin, StickyNote, Trash, Undo2 } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Edit,
+  Ellipsis,
+  MapPin,
+  Redo2,
+  StickyNote,
+  Trash,
+  Undo2,
+} from 'lucide-react-native';
 import { ScrollView, TouchableOpacity, useWindowDimensions, View } from 'react-native';
-import { deletePost, fetchPost, unpublishPost } from '@/api/post';
+import { deletePost, fetchPost, editPublish } from '@/api/post';
 import AlbumPagerView from '@/components/album-pager-view';
 import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
@@ -23,8 +32,8 @@ import { Menu, MenuItem, MenuItemLabel, MenuSeparator } from '@/components/ui/me
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
 import { UserAvatar } from '@/components/user';
+import useCustomToast from '@/hooks/use-custom-toast';
 import { formatDistance } from '@/utils/date';
 import {
   isImage,
@@ -40,15 +49,14 @@ const PostDetail: React.FC = () => {
   const CONTAINER_PADDING = 14;
   const [isPagerOpen, setIsPagerOpen] = useState(false);
   const [pagerIndex, setPagerIndex] = useState<number>(0);
-  const { documentId, status } = useLocalSearchParams();
+  const { documentId } = useLocalSearchParams();
   const { width: screenWidth } = useWindowDimensions();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
   const { user } = useAuth();
-  const navigation = useNavigation<any>();
   const postQuery = useQuery({
     queryKey: ['posts', 'detail', documentId],
-    queryFn: () => fetchPost({ documentId, status }),
+    queryFn: () => fetchPost({ documentId }),
   });
 
   let post: any;
@@ -142,19 +150,15 @@ const PostDetail: React.FC = () => {
     },
   });
 
-  const unpublishMutation = useMutation({
-    mutationFn: ({ documentId }: any) => unpublishPost({ documentId }),
-    onSuccess: () => {
+  const editPublishMutation = useMutation({
+    mutationFn: ({ documentId, isPublished }: any) => editPublish({ documentId, isPublished }),
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
       queryClient.invalidateQueries({
         queryKey: ['posts', 'detail', documentId],
-        refetchType: 'none',
       });
       toast.success({
-        description: '取消发布成功',
-      });
-      navigation.setParams({
-        status: 'draft',
+        description: variables.isPublished ? '发布成功' : '取消发布成功',
       });
     },
     onError(error, variables, context) {
@@ -171,7 +175,44 @@ const PostDetail: React.FC = () => {
   );
 
   const renderHeaderRight = () => (
-    <ShareButton className="h-8 w-8 items-center justify-center rounded-full" />
+    <HStack space="md" className="items-center justify-center">
+      {!post?.isPublished && (
+        <HStack className="items-center" space="xs">
+          <Icon as={StickyNote} size="sm" />
+          <Text size="sm" className="text-gray-400">
+            未发布
+          </Text>
+        </HStack>
+      )}
+      <ShareButton />
+      {user?.documentId === post?.author.documentId && (
+        <Menu placement="bottom" trigger={renderTrigger}>
+          {post.isPublished ? (
+            <MenuItem key="Unpublish" textValue="取消发布" onPress={() => onUnpublish()}>
+              <Icon as={Undo2} size="xs" className="mr-2" />
+              <MenuItemLabel size="xs">取消发布</MenuItemLabel>
+            </MenuItem>
+          ) : (
+            <>
+              <MenuItem key="Unpublish" textValue="取消发布" onPress={() => onPublish()}>
+                <Icon as={Redo2} size="xs" className="mr-2" />
+                <MenuItemLabel size="xs">发布</MenuItemLabel>
+              </MenuItem>
+            </>
+          )}
+          <MenuSeparator />
+          <MenuItem key="Edit" textValue="编辑" onPress={() => onEdit()}>
+            <Icon as={Edit} size="xs" className="mr-2" />
+            <MenuItemLabel size="xs">编辑</MenuItemLabel>
+          </MenuItem>
+          <MenuSeparator />
+          <MenuItem key="Delete" textValue="删除" onPress={() => onDelete()}>
+            <Icon as={Trash} size="xs" className="mr-2" />
+            <MenuItemLabel size="xs">删除</MenuItemLabel>
+          </MenuItem>
+        </Menu>
+      )}
+    </HStack>
   );
 
   const renderTrigger = (triggerProps: any) => {
@@ -184,23 +225,37 @@ const PostDetail: React.FC = () => {
 
   const onPagerClose = () => setIsPagerOpen(false);
 
-  const onEditBtnPress = () => {
-    router.push(`/posts/edit/${documentId}?status=${status}`);
+  const onEdit = () => {
+    router.push(`/posts/edit/${documentId}`);
   };
 
-  const onUnpublishBtnPress = () => {
+  const onUnpublish = () => {
     toast.confirm({
-      description: `确认要取消发布吗？`,
+      description: `确定要取消发布吗？`,
       onConfirm: async () => {
         toast.close();
-        unpublishMutation.mutate({
+        editPublishMutation.mutate({
           documentId,
+          isPublished: false,
         });
       },
     });
   };
 
-  const onDeleteBtnPress = () => {
+  const onPublish = () => {
+    toast.confirm({
+      description: `确定要发布吗？`,
+      onConfirm: async () => {
+        toast.close();
+        editPublishMutation.mutate({
+          documentId,
+          isPublished: true,
+        });
+      },
+    });
+  };
+
+  const onDelete = () => {
     toast.confirm({
       description: `确认要删除吗？`,
       onConfirm: async () => {
@@ -257,37 +312,6 @@ const PostDetail: React.FC = () => {
                 <Heading size="lg" className="flex-1">
                   {post.title}
                 </Heading>
-                {status === 'draft' && (
-                  <HStack className="items-center" space="xs">
-                    <Icon as={StickyNote} size="sm" />
-                    <Text size="sm" className="text-gray-400">
-                      未发布
-                    </Text>
-                  </HStack>
-                )}
-                {user?.documentId === post?.author?.documentId && (
-                  <Menu placement="left" trigger={renderTrigger}>
-                    {status === 'draft' ? (
-                      <MenuItem key="Edit" textValue="编辑" onPress={() => onEditBtnPress()}>
-                        <Icon as={Edit} size="xs" className="mr-2" />
-                        <MenuItemLabel size="xs">编辑</MenuItemLabel>
-                      </MenuItem>
-                    ) : (
-                      <MenuItem
-                        key="Unpublish"
-                        textValue="取消发布"
-                        onPress={() => onUnpublishBtnPress()}>
-                        <Icon as={Undo2} size="xs" className="mr-2" />
-                        <MenuItemLabel size="xs">取消发布</MenuItemLabel>
-                      </MenuItem>
-                    )}
-                    <MenuSeparator />
-                    <MenuItem key="Delete" textValue="删除" onPress={() => onDeleteBtnPress()}>
-                      <Icon as={Trash} size="xs" className="mr-2" />
-                      <MenuItemLabel size="xs">删除</MenuItemLabel>
-                    </MenuItem>
-                  </Menu>
-                )}
               </HStack>
               <HStack className="items-center justify-between">
                 <Text size="xs">{formatDistance(post?.createdAt)}</Text>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
@@ -22,90 +22,89 @@ import {
 } from '@/utils/file';
 
 const PostEditPage = () => {
-  const { documentId, status } = useLocalSearchParams();
+  const { documentId } = useLocalSearchParams();
   const queryClient = useQueryClient();
   const toast = useCustomToast();
-
-  const postQuery = useQuery({
-    queryKey: ['posts', 'detail', documentId],
-    queryFn: () => fetchPost({ documentId, status }),
-  });
 
   const form = useForm<PostSchema>({
     resolver: zodResolver(postSchema),
   });
+  const { handleSubmit, reset } = form;
 
-  useEffect(() => {
-    if (postQuery.isSuccess) {
-      const postData = postQuery.data;
+  const postQuery = useQuery({
+    queryKey: ['posts', 'detail', documentId],
+    queryFn: () => fetchPost({ documentId }),
+  });
 
-      let cover = undefined;
-      if (postData.cover) {
-        if (isImage(postData.cover.mime)) {
-          cover = {
-            ...postData.cover,
-            fileType: FileTypeNum.Image,
-            uri: fileFullUrl(postData.cover),
-            thumbnail: imageFormat(postData.cover, 's', 's')?.fullUrl,
-            preview: imageFormat(postData.cover, 'l')?.fullUrl,
-          };
-        } else {
-          cover = {
-            ...postData.cover,
-            fileType: FileTypeNum.Video,
-            uri: fileFullUrl(postData.cover),
-            thumbnail: videoThumbnailUrl(postData.cover, postData.attachmentExtras),
-            preview: fileFullUrl(postData.cover),
-          };
-        }
+  const post = useMemo(() => {
+    if (!postQuery.isSuccess) return null;
+    const postData = postQuery.data;
+
+    let cover = undefined;
+    if (postData.cover) {
+      if (isImage(postData.cover.mime)) {
+        cover = {
+          ...postData.cover,
+          fileType: FileTypeNum.Image,
+          uri: fileFullUrl(postData.cover),
+          thumbnail: imageFormat(postData.cover, 's', 's')?.fullUrl,
+          preview: imageFormat(postData.cover, 'l')?.fullUrl,
+        };
+      } else {
+        cover = {
+          ...postData.cover,
+          fileType: FileTypeNum.Video,
+          uri: fileFullUrl(postData.cover),
+          thumbnail: videoThumbnailUrl(postData.cover, postData.attachmentExtras),
+          preview: fileFullUrl(postData.cover),
+        };
       }
-
-      const images = _.map(
-        _.filter(
-          postData.attachments || [],
-          (item: any) => isImage(item.mime) || isVideo(item.mime),
-        ) || [],
-        (item: any) => {
-          return isImage(item.mime)
-            ? {
-                ...item,
-                fileType: FileTypeNum.Image,
-                uri: fileFullUrl(item),
-                thumbnail: imageFormat(item, 's', 's')?.fullUrl,
-                preview: imageFormat(item, 'l')?.fullUrl,
-              }
-            : {
-                ...item,
-                fileType: FileTypeNum.Video,
-                uri: fileFullUrl(item),
-                thumbnail: videoThumbnailUrl(item, postData.attachmentExtras),
-                preview: fileFullUrl(item),
-              };
-        },
-      );
-
-      const recordings = _.map(
-        _.filter(postData?.attachments || [], (item: any) => isAudio(item.mime)),
-        (item: any) => ({
-          id: item.id,
-          data: item,
-          fileType: FileTypeNum.Audio,
-          uri: fileFullUrl(item),
-        }),
-      );
-
-      form.reset({
-        ...postData,
-        author: postData.author.documentId,
-        cover,
-        images,
-        recordings,
-        status,
-      });
     }
-  }, [form, postQuery.data, postQuery.isSuccess, status]);
 
-  const { setValue, handleSubmit } = form;
+    const images = _.map(
+      _.filter(
+        postData.attachments || [],
+        (item: any) => isImage(item.mime) || isVideo(item.mime),
+      ) || [],
+      (item: any) => {
+        return isImage(item.mime)
+          ? {
+              ...item,
+              fileType: FileTypeNum.Image,
+              uri: fileFullUrl(item),
+              thumbnail: imageFormat(item, 's', 's')?.fullUrl,
+              preview: imageFormat(item, 'l')?.fullUrl,
+            }
+          : {
+              ...item,
+              fileType: FileTypeNum.Video,
+              uri: fileFullUrl(item),
+              thumbnail: videoThumbnailUrl(item, postData.attachmentExtras),
+              preview: fileFullUrl(item),
+            };
+      },
+    );
+
+    const album = _.concat(cover ? [cover] : [], images);
+
+    const recordings = _.map(
+      _.filter(postData?.attachments || [], (item: any) => isAudio(item.mime)),
+      (item: any) => ({
+        id: item.id,
+        data: item,
+        fileType: FileTypeNum.Audio,
+        uri: fileFullUrl(item),
+      }),
+    );
+
+    return {
+      ...postData,
+      cover,
+      images,
+      album,
+      recordings,
+    };
+  }, [postQuery.isSuccess, postQuery.data]);
 
   const mutation = useMutation({
     mutationFn: (data: PostSchema) => {
@@ -130,15 +129,9 @@ const PostEditPage = () => {
     return mutation.mutate(formData);
   };
 
-  function onSaveBtnPress(): void {
-    setValue('status', 'draft');
+  const onSave = () => {
     handleSubmit(onSubmit)();
-  }
-
-  function onPublishBtnPress(): void {
-    setValue('status', 'published');
-    handleSubmit(onSubmit)();
-  }
+  };
 
   const renderHeaderLeft = () => (
     <Button
@@ -156,24 +149,20 @@ const PostEditPage = () => {
     <HStack space="md" className="items-center">
       <Button
         size="md"
-        action="secondary"
+        action="primary"
         variant="link"
         isDisabled={mutation.isPending}
-        onPress={onSaveBtnPress}>
+        onPress={onSave}>
         <ButtonText>保存</ButtonText>
       </Button>
-      {status === 'draft' && (
-        <Button
-          size="md"
-          action="primary"
-          variant="link"
-          onPress={onPublishBtnPress}
-          isDisabled={mutation.isPending}>
-          <ButtonText>发布</ButtonText>
-        </Button>
-      )}
     </HStack>
   );
+
+  useEffect(() => {
+    if (post) {
+      reset(post);
+    }
+  }, [post, reset]);
 
   return (
     <SafeAreaView className="flex-1">

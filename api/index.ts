@@ -12,4 +12,3 @@ export * from './banner';
 export * from './chat';
 export * from './message';
 export * from './friend-request';
-export * from './online-user';

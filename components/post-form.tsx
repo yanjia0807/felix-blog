@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import _ from 'lodash';
-import { AlertCircle, View } from 'lucide-react-native';
+import { AlertCircle } from 'lucide-react-native';
 import { Controller, UseFormReturn } from 'react-hook-form';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -43,13 +43,13 @@ export const postSchema = z.object({
     .max(maxCharCount, `内容最多不能超过${maxCharCount}个字符`)
     .optional()
     .nullable(),
-  author: z.string(),
+  author: z.any(),
   poi: z.any(),
   cover: z.any(),
   images: z.array(z.any()),
   recordings: z.array(z.any()),
   tags: z.array(z.any()),
-  status: z.enum(['draft', 'published']),
+  isPublished: z.boolean(),
   attachments: z.array(z.any()).optional().nullable(),
   attachmentExtras: z.array(z.any()).optional().nullable(),
 });

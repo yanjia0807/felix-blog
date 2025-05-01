@@ -1,3 +1,4 @@
+import { endOfDay, startOfDay } from 'date-fns';
 import _ from 'lodash';
 import qs from 'qs';
 import { isVideo } from '@/utils/file';
@@ -43,7 +44,10 @@ export const fetchPosts = async ({ pageParam }: any) => {
           count: true,
         },
       },
-      sort: 'createdAt:desc',
+      filters: {
+        isPublished: true,
+      },
+      sort: 'publishDate:desc',
       pagination,
     },
     {
@@ -58,44 +62,57 @@ export const fetchPosts = async ({ pageParam }: any) => {
 export const fetchPostsOutline = async ({ pageParam }: any) => {
   const {
     pagination,
-    filters: { title, authorName, createdAtFrom, createdAtTo, tags },
+    filters: { title, authorName, publishDateFrom, publishDateTo, tags },
   } = pageParam;
 
-  const filters: any = {};
+  const filters: any = {
+    $and: [
+      {
+        isPublished: true,
+      },
+    ],
+  };
+
   if (!_.isNil(title) && !_.isEmpty(title)) {
-    filters.title = {
-      $containsi: title,
-    };
+    filters['$and'].push({
+      title: {
+        $containsi: title,
+      },
+    });
   }
 
   if (!_.isNil(authorName) && !_.isEmpty(authorName)) {
-    filters.author = {
-      username: {
-        $containsi: authorName,
+    filters['$and'].push({
+      author: {
+        username: {
+          $containsi: authorName,
+        },
       },
-    };
-  } else {
-    filters.author = {
-      $notNull: true,
-    };
+    });
   }
 
-  if (!_.isNil(createdAtFrom)) {
-    filters.createdAt = {
-      $gte: createdAtFrom,
-    };
+  if (!_.isNil(publishDateFrom)) {
+    filters['$and'].push({
+      publishDate: {
+        $gte: startOfDay(publishDateFrom),
+      },
+    });
   }
 
-  if (!_.isNil(createdAtTo)) {
-    filters.createdAt = {
-      $lte: createdAtTo,
-    };
+  if (!_.isNil(publishDateTo)) {
+    filters['$and'].push({
+      publishDate: {
+        $lt: endOfDay(publishDateTo),
+      },
+    });
   }
 
   if (!_.isNil(tags) && !_.isEmpty(tags)) {
-    filters.tags = {
-      $in: tags,
-    };
+    filters['$and'].push({
+      tags: {
+        $in: tags,
+      },
+    });
   }
 
   const query = qs.stringify(
@@ -111,52 +128,13 @@ export const fetchPostsOutline = async ({ pageParam }: any) => {
         },
       },
       filters,
-      sort: 'createdAt:desc',
+      sort: 'publishDate:desc',
       pagination,
     },
     {
       encodeValuesOnly: false,
     },
   );
-
-  const res = await apiClient.get(`/posts?${query}`);
-  return res;
-};
-
-export const fetchRecommendPosts = async ({ pageParam }: any) => {
-  const { pagination } = pageParam;
-  const query = qs.stringify({
-    filters: {
-      author: {
-        $notNull: true,
-      },
-    },
-    populate: {
-      author: {
-        fields: ['username'],
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
-          },
-        },
-      },
-      tags: true,
-      poi: true,
-      likedByUsers: {
-        fields: ['username'],
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
-          },
-        },
-      },
-      comments: {
-        count: true,
-      },
-    },
-    sort: 'createdAt:desc',
-    pagination,
-  });
 
   const res = await apiClient.get(`/posts?${query}`);
   return res;
@@ -178,9 +156,56 @@ export const fetchTrendingPosts = async ({ pageParam }: any) => {
 };
 
 export const fetchFollowingPosts = async ({ pageParam }: any) => {
-  const { pagination } = pageParam;
+  const {
+    pagination,
+    filters: { followings },
+  } = pageParam;
+
+  const filters: any = {
+    $and: [
+      {
+        isPublished: true,
+      },
+      {
+        author: {
+          documentId: {
+            $in: followings,
+          },
+        },
+      },
+    ],
+  };
+
   const query = qs.stringify(
     {
+      populate: {
+        author: {
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+        },
+        likedByUsers: {
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
+            },
+          },
+          fields: ['username'],
+        },
+        cover: true,
+        attachments: true,
+        attachmentExtras: {
+          populate: {
+            attachment: true,
+            thumbnail: true,
+          },
+        },
+      },
+      filters,
+      sort: 'publishDate:desc',
       pagination,
     },
     {
@@ -188,7 +213,7 @@ export const fetchFollowingPosts = async ({ pageParam }: any) => {
     },
   );
 
-  const res = await apiClient.get(`/posts/trending?${query}`);
+  const res = await apiClient.get(`/posts?${query}`);
   return res;
 };
 
@@ -198,11 +223,20 @@ export const fetchDiscoverPosts = async ({ pageParam }: any) => {
     filters: { tags },
   } = pageParam;
 
-  const filters: any = {};
+  const filters: any = {
+    $and: [
+      {
+        isPublished: true,
+      },
+    ],
+  };
+
   if (!_.isNil(tags) && !_.isEmpty(tags)) {
-    filters.tags = {
-      $in: tags,
-    };
+    filters['$and'].push({
+      tags: {
+        $in: tags,
+      },
+    });
   }
 
   const query = qs.stringify(
@@ -234,7 +268,7 @@ export const fetchDiscoverPosts = async ({ pageParam }: any) => {
         },
       },
       filters,
-      sort: 'createdAt:desc',
+      sort: 'publishDate:desc',
       pagination,
     },
     {
@@ -247,23 +281,19 @@ export const fetchDiscoverPosts = async ({ pageParam }: any) => {
 };
 
 export const fetchExplorePosts = async ({ pageParam }: any) => {
-  const { postType } = pageParam;
+  const { filterType } = pageParam;
 
-  if (postType === 'trending') {
+  if (filterType === 'trending') {
     return await fetchTrendingPosts({ pageParam });
-  } else if (postType === 'following') {
+  } else if (filterType === 'following') {
     return await fetchFollowingPosts({ pageParam });
-  } else if (postType === 'discover') {
+  } else if (filterType === 'discover') {
     return await fetchDiscoverPosts({ pageParam });
   }
 };
 
 export const fetchUserPosts = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId, status } = pageParam;
-
-  if (status === 'draft') {
-    return fetchUserDraftPosts({ pageParam });
-  }
+  const { pagination, userDocumentId, isPublished } = pageParam;
 
   const params = {
     populate: {
@@ -293,34 +323,14 @@ export const fetchUserPosts = async ({ pageParam }: any) => {
       author: {
         documentId: userDocumentId,
       },
+      isPublished,
     },
     pagination,
     sort: 'createdAt:desc',
   };
-
   const query = qs.stringify(params);
 
   const res = await apiClient.get(`/posts?${query}`);
-  res.data = res.data.map((item: any) => ({
-    ...item,
-    status: 'published',
-  }));
-  return res;
-};
-
-export const fetchUserDraftPosts = async ({ pageParam }: any) => {
-  const { pagination } = pageParam;
-
-  const params = {
-    pagination,
-  };
-
-  const query = qs.stringify(params);
-  const res = await apiClient.get(`/posts/user-draft-posts?${query}`);
-  res.data = res.data.map((item: any) => ({
-    ...item,
-    status: 'draft',
-  }));
   return res;
 };
 
@@ -373,7 +383,7 @@ export const fetchMapPosts = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchPost = async ({ documentId, status }: any) => {
+export const fetchPost = async ({ documentId }: any) => {
   const query = qs.stringify(
     {
       populate: {
@@ -406,7 +416,6 @@ export const fetchPost = async ({ documentId, status }: any) => {
           count: true,
         },
       },
-      status,
     },
     {
       encodeValuesOnly: true,
@@ -488,9 +497,10 @@ export const createPost = async (formData: PostData) => {
       tags,
       attachments,
       attachmentExtras,
+      isPublished: formData.isPublished,
     };
 
-    const res = await apiClient.post(`/posts?status=${formData.status}`, { data });
+    const res = await apiClient.post(`/posts`, { data });
     return res.data;
   } catch (error: any) {
     throw new Error(error.message);
@@ -596,14 +606,15 @@ export const editPost = async (formData: PostData) => {
       title: formData.title,
       cover: coverId,
       content: formData.content,
-      author: formData.author,
+      author: formData.author.documentId,
       poi,
       tags,
       attachments,
       attachmentExtras,
+      isPublished: formData.isPublished,
     };
 
-    const res = await apiClient.put(`/posts/${formData.documentId}?status=${formData.status}`, {
+    const res = await apiClient.put(`/posts/${formData.documentId}`, {
       data,
     });
 
@@ -621,9 +632,13 @@ export const deletePost = async ({ documentId }: any) => {
   }
 };
 
-export const unpublishPost = async ({ documentId }: any) => {
+export const editPublish = async ({ documentId, isPublished }: any) => {
   try {
-    await apiClient.put(`/posts/${documentId}/unpublish`, { data: {} });
+    await apiClient.put(`/posts/${documentId}`, {
+      data: {
+        isPublished,
+      },
+    });
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -650,9 +665,4 @@ export const updatePostLiked = async ({ documentId, postData }: UpdatePostLikedD
   } catch (error: any) {
     throw new Error(error.message);
   }
-};
-
-export const fetchPostAuthors = async () => {
-  const res = await apiClient.get(`/posts/recent-authors`);
-  return res.data;
 };

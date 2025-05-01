@@ -122,7 +122,7 @@ export const PostItem: React.FC<any> = memo(
                 {item.title}
               </Heading>
               <HStack className="items-center justify-between">
-                <Text size="xs">{formatDistance(item.createdAt)}</Text>
+                <Text size="xs">{formatDistance(item.publishDate)}</Text>
                 <HStack space="xs" className="w-1/2 items-center justify-end">
                   {item.poi?.address && (
                     <HStack className="items-center">
@@ -436,7 +436,7 @@ const PostList: React.FC<any> = () => {
   );
 
   const renderEmptyComponent = (props: any) => (
-    <View className="flex-1 items-center justify-center">
+    <View className="mt-32 flex-1 items-center">
       <Text>暂无数据</Text>
     </View>
   );
