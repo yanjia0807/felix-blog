@@ -18,6 +18,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { imageFormat } from '@/utils/file';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 type FilterFormSchema = z.infer<typeof filterFormSchema>;
 
@@ -185,5 +186,9 @@ const SearchUserList: React.FC = () => {
 const SearchUserListPage = () => {
   return <SearchUserList />;
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default SearchUserListPage;

@@ -26,6 +26,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/hooks/use-custom-toast';
 import { imageFormat } from '@/utils/file';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 type MessageFormSchema = z.infer<typeof messageFormSchema>;
 
@@ -329,5 +330,9 @@ const ChatPage: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default ChatPage;

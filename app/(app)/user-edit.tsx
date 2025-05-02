@@ -42,6 +42,7 @@ import { VStack } from '@/components/ui/vstack';
 import { genderEnum } from '@/constants/enum';
 import useCustomToast from '@/hooks/use-custom-toast';
 import { FileTypeNum, imageFormat } from '@/utils/file';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 type UserFormSchema = z.infer<typeof userFormSchema>;
 
@@ -301,5 +302,9 @@ const UserEdit: React.FC = () => {
 const UserEditPage = () => {
   return <UserEdit />;
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default UserEditPage;

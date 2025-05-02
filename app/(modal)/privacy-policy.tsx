@@ -3,6 +3,7 @@ import { router, Stack } from 'expo-router';
 import { SafeAreaView, ScrollView, View } from 'react-native';
 import { PrivacyPolicyText } from '@/components/app-info';
 import { Button, ButtonText } from '@/components/ui/button';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const PrivacyPolicyPage = () => {
   const renderHeaderLeft = () => (
@@ -31,5 +32,9 @@ const PrivacyPolicyPage = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default PrivacyPolicyPage;

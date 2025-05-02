@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/hooks/use-custom-toast';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const Setting: React.FC = () => {
   const toast = useCustomToast();
@@ -137,5 +138,9 @@ const Setting: React.FC = () => {
 const SettingPage = () => {
   return <Setting />;
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default SettingPage;

@@ -36,6 +36,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserLargeAvatar } from '@/components/user';
 import useCustomToast from '@/hooks/use-custom-toast';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 interface UserDetailProps {
   user: any;
@@ -394,5 +395,9 @@ const UserDetailPage: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default UserDetailPage;

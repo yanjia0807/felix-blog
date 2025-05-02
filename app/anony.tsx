@@ -5,6 +5,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const AnonyPage: React.FC = () => {
   const renderHeaderLeft = () => (
@@ -72,5 +73,9 @@ const AnonyPage: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default AnonyPage;

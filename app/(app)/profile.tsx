@@ -13,6 +13,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserLargeAvatar } from '@/components/user';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -138,5 +139,9 @@ const Profile: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default Profile;

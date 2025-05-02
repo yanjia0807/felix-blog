@@ -18,6 +18,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { imageFormat } from '@/utils/file';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const MessageHeader: React.FC<any> = () => {
   const router = useRouter();
@@ -288,5 +289,9 @@ const Message: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default Message;

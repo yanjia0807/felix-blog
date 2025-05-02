@@ -1,60 +1,28 @@
+import _ from 'lodash';
 import qs from 'qs';
 import { apiClient } from './api-client';
 
-export const fetchAllTags = async ({ keywords }: any) => {
-  const query = keywords
-    ? qs.stringify({
-        filters: { name: { $contains: keywords } },
-      })
-    : '';
+export const fetchPopularTags = async ({ limit = 20 }: any) => {
+  const query = qs.stringify({
+    limit,
+  });
+  const res = await apiClient.get(`/tags/popular/?${query}`);
 
-  const res = await apiClient.get(`/tags?${query}`);
   return res.data;
 };
 
-export const fetchCoverTags = async ({ pageParam }: any) => {
-  const { pagination } = pageParam;
-
+export const fetchPopularPageTags = async ({ pageParam }: any) => {
+  const { pagination, keywords } = pageParam;
   const query = qs.stringify(
     {
-      populate: {
-        posts: {
-          count: true,
-        },
-      },
-      filters: {
-        asCover: true,
-      },
-      sort: 'createdAt:desc',
       pagination,
+      keywords,
     },
     {
       encodeValuesOnly: false,
     },
   );
 
-  const res = await apiClient.get(`/tags?${query}`);
-  return res;
-};
-
-export const fetchTags = async ({ pageParam }: any) => {
-  const { pagination, filters } = pageParam;
-  const query: any = qs.stringify(
-    {
-      populate: {
-        posts: {
-          count: true,
-        },
-      },
-      filters: filters.keyword ? { name: { $contains: filters.keyword } } : undefined,
-      sort: 'createdAt:desc',
-      pagination,
-    },
-    {
-      encodeValuesOnly: false,
-    },
-  );
-
-  const res = await apiClient.get(`/tags?${query}`);
+  const res = await apiClient.get(`/tags/popular-page/?${query}`);
   return res;
 };

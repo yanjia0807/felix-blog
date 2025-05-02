@@ -11,6 +11,7 @@ import {
   ActionsheetDragIndicatorWrapper,
 } from './ui/actionsheet';
 import { Button, ButtonText } from './ui/button';
+import { Divider } from './ui/divider';
 import { HStack } from './ui/hstack';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { VStack } from './ui/vstack';
@@ -41,7 +42,7 @@ export const DateInput: React.FC<MyComponentProps> = ({
   };
 
   const onClear = () => {
-    onChange(null);
+    onChange(undefined);
     setDisplayValue('');
     setIsOpen(false);
   };
@@ -57,7 +58,7 @@ export const DateInput: React.FC<MyComponentProps> = ({
       setDate(value);
       setDisplayValue(format(value, 'yyyy-MM-dd'));
     } else {
-      setDate(defaultDate || new Date('1990-01-01'));
+      setDate(defaultDate || new Date('1900-01-01'));
       setDisplayValue('');
     }
   }, [defaultDate, value]);
@@ -88,17 +89,17 @@ export const DateInput: React.FC<MyComponentProps> = ({
               onChange={onDateTimeChange}
               locale="zh-CN"
             />
-            <HStack className="items-center justify-center" space="md">
-              <Button
-                className="flex-1"
-                onPress={() => {
-                  onCommit();
-                }}
-                action="positive">
-                <ButtonText>确定</ButtonText>
-              </Button>
-              <Button className="flex-1" action="negative" onPress={() => onClear()}>
+            <HStack className="items-center justify-around">
+              <Button action="positive" variant="link" className="flex-1" onPress={() => onClear()}>
                 <ButtonText>清除</ButtonText>
+              </Button>
+              <Divider orientation="vertical" />
+              <Button
+                action="negative"
+                variant="link"
+                className="flex-1"
+                onPress={() => onCommit()}>
+                <ButtonText>确定</ButtonText>
               </Button>
             </HStack>
           </VStack>

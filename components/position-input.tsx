@@ -9,7 +9,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import _ from 'lodash';
 import { MapPinIcon } from 'lucide-react-native';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { init, Geolocation, Position, PositionError } from 'react-native-amap-geolocation';
 import { request, PERMISSIONS, RESULTS, check } from 'react-native-permissions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ import { HStack } from './ui/hstack';
 import { RefreshControl } from './ui/refresh-control';
 import { VStack } from './ui/vstack';
 import useCustomToast from '../hooks/use-custom-toast';
+import { Card } from './ui/card';
 
 const appName = Constants?.expoConfig?.extra?.name || '';
 
@@ -149,9 +150,9 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
 
   const renderEmptyComponent = (props: any) => {
     return (
-      <Box className="mt-32 w-full flex-1 items-center">
+      <View className="mt-32 w-full flex-1 items-center">
         <Text size="sm">没有数据</Text>
-      </Box>
+      </View>
     );
   };
 
@@ -167,12 +168,14 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
     ref.current?.close();
   };
 
-  const renderPositionItem = ({ item }: any) => (
-    <TouchableOpacity className="p-2" onPress={() => onSelect(item)}>
-      <Text size="md" bold={true}>
-        {item.name}
-      </Text>
-      <Text size="sm">{item.address}</Text>
+  const renderItem = ({ item }: any) => (
+    <TouchableOpacity onPress={() => onSelect(item)}>
+      <Card size="sm" variant="ghost">
+        <Text size="md" bold={true}>
+          {item.name}
+        </Text>
+        <Text size="sm">{item.address}</Text>
+      </Card>
     </TouchableOpacity>
   );
 
@@ -203,13 +206,10 @@ export const PositionSheet = forwardRef(function Sheet({ onChange }: any, ref: a
       onChange={onSheetChange}>
       <VStack className="flex-1 bg-background-100 p-4" space="md">
         <PageSpinner isVisiable={isLoading} />
-        <VStack className="mb-4 items-center">
-          <Heading className="p-2">请选择位置</Heading>
-          <Divider />
-        </VStack>
+        <Heading className="self-center">请选择位置</Heading>
         <BottomSheetFlatList
           data={places}
-          renderItem={renderPositionItem}
+          renderItem={renderItem}
           ItemSeparatorComponent={renderSeparatorComponent}
           ListEmptyComponent={renderEmptyComponent}
           showsVerticalScrollIndicator={false}

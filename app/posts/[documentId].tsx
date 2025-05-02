@@ -44,6 +44,7 @@ import {
   isAudio,
   videoThumbnailUrl,
 } from '@/utils/file';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const PostDetail: React.FC = () => {
   const CONTAINER_PADDING = 14;
@@ -362,6 +363,10 @@ const PostDetailPage: React.FC = () => (
     <PostDetail />
     <CommentSheet />
   </CommentProvider>
+);
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
 );
 
 export default PostDetailPage;

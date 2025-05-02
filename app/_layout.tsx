@@ -9,9 +9,11 @@ import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
+import { LogBox } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider } from '@/components/auth-provider';
+import { ErrorBoundaryAlert } from '@/components/error';
 import { PreferencesProvider, Theme } from '@/components/preferences-provider';
 import SocketProvider from '@/components/socket-provider';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
@@ -19,6 +21,7 @@ import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
 
 // const isHermes = () => !!global.HermesInternal;
 // console.log('isHermes', isHermes());
+LogBox.ignoreAllLogs(true);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +33,10 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default function RootLayout() {
   const [theme, setTheme] = useState<Theme>();

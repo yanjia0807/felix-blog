@@ -3,6 +3,7 @@ import { router, Stack } from 'expo-router';
 import { SafeAreaView, ScrollView } from 'react-native';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const AboutPage = () => {
   const renderHeaderLeft = () => (
@@ -31,5 +32,9 @@ const AboutPage = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default AboutPage;

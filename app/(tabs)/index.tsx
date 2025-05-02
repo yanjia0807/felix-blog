@@ -46,6 +46,7 @@ import {
   fileFullUrl,
   videoThumbnailUrl,
 } from '@/utils/file';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const CommentItem: React.FC<any> = ({ item }) => {
   return (
@@ -192,6 +193,7 @@ const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
 
   const router = useRouter();
   const { theme } = usePreferences();
+
   const bannersQuery = useInfiniteQuery({
     queryKey: ['banners', 'list'],
     queryFn: fetchBanners,
@@ -228,7 +230,7 @@ const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
         )
       : [];
 
-  const onBannerItemPress = ({ item }: any) => {
+  const onItemPress = ({ item }: any) => {
     if (item.link) {
       if (!item.link.isExternal) {
         router.push(item.link.src);
@@ -236,11 +238,11 @@ const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
     }
   };
 
-  const renderBannerItem = ({ item, index }: any) => (
+  const renderItem = ({ item, index }: any) => (
     <View className={`ml-4 h-48 w-80 ${index === 0 ? 'ml-0' : ''}`}>
       <Skeleton isLoaded={!bannersQuery.isLoading} variant="rounded">
         {item && (
-          <TouchableOpacity onPress={() => onBannerItemPress({ item })}>
+          <TouchableOpacity onPress={() => onItemPress({ item })}>
             <Image
               recyclingKey={item.assetId}
               source={{
@@ -285,9 +287,16 @@ const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
     </View>
   );
 
+  const onEndReached = () => {
+    if (bannersQuery.hasNextPage && !bannersQuery.isFetchingNextPage) {
+      bannersQuery.fetchNextPage();
+    }
+  };
+
   return (
     <VStack space="xl">
       <MainHeader />
+
       <TouchableOpacity onPress={() => router.push('/posts/search')}>
         <Input
           size="lg"
@@ -306,14 +315,10 @@ const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
       </TouchableOpacity>
       <FlatList
         data={banners}
-        renderItem={renderBannerItem}
+        renderItem={renderItem}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
-        onEndReached={() => {
-          if (bannersQuery.hasNextPage && !bannersQuery.isFetchingNextPage) {
-            bannersQuery.fetchNextPage();
-          }
-        }}
+        onEndReached={onEndReached}
       />
     </VStack>
   );
@@ -498,5 +503,9 @@ const HomePage: React.FC<any> = () => {
     </CommentProvider>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default HomePage;

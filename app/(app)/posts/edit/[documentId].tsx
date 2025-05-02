@@ -20,6 +20,7 @@ import {
   isAudio,
   videoThumbnailUrl,
 } from '@/utils/file';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const PostEditPage = () => {
   const { documentId } = useLocalSearchParams();
@@ -178,5 +179,9 @@ const PostEditPage = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default PostEditPage;

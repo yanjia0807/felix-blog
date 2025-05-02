@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { MasonryFlashList } from '@shopify/flash-list';
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { FlatList, Pressable, RefreshControl, useWindowDimensions, View } from 'react-native';
-import { fetchAllTags, fetchExplorePosts } from '@/api';
+import Animated, { FadeInLeft } from 'react-native-reanimated';
+import { fetchPopularPageTags, fetchExplorePosts } from '@/api';
 import { AnonyBox } from '@/components/anony';
 import { useAuth } from '@/components/auth-provider';
 import { MainHeader } from '@/components/header';
@@ -22,6 +23,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatar } from '@/components/user';
 import { fileFullUrl, FileTypeNum, imageFormat, isImage, videoThumbnailUrl } from '@/utils/file';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const ExploreItem: React.FC<any> = ({ item, columnIndex }) => {
   const CONTAINER_PADDING = 14;
@@ -106,12 +108,34 @@ const ExploreHeader: React.FC<any> = ({
 }) => {
   const segmentNames = _.map(segments, (item: any) => item.name);
 
-  const tagsQuery = useQuery({
+  const tagsQuery = useInfiniteQuery({
     queryKey: ['tags', 'list'],
-    queryFn: fetchAllTags,
+    queryFn: fetchPopularPageTags,
+    initialPageParam: {
+      pagination: {
+        page: 1,
+        pageSize: 20,
+      },
+    },
+    getNextPageParam: (lastPage: any) => {
+      const {
+        meta: {
+          pagination: { page, pageSize, pageCount },
+        },
+      } = lastPage;
+
+      if (page < pageCount) {
+        return {
+          pagination: { page: page + 1, pageSize },
+        };
+      }
+      return null;
+    },
   });
 
-  const tags: any = tagsQuery.isSuccess ? tagsQuery.data : [];
+  const tags = tagsQuery.isSuccess
+    ? _.reduce(tagsQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
+    : [];
 
   const renderTagItem = ({ item }: any) => (
     <TagItem
@@ -122,6 +146,12 @@ const ExploreHeader: React.FC<any> = ({
     />
   );
 
+  const onEndReached = () => {
+    if (tagsQuery.hasNextPage && !tagsQuery.isFetchingNextPage) {
+      tagsQuery.fetchNextPage();
+    }
+  };
+
   return (
     <VStack space="xl" className="mb-4">
       <MainHeader />
@@ -131,14 +161,15 @@ const ExploreHeader: React.FC<any> = ({
         onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
       />
       {segments[selectedIndex].key === 'discover' && (
-        <HStack className="items-center justify-between" space="md">
+        <Animated.View entering={FadeInLeft} className="items-center justify-between">
           <FlatList
             data={tags}
             renderItem={renderTagItem}
             horizontal={true}
             showsHorizontalScrollIndicator={false}
+            onEndReached={onEndReached}
           />
-        </HStack>
+        </Animated.View>
       )}
     </VStack>
   );
@@ -300,5 +331,9 @@ const ExplorePage: React.FC<any> = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default ExplorePage;

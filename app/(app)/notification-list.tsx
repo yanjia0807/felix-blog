@@ -24,6 +24,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatarNotice } from '@/components/user';
 import useCustomToast from '@/hooks/use-custom-toast';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const NotificationList: React.FC = () => {
   const { user } = useAuth();
@@ -384,5 +385,9 @@ const NotificationList: React.FC = () => {
 const NotificationListPage = () => {
   return <NotificationList />;
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default NotificationListPage;

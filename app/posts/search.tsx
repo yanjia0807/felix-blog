@@ -38,6 +38,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatar } from '@/components/user';
 import useDebounce from '@/hooks/use-debounce';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const PostFilterContext = createContext<any>(undefined);
 
@@ -400,7 +401,10 @@ const PostSearch = memo(() => {
       title: debounceKeywords,
     };
   } else {
-    queryFilters = filters;
+    queryFilters = {
+      ...filters,
+      tag: _.map(filters.tag || [], (item) => item.id),
+    };
   }
 
   const outlineQuery = useInfiniteQuery({
@@ -468,7 +472,6 @@ const PostSearch = memo(() => {
   return (
     <SafeAreaView className="flex-1">
       <PageSpinner isVisiable={outlineQuery.isLoading} />
-
       <VStack className="flex-1 px-4" space="md">
         <PostSearchHeader
           value={keywords}
@@ -507,5 +510,9 @@ const PostSearchPage: React.FC<any> = () => {
     </DrawerProvider>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default PostSearchPage;

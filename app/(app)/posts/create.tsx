@@ -10,6 +10,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import useCustomToast from '@/hooks/use-custom-toast';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 const PostCreatePage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -111,5 +112,9 @@ const PostCreatePage: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default PostCreatePage;

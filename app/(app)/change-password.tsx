@@ -21,6 +21,7 @@ import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import useCustomToast from '@/hooks/use-custom-toast';
+import { ErrorBoundaryAlert } from '@/components/error';
 
 type ChangePasswordSchemaDetails = z.infer<typeof changePasswordSchema>;
 
@@ -195,5 +196,9 @@ const ChangePasswordPage: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+export const ErrorBoundary = ({ error, retry }: any) => (
+  <ErrorBoundaryAlert error={error} retry={retry} />
+);
 
 export default ChangePasswordPage;
