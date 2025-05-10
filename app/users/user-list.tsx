@@ -18,7 +18,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { imageFormat } from '@/utils/file';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 type FilterFormSchema = z.infer<typeof filterFormSchema>;
 
@@ -188,7 +188,7 @@ const SearchUserListPage = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default SearchUserListPage;

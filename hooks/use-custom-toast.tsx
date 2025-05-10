@@ -1,13 +1,13 @@
 import React from 'react';
 import _ from 'lodash';
-import { CustomAlert, CustomConfirm } from '@/components/custom-toast';
-import { useToast } from '@/components/ui/toast';
+import { Alert, Confirm } from '@/components/custom-toast';
+import { useToast as useUIToast } from '@/components/ui/toast';
 
-const useCustomToast = () => {
-  const toast = useToast();
+const useToast = () => {
+  const toast = useUIToast();
   const id = _.random(0, 999999999).toString();
 
-  const alert = ({ toastId, action, title, description, ...props }: any) => {
+  const alert = ({ action, title, description, ...props }: any) => {
     const close = () => toast.close(id);
 
     if (!toast.isActive(id)) {
@@ -16,32 +16,30 @@ const useCustomToast = () => {
         placement: 'top',
         duration: 1500,
         render: ({ id }: any) => (
-          <CustomAlert
-            id={id}
-            title={title}
-            description={description}
-            action={action}
-            close={close}
-          />
+          <Alert id={id} title={title} description={description} action={action} close={close} />
         ),
         ...props,
       });
     }
   };
 
-  const success = ({ toastId, title = '操作成功', description, ...props }: any) => {
-    alert({ toastId, title, description, action: 'success', ...props });
+  const success = ({ title = '成功', description, ...props }: any) => {
+    alert({ title, description, action: 'success', ...props });
   };
 
-  const info = ({ toastId, title = '操作提示', description, ...props }: any) => {
-    alert({ toastId, title, description, action: 'info', ...props });
+  const warning = ({ title = '提醒', description, ...props }: any) => {
+    alert({ title, description, action: 'warning', ...props });
   };
 
-  const error = ({ toastId, title = '操作失败', description, ...props }: any) => {
-    alert({ toastId, title, description, action: 'error', ...props });
+  const info = ({ title = '提示', description, ...props }: any) => {
+    alert({ title, description, action: 'info', ...props });
   };
 
-  const confirm = ({ toastId, title = '请确认', description, onConfirm, ...props }: any) => {
+  const error = ({ title = '异常', description, ...props }: any) => {
+    alert({ title, description, action: 'error', ...props });
+  };
+
+  const confirm = ({ title = '确认', description, onConfirm, ...props }: any) => {
     const close = () => toast.close(id);
 
     if (!toast.isActive(id)) {
@@ -50,7 +48,7 @@ const useCustomToast = () => {
         placement: 'top',
         duration: null,
         render: ({ id }) => (
-          <CustomConfirm
+          <Confirm
             id={id}
             title={title}
             description={description}
@@ -67,6 +65,7 @@ const useCustomToast = () => {
   return {
     success,
     info,
+    warning,
     error,
     confirm,
     close: () => {
@@ -75,4 +74,4 @@ const useCustomToast = () => {
   };
 };
 
-export default useCustomToast;
+export default useToast;

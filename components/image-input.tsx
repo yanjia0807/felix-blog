@@ -41,7 +41,7 @@ import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { Portal } from './ui/portal';
 import { Pressable } from './ui/pressable';
 import { Slider, SliderFilledTrack, SliderTrack } from './ui/slider';
-import useCustomToast from '../hooks/use-custom-toast';
+import useToast from '../hooks/use-custom-toast';
 
 const SELECTION_LIMIT = 9;
 const appName = Constants?.expoConfig?.extra?.name || '';
@@ -483,7 +483,7 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [libraryPermissions, requestLibraryPermission] = ImagePicker.useMediaLibraryPermissions();
   const [cameraIsOpen, setCameraIsOpen] = useState(false);
-  const toast = useCustomToast();
+  const toast = useToast();
 
   const onFail = () => {
     toast.info({ description: `最多只能选择${SELECTION_LIMIT}个` });

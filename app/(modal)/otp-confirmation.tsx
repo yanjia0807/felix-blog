@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AnonyLogoBox } from '@/components/anony';
+import { AnonyLogoView } from '@/components/anony';
 import { useAuth } from '@/components/auth-provider';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { FormControl } from '@/components/ui/form-control';
@@ -13,8 +13,8 @@ import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { ErrorBoundaryAlert } from '@/components/error';
+import useToast from '@/hooks/use-custom-toast';
+import { PageFallbackUI } from '@/components/fallback';
 
 type OtpSchemaDetails = z.infer<typeof otpSchema>;
 
@@ -95,7 +95,7 @@ const OtpInputField = forwardRef(function OtpInputField(
 const OtpConfirmation: React.FC = () => {
   const { email, purpose }: any = useLocalSearchParams();
   const { verifyOtpMutation } = useAuth();
-  const toast = useCustomToast();
+  const toast = useToast();
   const navigation = useNavigation();
   const { mutate, isPending } = verifyOtpMutation;
   const inputRefs = [useRef<any>(null), useRef<any>(null), useRef<any>(null), useRef<any>(null)];
@@ -201,7 +201,7 @@ const OtpConfirmation: React.FC = () => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AnonyLogoBox title="验证码" subtitle="请输入4位验证码" />
+          <AnonyLogoView title="验证码" subtitle="请输入4位验证码" />
           <HStack className="items-center justify-center" space="lg">
             {(['code1', 'code2', 'code3', 'code4'] as const).map((name, index) => (
               <Controller
@@ -233,7 +233,7 @@ const OtpConfirmationPage = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default OtpConfirmationPage;

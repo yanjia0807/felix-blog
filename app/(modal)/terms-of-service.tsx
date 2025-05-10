@@ -3,7 +3,7 @@ import { router, Stack } from 'expo-router';
 import { SafeAreaView, ScrollView } from 'react-native';
 import { TermsOfServiceText } from '@/components/app-info';
 import { Button, ButtonText } from '@/components/ui/button';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 const TermsOfServicePage = () => {
   const renderHeaderLeft = () => (
@@ -34,7 +34,7 @@ const TermsOfServicePage = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default TermsOfServicePage;

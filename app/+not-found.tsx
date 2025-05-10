@@ -1,8 +1,8 @@
 import React from 'react';
-import { NotFoundAlert } from '@/components/error';
+import { NotFoundFallbackUI } from '@/components/fallback';
 
 const NotFound = () => {
-  return <NotFoundAlert />;
+  return <NotFoundFallbackUI />;
 };
 
 export default NotFound;

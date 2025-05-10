@@ -18,8 +18,8 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { AnonyLogoBox } from './anony';
+import useToast from '@/hooks/use-custom-toast';
+import { AnonyLogoView } from './anony';
 
 export type SendOtpSchemaDetails = z.infer<typeof sendOtpSchema>;
 
@@ -40,7 +40,7 @@ interface SendOtpFormProps {
 }
 
 const SendOtpForm: React.FC<SendOtpFormProps> = ({ title, purpose }) => {
-  const toast = useCustomToast();
+  const toast = useToast();
   const { sendOtpMutation } = useAuth();
   const { mutate, isPending } = sendOtpMutation;
   const navigation = useNavigation();
@@ -128,7 +128,7 @@ const SendOtpForm: React.FC<SendOtpFormProps> = ({ title, purpose }) => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AnonyLogoBox title={title} />
+          <AnonyLogoView title={title} />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="email" render={renderEmail} />
           </VStack>

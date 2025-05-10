@@ -5,7 +5,7 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AnonyLogoBox } from '@/components/anony';
+import { AnonyLogoView } from '@/components/anony';
 import { useAuth } from '@/components/auth-provider';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
@@ -21,8 +21,8 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { ErrorBoundaryAlert } from '@/components/error';
+import useToast from '@/hooks/use-custom-toast';
+import { PageFallbackUI } from '@/components/fallback';
 
 type SetPasswordSchemaDetails = z.infer<typeof setPasswordSchema>;
 
@@ -45,7 +45,7 @@ const setPasswordSchema = z
   });
 
 const SetPasswordPage: React.FC = () => {
-  const toast = useCustomToast();
+  const toast = useToast();
   const { resetPasswordOtpMutation } = useAuth();
   const { isPending, mutate } = resetPasswordOtpMutation;
   const { email, code }: any = useLocalSearchParams();
@@ -158,7 +158,7 @@ const SetPasswordPage: React.FC = () => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AnonyLogoBox title="设置密码" />
+          <AnonyLogoView title="设置密码" />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="password" render={renderPassword} />
             <Controller
@@ -181,7 +181,7 @@ const SetPasswordPage: React.FC = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default SetPasswordPage;

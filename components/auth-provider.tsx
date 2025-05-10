@@ -1,7 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
-import { DeviceEventEmitter } from 'react-native';
 import { fetchMe } from '@/api';
 import {
   loginUser,
@@ -15,28 +14,42 @@ import {
   changePassword,
   resetPasswordOtp,
 } from '@/api/auth';
+import PageSpinner from './page-spinner';
 
 const AuthContext = createContext<any>(undefined);
 
-export const AuthProvider = ({ children }: any) => {
-  const [isLogin, setIsLogin] = useState<boolean>(false);
-  const [accessToken, setAccessToken] = useState<any>();
-  const [user, setUser] = useState<any>(null);
-  const queryClient = useQueryClient();
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within a AuthProvider');
+  }
+  return context;
+};
 
-  const { data, isError, isSuccess } = useQuery({
+export const AuthProvider = ({ children }: any) => {
+  useEffect(() => console.log('@render AuthProvider'));
+
+  const [accessToken, setAccessToken] = useState<any>();
+  const queryClient = useQueryClient();
+  console.log('Current accessToken:', accessToken);
+
+  const { data, isError, isLoading } = useQuery({
     queryKey: ['users', 'detail', 'me'],
     queryFn: fetchMe,
     enabled: !!accessToken,
   });
 
-  const logoutMutation = useCallback(async () => {
-    setIsLogin(false);
-    setUser(null);
-    setAccessToken(null);
-    await SecureStore.deleteItemAsync('accessToken');
-    queryClient.clear();
-  }, [queryClient]);
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      await SecureStore.deleteItemAsync('accessToken');
+      await queryClient.resetQueries();
+      queryClient.clear();
+      setAccessToken(null);
+    },
+    onError: (error: Error) => {
+      throw error;
+    },
+  });
 
   const loginMutation = useMutation({
     mutationFn: (data: any) => loginUser(data),
@@ -102,44 +115,46 @@ export const AuthProvider = ({ children }: any) => {
     };
 
     loadData();
-
-    const subscription = DeviceEventEmitter.addListener('UNAUTHORIZED', async () => {
-      console.log('登录状态已失效');
-      logoutMutation();
-    });
-    return () => subscription.remove();
   }, []);
 
-  useEffect(() => {
-    if (isSuccess) {
-      setIsLogin(true);
-      setUser(data);
-    } else if (isError) {
-      setIsLogin(false);
-      setUser(null);
-    }
-  }, [data, isError, isSuccess]);
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLogin,
-        loginMutation,
-        logoutMutation,
-        registerMutation,
-        changePasswordMutation,
-        forgetPasswordMutation,
-        resetPasswordMutation,
-        sendEmailConfirmationMutation,
-        registerOtpMutation,
-        sendOtpMutation,
-        verifyOtpMutation,
-        resetPasswordOtpMutation,
-      }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user: data,
+      loginMutation,
+      logoutMutation,
+      registerMutation,
+      changePasswordMutation,
+      forgetPasswordMutation,
+      resetPasswordMutation,
+      sendEmailConfirmationMutation,
+      registerOtpMutation,
+      sendOtpMutation,
+      verifyOtpMutation,
+      resetPasswordOtpMutation,
+    }),
+    [
+      changePasswordMutation,
+      data,
+      forgetPasswordMutation,
+      loginMutation,
+      logoutMutation,
+      registerMutation,
+      registerOtpMutation,
+      resetPasswordMutation,
+      resetPasswordOtpMutation,
+      sendEmailConfirmationMutation,
+      sendOtpMutation,
+      verifyOtpMutation,
+    ],
   );
-};
 
-export const useAuth = () => useContext(AuthContext);
+  if (isLoading) {
+    return <PageSpinner isVisiable={true} />;
+  }
+
+  if (isError) {
+    return <></>;
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

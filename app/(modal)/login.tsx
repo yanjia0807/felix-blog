@@ -6,8 +6,9 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AnonyLogoBox } from '@/components/anony';
+import { AnonyLogoView } from '@/components/anony';
 import { useAuth } from '@/components/auth-provider';
+import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -22,8 +23,7 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { ErrorBoundaryAlert } from '@/components/error';
+import useToast from '@/hooks/use-custom-toast';
 
 type LoginSchemaDetails = z.infer<typeof loginSchema>;
 
@@ -41,7 +41,7 @@ const loginSchema = z.object({
 const Login: React.FC = () => {
   const { loginMutation } = useAuth();
   const { mutate, isPending } = loginMutation;
-  const toast = useCustomToast();
+  const toast = useToast();
   const navigation = useNavigation();
 
   const {
@@ -144,7 +144,7 @@ const Login: React.FC = () => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AnonyLogoBox title="密码登录" />
+          <AnonyLogoView title="密码登录" />
           <VStack space="md" className="mb-10">
             <Controller control={control} name="identifier" render={renderIdentifier} />
             <Controller control={control} name="password" render={renderPassword} />
@@ -169,7 +169,7 @@ const LoginPage = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default LoginPage;

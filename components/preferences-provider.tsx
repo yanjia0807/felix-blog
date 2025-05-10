@@ -9,18 +9,18 @@ interface PreferencesContextType {
 
 export const PreferencesContext = createContext<PreferencesContextType | undefined>(undefined);
 
-export const PreferencesProvider = ({ children, theme, updateTheme }: any) => {
-  return (
-    <PreferencesContext.Provider value={{ theme, updateTheme }}>
-      {children}
-    </PreferencesContext.Provider>
-  );
-};
-
 export const usePreferences = () => {
   const context = useContext(PreferencesContext);
   if (context === undefined) {
     throw new Error('usePreferences must be used within a PreferencesProvider');
   }
   return context;
+};
+
+export const PreferencesProvider = ({ children, theme, updateTheme }: any) => {
+  return (
+    <PreferencesContext.Provider value={{ theme, updateTheme }}>
+      {children}
+    </PreferencesContext.Provider>
+  );
 };

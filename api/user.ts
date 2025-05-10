@@ -127,35 +127,31 @@ export const updateFollowings = async (params: any) => {
 };
 
 export const fetchUser = async (id: string): Promise<any> => {
-  try {
-    const query = qs.stringify({
-      populate: {
-        avatar: {
-          fields: ['formats', 'name', 'alternativeText'],
-        },
-        followers: {
-          fields: ['id', 'documentId'],
-        },
-        followings: {
-          fields: ['id', 'documentId'],
-        },
-        friends: {
-          fields: ['id', 'documentId'],
-        },
-        posts: {
-          fields: ['id', 'documentId'],
-        },
-        chats: {
-          fields: ['id', 'documentId'],
-        },
+  const query = qs.stringify({
+    populate: {
+      avatar: {
+        fields: ['formats', 'name', 'alternativeText'],
       },
-    });
+      followers: {
+        fields: ['id', 'documentId'],
+      },
+      followings: {
+        fields: ['id', 'documentId'],
+      },
+      friends: {
+        fields: ['id', 'documentId'],
+      },
+      posts: {
+        fields: ['id', 'documentId'],
+      },
+      chats: {
+        fields: ['id', 'documentId'],
+      },
+    },
+  });
 
-    const res = await apiClient.get(`/users/custom/${id}?${query}`);
-    return res;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+  const res = await apiClient.get(`/users/custom/${id}?${query}`);
+  return res;
 };
 
 export const fetchUsers = async ({ pageParam }: any) => {

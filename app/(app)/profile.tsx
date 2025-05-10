@@ -3,8 +3,10 @@ import SegmentedControl from '@react-native-segmented-control/segmented-control'
 import { router, Stack } from 'expo-router';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
-import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-provider';
+import { PageFallbackUI } from '@/components/fallback';
+import { PagerViewProvider } from '@/components/pager-view';
+import PhotoListView from '@/components/photo-list-view';
 import PostListView from '@/components/post-list-view';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
@@ -13,7 +15,6 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserLargeAvatar } from '@/components/user';
-import { ErrorBoundaryAlert } from '@/components/error';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -133,7 +134,9 @@ const Profile: React.FC = () => {
         {selectedIndex === 0 ? (
           <PostListView userDocumentId={user.documentId} />
         ) : (
-          <AlbumListView userDocumentId={user.documentId} />
+          <PagerViewProvider>
+            <PhotoListView userDocumentId={user.documentId} />
+          </PagerViewProvider>
         )}
       </VStack>
     </SafeAreaView>
@@ -141,7 +144,7 @@ const Profile: React.FC = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default Profile;

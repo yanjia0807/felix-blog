@@ -12,6 +12,7 @@ import {
 } from 'lucide-react-native';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/components/auth-provider';
+import { PageFallbackUI } from '@/components/fallback';
 import { usePreferences } from '@/components/preferences-provider';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
@@ -21,11 +22,10 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { ErrorBoundaryAlert } from '@/components/error';
+import useToast from '@/hooks/use-custom-toast';
 
 const Setting: React.FC = () => {
-  const toast = useCustomToast();
+  const toast = useToast();
   const { user, logoutMutation } = useAuth();
   const { theme, updateTheme } = usePreferences();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(theme === 'dark');
@@ -36,7 +36,7 @@ const Setting: React.FC = () => {
       description: `确认要退出登录吗？`,
       onConfirm: async () => {
         toast.close();
-        await logoutMutation();
+        await logoutMutation.mutate();
         toast.success({
           description: '退出登录成功',
           onCloseComplete: () => {
@@ -140,7 +140,7 @@ const SettingPage = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default SettingPage;

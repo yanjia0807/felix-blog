@@ -25,14 +25,14 @@ import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { RefreshControl } from './ui/refresh-control';
 import { VStack } from './ui/vstack';
-import useCustomToast from '../hooks/use-custom-toast';
+import useToast from '../hooks/use-custom-toast';
 import { Card } from './ui/card';
 
 const appName = Constants?.expoConfig?.extra?.name || '';
 
 export const PositionInput = ({ value, onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const toast = useCustomToast();
+  const toast = useToast();
 
   const onInputButtonPress = async () => {
     const status = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);

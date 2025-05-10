@@ -6,21 +6,16 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Filter, MapPin, Search } from 'lucide-react-native';
-import {
-  FlatList,
-  RefreshControl,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
 import { fetchBanners, fetchPosts } from '@/api';
-import AlbumPagerView from '@/components/album-pager-view';
 import { useAuth } from '@/components/auth-provider';
 import { CommentIcon, CommentProvider, CommentSheet } from '@/components/comment-input';
+import { PageFallbackUI } from '@/components/fallback';
 import { MainHeader } from '@/components/header';
 import { ImageCover, ImageList, VideoCover } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
 import PageSpinner from '@/components/page-spinner';
+import { PagerViewProvider, usePagerView } from '@/components/pager-view';
 import PostItemMenu from '@/components/post-menu-popover';
 import { usePreferences } from '@/components/preferences-provider';
 import { TagList } from '@/components/tag-input';
@@ -33,10 +28,11 @@ import { AddIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatar, UserAvatars } from '@/components/user';
+import useCoverDimensions from '@/hooks/use-cover-dimensions';
 import { formatDistance } from '@/utils/date';
 import {
   FileTypeNum,
@@ -46,7 +42,6 @@ import {
   fileFullUrl,
   videoThumbnailUrl,
 } from '@/utils/file';
-import { ErrorBoundaryAlert } from '@/components/error';
 
 const CommentItem: React.FC<any> = ({ item }) => {
   return (
@@ -77,42 +72,26 @@ const CommentItem: React.FC<any> = ({ item }) => {
 };
 
 export const PostItem: React.FC<any> = memo(
-  ({ item, index, setIsPagerOpen, setPagerIndex, setAblum }) => {
+  ({ item }) => {
     useEffect(() => console.log('@render PostItem'));
 
-    const CONTAINER_PADDING = 14;
-    const CARD_PADDING = 10.5;
-
     const router = useRouter();
-    const { width: screenWidth } = useWindowDimensions();
-
-    const itemWidth = screenWidth - CONTAINER_PADDING * 2 - CARD_PADDING * 2;
-    let itemHeight = (itemWidth / 16) * 9;
-
-    if (isImage(item.cover.mime)) {
-      const format = imageFormat(item.cover, 'l', 's');
-      const aspectRadio = format.width / format.height;
-      itemHeight = Math.min(
-        Math.max(itemWidth / aspectRadio, (itemWidth / 4) * 3),
-        (itemWidth / 16) * 9,
-      );
-    }
+    const { coverWidth, coverHeight } = useCoverDimensions(14, 10.5);
+    const { setPages, onOpenPage } = usePagerView();
 
     const onCoverPress = () => {
-      setAblum(item.album);
-      setPagerIndex(0);
-      setIsPagerOpen(true);
+      setPages(item.album);
+      onOpenPage(0);
     };
 
     const onImagePress = (index: number) => {
-      setAblum(item.album);
-      setPagerIndex(index + (item.cover ? 1 : 0));
-      setIsPagerOpen(true);
+      setPages(item.album);
+      onOpenPage(index + (item.cover ? 1 : 0));
     };
 
     return (
       <Pressable onPress={() => router.push(`/posts/${item.documentId}`)}>
-        <Card size="sm" className={`mt-6 rounded-lg`}>
+        <Card size="sm" className="mt-6 rounded-lg">
           <VStack space="lg">
             <VStack space="sm">
               <HStack className="items-center justify-between">
@@ -140,16 +119,16 @@ export const PostItem: React.FC<any> = memo(
             {item.cover && isImage(item.cover.mime) && (
               <ImageCover
                 item={item}
-                width={itemWidth}
-                height={itemHeight}
+                width={coverWidth}
+                height={coverHeight}
                 onPress={onCoverPress}
               />
             )}
             {item.cover && isVideo(item.cover.mime) && (
               <VideoCover
                 item={item}
-                width={itemWidth}
-                height={itemHeight}
+                width={coverWidth}
+                height={coverHeight}
                 onPress={onCoverPress}
               />
             )}
@@ -186,6 +165,25 @@ export const PostItem: React.FC<any> = memo(
       _.isEqual(prev.item.attachmentExtras, next.item.attachmentExtras)
     );
   },
+);
+
+const PostSkeleton: React.FC<any> = () => (
+  <VStack className="mt-6 w-full rounded-lg bg-background-100 p-2" space="lg">
+    <HStack className="items-center justify-between">
+      <HStack className="w-24 items-center" space="xs">
+        <Skeleton variant="circular" className="h-8 w-8" />
+        <SkeletonText _lines={1} className="h-4" />
+      </HStack>
+      <Skeleton variant="sharp" className="h-4 w-24" />
+    </HStack>
+    <SkeletonText _lines={2} className="h-3" />
+    <Skeleton variant="rounded" className="h-52" />
+    <SkeletonText _lines={3} className="h-3" />
+    <HStack className="items-center" space="sm">
+      <Skeleton variant="rounded" className="h-14 w-14" />
+      <Skeleton variant="rounded" className="h-14 w-14" />
+    </HStack>
+  </VStack>
 );
 
 const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
@@ -325,9 +323,6 @@ const HomeHeader: React.FC<any> = memo(({ autocompleteRef }) => {
 });
 
 const PostList: React.FC<any> = () => {
-  const [isPagerOpen, setIsPagerOpen] = useState(false);
-  const [pagerIndex, setPagerIndex] = useState<number>(0);
-  const [album, setAblum] = useState<any>([]);
   const router = useRouter();
   const { user } = useAuth();
 
@@ -358,87 +353,77 @@ const PostList: React.FC<any> = () => {
   });
 
   const posts: any = useMemo(() => {
-    if (!postsQuery.isSuccess) return [];
-    return _.reduce(
-      postsQuery.data.pages,
-      (result: any, page: any) => [
-        ...result,
-        ...page.data.map((item: any) => {
-          const cover = !item.cover
-            ? undefined
-            : isImage(item.cover.mime)
-              ? {
-                  ...item.cover,
-                  fileType: FileTypeNum.Image,
-                  uri: fileFullUrl(item.cover),
-                  thumbnail: imageFormat(item.cover, 's', 's')?.fullUrl,
-                  preview: imageFormat(item.cover, 'l')?.fullUrl,
-                }
-              : {
-                  ...item.cover,
-                  fileType: FileTypeNum.Video,
-                  uri: fileFullUrl(item.cover),
-                  thumbnail: videoThumbnailUrl(item.cover, item.attachmentExtras),
-                  preview: fileFullUrl(item.cover),
-                };
-
-          const mediaList = _.map(
-            _.filter(
-              item.attachments || [],
-              (item: any) => isImage(item.mime) || isVideo(item.mime),
-            ),
-            (image: any) => {
-              return isImage(image.mime)
+    if (postsQuery.isLoading) {
+      return _.map(new Array(3), () => ({ documentId: _.uniqueId(), placeholder: true }));
+    } else if (postsQuery.isSuccess) {
+      return _.map(
+        _.flatMap(postsQuery.data.pages, (page: any) => page.data),
+        (item: any) => {
+          {
+            const cover = !item.cover
+              ? undefined
+              : isImage(item.cover.mime)
                 ? {
-                    ...image,
+                    ...item.cover,
                     fileType: FileTypeNum.Image,
-                    uri: fileFullUrl(image),
-                    thumbnail: imageFormat(image, 's', 's')?.fullUrl,
-                    preview: imageFormat(image, 'l')?.fullUrl,
+                    uri: fileFullUrl(item.cover),
+                    thumbnail: imageFormat(item.cover, 's', 's')?.fullUrl,
+                    preview: imageFormat(item.cover, 'l')?.fullUrl,
                   }
                 : {
-                    ...image,
+                    ...item.cover,
                     fileType: FileTypeNum.Video,
-                    uri: fileFullUrl(image),
-                    thumbnail: videoThumbnailUrl(image, item.attachmentExtras),
-                    preview: fileFullUrl(image),
+                    uri: fileFullUrl(item.cover),
+                    thumbnail: videoThumbnailUrl(item.cover, item.attachmentExtras),
+                    preview: fileFullUrl(item.cover),
                   };
-            },
-          );
 
-          const album = _.concat(cover ? cover : [], mediaList);
+            const mediaList = _.map(
+              _.filter(
+                item.attachments || [],
+                (item: any) => isImage(item.mime) || isVideo(item.mime),
+              ),
+              (image: any) => {
+                return isImage(image.mime)
+                  ? {
+                      ...image,
+                      fileType: FileTypeNum.Image,
+                      uri: fileFullUrl(image),
+                      thumbnail: imageFormat(image, 's', 's')?.fullUrl,
+                      preview: imageFormat(image, 'l')?.fullUrl,
+                    }
+                  : {
+                      ...image,
+                      fileType: FileTypeNum.Video,
+                      uri: fileFullUrl(image),
+                      thumbnail: videoThumbnailUrl(image, item.attachmentExtras),
+                      preview: fileFullUrl(image),
+                    };
+              },
+            );
 
-          return {
-            ...item,
-            cover,
-            mediaList,
-            album,
-          };
-        }),
-      ],
-      [],
-    );
-  }, [postsQuery.data, postsQuery.isSuccess]);
+            const album = _.concat(cover ? cover : [], mediaList);
+
+            return {
+              ...item,
+              cover,
+              mediaList,
+              album,
+            };
+          }
+        },
+      );
+    } else {
+      return [];
+    }
+  }, [postsQuery.data, postsQuery.isLoading, postsQuery.isSuccess]);
 
   const renderListHeader = useCallback((props: any) => {
     return <HomeHeader {...props}></HomeHeader>;
   }, []);
 
-  const renderListItem = useCallback(
-    ({ item, index }: any) => {
-      return (
-        <PostItem
-          item={item}
-          index={index}
-          isLoaded={!postsQuery.isLoading}
-          setIsPagerOpen={setIsPagerOpen}
-          setPagerIndex={setPagerIndex}
-          setAblum={setAblum}
-        />
-      );
-    },
-    [postsQuery.isLoading],
-  );
+  const renderListItem = ({ item, index }: any) =>
+    item.placeholder ? <PostSkeleton /> : <PostItem item={item} />;
 
   const renderEmptyComponent = (props: any) => (
     <View className="mt-32 flex-1 items-center">
@@ -450,11 +435,9 @@ const PostList: React.FC<any> = () => {
     if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) postsQuery.fetchNextPage();
   };
 
-  const onPagerClose = () => setIsPagerOpen(false);
-
   return (
     <SafeAreaView className="flex-1">
-      <PageSpinner isVisiable={postsQuery.isLoading} />
+      {postsQuery.isLoading && <PageSpinner />}
       <VStack className="flex-1 px-4" space="md">
         <FlatList
           data={posts}
@@ -477,12 +460,6 @@ const PostList: React.FC<any> = () => {
           }
         />
       </VStack>
-      <AlbumPagerView
-        initIndex={pagerIndex}
-        value={album}
-        isOpen={isPagerOpen}
-        onClose={onPagerClose}
-      />
       {user && (
         <Fab size="md" placement="bottom right" onPress={() => router.push('/posts/create')}>
           <FabIcon as={AddIcon} />
@@ -498,14 +475,16 @@ const HomePage: React.FC<any> = () => {
 
   return (
     <CommentProvider>
-      <PostList />
-      <CommentSheet />
+      <PagerViewProvider>
+        <PostList />
+        <CommentSheet />
+      </PagerViewProvider>
     </CommentProvider>
   );
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default HomePage;

@@ -11,8 +11,8 @@ import {
   updateNotificationState,
 } from '@/api';
 import { useAuth } from '@/components/auth-provider';
+import { PageFallbackUI } from '@/components/fallback';
 import { useSocket } from '@/components/socket-provider';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
@@ -23,12 +23,11 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatarNotice } from '@/components/user';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { ErrorBoundaryAlert } from '@/components/error';
+import useToast from '@/hooks/use-custom-toast';
 
 const NotificationList: React.FC = () => {
   const { user } = useAuth();
-  const toast = useCustomToast();
+  const toast = useToast();
   const queryClient = useQueryClient();
   const { notifications: newNotifications, setNotifications } = useSocket();
 
@@ -196,7 +195,7 @@ const NotificationList: React.FC = () => {
   const renderFollowItem = ({ item, index }: any) => {
     return (
       <TouchableOpacity onPress={() => onItemPress({ item })}>
-        <Card>
+        <Card variant="ghost">
           <VStack space="md">
             <HStack className="items-center justify-between">
               <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
@@ -219,7 +218,7 @@ const NotificationList: React.FC = () => {
   const renderFriendRequestItem = ({ item, index }: any) => {
     return (
       <TouchableOpacity onPress={() => onItemPress({ item })}>
-        <Card>
+        <Card variant="ghost">
           <VStack space="md">
             <HStack className="items-center justify-between">
               <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
@@ -266,7 +265,7 @@ const NotificationList: React.FC = () => {
   const renderFriendFeedbackItem = ({ item, index }: any) => {
     return (
       <TouchableOpacity onPress={() => onItemPress({ item })}>
-        <Card>
+        <Card variant="ghost">
           <VStack space="md">
             <HStack className="items-center justify-between">
               <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
@@ -291,7 +290,7 @@ const NotificationList: React.FC = () => {
   const renderFriendCancelItem = ({ item, index }: any) => {
     return (
       <TouchableOpacity onPress={() => onItemPress({ item })}>
-        <Card>
+        <Card variant="ghost">
           <VStack space="md">
             <HStack className="items-center justify-between">
               <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
@@ -387,7 +386,7 @@ const NotificationListPage = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default NotificationListPage;

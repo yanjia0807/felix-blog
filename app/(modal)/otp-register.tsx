@@ -5,7 +5,7 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AnonyLogoBox } from '@/components/anony';
+import { AnonyLogoView } from '@/components/anony';
 import { useAuth } from '@/components/auth-provider';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
@@ -24,8 +24,8 @@ import { Link, LinkText } from '@/components/ui/link';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { ErrorBoundaryAlert } from '@/components/error';
+import useToast from '@/hooks/use-custom-toast';
+import { PageFallbackUI } from '@/components/fallback';
 
 type RegisterSchemaDetails = z.infer<typeof registerSchema>;
 
@@ -54,7 +54,7 @@ const registerSchema = z.object({
 const OtpRegisterPage: React.FC = () => {
   const { registerOtpMutation } = useAuth();
   const { mutate, isPending } = registerOtpMutation;
-  const toast = useCustomToast();
+  const toast = useToast();
   const navigation = useNavigation();
 
   const {
@@ -185,7 +185,7 @@ const OtpRegisterPage: React.FC = () => {
       />
       <VStack className="flex-1 p-4">
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AnonyLogoBox title="用户注册" />
+          <AnonyLogoView title="用户注册" />
           <VStack space="md">
             <Controller control={control} name="username" render={renderUsername} />
             <Controller control={control} name="email" render={renderEmail} />
@@ -220,7 +220,7 @@ const OtpRegisterPage: React.FC = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default OtpRegisterPage;

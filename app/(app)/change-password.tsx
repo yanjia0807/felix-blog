@@ -20,8 +20,8 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { ErrorBoundaryAlert } from '@/components/error';
+import useToast from '@/hooks/use-custom-toast';
+import { PageFallbackUI } from '@/components/fallback';
 
 type ChangePasswordSchemaDetails = z.infer<typeof changePasswordSchema>;
 
@@ -55,7 +55,7 @@ const changePasswordSchema = z
 const ChangePasswordPage: React.FC = () => {
   const { changePasswordMutation } = useAuth();
   const { mutate, isPending } = changePasswordMutation;
-  const toast = useCustomToast();
+  const toast = useToast();
 
   const renderHeaderLeft = () => (
     <Button action="secondary" variant="link" onPress={() => router.back()}>
@@ -198,7 +198,7 @@ const ChangePasswordPage: React.FC = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default ChangePasswordPage;

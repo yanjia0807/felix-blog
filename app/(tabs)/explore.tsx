@@ -8,7 +8,7 @@ import _ from 'lodash';
 import { FlatList, Pressable, RefreshControl, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeInLeft } from 'react-native-reanimated';
 import { fetchPopularPageTags, fetchExplorePosts } from '@/api';
-import { AnonyBox } from '@/components/anony';
+import { AnonyView } from '@/components/anony';
 import { useAuth } from '@/components/auth-provider';
 import { MainHeader } from '@/components/header';
 import { ImageCover, VideoCover } from '@/components/image-input';
@@ -23,7 +23,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatar } from '@/components/user';
 import { fileFullUrl, FileTypeNum, imageFormat, isImage, videoThumbnailUrl } from '@/utils/file';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 const ExploreItem: React.FC<any> = ({ item, columnIndex }) => {
   const CONTAINER_PADDING = 14;
@@ -193,7 +193,7 @@ const segments = [
 const ExplorePage: React.FC<any> = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filterTags, setFilterTags] = useState<any>([]);
-  const { isLogin, user } = useAuth();
+  const { user } = useAuth();
   const filterType = segments[selectedIndex].key;
   let filters: any;
   switch (filterType) {
@@ -208,7 +208,7 @@ const ExplorePage: React.FC<any> = () => {
       break;
   }
 
-  const isShow = isLogin || (!isLogin && segments[selectedIndex].key !== 'following');
+  const isShow = !_.isNil(user) || (_.isNil(user) && segments[selectedIndex].key !== 'following');
 
   const postsQuery = useInfiniteQuery({
     queryKey: ['posts', 'list', { filterType, filters }],
@@ -325,7 +325,7 @@ const ExplorePage: React.FC<any> = () => {
             }
           />
         ) : (
-          <AnonyBox />
+          <AnonyView />
         )}
       </VStack>
     </SafeAreaView>
@@ -333,7 +333,7 @@ const ExplorePage: React.FC<any> = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default ExplorePage;

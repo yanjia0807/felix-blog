@@ -38,7 +38,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatar } from '@/components/user';
 import useDebounce from '@/hooks/use-debounce';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 const PostFilterContext = createContext<any>(undefined);
 
@@ -173,10 +173,11 @@ const PostSearchHeader: React.FC<any> = ({ value, onChange, onSubmitEditing, isL
           <InputField
             autoFocus={true}
             value={value}
-            onChangeText={(text) => onChange(text)}
-            onSubmitEditing={onSubmitEditing}
+            inputMode="text"
             autoCapitalize="none"
             autoCorrect={false}
+            onChangeText={(text) => onChange(text)}
+            onSubmitEditing={onSubmitEditing}
             returnKeyType="search"
             placeholder="搜索帖子..."
           />
@@ -237,8 +238,9 @@ const PostFilterContent: React.FC<any> = memo(() => {
           <InputField
             type="text"
             value={value}
-            autoCapitalize="none"
             inputMode="text"
+            autoCapitalize="none"
+            autoCorrect={false}
             onChangeText={onChange}
             onBlur={onBlur}
             placeholder="标题...."
@@ -259,8 +261,9 @@ const PostFilterContent: React.FC<any> = memo(() => {
           <InputField
             type="text"
             value={value}
-            autoCapitalize="none"
             inputMode="text"
+            autoCapitalize="none"
+            autoCorrect={false}
             onChangeText={onChange}
             onBlur={onBlur}
             placeholder="作者...."
@@ -512,7 +515,7 @@ const PostSearchPage: React.FC<any> = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default PostSearchPage;

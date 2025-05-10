@@ -1,15 +1,14 @@
 import React from 'react';
 import { Image } from 'expo-image';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { twMerge } from 'tailwind-merge';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
-import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import { Heading } from './ui/heading';
 import { Text } from './ui/text';
 
-export const AnonyBox: React.FC<any> = () => {
+export const AnonyView: React.FC<any> = () => {
   const router = useRouter();
 
   return (
@@ -30,7 +29,7 @@ export const AnonyBox: React.FC<any> = () => {
   );
 };
 
-export const AnonyLogoBox = ({ className, title, subtitle }: any) => {
+export const AnonyLogoView = ({ className, title, subtitle }: any) => {
   return (
     <HStack className={twMerge('mb-20 items-center', className)} space="md">
       <Image

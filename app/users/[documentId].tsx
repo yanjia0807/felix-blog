@@ -23,9 +23,11 @@ import {
   createFriendRequest,
   cancelFriend,
 } from '@/api';
-import AlbumListView from '@/components/album-list-view';
 import { useAuth } from '@/components/auth-provider';
+import { PageFallbackUI } from '@/components/fallback';
 import PageSpinner from '@/components/page-spinner';
+import { PagerViewProvider } from '@/components/pager-view';
+import PhotoListView from '@/components/photo-list-view';
 import PostListView from '@/components/post-list-view';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
@@ -35,8 +37,7 @@ import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserLargeAvatar } from '@/components/user';
-import useCustomToast from '@/hooks/use-custom-toast';
-import { ErrorBoundaryAlert } from '@/components/error';
+import useToast from '@/hooks/use-custom-toast';
 
 interface UserDetailProps {
   user: any;
@@ -66,7 +67,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   const { user: currentUser } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const queryClient = useQueryClient();
-  const toast = useCustomToast();
+  const toast = useToast();
   const userDocumentIds = currentUser ? [currentUser.documentId, documentId] : [];
   const isMe = documentId === currentUser?.documentId;
   const isFollowing = _.some(currentUser.followings, { documentId });
@@ -350,7 +351,9 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
       {selectedIndex === 0 ? (
         <PostListView userDocumentId={user.documentId} />
       ) : (
-        <AlbumListView userDocumentId={user.documentId} />
+        <PagerViewProvider>
+          <PhotoListView userDocumentId={user.documentId} />
+        </PagerViewProvider>
       )}
     </VStack>
   );
@@ -397,7 +400,7 @@ const UserDetailPage: React.FC = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default UserDetailPage;

@@ -23,7 +23,7 @@ import { Heading } from './ui/heading';
 import { HStack } from './ui/hstack';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import useCustomToast from '../hooks/use-custom-toast';
+import useToast from '../hooks/use-custom-toast';
 
 const SELECTION_LIMIT = 5;
 const appName = Constants?.expoConfig?.extra?.name || '';
@@ -57,7 +57,7 @@ const AnimatedRing = ({ metering, recordingStatus, doRecording }: any) => {
 
 export const RecordingInput = ({ onChange, value }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const toast = useCustomToast();
+  const toast = useToast();
   const [audioPermission, requestAudioPermission] = Audio.usePermissions();
   const onInputIconPressed = async () => {
     if (audioPermission?.granted) {
@@ -96,7 +96,7 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
   const [durationMillis, setDurationMillis] = useState<number>(0);
   const snapPoints = useMemo(() => ['50%'], []);
   const insets = useSafeAreaInsets();
-  const toast = useCustomToast();
+  const toast = useToast();
   const duration: any = intervalToDuration({ start: 0, end: durationMillis });
   const formattedTime = `${String(duration?.minutes || '').padStart(2, '0')}:${String(duration?.seconds || '').padStart(2, '0')}`;
 

@@ -18,7 +18,7 @@ import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import useCustomToast from '../hooks/use-custom-toast';
+import useToast from '../hooks/use-custom-toast';
 
 interface PostListViewProps {
   userDocumentId: string;
@@ -63,7 +63,7 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
   const [status, setStatus] = useState('published');
   const queryClient = useQueryClient();
   const router = useRouter();
-  const toast = useCustomToast();
+  const toast = useToast();
   const { user: currentUser } = useAuth();
   const isMe = userDocumentId === currentUser?.documentId;
   const isPublished = status === 'published';

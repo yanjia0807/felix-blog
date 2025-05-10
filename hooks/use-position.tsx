@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 import { init, Geolocation, Position, PositionError } from 'react-native-amap-geolocation';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { amapIosApiKey } from '@/api';
-import useCustomToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-custom-toast';
 
 type UsePositionReturn = {
   position: Position | null;
@@ -15,7 +15,7 @@ type UsePositionReturn = {
 const appName = Constants?.expoConfig?.extra?.name || '';
 
 function usePosition(): UsePositionReturn {
-  const toast = useCustomToast();
+  const toast = useToast();
   const [position, setPosition] = useState<Position | null>(null);
   const [error, setError] = useState<string | null>(null);
 

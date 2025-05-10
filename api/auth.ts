@@ -13,6 +13,8 @@ export const loginUser = async (credentials: any) => {
     } else if (error.name === 'ApplicationError') {
       throw new Error('您的账户邮箱尚未验证');
     }
+
+    throw new Error('发生了错误');
   }
 };
 
@@ -28,6 +30,8 @@ export const registerUser = async ({ username, email, password }: any) => {
     if (error.name === 'ApplicationError') {
       throw new Error('电子邮件或用户名已被占用');
     }
+
+    throw new Error('发生了错误');
   }
 };
 

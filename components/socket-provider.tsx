@@ -32,7 +32,7 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState<any>([]);
   const [messages, setMessages] = useState<any>([]);
-  const { isLogin } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     const init = async () => {
@@ -182,7 +182,7 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
       }
     };
 
-    if (isLogin) {
+    if (!_.isNil(user)) {
       init();
     } else {
       close();
@@ -193,7 +193,7 @@ const SocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
       socketRef.current?.off('notification:create');
       socketRef.current?.off('message:create');
     };
-  }, [isLogin, queryClient]);
+  }, [user, queryClient]);
 
   const value = {
     messages,

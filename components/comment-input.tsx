@@ -12,7 +12,6 @@ import React, {
 import {
   BottomSheetBackdrop,
   BottomSheetSectionList,
-  BottomSheetTextInput,
   BottomSheetFooter,
   BottomSheetModal,
   useBottomSheetInternal,
@@ -24,12 +23,7 @@ import _ from 'lodash';
 import { MessageCircle } from 'lucide-react-native';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  NativeSyntheticEvent,
-  TextInput,
-  TextInputFocusEventData,
-  TouchableOpacity,
-} from 'react-native';
+import { NativeSyntheticEvent, TextInputFocusEventData, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import {
@@ -53,7 +47,7 @@ import { Icon } from './ui/icon';
 import { Input, InputField } from './ui/input';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
-import useCustomToast from '../hooks/use-custom-toast';
+import useToast from '../hooks/use-custom-toast';
 
 type CommentContextType =
   | {
@@ -392,7 +386,7 @@ export const CommentSheet = memo(() => {
   const queryClient = useQueryClient();
   const snapPoints = useMemo(() => ['95%'], []);
   const insets = useSafeAreaInsets();
-  const toast = useCustomToast();
+  const toast = useToast();
   const [replyDocument, setReplyDocument] = useState<any>();
   const [currentDocumentId, setCurrentDocumentId] = useState<any>();
   const [expandDocumentIds, setExpandDocumentIds] = useState<any>([]);

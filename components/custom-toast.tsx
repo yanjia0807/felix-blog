@@ -7,7 +7,7 @@ import { CloseIcon, Icon } from '@/components/ui/icon';
 import { Toast, ToastTitle, ToastDescription } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
 
-export const CustomAlert = ({ id, action, title, description, close }: any) => {
+export const Alert = ({ id, action, title, description, close }: any) => {
   const nativeID = `toast-${id}`;
 
   return (
@@ -25,7 +25,7 @@ export const CustomAlert = ({ id, action, title, description, close }: any) => {
   );
 };
 
-export const CustomConfirm = ({ id, onConfirm, title, description, close }: any) => {
+export const Confirm = ({ id, onConfirm, title, description, close }: any) => {
   const nativeID = `toast-${id}`;
 
   return (

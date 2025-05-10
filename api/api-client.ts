@@ -1,6 +1,5 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { DeviceEventEmitter } from 'react-native';
 
 const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER;
 
@@ -40,10 +39,6 @@ apiClient.interceptors.response.use(
         `[api error ${error.response?.status}] ${error.response?.config.method?.toUpperCase()} ${error.response?.config.url}`,
         error.response?.data.error || error,
       );
-
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        DeviceEventEmitter.emit('UNAUTHORIZED');
-      }
 
       return Promise.reject(error.response?.data.error || error);
     } else {

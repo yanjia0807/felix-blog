@@ -11,7 +11,7 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import UserList from '@/components/user-list';
 import useDebounce from '@/hooks/use-debounce';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 const FollowingListPage: React.FC = () => {
   const [keywords, setKeywords] = useState<string>('');
@@ -99,7 +99,7 @@ const FollowingListPage: React.FC = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default FollowingListPage;

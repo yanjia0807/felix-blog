@@ -24,9 +24,9 @@ import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useCustomToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-custom-toast';
 import { imageFormat } from '@/utils/file';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 type MessageFormSchema = z.infer<typeof messageFormSchema>;
 
@@ -38,7 +38,7 @@ const ChatPage: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { documentId }: any = useLocalSearchParams();
   const flatListRef = useRef<FlatList>(null);
-  const toast = useCustomToast();
+  const toast = useToast();
   const { messages, setMessages } = useSocket();
   const queryClient = useQueryClient();
 
@@ -332,7 +332,7 @@ const ChatPage: React.FC = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default ChatPage;

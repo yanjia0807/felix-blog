@@ -284,11 +284,11 @@ export const fetchExplorePosts = async ({ pageParam }: any) => {
   const { filterType } = pageParam;
 
   if (filterType === 'trending') {
-    return await fetchTrendingPosts({ pageParam });
+    return fetchTrendingPosts({ pageParam });
   } else if (filterType === 'following') {
-    return await fetchFollowingPosts({ pageParam });
+    return fetchFollowingPosts({ pageParam });
   } else if (filterType === 'discover') {
-    return await fetchDiscoverPosts({ pageParam });
+    return fetchDiscoverPosts({ pageParam });
   }
 };
 
@@ -426,11 +426,104 @@ export const fetchPost = async ({ documentId }: any) => {
 };
 
 export const createPost = async (formData: PostData) => {
-  try {
-    let coverId = null;
-    const attachmentExtras: any = [];
+  let coverId = null;
+  const attachmentExtras: any = [];
 
-    if (formData.cover) {
+  if (formData.cover) {
+    coverId = (await uploadFiles(formData.cover.uri)).id;
+
+    if (isVideo(formData.cover.mime)) {
+      const thumbnailId = (await uploadFiles(formData.cover.thumbnail)).id;
+      attachmentExtras.push({
+        attachment: coverId,
+        thumbnail: thumbnailId,
+      });
+    }
+  }
+
+  const uploadUris: any = [];
+  _.forEach(formData.images, (item: any) => {
+    uploadUris.push(item.uri);
+    if (isVideo(item.mime)) {
+      uploadUris.push(item.thumbnail);
+    }
+  });
+
+  _.forEach(formData.recordings, (item: any) => {
+    uploadUris.push(item.uri);
+  });
+
+  const uploadRes = await uploadFiles(uploadUris);
+  const attachments = _.map(
+    [...formData.images, ...formData.recordings],
+    (item: any) => _.find(uploadRes, ['uri', item.uri]).id,
+  );
+
+  _.forEach(formData.images, (item: any) => {
+    if (isVideo(item.mime)) {
+      attachmentExtras.push({
+        attachment: _.find(uploadRes, ['uri', item.uri]).id,
+        thumbnail: _.find(uploadRes, ['uri', item.thumbnail]).id,
+      });
+    }
+  });
+
+  const poi =
+    formData.poi &&
+    _.pick(formData.poi, [
+      'name',
+      'longitude',
+      'latitude',
+      'type',
+      'typecode',
+      'pname',
+      'cityname',
+      'adname',
+      'address',
+      'pcode',
+      'adcode',
+      'citycode',
+    ]);
+
+  const tags = formData.tags.map((item: any) => item.documentId);
+
+  const data = {
+    title: formData.title,
+    cover: coverId,
+    content: formData.content,
+    author: formData.author,
+    poi,
+    tags,
+    attachments,
+    attachmentExtras,
+    isPublished: formData.isPublished,
+  };
+
+  const res = await apiClient.post(`/posts`, { data });
+
+  return res.data;
+};
+
+export const editPost = async (formData: PostData) => {
+  let coverId = null;
+  const attachmentExtras: any = [];
+
+  if (formData.cover) {
+    if (formData.cover.id) {
+      coverId = formData.cover.id;
+
+      if (isVideo(formData.cover.mime)) {
+        const extra = _.find(
+          formData.attachmentExtras,
+          (item1: any) => item1.attachment.id === formData.cover.id,
+        );
+
+        attachmentExtras.push({
+          attachment: extra.attachment.id,
+          thumbnail: extra.thumbnail.id,
+        });
+      }
+    } else {
       coverId = (await uploadFiles(formData.cover.uri)).id;
 
       if (isVideo(formData.cover.mime)) {
@@ -441,228 +534,121 @@ export const createPost = async (formData: PostData) => {
         });
       }
     }
+  }
 
-    const uploadUris: any = [];
-    _.forEach(formData.images, (item: any) => {
+  const uploadUris: any = [];
+  _.forEach(formData.images, (item: any) => {
+    if (!item.id) {
       uploadUris.push(item.uri);
       if (isVideo(item.mime)) {
         uploadUris.push(item.thumbnail);
       }
-    });
+    }
+  });
 
-    _.forEach(formData.recordings, (item: any) => {
+  _.forEach(formData.recordings, (item: any) => {
+    if (!item.id) {
       uploadUris.push(item.uri);
-    });
+    }
+  });
 
-    const uploadRes = await uploadFiles(uploadUris);
-    const attachments = _.map(
-      [...formData.images, ...formData.recordings],
-      (item: any) => _.find(uploadRes, ['uri', item.uri]).id,
-    );
+  const uploadRes = await uploadFiles(uploadUris);
 
-    _.forEach(formData.images, (item: any) => {
-      if (isVideo(item.mime)) {
+  const attachments = _.map([...formData.images, ...formData.recordings], (item: any) =>
+    item.id ? item.id : _.find(uploadRes, ['uri', item.uri]).id,
+  );
+
+  _.forEach(formData.images, (item: any) => {
+    if (isVideo(item.mime)) {
+      if (item.id) {
+        const extra = _.find(
+          formData.attachmentExtras,
+          (item1: any) => item1.attachment.id === item.id,
+        );
+
         attachmentExtras.push({
+          attachment: extra.attachment.id,
+          thumbnail: extra.thumbnail.id,
+        });
+      } else {
+        const extra = {
           attachment: _.find(uploadRes, ['uri', item.uri]).id,
           thumbnail: _.find(uploadRes, ['uri', item.thumbnail]).id,
-        });
-      }
-    });
-
-    const poi =
-      formData.poi &&
-      _.pick(formData.poi, [
-        'name',
-        'longitude',
-        'latitude',
-        'type',
-        'typecode',
-        'pname',
-        'cityname',
-        'adname',
-        'address',
-        'pcode',
-        'adcode',
-        'citycode',
-      ]);
-
-    const tags = formData.tags.map((item: any) => item.documentId);
-
-    const data = {
-      title: formData.title,
-      cover: coverId,
-      content: formData.content,
-      author: formData.author,
-      poi,
-      tags,
-      attachments,
-      attachmentExtras,
-      isPublished: formData.isPublished,
-    };
-
-    const res = await apiClient.post(`/posts`, { data });
-    return res.data;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-};
-
-export const editPost = async (formData: PostData) => {
-  try {
-    let coverId = null;
-    const attachmentExtras: any = [];
-
-    if (formData.cover) {
-      if (formData.cover.id) {
-        coverId = formData.cover.id;
-
-        if (isVideo(formData.cover.mime)) {
-          const extra = _.find(
-            formData.attachmentExtras,
-            (item1: any) => item1.attachment.id === formData.cover.id,
-          );
-
-          attachmentExtras.push({
-            attachment: extra.attachment.id,
-            thumbnail: extra.thumbnail.id,
-          });
-        }
-      } else {
-        coverId = (await uploadFiles(formData.cover.uri)).id;
-
-        if (isVideo(formData.cover.mime)) {
-          const thumbnailId = (await uploadFiles(formData.cover.thumbnail)).id;
-          attachmentExtras.push({
-            attachment: coverId,
-            thumbnail: thumbnailId,
-          });
-        }
+        };
+        attachmentExtras.push(extra);
       }
     }
+  });
 
-    const uploadUris: any = [];
-    _.forEach(formData.images, (item: any) => {
-      if (!item.id) {
-        uploadUris.push(item.uri);
-        if (isVideo(item.mime)) {
-          uploadUris.push(item.thumbnail);
-        }
-      }
-    });
+  const poi =
+    formData.poi &&
+    _.pick(formData.poi, [
+      'name',
+      'location',
+      'type',
+      'typecode',
+      'pname',
+      'cityname',
+      'adname',
+      'address',
+      'pcode',
+      'adcode',
+      'citycode',
+    ]);
 
-    _.forEach(formData.recordings, (item: any) => {
-      if (!item.id) {
-        uploadUris.push(item.uri);
-      }
-    });
+  const tags = formData.tags.map((item: any) => item.documentId);
 
-    const uploadRes = await uploadFiles(uploadUris);
+  const data = {
+    title: formData.title,
+    cover: coverId,
+    content: formData.content,
+    author: formData.author.documentId,
+    poi,
+    tags,
+    attachments,
+    attachmentExtras,
+    isPublished: formData.isPublished,
+  };
 
-    const attachments = _.map([...formData.images, ...formData.recordings], (item: any) =>
-      item.id ? item.id : _.find(uploadRes, ['uri', item.uri]).id,
-    );
+  const res = await apiClient.put(`/posts/${formData.documentId}`, {
+    data,
+  });
 
-    _.forEach(formData.images, (item: any) => {
-      if (isVideo(item.mime)) {
-        if (item.id) {
-          const extra = _.find(
-            formData.attachmentExtras,
-            (item1: any) => item1.attachment.id === item.id,
-          );
-
-          attachmentExtras.push({
-            attachment: extra.attachment.id,
-            thumbnail: extra.thumbnail.id,
-          });
-        } else {
-          const extra = {
-            attachment: _.find(uploadRes, ['uri', item.uri]).id,
-            thumbnail: _.find(uploadRes, ['uri', item.thumbnail]).id,
-          };
-          attachmentExtras.push(extra);
-        }
-      }
-    });
-
-    const poi =
-      formData.poi &&
-      _.pick(formData.poi, [
-        'name',
-        'location',
-        'type',
-        'typecode',
-        'pname',
-        'cityname',
-        'adname',
-        'address',
-        'pcode',
-        'adcode',
-        'citycode',
-      ]);
-
-    const tags = formData.tags.map((item: any) => item.documentId);
-
-    const data = {
-      title: formData.title,
-      cover: coverId,
-      content: formData.content,
-      author: formData.author.documentId,
-      poi,
-      tags,
-      attachments,
-      attachmentExtras,
-      isPublished: formData.isPublished,
-    };
-
-    const res = await apiClient.put(`/posts/${formData.documentId}`, {
-      data,
-    });
-
-    return res.data;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+  return res.data;
 };
 
 export const deletePost = async ({ documentId }: any) => {
-  try {
-    await apiClient.delete(`/posts/${documentId}`);
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+  const res = await apiClient.delete(`/posts/${documentId}`);
+
+  return res;
 };
 
 export const editPublish = async ({ documentId, isPublished }: any) => {
-  try {
-    await apiClient.put(`/posts/${documentId}`, {
-      data: {
-        isPublished,
-      },
-    });
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+  const res = await apiClient.put(`/posts/${documentId}`, {
+    data: {
+      isPublished,
+    },
+  });
+
+  return res;
 };
 
 export const updatePostLiked = async ({ documentId, postData }: UpdatePostLikedData) => {
-  try {
-    const query = qs.stringify({
-      populate: {
-        likedByUsers: {
-          fields: ['username'],
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
+  const query = qs.stringify({
+    populate: {
+      likedByUsers: {
+        fields: ['username'],
+        populate: {
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
           },
         },
       },
-    });
-    const res = await apiClient.put(`/posts/${documentId}?${query}`, {
-      data: postData,
-    });
-    return res.data;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+    },
+  });
+  const res = await apiClient.put(`/posts/${documentId}?${query}`, {
+    data: postData,
+  });
+
+  return res.data;
 };

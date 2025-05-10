@@ -5,7 +5,7 @@ import { TermsOfServiceText, PrivacyPolicyText } from '@/components/app-info';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { VStack } from '@/components/ui/vstack';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 const ServiceAndPolicyPage = () => {
   const renderHeaderLeft = () => (
@@ -40,7 +40,7 @@ const ServiceAndPolicyPage = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default ServiceAndPolicyPage;

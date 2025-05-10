@@ -59,13 +59,13 @@ export const Notification = () => {
 export const MainHeader: React.FC<any> = memo(() => {
   useEffect(() => console.log('@render MainHeader'));
 
-  const { isLogin } = useAuth();
+  const { user } = useAuth();
 
   return (
     <HStack className="w-full items-center justify-between overflow-auto">
       <HeaderLogo />
       <HStack className="items-center" space="md">
-        {isLogin && <Notification />}
+        {!_.isNil(user) && <Notification />}
       </HStack>
     </HStack>
   );

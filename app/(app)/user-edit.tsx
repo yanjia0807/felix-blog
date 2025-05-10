@@ -40,9 +40,9 @@ import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { genderEnum } from '@/constants/enum';
-import useCustomToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-custom-toast';
 import { FileTypeNum, imageFormat } from '@/utils/file';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 type UserFormSchema = z.infer<typeof userFormSchema>;
 
@@ -78,7 +78,7 @@ const userFormSchema = z.object({
 const UserEdit: React.FC = () => {
   const { user }: any = useAuth();
   const queryClient = useQueryClient();
-  const toast = useCustomToast();
+  const toast = useToast();
   const insets = useSafeAreaInsets();
 
   const avatar = user?.avatar && {
@@ -304,7 +304,7 @@ const UserEditPage = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default UserEditPage;

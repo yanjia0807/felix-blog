@@ -1,11 +1,11 @@
 import React from 'react';
 import { router, Stack } from 'expo-router';
-import { AnonyLogoBox } from '@/components/anony';
+import { AnonyLogoView } from '@/components/anony';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import { ErrorBoundaryAlert } from '@/components/error';
+import { PageFallbackUI } from '@/components/fallback';
 
 const AnonyPage: React.FC = () => {
   const renderHeaderLeft = () => (
@@ -29,7 +29,7 @@ const AnonyPage: React.FC = () => {
         }}
       />
       <VStack className="flex-1 p-4" space="xl">
-        <AnonyLogoBox
+        <AnonyLogoView
           title="登录后，体验完整功能"
           subtitle="登录后，您将能享受更多个性化设置和功能"
         />
@@ -75,7 +75,7 @@ const AnonyPage: React.FC = () => {
 };
 
 export const ErrorBoundary = ({ error, retry }: any) => (
-  <ErrorBoundaryAlert error={error} retry={retry} />
+  <PageFallbackUI error={error} retry={retry} />
 );
 
 export default AnonyPage;
