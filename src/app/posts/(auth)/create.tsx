@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { createPost } from '@/api/post';
-import { useAuth } from '@/components/auth-provider';
 import { PageFallbackUI } from '@/components/fallback';
 import PageSpinner from '@/components/page-spinner';
 import { PagerViewProvider } from '@/components/pager-view';
@@ -12,6 +11,7 @@ import PostForm, { postSchema, PostSchema } from '@/components/post-form';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { useAuth } from '@/features/auth/components/auth-provider';
 import useToast from '@/hooks/use-custom-toast';
 
 const PostCreatePage: React.FC = () => {

@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Filter, Search } from 'lucide-react-native';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import { useAuth } from '@/components/auth-provider';
+import { useAuth } from '@/features/auth/components/auth-provider';
 import { PageFallbackUI } from '@/components/fallback';
 import { MainHeader } from '@/components/header';
 import ListEmptyView from '@/components/list-empty-view';

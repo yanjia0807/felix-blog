@@ -1,6 +1,6 @@
 import qs from 'qs';
-import { apiClient } from './api-client';
 import { uploadFiles } from './file';
+import { apiClient } from '../utils/api-client';
 
 export type UserData = any;
 

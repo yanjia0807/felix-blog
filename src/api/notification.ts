@@ -1,17 +1,14 @@
 import qs from 'qs';
-import { apiClient } from './api-client';
+import { apiClient } from '../utils/api-client';
 
 export type NotificationData = any;
 
 export const fetchNotifications = async ({ pageParam }: any) => {
-  const { pagination, filters } = pageParam;
+  const { pagination, userDocumentId } = pageParam;
   const query = qs.stringify({
     filters: {
       user: {
-        documentId: filters.userDocumentId,
-      },
-      documentId: {
-        $notIn: filters.excludeDocumentIds,
+        documentId: userDocumentId,
       },
     },
     sort: ['createdAt:desc'],

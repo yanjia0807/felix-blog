@@ -1,106 +1,40 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { MasonryFlashList } from '@shopify/flash-list';
-import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { BlurView } from 'expo-blur';
-import { useRouter } from 'expo-router';
 import _ from 'lodash';
-import { FlatList, Pressable, RefreshControl, useWindowDimensions, View } from 'react-native';
-import Animated, { FadeInLeft } from 'react-native-reanimated';
-import { fetchPopularPageTags, fetchExplorePosts } from '@/api';
-import { AnonyView } from '@/components/anony';
-import { useAuth } from '@/components/auth-provider';
+import { FlatList, RefreshControl, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import { PageFallbackUI } from '@/components/fallback';
 import { MainHeader } from '@/components/header';
-import { ImageCover, VideoCover } from '@/components/image-input';
-import { LikeButton } from '@/components/like-button';
-import { usePreferences } from '@/components/preferences-provider';
-import { Button, ButtonText } from '@/components/ui/button';
-import { Heading } from '@/components/ui/heading';
-import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { UserAvatar } from '@/components/user';
+import { AnonyView } from '@/features/auth/components/anony';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import { useFetchExplorePosts } from '@/features/post/api/use-fetch-explore-posts';
+import { ExploreItem } from '@/features/post/components/explore-item';
+import ExploreListSkeleton from '@/features/post/components/explore-list-skeleton';
+import { useFetchTags } from '@/features/tag/api/use-fetch-tags';
+import TagItem from '@/features/tag/components/tag-item';
+import TagListSkeleton from '@/features/tag/components/tag-list-skeleton';
 import { fileFullUrl, FileTypeNum, imageFormat, isImage, videoThumbnailUrl } from '@/utils/file';
-import { PageFallbackUI } from '@/components/fallback';
 
-const ExploreItem: React.FC<any> = ({ item, columnIndex }) => {
-  const CONTAINER_PADDING = 14;
-  const ITEM_SPACING = 14;
-  const { width: screenWidth } = useWindowDimensions();
-  const router = useRouter();
-  const { theme } = usePreferences();
-
-  const itemWidth = (screenWidth - CONTAINER_PADDING * 2 - ITEM_SPACING) / 2;
-  let itemHeight = (itemWidth / 9) * 16;
-
-  if (isImage(item.cover.mime)) {
-    const format = imageFormat(item.cover, 'l', 's');
-    const aspectRadio = format.width / format.height;
-    itemHeight = Math.min(
-      Math.max(itemWidth / aspectRadio, (itemWidth / 3) * 4),
-      (itemWidth / 9) * 16,
-    );
-  }
-
-  return (
-    <Pressable onPress={() => router.push(`/posts/${item.documentId}`)} pointerEvents="box-only">
-      <VStack
-        space="sm"
-        style={{
-          margin: 7,
-          marginLeft: columnIndex === 0 ? 0 : 7,
-          marginRight: columnIndex === 1 ? 0 : 7,
-        }}>
-        <View className="flex-1 items-center justify-end">
-          {isImage(item.cover.mime) ? (
-            <ImageCover item={item} width={itemWidth} height={itemHeight} />
-          ) : (
-            <VideoCover item={item} width={itemWidth} height={itemHeight} />
-          )}
-          <View className="absolute w-full items-center justify-between">
-            <BlurView
-              intensity={10}
-              tint={theme === 'light' ? 'light' : 'dark'}
-              style={{ borderRadius: 8 }}>
-              <HStack className="w-full items-center justify-end px-2">
-                <LikeButton post={item} />
-              </HStack>
-            </BlurView>
-          </View>
-        </View>
-        <VStack space="sm">
-          <Heading numberOfLines={2}>{item.title}</Heading>
-          <HStack className="items-center">
-            <UserAvatar user={item.author} size="xs" />
-          </HStack>
-        </VStack>
-      </VStack>
-    </Pressable>
-  );
-};
-
-const TagItem: React.FC<any> = ({ item, isLoaded, selectFilterTags, filterTags }) => {
-  return (
-    <View className={`mx-1 ${isLoaded ? 'h-auto w-auto' : 'h-8 w-16'}`}>
-      <Skeleton isLoaded={isLoaded} variant="rounded">
-        {item && (
-          <Button
-            size="sm"
-            action={_.includes(filterTags, item.id) ? 'primary' : 'secondary'}
-            variant="solid"
-            onPress={() => selectFilterTags({ item })}>
-            <ButtonText>{item.name}</ButtonText>
-          </Button>
-        )}
-      </Skeleton>
-    </View>
-  );
-};
+const segments = [
+  {
+    key: 'trending',
+    name: '热点',
+  },
+  {
+    key: 'following',
+    name: '关注',
+  },
+  {
+    key: 'discover',
+    name: '发现',
+  },
+];
 
 const ExploreHeader: React.FC<any> = ({
-  segments,
   selectedIndex,
   setSelectedIndex,
   filterTags,
@@ -108,42 +42,20 @@ const ExploreHeader: React.FC<any> = ({
 }) => {
   const segmentNames = _.map(segments, (item: any) => item.name);
 
-  const tagsQuery = useInfiniteQuery({
-    queryKey: ['tags', 'list'],
-    queryFn: fetchPopularPageTags,
-    initialPageParam: {
-      pagination: {
-        page: 1,
-        pageSize: 20,
-      },
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { page, pageSize, pageCount },
-        },
-      } = lastPage;
+  const tagsQuery = useFetchTags();
 
-      if (page < pageCount) {
-        return {
-          pagination: { page: page + 1, pageSize },
-        };
-      }
-      return null;
-    },
-  });
+  const tags = _.flatMap(tagsQuery.data?.pages, (page) => page.data);
 
-  const tags = tagsQuery.isSuccess
-    ? _.reduce(tagsQuery.data?.pages, (result: any, item: any) => [...result, ...item.data], [])
-    : [];
-
-  const renderTagItem = ({ item }: any) => (
-    <TagItem
-      item={item}
-      isLoaded={!tagsQuery.isLoading}
-      filterTags={filterTags}
-      selectFilterTags={selectFilterTags}
-    />
+  const renderTagItem = useCallback(
+    ({ item, index }: any) => (
+      <TagItem
+        item={item}
+        index={index}
+        filterTags={filterTags}
+        selectFilterTags={selectFilterTags}
+      />
+    ),
+    [filterTags, selectFilterTags],
   );
 
   const onEndReached = () => {
@@ -161,34 +73,25 @@ const ExploreHeader: React.FC<any> = ({
         onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
       />
       {segments[selectedIndex].key === 'discover' && (
-        <Animated.View entering={FadeInLeft} className="items-center justify-between">
-          <FlatList
-            data={tags}
-            renderItem={renderTagItem}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            onEndReached={onEndReached}
-          />
+        <Animated.View entering={FadeIn} className="items-center justify-between">
+          {tagsQuery.isLoading ? (
+            <TagListSkeleton />
+          ) : (
+            <FlatList
+              data={tags}
+              renderItem={renderTagItem}
+              keyExtractor={(item: any) => item.documentId}
+              contentContainerClassName="flex-grow"
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              onEndReached={onEndReached}
+            />
+          )}
         </Animated.View>
       )}
     </VStack>
   );
 };
-
-const segments = [
-  {
-    key: 'trending',
-    name: '热点',
-  },
-  {
-    key: 'following',
-    name: '关注',
-  },
-  {
-    key: 'discover',
-    name: '发现',
-  },
-];
 
 const ExplorePage: React.FC<any> = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -210,70 +113,39 @@ const ExplorePage: React.FC<any> = () => {
 
   const isShow = !_.isNil(user) || (_.isNil(user) && segments[selectedIndex].key !== 'following');
 
-  const postsQuery = useInfiniteQuery({
-    queryKey: ['posts', 'list', { filterType, filters }],
-    queryFn: fetchExplorePosts,
-    placeholderData: keepPreviousData,
-    initialPageParam: {
-      pagination: {
-        page: 1,
-        pageSize: 10,
-      },
-      filterType,
-      filters,
-    },
-    getNextPageParam: (lastPage: any) => {
-      const {
-        meta: {
-          pagination: { page, pageSize, pageCount },
-        },
-      } = lastPage;
+  const postsQuery = useFetchExplorePosts({ filterType, filters });
 
-      if (page < pageCount) {
+  const posts: any = _.reduce(
+    postsQuery.data?.pages,
+    (result: any, page: any) => [
+      ...result,
+      ...page.data.map((item: any) => {
+        const cover = !item.cover
+          ? undefined
+          : isImage(item.cover.mime)
+            ? {
+                ...item.cover,
+                fileType: FileTypeNum.Image,
+                uri: fileFullUrl(item.cover),
+                thumbnail: imageFormat(item.cover, 's', 's')?.fullUrl,
+                preview: imageFormat(item.cover, 'l')?.fullUrl,
+              }
+            : {
+                ...item.cover,
+                fileType: FileTypeNum.Video,
+                uri: fileFullUrl(item.cover),
+                thumbnail: videoThumbnailUrl(item.cover, item.attachmentExtras),
+                preview: fileFullUrl(item.cover),
+              };
+
         return {
-          pagination: { page: page + 1, pageSize },
-          filterType,
-          filters,
+          ...item,
+          cover,
         };
-      }
-
-      return null;
-    },
-  });
-
-  const posts: any = postsQuery.isSuccess
-    ? _.reduce(
-        postsQuery.data?.pages,
-        (result: any, page: any) => [
-          ...result,
-          ...page.data.map((item: any) => {
-            const cover = !item.cover
-              ? undefined
-              : isImage(item.cover.mime)
-                ? {
-                    ...item.cover,
-                    fileType: FileTypeNum.Image,
-                    uri: fileFullUrl(item.cover),
-                    thumbnail: imageFormat(item.cover, 's', 's')?.fullUrl,
-                    preview: imageFormat(item.cover, 'l')?.fullUrl,
-                  }
-                : {
-                    ...item.cover,
-                    fileType: FileTypeNum.Video,
-                    uri: fileFullUrl(item.cover),
-                    thumbnail: videoThumbnailUrl(item.cover, item.attachmentExtras),
-                    preview: fileFullUrl(item.cover),
-                  };
-
-            return {
-              ...item,
-              cover,
-            };
-          }),
-        ],
-        [],
-      )
-    : [];
+      }),
+    ],
+    [],
+  );
 
   const selectFilterTags = ({ item }: any) => {
     if (_.includes(filterTags, item.id)) {
@@ -283,7 +155,10 @@ const ExplorePage: React.FC<any> = () => {
     }
   };
 
-  const renderListItem = (props: any) => <ExploreItem {...props} />;
+  const renderListItem = useCallback(
+    ({ item, columnIndex }: any) => <ExploreItem item={item} columnIndex={columnIndex} />,
+    [],
+  );
 
   const onEndReached = () => {
     if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) postsQuery.fetchNextPage();
@@ -295,35 +170,38 @@ const ExplorePage: React.FC<any> = () => {
         <ExploreHeader
           filterTags={filterTags}
           selectFilterTags={selectFilterTags}
-          segments={segments}
           selectedIndex={selectedIndex}
           setSelectedIndex={setSelectedIndex}
         />
         {isShow ? (
-          <MasonryFlashList
-            renderItem={renderListItem}
-            ListEmptyComponent={
-              <View className="mt-32 flex-1 items-center justify-center">
-                <Text size="sm">暂无数据</Text>
-              </View>
-            }
-            keyExtractor={(item: any) => item.documentId}
-            data={posts}
-            numColumns={2}
-            estimatedItemSize={260}
-            showsVerticalScrollIndicator={false}
-            onEndReached={onEndReached}
-            refreshControl={
-              <RefreshControl
-                refreshing={postsQuery.isLoading}
-                onRefresh={() => {
-                  if (postsQuery.hasNextPage && !postsQuery.isLoading) {
-                    postsQuery.refetch();
-                  }
-                }}
-              />
-            }
-          />
+          postsQuery.isLoading ? (
+            <ExploreListSkeleton />
+          ) : (
+            <MasonryFlashList
+              renderItem={renderListItem}
+              ListEmptyComponent={
+                <View className="mt-32 flex-1 items-center justify-center">
+                  <Text size="sm">暂无数据</Text>
+                </View>
+              }
+              keyExtractor={(item: any) => item.documentId}
+              data={posts}
+              numColumns={2}
+              estimatedItemSize={260}
+              showsVerticalScrollIndicator={false}
+              onEndReached={onEndReached}
+              refreshControl={
+                <RefreshControl
+                  refreshing={postsQuery.isLoading}
+                  onRefresh={() => {
+                    if (postsQuery.hasNextPage && !postsQuery.isLoading) {
+                      postsQuery.refetch();
+                    }
+                  }}
+                />
+              }
+            />
+          )
         ) : (
           <AnonyView />
         )}

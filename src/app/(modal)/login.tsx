@@ -6,8 +6,6 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AnonyLogoView } from '@/components/anony';
-import { useAuth } from '@/components/auth-provider';
 import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
@@ -23,6 +21,8 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
+import { useLogin } from '@/features/auth/api';
+import { AnonyLogoView } from '@/features/auth/components/anony';
 import useToast from '@/hooks/use-custom-toast';
 
 type LoginSchemaDetails = z.infer<typeof loginSchema>;
@@ -39,10 +39,9 @@ const loginSchema = z.object({
 });
 
 const Login: React.FC = () => {
-  const { loginMutation } = useAuth();
-  const { mutate, isPending } = loginMutation;
-  const toast = useToast();
+  const loginMutation = useLogin();
   const navigation = useNavigation();
+  const toast = useToast();
 
   const {
     control,
@@ -53,7 +52,7 @@ const Login: React.FC = () => {
   });
 
   const onSubmit = (formData: any) => {
-    mutate(formData, {
+    loginMutation.mutate(formData, {
       onSuccess: (data: any) => {
         toast.success({
           title: '登录成功',
@@ -150,9 +149,12 @@ const Login: React.FC = () => {
             <Controller control={control} name="password" render={renderPassword} />
           </VStack>
           <VStack>
-            <Button className="rounded" onPress={handleSubmit(onSubmit)} disabled={isPending}>
+            <Button
+              className="rounded"
+              onPress={handleSubmit(onSubmit)}
+              disabled={loginMutation.isPending}>
               <ButtonText>登录</ButtonText>
-              {isPending && <ButtonSpinner />}
+              {loginMutation.isPending && <ButtonSpinner />}
             </Button>
             <Button variant="link" action="secondary" onPress={onCancel}>
               <ButtonText>取消</ButtonText>

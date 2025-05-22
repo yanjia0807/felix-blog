@@ -9,7 +9,7 @@ import Reanimated from 'react-native-reanimated';
 import { fetchUserPosts } from '@/api';
 import { deletePost, editPublish } from '@/api/post';
 import { formatDistance } from '@/utils/date';
-import { useAuth } from './auth-provider';
+import { useAuth } from '../features/auth/components/auth-provider';
 import { Button, ButtonText } from './ui/button';
 import { Card } from './ui/card';
 import { Divider } from './ui/divider';

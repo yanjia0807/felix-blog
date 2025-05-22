@@ -1,5 +1,5 @@
 import qs from 'qs';
-import { apiClient } from './api-client';
+import { apiClient } from '../utils/api-client';
 
 export const createFriendRequest = async (params: any) => {
   const res = await apiClient.post(`/friend-requests`, {

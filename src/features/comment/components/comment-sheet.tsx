@@ -12,7 +12,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { shallowEqual } from 'react-redux';
 import { z } from 'zod';
-import { useAuth } from '@/components/auth-provider';
+import { useAuth } from '@/features/auth/components/auth-provider';
 import ListEmptyView from '@/components/list-empty-view';
 import { Divider } from '@/components/ui/divider';
 import { FormControl } from '@/components/ui/form-control';

@@ -1,5 +1,5 @@
 import qs from 'qs';
-import { apiClient } from './api-client';
+import { apiClient } from '../utils/api-client';
 
 export const fetchBanners = async ({ pageParam }: any) => {
   const { pagination } = pageParam;

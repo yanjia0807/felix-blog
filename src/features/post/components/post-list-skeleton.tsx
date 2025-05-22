@@ -1,8 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
-import { FlatList, View } from 'react-native';
+import { FlatList } from 'react-native';
 import { MainHeader } from '@/components/header';
-import PageSpinner from '@/components/page-spinner';
 import { HStack } from '@/components/ui/hstack';
 import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { VStack } from '@/components/ui/vstack';
@@ -11,7 +10,7 @@ export const BannerSkeleton: React.FC<any> = ({ index }) => (
   <Skeleton className={`mr-4 h-48 w-80`} variant="rounded" />
 );
 
-export const PostSkeleton: React.FC<any> = () => (
+export const PostItemSkeleton: React.FC<any> = () => (
   <VStack className="mt-6 w-full rounded-lg bg-background-100 p-2" space="lg">
     <HStack className="items-center justify-between">
       <HStack className="w-24 items-center" space="xs">
@@ -54,7 +53,7 @@ export const PostListSkeleton: React.FC<any> = () => {
 
   const renderListHeader = () => <HeaderSkeleton />;
 
-  const renderListItem = () => <PostSkeleton />;
+  const renderListItem = () => <PostItemSkeleton />;
 
   return (
     <>

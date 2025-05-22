@@ -1,9 +1,9 @@
 import React from 'react';
 import { Redirect } from 'expo-router';
 import _ from 'lodash';
-import { useAuth } from '@/components/auth-provider';
 import { PageFallbackUI } from '@/components/fallback';
-import Profile from '../(app)/profile';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import Profile from '../users/(auth)/profile';
 
 const ProfilePage: React.FC = () => {
   console.log('@render ProfilePage');

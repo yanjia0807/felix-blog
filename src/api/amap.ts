@@ -1,5 +1,5 @@
 import qs from 'qs';
-import { amapClient } from './amap-client';
+import { amapClient } from '../utils/amap-client';
 
 export const fetchAround = async ({ pageParam }: any) => {
   const { location, page_num, page_size } = pageParam;

@@ -5,8 +5,7 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AnonyLogoView } from '@/components/anony';
-import { useAuth } from '@/components/auth-provider';
+import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -21,8 +20,9 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
+import { useResetPasswordByOtp } from '@/features/auth/api';
+import { AnonyLogoView } from '@/features/auth/components/anony';
 import useToast from '@/hooks/use-custom-toast';
-import { PageFallbackUI } from '@/components/fallback';
 
 type SetPasswordSchemaDetails = z.infer<typeof setPasswordSchema>;
 
@@ -46,8 +46,7 @@ const setPasswordSchema = z
 
 const SetPasswordPage: React.FC = () => {
   const toast = useToast();
-  const { resetPasswordOtpMutation } = useAuth();
-  const { isPending, mutate } = resetPasswordOtpMutation;
+  const resetPasswordByOtpMutation = useResetPasswordByOtp();
   const { email, code }: any = useLocalSearchParams();
   const navigation = useNavigation();
 
@@ -67,7 +66,7 @@ const SetPasswordPage: React.FC = () => {
       passwordConfirmation,
     };
 
-    mutate(data, {
+    resetPasswordByOtpMutation.mutate(data, {
       onSuccess: () => {
         toast.success({
           description: '设置密码成功',
@@ -167,9 +166,12 @@ const SetPasswordPage: React.FC = () => {
               render={renderPasswordConfirmation}
             />
           </VStack>
-          <Button className="rounded" onPress={handleSubmit(onSubmit)} disabled={isPending}>
+          <Button
+            className="rounded"
+            onPress={handleSubmit(onSubmit)}
+            disabled={resetPasswordByOtpMutation.isPending}>
             <ButtonText>确定</ButtonText>
-            {isPending && <ButtonSpinner />}
+            {resetPasswordByOtpMutation.isPending && <ButtonSpinner />}
           </Button>
           <Button variant="link" action="secondary" onPress={onCancel}>
             <ButtonText>取消</ButtonText>

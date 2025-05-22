@@ -5,16 +5,16 @@ import _ from 'lodash';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AnonyLogoView } from '@/components/anony';
-import { useAuth } from '@/components/auth-provider';
+import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { FormControl } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
+import { useVerifyOtp } from '@/features/auth/api';
+import { AnonyLogoView } from '@/features/auth/components/anony';
 import useToast from '@/hooks/use-custom-toast';
-import { PageFallbackUI } from '@/components/fallback';
 
 type OtpSchemaDetails = z.infer<typeof otpSchema>;
 
@@ -94,10 +94,9 @@ const OtpInputField = forwardRef(function OtpInputField(
 
 const OtpConfirmation: React.FC = () => {
   const { email, purpose }: any = useLocalSearchParams();
-  const { verifyOtpMutation } = useAuth();
+  const verifyOtpMutation = useVerifyOtp();
   const toast = useToast();
   const navigation = useNavigation();
-  const { mutate, isPending } = verifyOtpMutation;
   const inputRefs = [useRef<any>(null), useRef<any>(null), useRef<any>(null), useRef<any>(null)];
 
   const onSubmit = ({ code1, code2, code3, code4 }: any) => {
@@ -107,7 +106,7 @@ const OtpConfirmation: React.FC = () => {
       purpose,
     };
 
-    mutate(data, {
+    verifyOtpMutation.mutate(data, {
       onSuccess: () => {
         if (purpose === 'verify-email') {
           toast.success({
@@ -215,9 +214,12 @@ const OtpConfirmation: React.FC = () => {
             ))}
           </HStack>
 
-          <Button className="rounded" onPress={handleSubmit(onSubmit)} disabled={isPending}>
+          <Button
+            className="rounded"
+            onPress={handleSubmit(onSubmit)}
+            disabled={verifyOtpMutation.isPending}>
             <ButtonText>确定</ButtonText>
-            {isPending && <ButtonSpinner />}
+            {verifyOtpMutation.isPending && <ButtonSpinner />}
           </Button>
           <Button variant="link" action="secondary" onPress={onCancel}>
             <ButtonText>取消</ButtonText>

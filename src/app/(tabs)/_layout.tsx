@@ -95,8 +95,8 @@ export default function TabLayout() {
           <TabTrigger name="explore" href="/explore" asChild reset="never">
             <TabButton title="发现" icon={BookCopy} />
           </TabTrigger>
-          <TabTrigger name="message" href="/message" asChild reset="never">
-            <TabButton title="消息" icon={MessageCircle} />
+          <TabTrigger name="chat" href="/chat" asChild reset="never">
+            <TabButton title="聊天" icon={MessageCircle} />
           </TabTrigger>
           <TabTrigger name="profile" href="/profile" asChild reset="never">
             <TabButton title="我的" icon={User2} />

@@ -1,7 +1,7 @@
 import * as FileSystem from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
-import { apiClient } from './api-client';
+import { apiClient } from '../utils/api-client';
 
 const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER;
 
@@ -25,21 +25,21 @@ export const uploadFiles = async (files: any) => {
   const tasks = _.map(uris, (uri: any) =>
     FileSystem.uploadAsync(`${apiServerURL}/api/upload`, uri, config).then((res: any) => {
       if (res.status === 413) {
-        throw new Error("文件超过大小限制");
+        throw new Error('文件超过大小限制');
       }
       const result = { ...JSON.parse(res.body)[0], uri };
       return result;
     }),
   );
-  
+
   const res: any = await Promise.all(tasks);
   return typeof files === 'string' ? res[0] : res;
 };
 
-export const getFile = async(id: string) => {
+export const getFile = async (id: string) => {
   const res = await apiClient.get(`/upload/files/${id}`);
   return res;
-}
+};
 
 export const updateFileInfo = async (id: string, fileInfo: any) => {
   const res = await apiClient.post(`/upload?id=${id}`, {

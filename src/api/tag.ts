@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import qs from 'qs';
-import { apiClient } from './api-client';
+import { apiClient } from '../utils/api-client';
 
 export const fetchPopularTags = async ({ limit = 20 }: any) => {
   const query = qs.stringify({

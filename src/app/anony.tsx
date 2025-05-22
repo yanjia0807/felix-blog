@@ -1,6 +1,6 @@
 import React from 'react';
 import { router, Stack } from 'expo-router';
-import { AnonyLogoView } from '@/components/anony';
+import { AnonyLogoView } from '@/features/auth/components/anony';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';

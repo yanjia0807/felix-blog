@@ -15,15 +15,7 @@ import {
   UserRoundPlus,
 } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
-import {
-  createChat,
-  fetchChatByUsers,
-  fetchUser,
-  updateFollowings,
-  createFriendRequest,
-  cancelFriend,
-} from '@/api';
-import { useAuth } from '@/components/auth-provider';
+import { fetchUser, updateFollowings, createFriendRequest, cancelFriend } from '@/api';
 import { PageFallbackUI } from '@/components/fallback';
 import PageSpinner from '@/components/page-spinner';
 import { PagerViewProvider } from '@/components/pager-view';
@@ -36,7 +28,10 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { UserLargeAvatar } from '@/components/user';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import { useCreateChat } from '@/features/chat/api/use-create-chat';
+import { useFetchChatByUsers } from '@/features/chat/api/use-fetch-chat-by-users';
+import { UserProfileAvatar } from '@/features/user/components/user-profile-avater';
 import useToast from '@/hooks/use-custom-toast';
 
 interface UserDetailProps {
@@ -73,10 +68,9 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   const isFollowing = _.some(currentUser.followings, { documentId });
   const isFriend = _.some(currentUser.friends, { documentId });
 
-  const { data: chatData, isSuccess: isQueryChatSuccess } = useQuery({
-    queryKey: ['chats', 'list', { userDocumentIds }],
-    enabled: !!currentUser,
-    queryFn: () => fetchChatByUsers({ userDocumentIds }),
+  const chatQuery = useFetchChatByUsers({
+    enabled: !_.isNil(currentUser),
+    userDocumentIds,
   });
 
   const followMutation = useMutation({
@@ -163,30 +157,20 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     },
   });
 
-  const createChatMutation = useMutation({
-    mutationFn: () =>
-      createChat({
-        userDocumentIds,
-      }),
-    onSuccess: async (data, variables, context) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['chats', 'list'],
-      });
-    },
-  });
+  const createChatMutation = useCreateChat({ userDocumentIds });
 
   const onShare = () => {};
 
   const onShowChat = () => {
-    if (isQueryChatSuccess) {
-      if (chatData) {
-        router.push(`/chat/${chatData.documentId}`);
-      } else {
+    if (chatQuery.isSuccess) {
+      if (_.isNil(chatQuery.data)) {
         createChatMutation.mutate(undefined, {
           onSuccess: (data: any) => {
-            router.push(`/chat/${data.documentId}`);
+            router.push(`/chats/${data.documentId}`);
           },
         });
+      } else {
+        router.push(`/chats/${chatQuery.data.documentId}`);
       }
     }
   };
@@ -225,7 +209,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 
   const onShowFollowings = () => {
     router.push({
-      pathname: '/following-list',
+      pathname: '/users/following-list',
       params: {
         userDocumentId: user.documentId,
         username: user.username,
@@ -235,7 +219,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 
   const onShowFollowers = () => {
     router.push({
-      pathname: '/follower-list',
+      pathname: '/users/follower-list',
       params: {
         userDocumentId: user.documentId,
         username: user.username,
@@ -245,7 +229,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 
   const onShowFriends = () => {
     router.push({
-      pathname: '/friend-list',
+      pathname: '/users/friend-list',
       params: {
         userDocumentId: user.documentId,
         username: user.username,
@@ -256,7 +240,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   return (
     <VStack className="flex-1" space="md">
       <HStack className="items-center justify-between">
-        <UserLargeAvatar user={user} />
+        <UserProfileAvatar user={user} />
         <HStack className="items-center" space="md">
           <Button
             size="md"

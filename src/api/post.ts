@@ -2,8 +2,8 @@ import { endOfDay, startOfDay } from 'date-fns';
 import _ from 'lodash';
 import qs from 'qs';
 import { isVideo } from '@/utils/file';
-import { apiClient } from './api-client';
 import { uploadFiles } from './file';
+import { apiClient } from '../utils/api-client';
 
 export const fetchPosts = async ({ pageParam }: any) => {
   const { pagination } = pageParam;

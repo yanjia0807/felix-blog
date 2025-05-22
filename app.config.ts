@@ -6,8 +6,7 @@ const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 const getBundleId = () => {
   if (IS_DEV) {
     return 'info.yanjia.felixblog.dev';
-  }
-  if (IS_PREVIEW) {
+  } else if (IS_PREVIEW) {
     return 'info.yanjia.felixblog.preview';
   }
   return 'info.yanjia.felixblog';
@@ -15,10 +14,9 @@ const getBundleId = () => {
 
 const getAppName = () => {
   if (IS_DEV) {
-    return 'felix博客 (dev)';
-  }
-  if (IS_PREVIEW) {
-    return 'felix博客 (preview)';
+    return 'felix博客(dev)';
+  } else if (IS_PREVIEW) {
+    return 'felix博客(preview)';
   }
   return 'felix博客';
 };
@@ -38,5 +36,5 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     ...config.extra,
     name: getAppName(),
-  }
+  },
 });

@@ -2,7 +2,7 @@ import { memo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
-import { useAuth } from '@/components/auth-provider';
+import { useAuth } from '@/features/auth/components/auth-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';

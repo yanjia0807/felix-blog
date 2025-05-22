@@ -1,5 +1,5 @@
-export * from './api-client';
-export * from './amap-client';
+export * from '../utils/api-client';
+export * from '../utils/amap-client';
 export * from './post';
 export * from './user';
 export * from './tag';
@@ -12,3 +12,4 @@ export * from './banner';
 export * from './chat';
 export * from './message';
 export * from './friend-request';
+export * from './expo-push-token';

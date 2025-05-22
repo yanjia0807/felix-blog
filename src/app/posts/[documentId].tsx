@@ -5,7 +5,6 @@ import _ from 'lodash';
 import { Edit, Ellipsis, MapPin, Redo2, StickyNote, Trash, Undo2 } from 'lucide-react-native';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { deletePost, fetchPost, editPublish } from '@/api/post';
-import { useAuth } from '@/components/auth-provider';
 import { PageFallbackUI } from '@/components/fallback';
 import { ImageCover, ImageList, VideoCover } from '@/components/image-input';
 import { LikeButton } from '@/components/like-button';
@@ -24,23 +23,15 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { UserAvatar } from '@/components/user';
+import { useAuth } from '@/features/auth/components/auth-provider';
 import { CommentIcon } from '@/features/comment/components/comment-icon';
 import { CommentSheet } from '@/features/comment/components/comment-sheet';
 import { CommentSheetProvider } from '@/features/comment/components/comment-sheet-provider';
+import { UserAvatar } from '@/features/user/components/user-avater';
 import useCoverDimensions from '@/hooks/use-cover-dimensions';
 import useToast from '@/hooks/use-custom-toast';
 import { formatDistance } from '@/utils/date';
-import {
-  isImage,
-  isVideo,
-  FileTypeNum,
-  imageFormat,
-  fileFullUrl,
-  isAudio,
-  videoThumbnailUrl,
-  toAttachmetItem,
-} from '@/utils/file';
+import { isImage, isVideo, FileTypeNum, fileFullUrl, isAudio, toAttachmetItem } from '@/utils/file';
 
 const PostItem: React.FC<any> = memo(({ post }) => {
   const { onOpenPage } = usePagerView();

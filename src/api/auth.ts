@@ -1,6 +1,6 @@
-import { apiClient } from './api-client';
+import { apiClient } from '../utils/api-client';
 
-export const loginUser = async (credentials: any) => {
+export const login = async (credentials: any) => {
   try {
     const res = await apiClient.post(`/auth/local`, {
       identifier: credentials.identifier,
@@ -18,7 +18,7 @@ export const loginUser = async (credentials: any) => {
   }
 };
 
-export const registerUser = async ({ username, email, password }: any) => {
+export const register = async ({ username, email, password }: any) => {
   try {
     const res = await apiClient.post(`/auth/local/register`, {
       username,
@@ -35,7 +35,7 @@ export const registerUser = async ({ username, email, password }: any) => {
   }
 };
 
-export const sendEmailConfirmation = async ({ email }: any) => {
+export const sendConfirmationEmail = async ({ email }: any) => {
   const res = await apiClient.post(`/auth/send-email-confirmation`, {
     email,
   });
@@ -44,15 +44,6 @@ export const sendEmailConfirmation = async ({ email }: any) => {
 
 export const sendResetPasswordEmail = async ({ email }: any) => {
   const res = await apiClient.post(`/auth/forgot-password`, { email });
-  return res;
-};
-
-export const resetPassword = async ({ code, password, passwordConfirmation }: any) => {
-  const res = await apiClient.post(`/auth/reset-password`, {
-    code,
-    password,
-    passwordConfirmation,
-  });
   return res;
 };
 
@@ -81,7 +72,7 @@ export const changePassword = async ({ currentPassword, password, passwordConfir
   }
 };
 
-export const registerOtp = async ({ username, email, password }: any) => {
+export const registerByOtp = async ({ username, email, password }: any) => {
   try {
     const res = await apiClient.post(`/auth/local/register-otp`, {
       username,
@@ -141,7 +132,7 @@ export const verifyOtp = async ({ email, code, purpose }: any) => {
   }
 };
 
-export const resetPasswordOtp = async ({ email, code, password, passwordConfirmation }: any) => {
+export const resetPasswordByOtp = async ({ email, code, password, passwordConfirmation }: any) => {
   try {
     const res = await apiClient.post(`/auth/local/reset-password-otp`, {
       email,

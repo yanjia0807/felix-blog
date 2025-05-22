@@ -1,5 +1,5 @@
 import React from 'react';
-import SendOtpForm from '@/components/send-otp-form';
+import SendOtpForm from '@/features/auth/components/send-otp-form';
 import { PageFallbackUI } from '@/components/fallback';
 
 const VerifyEmailPage: React.FC = () => {

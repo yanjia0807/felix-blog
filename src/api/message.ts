@@ -1,9 +1,9 @@
 import qs from 'qs';
-import { apiClient } from './api-client';
+import { apiClient } from '../utils/api-client';
 
 export type MessageData = any;
 
-export const fetchMessagesByChat = async ({ pageParam }: any) => {
+export const fetchChatMessages = async ({ pageParam }: any) => {
   const { pagination, filters } = pageParam;
   const query = qs.stringify({
     populate: {

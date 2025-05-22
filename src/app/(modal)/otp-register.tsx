@@ -5,8 +5,7 @@ import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
-import { AnonyLogoView } from '@/components/anony';
-import { useAuth } from '@/components/auth-provider';
+import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -24,8 +23,9 @@ import { Link, LinkText } from '@/components/ui/link';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useOtpRegister } from '@/features/auth/api';
+import { AnonyLogoView } from '@/features/auth/components/anony';
 import useToast from '@/hooks/use-custom-toast';
-import { PageFallbackUI } from '@/components/fallback';
 
 type RegisterSchemaDetails = z.infer<typeof registerSchema>;
 
@@ -52,8 +52,7 @@ const registerSchema = z.object({
 });
 
 const OtpRegisterPage: React.FC = () => {
-  const { registerOtpMutation } = useAuth();
-  const { mutate, isPending } = registerOtpMutation;
+  const registerOtpMutation = useOtpRegister();
   const toast = useToast();
   const navigation = useNavigation();
 
@@ -66,7 +65,7 @@ const OtpRegisterPage: React.FC = () => {
   });
 
   const onSubmit = (data: any) => {
-    mutate(data, {
+    registerOtpMutation.mutate(data, {
       onSuccess: () => {
         toast.success({
           title: '提交成功',
@@ -205,9 +204,12 @@ const OtpRegisterPage: React.FC = () => {
             </Link>
           </HStack>
           <VStack>
-            <Button className="rounded" onPress={handleSubmit(onSubmit)} disabled={isPending}>
+            <Button
+              className="rounded"
+              onPress={handleSubmit(onSubmit)}
+              disabled={registerOtpMutation.isPending}>
               <ButtonText>注册</ButtonText>
-              {isPending && <ButtonSpinner />}
+              {registerOtpMutation.isPending && <ButtonSpinner />}
             </Button>
             <Button variant="link" action="secondary" onPress={onCancel}>
               <ButtonText>取消</ButtonText>

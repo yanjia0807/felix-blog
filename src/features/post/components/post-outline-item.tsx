@@ -1,10 +1,10 @@
 import React from 'react';
 import { useRouter } from 'expo-router';
-import { View, TouchableOpacity } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
-import { UserAvatar } from '@/components/user';
+import { UserAvatar } from '@/features/user/components/user-avater';
 
 const PostOutlineItem: React.FC<any> = ({ item }) => {
   const router = useRouter();

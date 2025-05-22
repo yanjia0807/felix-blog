@@ -1,5 +1,5 @@
 import { Slot } from 'expo-router';
-import { useAuth } from '@/components/auth-provider';
+import { useAuth } from '@/features/auth/components/auth-provider';
 import AnonyPage from '../anony';
 
 export default function Root() {
