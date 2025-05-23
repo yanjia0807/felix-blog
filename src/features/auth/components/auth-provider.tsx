@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { useFetchMe } from '@/features/user/api/use-fetch-me';
 import { useAutoLogin } from '../hooks/use-auto-login';
 
@@ -14,27 +14,18 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: any) => {
   const [accessToken, setAccessToken] = useState<string | undefined>();
-  const [user, setUser] = useState<any>(undefined);
   const removeAccessToken = useCallback(() => setAccessToken(undefined), []);
-  const removeUser = useCallback(() => setUser(undefined), []);
   const fetchMeQuery = useFetchMe({ accessToken });
-
-  useAutoLogin({ setAccessToken, setUser });
-
-  useEffect(() => {
-    setUser(fetchMeQuery.data);
-  }, [fetchMeQuery.data]);
+  useAutoLogin({ setAccessToken });
 
   const value = useMemo(() => {
     return {
       accessToken,
       setAccessToken,
       removeAccessToken,
-      user,
-      setUser,
-      removeUser,
+      user: fetchMeQuery?.data,
     };
-  }, [accessToken, user, removeAccessToken, removeUser]);
+  }, [accessToken, fetchMeQuery?.data, removeAccessToken]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -41,7 +41,6 @@ export const fetchChatMessages = async ({ pageParam }: any) => {
 export const createMessage = async (data: any) => {
   const query = qs.stringify({
     populate: {
-      fields: ['createdAt'],
       chat: {
         fields: ['id', 'documentId'],
       },
@@ -51,7 +50,6 @@ export const createMessage = async (data: any) => {
             fields: ['alternativeText', 'width', 'height', 'formats'],
           },
         },
-        fields: ['id', 'documentId'],
       },
       receiver: {
         populate: {
@@ -59,7 +57,6 @@ export const createMessage = async (data: any) => {
             fields: ['alternativeText', 'width', 'height', 'formats'],
           },
         },
-        fields: ['id', 'documentId'],
       },
       messageStatuses: true,
     },

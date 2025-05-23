@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { router, Stack } from 'expo-router';
 import {
+  BellDot,
   ChevronLeft,
   ChevronRightIcon,
   Info,
@@ -22,6 +23,8 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useLogout } from '@/features/auth/hooks/use-logout';
+import { useUpdateExpoPushToken } from '@/features/push-notification/api/use-update-expo-push-token';
+import { usePushNotification } from '@/features/push-notification/components/push-notification-provider';
 import useToast from '@/hooks/use-toast';
 
 const Setting: React.FC = () => {
@@ -30,6 +33,9 @@ const Setting: React.FC = () => {
   const { logout } = useLogout();
   const { theme, updateTheme } = usePreferences();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(theme === 'dark');
+  const [pushTokenEnabled, setPushTokenEnabled] = useState<boolean>(true);
+  const { updatePushTokenEnabled } = useUpdateExpoPushToken();
+  const { expoPushToken } = usePushNotification();
 
   const onLogoutBtnPress = () => {
     toast.confirm({
@@ -51,6 +57,17 @@ const Setting: React.FC = () => {
   const onThemeSwitch = (value: boolean) => {
     setIsDarkMode(value);
     updateTheme(value ? 'dark' : 'light');
+  };
+
+  const onPushTokenEnabledSwitch = (value: boolean) => {
+    setPushTokenEnabled(value);
+    updatePushTokenEnabled.mutate({
+      documentId: expoPushToken.documentId,
+      data: {
+        deviceId: expoPushToken.deviceId,
+        enabled: value,
+      },
+    });
   };
 
   const renderHeaderLeft = () => (
@@ -85,6 +102,18 @@ const Setting: React.FC = () => {
                     <Text>暗模式</Text>
                   </HStack>
                   <Switch size="md" value={isDarkMode} onValueChange={onThemeSwitch} />
+                </HStack>
+                <Divider />
+                <HStack className="h-14 items-center justify-between p-3">
+                  <HStack className="items-center" space="md">
+                    <Icon as={BellDot} size="lg" />
+                    <Text>启用通知</Text>
+                  </HStack>
+                  <Switch
+                    size="md"
+                    value={pushTokenEnabled}
+                    onValueChange={onPushTokenEnabledSwitch}
+                  />
                 </HStack>
                 <Divider />
                 <TouchableOpacity onPress={() => router.push('/users/change-password')}>

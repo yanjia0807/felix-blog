@@ -10,6 +10,7 @@ export const getDeviceId = async () => {
     deviceId = `${Device.modelName}-${Date.now()}`;
     await SecureStore.setItemAsync('deviceId', deviceId);
   }
+  return deviceId;
 };
 
 export const getProjectId = () => {
