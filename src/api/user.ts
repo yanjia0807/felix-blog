@@ -126,7 +126,7 @@ export const updateFollowings = async (params: any) => {
   return res.data;
 };
 
-export const fetchUser = async (id: string): Promise<any> => {
+export const fetchUser = async ({ documentId }): Promise<any> => {
   const query = qs.stringify({
     populate: {
       avatar: {
@@ -150,7 +150,7 @@ export const fetchUser = async (id: string): Promise<any> => {
     },
   });
 
-  const res = await apiClient.get(`/users/custom/${id}?${query}`);
+  const res = await apiClient.get(`/users/custom/${documentId}?${query}`);
   return res;
 };
 

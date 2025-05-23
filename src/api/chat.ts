@@ -95,6 +95,11 @@ export const fetchChat = async ({ documentId, userDocumentId }: any) => {
   return res.data;
 };
 
+export const fetchChatsUnreadCount = async () => {
+  const res = await apiClient.get(`/chats/unread-count`);
+  return res.data;
+};
+
 export const fetchChatByUsers = async ({ userDocumentIds }: any) => {
   const query = qs.stringify(
     {

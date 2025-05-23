@@ -8,10 +8,10 @@ export const useAutoLogin = ({ setAccessToken, setUser }) => {
 
   useEffect(() => {
     const load = async () => {
-      const token = await SecureStore.getItemAsync('accessToken');
-      if (token) {
-        setAccessToken(token);
-        const user = await queryClient.fetchQuery(createFetchMeQuery(token));
+      const accessToken = await SecureStore.getItemAsync('accessToken');
+      if (accessToken) {
+        setAccessToken(accessToken);
+        const user = await queryClient.fetchQuery(createFetchMeQuery({ accessToken }));
         if (user) setUser(user);
       }
     };

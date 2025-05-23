@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Socket as BaseSocket, io } from 'socket.io-client';
 import { useAuth } from '@/features/auth/components/auth-provider';
 
@@ -19,16 +20,13 @@ export const useSocket = () => {
 export const SocketProvider = ({ children }: any) => {
   const [socket, setSocket] = useState<Socket>();
   const { accessToken } = useAuth();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!accessToken) return;
 
     const client = io(process.env.EXPO_PUBLIC_API_SERVER as string, {
       auth: { token: accessToken },
-    });
-
-    client.onAny((event, ...args) => {
-      console.log('socket', event, args);
     });
 
     client.on('connect', () => {
@@ -43,12 +41,94 @@ export const SocketProvider = ({ children }: any) => {
       console.error('socket connection Error:', err);
     });
 
+    client?.on('message', ({ data }) => {
+      console.log('socket event: message', data);
+
+      const chatDocumentId = data.chat.documentId;
+
+      queryClient.invalidateQueries({
+        queryKey: ['chats', 'detail', { documentId: chatDocumentId }],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['chats', 'unread-count'],
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['chats', 'list'] });
+      queryClient.invalidateQueries({
+        queryKey: ['messsages', 'list', { chatDocumentId }],
+      });
+    });
+
+    client?.on('notification', ({ data }) => {
+      console.log('socket event: notification', data);
+
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'count'] });
+    });
+
+    client.on('addFriend', ({ data }: any) => {
+      console.log('socket event: addFriend', data);
+
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', 'me'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', { documentId: data.friend.documentId }],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['friends', 'list'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followings', 'list'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followers', 'list'],
+      });
+    });
+
+    client.on('cancelFriend', ({ data }: any) => {
+      console.log('socket event: cancelFriend', data);
+
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', 'me'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', { documentId: data.friend.documentId }],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['friends', 'list'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followings', 'list'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followers', 'list'],
+      });
+    });
+
+    client.on('updateFollowing', ({ data }: any) => {
+      console.log('socket event: updateFollowing', data);
+
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', 'me'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', { documentId: data.follower.documentId }],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followings', 'list'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followers', 'list'],
+      });
+    });
+
     setSocket(client);
 
     return () => {
       client.disconnect();
     };
-  }, [accessToken]);
+  }, [accessToken, queryClient]);
 
   const value = useMemo(() => {
     return {

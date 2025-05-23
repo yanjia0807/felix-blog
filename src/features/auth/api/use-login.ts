@@ -17,7 +17,7 @@ export const useLogin = () => {
     onSuccess: async (data: any) => {
       setAccessToken(data.jwt);
       await SecureStore.setItemAsync('accessToken', data.jwt);
-      const user = await queryClient.fetchQuery(createFetchMeQuery(data.jwt));
+      const user = await queryClient.fetchQuery(createFetchMeQuery({ accessToken: data.jwt }));
 
       if (user) {
         setUser(user);

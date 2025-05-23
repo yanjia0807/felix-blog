@@ -17,10 +17,12 @@ import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { DefaultTheme, DarkTheme } from '@/constants/router-theme';
+import { useFetchChatsUnreadCount } from '@/features/chat/api/use-fetch-chats-unread-count';
 
 export type TabButtonProps = TabTriggerSlotProps & {
   title?: string;
   icon?: any;
+  badge?: any;
 };
 
 export const TabButtonList = forwardRef(({ children, ...props }: TabListProps, ref: Ref<View>) => {
@@ -44,7 +46,7 @@ export const TabButtonList = forwardRef(({ children, ...props }: TabListProps, r
 });
 
 export const TabButton = forwardRef(
-  ({ icon, title, isFocused, ...props }: TabButtonProps, ref: Ref<View>) => {
+  ({ icon, title, isFocused, badge, ...props }: TabButtonProps, ref: Ref<View>) => {
     const { theme } = usePreferences();
 
     const colors = theme === 'light' ? DefaultTheme.colors : DarkTheme.colors;
@@ -76,6 +78,7 @@ export const TabButton = forwardRef(
               }}>
               {title}
             </Text>
+            {badge && badge()}
           </VStack>
         </Animated.View>
       </Pressable>
@@ -84,6 +87,13 @@ export const TabButton = forwardRef(
 );
 
 export default function TabLayout() {
+  const chatsUnreadCount = useFetchChatsUnreadCount();
+
+  const renderChatBadge = () => {
+    return chatsUnreadCount?.data === 0 ? undefined : (
+      <View className="absolute right-0 top-[-2] h-2 w-2 rounded-full bg-error-600 p-[0.5]"></View>
+    );
+  };
   return (
     <Tabs>
       <TabSlot />
@@ -96,7 +106,7 @@ export default function TabLayout() {
             <TabButton title="发现" icon={BookCopy} />
           </TabTrigger>
           <TabTrigger name="chat" href="/chat" asChild reset="never">
-            <TabButton title="聊天" icon={MessageCircle} />
+            <TabButton title="聊天" icon={MessageCircle} badge={renderChatBadge} />
           </TabTrigger>
           <TabTrigger name="profile" href="/profile" asChild reset="never">
             <TabButton title="我的" icon={User2} />

@@ -5,7 +5,6 @@ import { View, Text } from 'react-native';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useFetchNotificationCount } from '../api';
-import { useListenNotification } from '../api/use-listen-notification';
 
 const NotificationIcon = () => {
   const { user } = useAuth();
@@ -14,9 +13,6 @@ const NotificationIcon = () => {
   const count = data;
 
   const onPress = () => router.navigate('/notifications/list');
-  // const onPress = () => router.navigate('/notification');
-
-  useListenNotification();
 
   return (
     <>

@@ -12,7 +12,7 @@ export const useCreateMessage = ({ documentId }) => {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['chats', 'detail', documentId],
+        queryKey: ['chats', 'detail', { documentId }],
       });
 
       queryClient.invalidateQueries({

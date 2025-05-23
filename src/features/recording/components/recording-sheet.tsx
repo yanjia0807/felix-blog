@@ -226,7 +226,7 @@ export const RecordingSheet = forwardRef(function Sheet({ onChange, value }: any
       footerComponent={renderFooter}
       onDismiss={onDismiss}>
       <VStack
-        className="flex-1 bg-background-100 p-4"
+        className="flex-1 bg-background-100 p-2"
         space="md"
         style={{ paddingBottom: insets.bottom + 60 }}>
         <VStack className="items-center">

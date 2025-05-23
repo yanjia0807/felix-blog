@@ -17,7 +17,6 @@ import { useAuth } from '@/features/auth/components/auth-provider';
 import { useCreateMessage } from '@/features/chat/api/use-create-message';
 import { useFetchChat } from '@/features/chat/api/use-fetch-chat';
 import { useFetchChatMessages } from '@/features/chat/api/use-fetch-chat-messages';
-import { useListenMessage } from '@/features/chat/api/use-listen-message';
 import { useUpdateChatStatus } from '@/features/chat/api/use-update-chat-status';
 import { MessageInput } from '@/features/chat/components/message-input';
 import { ReceiverItem } from '@/features/chat/components/receiver-item';
@@ -126,8 +125,6 @@ const ChatPage: React.FC = () => {
       chatMessageQuery.fetchNextPage();
     }
   };
-
-  useListenMessage({ documentId });
 
   useEffect(() => {
     return () => {

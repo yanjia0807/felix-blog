@@ -10,6 +10,9 @@ export const useUpdateChatStatus = () => {
       queryClient.invalidateQueries({
         queryKey: ['chats', 'list'],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['chats', 'unread-count'],
+      });
     },
     onError(error, variables, context) {
       console.error(error);

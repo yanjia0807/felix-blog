@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import {
@@ -15,14 +14,12 @@ import {
   UserRoundPlus,
 } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
-import { fetchUser, updateFollowings, createFriendRequest, cancelFriend } from '@/api';
 import { PageFallbackUI } from '@/components/fallback';
 import PageSpinner from '@/components/page-spinner';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
@@ -31,6 +28,11 @@ import { useFetchChatByUsers } from '@/features/chat/api/use-fetch-chat-by-users
 import { PagerViewProvider } from '@/features/image/components/pager-view-provider';
 import PhotoListView from '@/features/post/components/photo-list-view';
 import PostListView from '@/features/post/components/post-list-view';
+import { useCancelFriend } from '@/features/user/api/use-cancel-friend';
+import { useCreateFriendRequestMutation } from '@/features/user/api/use-create-friend-request';
+import { useEditFollow } from '@/features/user/api/use-edit-follow';
+import { useFetchUser } from '@/features/user/api/use-fetch-user';
+import { UserDetailSkeleton } from '@/features/user/components/user-detail-skeleton';
 import { UserProfileAvatar } from '@/features/user/components/user-profile-avater';
 import useToast from '@/hooks/use-toast';
 
@@ -38,30 +40,10 @@ interface UserDetailProps {
   user: any;
 }
 
-const UserDetailSkeleton = () => (
-  <VStack space="xl">
-    <HStack className="items-center" space="lg">
-      <Skeleton variant="circular" className="h-24 w-24" />
-      <VStack space="sm" className="flex-1">
-        <SkeletonText _lines={2} className="h-2 w-1/2" />
-      </VStack>
-    </HStack>
-    <SkeletonText _lines={3} className="h-2" />
-    <Skeleton variant="rounded" className="my-2 h-20 w-full" />
-    <HStack space="sm">
-      <Skeleton variant="rounded" className="h-12 flex-1" />
-      <Skeleton variant="rounded" className="h-12 flex-1" />
-    </HStack>
-    <Skeleton variant="rounded" className="mb-2 h-36 flex-1" />
-    <Skeleton variant="rounded" className="h-36 flex-1" />
-  </VStack>
-);
-
 const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   const { documentId }: any = useLocalSearchParams();
   const { user: currentUser } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const queryClient = useQueryClient();
   const toast = useToast();
   const userDocumentIds = currentUser ? [currentUser.documentId, documentId] : [];
   const isMe = documentId === currentUser?.documentId;
@@ -73,89 +55,11 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     userDocumentIds,
   });
 
-  const followMutation = useMutation({
-    mutationFn: () => {
-      const params = { following: documentId };
-      return updateFollowings(params);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me'],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', { documentId }],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['followings', 'list'],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['followers', 'list'],
-      });
+  const followMutation = useEditFollow();
 
-      toast.success({
-        description: isFollowing ? '取消关注成功' : '关注成功',
-      });
-    },
-    onError(error, variables, context) {
-      toast.error(error.message);
-      console.error(error);
-    },
-  });
+  const createFriendRequestMutation = useCreateFriendRequestMutation();
 
-  const createFriendRequestMutation = useMutation({
-    mutationFn: () => {
-      const params = { receiver: documentId };
-      return createFriendRequest(params);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['friendRequest', 'list', { receiver: documentId }],
-      });
-      toast.success({
-        description: '已发送好友申请',
-      });
-    },
-    onError(error, variables, context) {
-      toast.error(error.message);
-      console.error(error);
-    },
-  });
-
-  const cancelFriendMutation = useMutation({
-    mutationFn: () => {
-      const params = { friend: documentId };
-      return cancelFriend(params);
-    },
-    onSuccess: async (data, variables) => {
-      toast.success({
-        description: '取消好友成功',
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me'],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', { documentId }],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['friends', 'list'],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['followings', 'list'],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['followers', 'list'],
-      });
-    },
-    onError(error) {
-      toast.error(error.message);
-      console.error(error);
-    },
-  });
+  const cancelFriendMutation = useCancelFriend();
 
   const createChatMutation = useCreateChat({ userDocumentIds });
 
@@ -184,7 +88,19 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
       description,
       onConfirm: async () => {
         toast.close();
-        followMutation.mutate();
+        followMutation.mutate(
+          { documentId },
+          {
+            onSuccess() {
+              toast.success({
+                description: isFollowing ? '取消关注成功' : '关注成功',
+              });
+            },
+            onError(error) {
+              toast.error(error.message);
+            },
+          },
+        );
       },
     });
   };
@@ -199,9 +115,33 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
       onConfirm: async () => {
         toast.close();
         if (isFriend) {
-          cancelFriendMutation.mutate();
+          cancelFriendMutation.mutate(
+            { documentId },
+            {
+              onSuccess() {
+                toast.success({
+                  description: '取消好友成功',
+                });
+              },
+              onError(error) {
+                toast.error(error.message);
+              },
+            },
+          );
         } else {
-          createFriendRequestMutation.mutate();
+          createFriendRequestMutation.mutate(
+            { documentId },
+            {
+              onSuccess() {
+                toast.success({
+                  description: '已发送好友申请',
+                });
+              },
+              onError(error) {
+                toast.error(error.message);
+              },
+            },
+          );
         }
       },
     });
@@ -346,14 +286,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 const UserDetailPage: React.FC = () => {
   const { documentId }: any = useLocalSearchParams();
 
-  const {
-    isLoading,
-    isSuccess,
-    data: user,
-  } = useQuery({
-    queryKey: ['users', 'detail', { documentId }],
-    queryFn: () => fetchUser(documentId),
-  });
+  const userQuery = useFetchUser({ documentId });
 
   const renderHeaderLeft = () => (
     <Button
@@ -376,8 +309,9 @@ const UserDetailPage: React.FC = () => {
         }}
       />
       <VStack className="flex-1 p-4">
-        <PageSpinner isVisiable={isLoading} />
-        {isLoading ? <UserDetailSkeleton /> : isSuccess ? <UserDetail user={user} /> : <></>}
+        {userQuery.isLoading && <PageSpinner />}
+        {userQuery.isLoading && <UserDetailSkeleton />}
+        {userQuery.isSuccess && <UserDetail user={userQuery.data} />}
       </VStack>
     </SafeAreaView>
   );

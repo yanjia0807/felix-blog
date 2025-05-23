@@ -15,7 +15,6 @@ import {
   useUpdateFriendRequestNotificationMutation,
   useUpdateNotificationState,
 } from '@/features/notification/api';
-import { useListenNotification } from '@/features/notification/api/use-listen-notification';
 import { FollowItem } from '@/features/notification/components/follow-item';
 import { FriendCancelItem } from '@/features/notification/components/friend-cancel-item';
 import { FriendFeedBackItem } from '@/features/notification/components/friend-feedback-item';
@@ -118,8 +117,6 @@ const NotificationListPage: React.FC = () => {
       notificationQuery.fetchNextPage();
     }
   };
-
-  useListenNotification();
 
   return (
     <>

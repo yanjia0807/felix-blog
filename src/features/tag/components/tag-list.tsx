@@ -25,15 +25,17 @@ export const TagList = ({ value = [], onChange, className, readonly = false }: a
             <ButtonText>{item.name}</ButtonText>
           </Button>
         ))}
-        <Button
-          onPress={onRemoveAll}
-          key={0}
-          size="sm"
-          action="secondary"
-          variant="link"
-          className="ml-3">
-          <ButtonText>清空</ButtonText>
-        </Button>
+        {!readonly && (
+          <Button
+            onPress={onRemoveAll}
+            key={0}
+            size="sm"
+            action="secondary"
+            variant="link"
+            className="ml-3">
+            <ButtonText>清空</ButtonText>
+          </Button>
+        )}
       </HStack>
     );
   }

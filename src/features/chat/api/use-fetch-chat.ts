@@ -3,6 +3,6 @@ import { fetchChat } from '@/api';
 
 export const useFetchChat = ({ documentId, userDocumentId }) =>
   useQuery({
-    queryKey: ['chats', 'detail', documentId],
+    queryKey: ['chats', 'detail', { documentId }],
     queryFn: () => fetchChat({ documentId, userDocumentId }),
   });
