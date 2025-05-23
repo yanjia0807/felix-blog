@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { FlatList, RefreshControl, SafeAreaView, View } from 'react-native';
 import { PageFallbackUI } from '@/components/fallback';
 import { MainHeader } from '@/components/header';
-import ListEmptyView from '@/components/list-empty-view';
+import { ListEmptyView } from '@/components/list-empty-view';
 import PageSpinner from '@/components/page-spinner';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
@@ -15,7 +15,6 @@ import ChatItem from '@/features/chat/components/chat-item';
 import ChatMessageItem from '@/features/chat/components/chat-message-item';
 import { useFetchOnlineUsers } from '@/features/user/api/use-fetch-online-users';
 import { OnlineUserHeader, OnlineUserItem } from '@/features/user/components/online-user-item';
-import { useListenMessage } from '@/features/chat/api/use-listen-message';
 
 const ChatListHeader: React.FC<any> = () => {
   const { user } = useAuth();

@@ -1,18 +1,18 @@
 import React, { useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { ChevronLeft } from 'lucide-react-native';
 import { useForm } from 'react-hook-form';
-import { editPost, fetchPost } from '@/api/post';
 import { PageFallbackUI } from '@/components/fallback';
 import PageSpinner from '@/components/page-spinner';
-import PostForm, { postSchema, PostSchema } from '@/components/post-form';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import useToast from '@/hooks/use-custom-toast';
+import { useEditPost } from '@/features/post/api/use-edit-post';
+import { useFetchPost } from '@/features/post/api/use-fetch-post';
+import PostForm, { postSchema, PostSchema } from '@/features/post/components/post-form';
+import useToast from '@/hooks/use-toast';
 import {
   isImage,
   isVideo,
@@ -25,18 +25,13 @@ import {
 
 const PostEditPage = () => {
   const { documentId } = useLocalSearchParams();
-  const queryClient = useQueryClient();
   const toast = useToast();
-
   const form = useForm<PostSchema>({
     resolver: zodResolver(postSchema),
   });
   const { handleSubmit, reset } = form;
 
-  const postQuery = useQuery({
-    queryKey: ['posts', 'detail', documentId],
-    queryFn: () => fetchPost({ documentId }),
-  });
+  const postQuery = useFetchPost({ documentId });
 
   const post = useMemo(() => {
     if (!postQuery.isSuccess) return null;
@@ -109,32 +104,23 @@ const PostEditPage = () => {
     };
   }, [postQuery.isSuccess, postQuery.data]);
 
-  const mutation = useMutation({
-    mutationFn: (data: PostSchema) => {
-      return editPost(data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', documentId],
-      });
-      toast.success({
-        description: '保存成功',
-      });
-      router.dismiss();
-    },
-    onError(error, variables, context) {
-      toast.error({ description: error.message });
-    },
-  });
+  const mutation = useEditPost();
 
   const onSubmit = async (formData: PostSchema) => {
-    return mutation.mutate(formData);
+    return mutation.mutate(formData, {
+      onSuccess: () => {
+        toast.success({
+          description: '保存成功',
+        });
+        router.dismiss();
+      },
+      onError(error) {
+        toast.error({ description: error.message });
+      },
+    });
   };
 
-  const onSave = () => {
-    handleSubmit(onSubmit)();
-  };
+  const onSave = () => handleSubmit(onSubmit)();
 
   const renderHeaderLeft = () => (
     <Button

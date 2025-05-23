@@ -1,15 +1,15 @@
-import { memo, useEffect } from 'react';
+import { memo } from 'react';
 import { format } from 'date-fns';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
-import { useAuth } from '@/features/auth/components/auth-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useToast from '@/hooks/use-custom-toast';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import useToast from '@/hooks/use-toast';
 import { useAppDispatch } from '@/store/hook';
 import { imageFormat } from '@/utils/file';
 import { useDeleteComment } from '../api';
@@ -17,8 +17,6 @@ import { replyComment } from '../store';
 
 export const CommentItem: React.FC<any> = memo(
   ({ item, inputRef }) => {
-    useEffect(() => console.log('@render CommentItem'));
-
     const postDocumentId = item.post?.documentId;
     const commentDocumentId = item.documentId;
 

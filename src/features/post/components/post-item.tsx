@@ -1,13 +1,7 @@
-import { memo, useEffect } from 'react';
+import { memo } from 'react';
 import { useRouter } from 'expo-router';
-import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import { Pressable } from 'react-native';
-import { ImageCover, VideoCover, ImageList } from '@/components/image-input';
-import { LikeButton } from '@/components/like-button';
-import { usePagerView } from '@/components/pager-view';
-import PostItemMenu from '@/components/post-menu-popover';
-import { TagList } from '@/components/tag-input';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
@@ -16,15 +10,20 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { CommentIcon } from '@/features/comment/components/comment-icon';
 import { LastCommentItem } from '@/features/comment/components/last-comment-item';
+import { ImageList } from '@/features/image/components/image-list';
+import { usePagerView } from '@/features/image/components/pager-view-provider';
+import PostItemMenu from '@/features/post/components/post-menu-popover';
+import useCoverDimensions from '@/features/post/hooks/use-cover-dimensions';
+import { TagList } from '@/features/tag/components/tag-list';
 import { UserAvatars } from '@/features/user/components/user-avatars';
 import { UserAvatar } from '@/features/user/components/user-avater';
-import useCoverDimensions from '@/hooks/use-cover-dimensions';
 import { formatDistance } from '@/utils/date';
 import { isImage, isVideo } from '@/utils/file';
+import { ImageCover } from './image-cover';
+import { LikeButton } from './like-button';
+import { VideoCover } from './video-cover';
 
 export const PostItem: React.FC<any> = memo(({ item }) => {
-  useEffect(() => console.log('@render PostItem'));
-
   const router = useRouter();
   const { coverWidth, coverHeight } = useCoverDimensions(14, 10.5);
   const { setPages, onOpenPage } = usePagerView();

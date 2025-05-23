@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { router, Stack } from 'expo-router';
-import _ from 'lodash';
 import {
   ChevronLeft,
   ChevronRightIcon,
@@ -21,9 +20,9 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useLogout } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import useToast from '@/hooks/use-custom-toast';
+import { useLogout } from '@/features/auth/hooks/use-logout';
+import useToast from '@/hooks/use-toast';
 
 const Setting: React.FC = () => {
   const toast = useToast();

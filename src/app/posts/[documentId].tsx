@@ -1,131 +1,34 @@
-import React, { memo, useEffect, useMemo } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useEffect, useMemo } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import { Edit, Ellipsis, MapPin, Redo2, StickyNote, Trash, Undo2 } from 'lucide-react-native';
+import { Edit, Ellipsis, Redo2, StickyNote, Trash, Undo2 } from 'lucide-react-native';
 import { ScrollView, TouchableOpacity } from 'react-native';
-import { deletePost, fetchPost, editPublish } from '@/api/post';
 import { PageFallbackUI } from '@/components/fallback';
-import { ImageCover, ImageList, VideoCover } from '@/components/image-input';
-import { LikeButton } from '@/components/like-button';
-import PageSpinner from '@/components/page-spinner';
-import { PagerViewProvider, usePagerView } from '@/components/pager-view';
-import { RecordingList } from '@/components/recording-input';
-import { ShareButton } from '@/components/share-button';
-import { TagList } from '@/components/tag-input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Divider } from '@/components/ui/divider';
-import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Menu, MenuItem, MenuItemLabel, MenuSeparator } from '@/components/ui/menu';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import { CommentIcon } from '@/features/comment/components/comment-icon';
 import { CommentSheet } from '@/features/comment/components/comment-sheet';
 import { CommentSheetProvider } from '@/features/comment/components/comment-sheet-provider';
-import { UserAvatar } from '@/features/user/components/user-avater';
-import useCoverDimensions from '@/hooks/use-cover-dimensions';
-import useToast from '@/hooks/use-custom-toast';
-import { formatDistance } from '@/utils/date';
+import { PagerViewProvider, usePagerView } from '@/features/image/components/pager-view-provider';
+import { useDeletePost } from '@/features/post/api/use-delete-post';
+import { useEditPostPublish } from '@/features/post/api/use-edit-post-publish';
+import { useFetchPost } from '@/features/post/api/use-fetch-post';
+import { PostDetailItem, PostDetailSkeleton } from '@/features/post/components/post-detail-item';
+import { ShareButton } from '@/features/post/components/share-button';
+import useToast from '@/hooks/use-toast';
 import { isImage, isVideo, FileTypeNum, fileFullUrl, isAudio, toAttachmetItem } from '@/utils/file';
-
-const PostItem: React.FC<any> = memo(({ post }) => {
-  const { onOpenPage } = usePagerView();
-  const { coverWidth, coverHeight } = useCoverDimensions(14);
-
-  const onCoverPress = () => onOpenPage(0);
-
-  const onImagePress = (index: number) => onOpenPage(index + (post.cover ? 1 : 0));
-
-  return (
-    <>
-      {post.cover && isImage(post.cover.mime) && (
-        <ImageCover item={post} width={coverWidth} height={coverHeight} onPress={onCoverPress} />
-      )}
-      {post.cover && isVideo(post.cover.mime) && (
-        <VideoCover item={post} width={coverWidth} height={coverHeight} onPress={onCoverPress} />
-      )}
-      <HStack className="items-center justify-between" space="xl">
-        <Heading size="lg" className="flex-1">
-          {post.title}
-        </Heading>
-      </HStack>
-      <HStack className="items-center justify-between">
-        <Text size="xs">{formatDistance(post?.createdAt)}</Text>
-        {post.poi?.address && (
-          <HStack className="items-center">
-            <Icon as={MapPin} size="xs" />
-            <Text size="xs" className="flex-wrap">
-              {post.poi.address}
-            </Text>
-          </HStack>
-        )}
-      </HStack>
-      <HStack className="items-center justify-between">
-        <UserAvatar user={post.author} />
-        <HStack space="md" className="items-center justify-end">
-          <LikeButton post={post} />
-          <CommentIcon post={post} />
-        </HStack>
-      </HStack>
-      <TagList value={post.tags} readonly={true} />
-      <ImageList value={post.images} onPress={onImagePress} />
-      <RecordingList value={post.recordings} readonly={true} />
-      <Divider />
-      <Text size="lg">{post.content}</Text>
-      <Divider />
-      <HStack className="items-center justify-end">
-        <HStack space="md" className="items-center justify-end">
-          <LikeButton post={post} />
-          <CommentIcon post={post} />
-        </HStack>
-      </HStack>
-    </>
-  );
-});
-
-const PostSkeleton: React.FC<any> = () => {
-  const { coverWidth, coverHeight } = useCoverDimensions(14);
-
-  return (
-    <>
-      <PageSpinner />
-      <VStack className="flex-1 p-4" space="lg">
-        <Skeleton variant="rounded" style={{ width: coverWidth, height: coverHeight }} />
-        <SkeletonText _lines={1} className="h-4 w-96" />
-        <SkeletonText _lines={1} className="h-3 w-24" />
-        <HStack className="items-center justify-between">
-          <HStack className="w-24 items-center" space="xs">
-            <Skeleton variant="circular" className="h-8 w-8" />
-            <SkeletonText _lines={1} className="h-4" />
-          </HStack>
-          <Skeleton variant="sharp" className="h-4 w-24" />
-        </HStack>
-        <HStack className="items-center" space="sm">
-          <Skeleton variant="rounded" className="h-14 w-14" />
-          <Skeleton variant="rounded" className="h-14 w-14" />
-        </HStack>
-        <SkeletonText _lines={3} className="h-3" />
-      </VStack>
-    </>
-  );
-};
 
 const PostDetail: React.FC = () => {
   const { user } = useAuth();
   const { documentId } = useLocalSearchParams();
   const { setPages } = usePagerView();
-  const queryClient = useQueryClient();
   const toast = useToast();
-
-  const postQuery = useQuery({
-    queryKey: ['posts', 'detail', documentId],
-    queryFn: () => fetchPost({ documentId }),
-  });
+  const postQuery = useFetchPost({ documentId });
 
   const post = useMemo(() => {
     if (postQuery.isSuccess) {
@@ -161,40 +64,9 @@ const PostDetail: React.FC = () => {
     }
   }, [postQuery.data, postQuery.isSuccess]);
 
-  const deleteMutation = useMutation({
-    mutationFn: ({ documentId }: any) => deletePost({ documentId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', documentId],
-      });
-      toast.success({
-        description: '删除成功',
-      });
-      router.back();
-    },
-    onError(error, variables, context) {
-      toast.close();
-      toast.error({ description: error.message });
-    },
-  });
+  const deleteMutation = useDeletePost();
 
-  const editPublishMutation = useMutation({
-    mutationFn: ({ documentId, isPublished }: any) => editPublish({ documentId, isPublished }),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', documentId],
-      });
-      toast.success({
-        description: variables.isPublished ? '发布成功' : '取消发布成功',
-      });
-    },
-    onError(error, variables, context) {
-      toast.close();
-      toast.error({ description: error.message });
-    },
-  });
+  const editPublishMutation = useEditPostPublish();
 
   const renderHeaderLeft = () => (
     <Button action="secondary" variant="link" onPress={() => router.back()}>
@@ -259,28 +131,52 @@ const PostDetail: React.FC = () => {
     router.push(`/posts/edit/${documentId}`);
   };
 
-  const onUnpublish = () => {
-    toast.confirm({
-      description: `确定要取消发布吗？`,
-      onConfirm: async () => {
-        toast.close();
-        editPublishMutation.mutate({
-          documentId,
-          isPublished: false,
-        });
-      },
-    });
-  };
-
   const onPublish = () => {
     toast.confirm({
       description: `确定要发布吗？`,
       onConfirm: async () => {
         toast.close();
-        editPublishMutation.mutate({
-          documentId,
-          isPublished: true,
-        });
+        editPublishMutation.mutate(
+          {
+            documentId,
+            isPublished: true,
+          },
+          {
+            onSuccess: (data, variables) => {
+              toast.success({
+                description: '发布成功',
+              });
+            },
+            onError(error, variables, context) {
+              toast.error({ description: error.message });
+            },
+          },
+        );
+      },
+    });
+  };
+
+  const onUnpublish = () => {
+    toast.confirm({
+      description: `确定要取消发布吗？`,
+      onConfirm: async () => {
+        toast.close();
+        editPublishMutation.mutate(
+          {
+            documentId,
+            isPublished: false,
+          },
+          {
+            onSuccess: (data, variables) => {
+              toast.success({
+                description: '取消发布成功',
+              });
+            },
+            onError(error, variables, context) {
+              toast.error({ description: error.message });
+            },
+          },
+        );
       },
     });
   };
@@ -290,9 +186,22 @@ const PostDetail: React.FC = () => {
       description: `确认要删除吗？`,
       onConfirm: async () => {
         toast.close();
-        deleteMutation.mutate({
-          documentId,
-        });
+        deleteMutation.mutate(
+          {
+            documentId,
+          },
+          {
+            onSuccess: () => {
+              toast.success({
+                description: '删除成功',
+              });
+              router.back();
+            },
+            onError(error) {
+              toast.error({ description: error.message });
+            },
+          },
+        );
       },
     });
   };
@@ -311,11 +220,11 @@ const PostDetail: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      {postQuery.isLoading && <PostSkeleton />}
+      {postQuery.isLoading && <PostDetailSkeleton />}
       {postQuery.isSuccess && (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
           <VStack className="flex-1 p-4" space="lg">
-            <PostItem post={post} />
+            <PostDetailItem post={post} />
           </VStack>
         </ScrollView>
       )}

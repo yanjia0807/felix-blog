@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import _ from 'lodash';
 import { ScanFace } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import { Avatar, AvatarImage, AvatarFallbackText } from '@/components/ui/avatar';

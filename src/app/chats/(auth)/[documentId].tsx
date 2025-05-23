@@ -23,7 +23,7 @@ import { MessageInput } from '@/features/chat/components/message-input';
 import { ReceiverItem } from '@/features/chat/components/receiver-item';
 import { SenderItem } from '@/features/chat/components/sender-item';
 import { UserChatAvatar } from '@/features/user/components/user-chat-avatar';
-import useToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-toast';
 
 type MessageFormSchema = z.infer<typeof messageFormSchema>;
 

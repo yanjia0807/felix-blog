@@ -1,10 +1,10 @@
 import { apiClient } from '../utils/api-client';
 
-export const login = async (credentials: any) => {
+export const login = async ({ identifier, password }: any) => {
   try {
     const res = await apiClient.post(`/auth/local`, {
-      identifier: credentials.identifier,
-      password: credentials.password,
+      identifier,
+      password,
     });
     return res;
   } catch (error: any) {

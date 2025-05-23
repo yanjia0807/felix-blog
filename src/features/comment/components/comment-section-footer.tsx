@@ -1,5 +1,4 @@
-import { memo, useEffect } from 'react';
-import _ from 'lodash';
+import { memo } from 'react';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { useAppDispatch, useAppSelector } from '@/store/hook';
@@ -8,8 +7,6 @@ import { collapseComment, selectIsCommentExpanded } from '../store';
 
 export const CommentSectionFooter: React.FC<any> = memo(
   ({ item }) => {
-    useEffect(() => console.log('@render CommentSectionFooter'));
-
     const postDocumentId = item.post.documentId;
     const commentDocumentId = item.documentId;
 

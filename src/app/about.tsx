@@ -1,9 +1,9 @@
 import React from 'react';
 import { router, Stack } from 'expo-router';
 import { SafeAreaView, ScrollView } from 'react-native';
+import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import { PageFallbackUI } from '@/components/fallback';
 
 const AboutPage = () => {
   const renderHeaderLeft = () => (

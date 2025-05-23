@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
@@ -18,8 +18,6 @@ export const HeaderLogo = () => {
 };
 
 export const MainHeader: React.FC<any> = memo(() => {
-  useEffect(() => console.log('@render MainHeader'));
-
   const { user } = useAuth();
 
   return (

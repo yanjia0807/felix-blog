@@ -1,5 +1,4 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import _ from 'lodash';
 import { fetchNotifications } from '@/api';
 
 export const useFetchNotifications = ({ userDocumentId }) =>

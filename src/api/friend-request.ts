@@ -1,4 +1,3 @@
-import qs from 'qs';
 import { apiClient } from '../utils/api-client';
 
 export const createFriendRequest = async (params: any) => {

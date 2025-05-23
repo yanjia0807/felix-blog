@@ -1,14 +1,14 @@
-import { memo, useEffect } from 'react';
+import { memo } from 'react';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import { TouchableOpacity, View } from 'react-native';
-import { useAuth } from '@/features/auth/components/auth-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import useToast from '@/hooks/use-custom-toast';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import useToast from '@/hooks/use-toast';
 import { useAppDispatch, useAppSelector } from '@/store/hook';
 import { formatDistance } from '@/utils/date';
 import { imageFormat } from '@/utils/file';
@@ -17,8 +17,6 @@ import { expandComment, replyComment, selectIsCommentExpanded } from '../store';
 
 export const CommentSectionHeader: React.FC<any> = memo(
   ({ index, item, inputRef }) => {
-    useEffect(() => console.log('@render CommentSectionHeader'));
-
     const postDocumentId = item.post.documentId;
     const commentDocumentId = item.documentId;
     const deleteMutation = useDeleteComment({ postDocumentId });

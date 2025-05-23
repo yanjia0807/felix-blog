@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import _ from 'lodash';
 import { createExpoPushToken } from '@/api';
 
-export const useCreateExpoPushTokenMutation = () => {
+export const useCreateExpoPushToken = () => {
   const queryClient = useQueryClient();
 
   return useMutation({

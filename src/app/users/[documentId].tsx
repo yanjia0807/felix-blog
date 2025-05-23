@@ -18,9 +18,6 @@ import { TouchableOpacity } from 'react-native';
 import { fetchUser, updateFollowings, createFriendRequest, cancelFriend } from '@/api';
 import { PageFallbackUI } from '@/components/fallback';
 import PageSpinner from '@/components/page-spinner';
-import { PagerViewProvider } from '@/components/pager-view';
-import PhotoListView from '@/components/photo-list-view';
-import PostListView from '@/components/post-list-view';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -31,8 +28,11 @@ import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useCreateChat } from '@/features/chat/api/use-create-chat';
 import { useFetchChatByUsers } from '@/features/chat/api/use-fetch-chat-by-users';
+import { PagerViewProvider } from '@/features/image/components/pager-view-provider';
+import PhotoListView from '@/features/post/components/photo-list-view';
+import PostListView from '@/features/post/components/post-list-view';
 import { UserProfileAvatar } from '@/features/user/components/user-profile-avater';
-import useToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-toast';
 
 interface UserDetailProps {
   user: any;

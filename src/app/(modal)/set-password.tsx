@@ -22,7 +22,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import { useResetPasswordByOtp } from '@/features/auth/api';
 import { AnonyLogoView } from '@/features/auth/components/anony';
-import useToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-toast';
 
 type SetPasswordSchemaDetails = z.infer<typeof setPasswordSchema>;
 

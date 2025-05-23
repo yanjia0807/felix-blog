@@ -1,14 +1,14 @@
 'use client';
 import React from 'react';
-import { createProgress } from '@gluestack-ui/progress';
-import { View } from 'react-native';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import {
   withStyleContext,
   useStyleContext,
 } from '@gluestack-ui/nativewind-utils/withStyleContext';
+import { createProgress } from '@gluestack-ui/progress';
 import { cssInterop } from 'nativewind';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import { View } from 'react-native';
 
 const SCOPE = 'PROGRESS';
 export const UIProgress = createProgress({

@@ -6,8 +6,6 @@ import { Text } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-import { DateInput } from '@/components/date-input';
-import { TagSelect } from '@/components/tag-input';
 import { Button, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -18,9 +16,11 @@ import {
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
+import { DateInput } from '@/features/date/components/date-input';
+import { TagSelect } from '@/features/tag/components/tag-select';
 import { useAppSelector, useAppDispatch } from '@/store/hook';
-import { resetFilters, setFilters } from '../store';
 import { usePostDrawerContext } from './post-drawer-provider';
+import { resetFilters, setFilters } from '../store';
 
 const postFilterSchema = z.object({
   title: z.string().optional(),
@@ -33,8 +33,6 @@ const postFilterSchema = z.object({
 type PostFilterSchema = z.infer<typeof postFilterSchema>;
 
 export const PostFilter = memo(() => {
-  useEffect(() => console.log('@render PostFilter'));
-
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const filters = useAppSelector((state) => state.postFilter.filters);

@@ -1,7 +1,7 @@
 import React from 'react';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { centerStyle } from './styles';
 
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 
 type ICenterProps = React.ComponentPropsWithoutRef<'div'> &
   VariantProps<typeof centerStyle>;

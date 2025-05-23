@@ -2,7 +2,7 @@ import React from 'react';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
 import { PageFallbackUI } from '@/components/fallback';
-import ListEmptyView from '@/components/list-empty-view';
+import { ListEmptyView } from '@/components/list-empty-view';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { FlatList } from '@/components/ui/flat-list';

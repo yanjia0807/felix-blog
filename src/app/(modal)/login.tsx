@@ -1,7 +1,6 @@
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack, useNavigation } from 'expo-router';
-import _ from 'lodash';
 import { AlertCircleIcon } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -23,7 +22,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import { useLogin } from '@/features/auth/api';
 import { AnonyLogoView } from '@/features/auth/components/anony';
-import useToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-toast';
 
 type LoginSchemaDetails = z.infer<typeof loginSchema>;
 

@@ -4,9 +4,6 @@ import { router, Stack } from 'expo-router';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import { PageFallbackUI } from '@/components/fallback';
-import { PagerViewProvider } from '@/components/pager-view';
-import PhotoListView from '@/components/photo-list-view';
-import PostListView from '@/components/post-list-view';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -14,6 +11,9 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
+import { PagerViewProvider } from '@/features/image/components/pager-view-provider';
+import PhotoListView from '@/features/post/components/photo-list-view';
+import PostListView from '@/features/post/components/post-list-view';
 import { UserProfileAvatar } from '@/features/user/components/user-profile-avater';
 
 const Profile: React.FC = () => {

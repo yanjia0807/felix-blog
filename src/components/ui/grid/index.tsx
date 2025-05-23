@@ -7,13 +7,13 @@ import React, {
   forwardRef,
 } from 'react';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { View, Dimensions, Platform, ViewProps } from 'react-native';
-import { gridStyle, gridItemStyle } from './styles';
 import { cssInterop } from 'nativewind';
+import { View, Dimensions, Platform, ViewProps } from 'react-native';
 import {
   useBreakpointValue,
   getBreakPointValue,
 } from '@/components/ui/utils/use-break-point-value';
+import { gridStyle, gridItemStyle } from './styles';
 
 const { width: DEVICE_WIDTH } = Dimensions.get('window');
 

@@ -1,9 +1,9 @@
 import React from 'react';
 import { router, Stack } from 'expo-router';
-import { SafeAreaView, ScrollView, View } from 'react-native';
+import { SafeAreaView, ScrollView } from 'react-native';
 import { PrivacyPolicyText } from '@/components/app-info';
-import { Button, ButtonText } from '@/components/ui/button';
 import { PageFallbackUI } from '@/components/fallback';
+import { Button, ButtonText } from '@/components/ui/button';
 
 const PrivacyPolicyPage = () => {
   const renderHeaderLeft = () => (

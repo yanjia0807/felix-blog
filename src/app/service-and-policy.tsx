@@ -2,10 +2,10 @@ import React from 'react';
 import { router, Stack } from 'expo-router';
 import { SafeAreaView, ScrollView } from 'react-native';
 import { TermsOfServiceText, PrivacyPolicyText } from '@/components/app-info';
+import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { VStack } from '@/components/ui/vstack';
-import { PageFallbackUI } from '@/components/fallback';
 
 const ServiceAndPolicyPage = () => {
   const renderHeaderLeft = () => (

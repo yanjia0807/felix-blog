@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import _ from 'lodash';
 import { TouchableOpacity } from 'react-native';
 import { Avatar, AvatarImage, AvatarFallbackText } from '@/components/ui/avatar';
 import { HStack } from '@/components/ui/hstack';

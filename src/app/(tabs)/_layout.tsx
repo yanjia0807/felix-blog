@@ -7,7 +7,7 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { BookCopy, House, MessageCircle, User, User2 } from 'lucide-react-native';
+import { BookCopy, House, MessageCircle, User2 } from 'lucide-react-native';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -61,7 +61,7 @@ export const TabButton = forwardRef(
 
     useEffect(() => {
       primaryColor.value = colors.primary;
-    }, [colors.primary]);
+    }, [colors.primary, primaryColor]);
 
     return (
       <Pressable ref={ref} {...props}>

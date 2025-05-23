@@ -1,15 +1,15 @@
 'use client';
 import React from 'react';
-import { createToastHook } from '@gluestack-ui/toast';
-import { AccessibilityInfo, Text, View } from 'react-native';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { cssInterop } from 'nativewind';
-import { Motion, AnimatePresence } from '@legendapp/motion';
 import {
   withStyleContext,
   useStyleContext,
 } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import { createToastHook } from '@gluestack-ui/toast';
+import { Motion, AnimatePresence } from '@legendapp/motion';
+import { cssInterop } from 'nativewind';
+import { AccessibilityInfo, Text, View } from 'react-native';
 
 const useToast = createToastHook(Motion.View, AnimatePresence);
 const SCOPE = 'TOAST';

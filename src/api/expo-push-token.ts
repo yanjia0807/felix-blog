@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import qs from 'qs';
 import { apiClient } from '../utils/api-client';
 

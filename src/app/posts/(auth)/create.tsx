@@ -6,13 +6,13 @@ import { useForm } from 'react-hook-form';
 import { createPost } from '@/api/post';
 import { PageFallbackUI } from '@/components/fallback';
 import PageSpinner from '@/components/page-spinner';
-import { PagerViewProvider } from '@/components/pager-view';
-import PostForm, { postSchema, PostSchema } from '@/components/post-form';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import useToast from '@/hooks/use-custom-toast';
+import { PagerViewProvider } from '@/features/image/components/pager-view-provider';
+import PostForm, { postSchema, PostSchema } from '@/features/post/components/post-form';
+import useToast from '@/hooks/use-toast';
 
 const PostCreatePage: React.FC = () => {
   const queryClient = useQueryClient();

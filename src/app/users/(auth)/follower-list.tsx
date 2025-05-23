@@ -9,8 +9,8 @@ import { fetchFollowers } from '@/api';
 import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import UserList from '@/components/user-list';
 import { useAuth } from '@/features/auth/components/auth-provider';
+import UserList from '@/features/user/components/user-list';
 import useDebounce from '@/hooks/use-debounce';
 
 const FollowerListPage: React.FC = () => {

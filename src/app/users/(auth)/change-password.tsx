@@ -21,7 +21,7 @@ import { Input, InputField } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import { useChangePassword } from '@/features/auth/api';
-import useToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-toast';
 
 type ChangePasswordSchemaDetails = z.infer<typeof changePasswordSchema>;
 

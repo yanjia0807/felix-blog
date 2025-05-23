@@ -1,7 +1,6 @@
 import React, { forwardRef, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
-import _ from 'lodash';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
@@ -14,7 +13,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import { useVerifyOtp } from '@/features/auth/api';
 import { AnonyLogoView } from '@/features/auth/components/anony';
-import useToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-toast';
 
 type OtpSchemaDetails = z.infer<typeof otpSchema>;
 

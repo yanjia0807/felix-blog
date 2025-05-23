@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import _ from 'lodash';
 import { updateNotificationState } from '@/api';
 
 export const useUpdateNotificationState = () => {

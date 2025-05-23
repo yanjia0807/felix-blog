@@ -25,7 +25,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useOtpRegister } from '@/features/auth/api';
 import { AnonyLogoView } from '@/features/auth/components/anony';
-import useToast from '@/hooks/use-custom-toast';
+import useToast from '@/hooks/use-toast';
 
 type RegisterSchemaDetails = z.infer<typeof registerSchema>;
 

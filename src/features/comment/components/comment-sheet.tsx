@@ -12,14 +12,15 @@ import { Controller, useForm } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { shallowEqual } from 'react-redux';
 import { z } from 'zod';
-import { useAuth } from '@/features/auth/components/auth-provider';
-import ListEmptyView from '@/components/list-empty-view';
+import { ListEmptyView } from '@/components/list-empty-view';
+import PageSpinner from '@/components/page-spinner';
 import { Divider } from '@/components/ui/divider';
 import { FormControl } from '@/components/ui/form-control';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
-import useToast from '@/hooks/use-custom-toast';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import useToast from '@/hooks/use-toast';
 import { useAppDispatch, useAppSelector } from '@/store/hook';
 import { CommentInput } from './comment-input';
 import { CommentItem } from './comment-item';
@@ -41,8 +42,6 @@ import {
   selectPostDocumentId,
   selectReplyData,
 } from '../store';
-import { Spinner } from '@/components/ui/spinner';
-import PageSpinner from '@/components/page-spinner';
 
 type CommentFormSchema = z.infer<typeof commentFormSchema>;
 
@@ -56,8 +55,6 @@ const commentFormSchema = z.object({
 });
 
 export const CommentSheet = memo(() => {
-  useEffect(() => console.log('@render CommentSheet'));
-
   const postDocumentId = useAppSelector((state) => selectPostDocumentId(state));
   const replyData = useAppSelector((state) => selectReplyData(state));
   const expandedCommentDocumentIds = useAppSelector(

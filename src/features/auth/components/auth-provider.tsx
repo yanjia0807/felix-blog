@@ -1,6 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { useFetchMe } from '@/features/user/api/use-fetch-me';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { useAutoLogin } from '../hooks/use-auto-login';
 
 const AuthContext = createContext<any>(undefined);
 
@@ -13,36 +12,23 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: any) => {
-  useEffect(() => console.log('@render AuthProvider'));
-
   const [accessToken, setAccessToken] = useState<string | undefined>();
-  const meQuery = useFetchMe({ accessToken });
-
+  const [user, setUser] = useState<any>(undefined);
   const removeAccessToken = useCallback(() => setAccessToken(undefined), []);
+  const removeUser = useCallback(() => setUser(undefined), []);
 
-  if (meQuery.status === 'error') {
-    removeAccessToken();
-  }
-
-  useEffect(() => {
-    const loadData = async () => {
-      const token = await SecureStore.getItemAsync('accessToken');
-      if (token) {
-        setAccessToken(token);
-      }
-    };
-
-    loadData();
-  }, []);
+  useAutoLogin({ setAccessToken, setUser });
 
   const value = useMemo(() => {
     return {
       accessToken,
-      user: meQuery.data,
       setAccessToken,
       removeAccessToken,
+      user,
+      setUser,
+      removeUser,
     };
-  }, [accessToken, meQuery.data, removeAccessToken]);
+  }, [accessToken, user, removeAccessToken, removeUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

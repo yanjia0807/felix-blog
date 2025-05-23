@@ -1,16 +1,16 @@
 import React, { memo } from 'react';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import _ from 'lodash';
 import { Pressable, View } from 'react-native';
-import { ImageCover, VideoCover } from '@/components/image-input';
-import { LikeButton } from '@/components/like-button';
 import { usePreferences } from '@/components/preferences-provider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatar } from '@/features/user/components/user-avater';
 import { isImage } from '@/utils/file';
+import { ImageCover } from './image-cover';
+import { LikeButton } from './like-button';
+import { VideoCover } from './video-cover';
 import useExploreItemDimensions from '../hooks/use-explore-item-dimensions';
 
 export const ExploreItem: React.FC<any> = memo(({ item, columnIndex }) => {

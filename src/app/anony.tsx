@@ -1,11 +1,11 @@
 import React from 'react';
 import { router, Stack } from 'expo-router';
-import { AnonyLogoView } from '@/features/auth/components/anony';
+import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import { PageFallbackUI } from '@/components/fallback';
+import { AnonyLogoView } from '@/features/auth/components/anony';
 
 const AnonyPage: React.FC = () => {
   const renderHeaderLeft = () => (

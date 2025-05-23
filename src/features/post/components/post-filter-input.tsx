@@ -40,7 +40,7 @@ export const PostFilterInput: React.FC<any> = ({ outlines, isLoading }) => {
 
   useEffect(() => {
     dispatch(setDebounceKeywords(debounceKeywords));
-  }, [debounceKeywords]);
+  }, [debounceKeywords, dispatch]);
 
   return (
     <Input size="lg" variant="rounded" className="flex-1">

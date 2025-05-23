@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { Avatar, AvatarImage, AvatarFallbackText } from '@/components/ui/avatar';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';

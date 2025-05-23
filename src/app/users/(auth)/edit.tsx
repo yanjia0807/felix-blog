@@ -8,10 +8,9 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { updateMe } from '@/api';
-import { DateInput } from '@/components/date-input';
-import { DistrictInput } from '@/components/district-input';
+import { DateInput } from '@/features/date/components/date-input';
+import { DistrictInput } from '@/features/position/components/district-input';
 import { PageFallbackUI } from '@/components/fallback';
-import { AvatarInput } from '@/components/image-input';
 import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -41,7 +40,8 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { genderEnum } from '@/constants/enum';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import useToast from '@/hooks/use-custom-toast';
+import { AvatarInput } from '@/features/user/components/avatar-input';
+import useToast from '@/hooks/use-toast';
 import { FileTypeNum, imageFormat } from '@/utils/file';
 
 type UserFormSchema = z.infer<typeof userFormSchema>;

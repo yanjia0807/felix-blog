@@ -1,20 +1,20 @@
-import React, { memo, useCallback, useEffect } from 'react';
+import React, { memo, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { Filter, Search } from 'lucide-react-native';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import { useAuth } from '@/features/auth/components/auth-provider';
 import { PageFallbackUI } from '@/components/fallback';
 import { MainHeader } from '@/components/header';
-import ListEmptyView from '@/components/list-empty-view';
-import { PagerViewProvider } from '@/components/pager-view';
+import { ListEmptyView } from '@/components/list-empty-view';
 import { Fab, FabIcon, FabLabel } from '@/components/ui/fab';
 import { AddIcon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
+import { useAuth } from '@/features/auth/components/auth-provider';
 import { CommentSheet } from '@/features/comment/components/comment-sheet';
 import { CommentSheetProvider } from '@/features/comment/components/comment-sheet-provider';
+import { PagerViewProvider } from '@/features/image/components/pager-view-provider';
 import { useFetchBanners, useFetchPosts } from '@/features/post/api';
 import { BannerItem } from '@/features/post/components/banner-item';
 import { PostItem } from '@/features/post/components/post-item';
@@ -22,8 +22,6 @@ import { PostListSkeleton } from '@/features/post/components/post-list-skeleton'
 import { isImage, isVideo, toAttachmetItem } from '@/utils/file';
 
 const HomeHeader: React.FC<any> = memo(({ bannersQuery }) => {
-  useEffect(() => console.log('@render HomeHeader'));
-
   const router = useRouter();
 
   const banners: any = _.flatMap(bannersQuery.data?.pages, (page: any) => page.data);
@@ -154,8 +152,6 @@ const PostList: React.FC<any> = () => {
 };
 
 const HomePage: React.FC<any> = () => {
-  useEffect(() => console.log('@render HomePage'));
-
   return (
     <PagerViewProvider>
       <CommentSheetProvider>

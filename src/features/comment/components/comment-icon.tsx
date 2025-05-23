@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { MessageCircle } from 'lucide-react-native';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
@@ -7,8 +6,6 @@ import { useAppDispatch } from '@/store/hook';
 import { useCommentSheetContext } from './comment-sheet-provider';
 
 export const CommentIcon: React.FC<any> = ({ post }) => {
-  useEffect(() => console.log('@render CommentIcon'));
-
   const { open } = useCommentSheetContext();
   const dispatch = useAppDispatch();
 
