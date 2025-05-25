@@ -1,19 +1,15 @@
 import React from 'react';
-import { useRouter } from 'expo-router';
-import { TouchableOpacity } from 'react-native';
 import { Avatar, AvatarImage, AvatarFallbackText } from '@/components/ui/avatar';
+import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { imageFormat } from '@/utils/file';
 
-const ChatItem: React.FC<any> = ({ otherUser, item }) => {
-  const router = useRouter();
-  const onPress = () => router.push(`/chats/${item.documentId}`);
-
+const ChatItem: React.FC<any> = ({ otherUser, onItemPress }) => {
   return (
-    <TouchableOpacity onPress={() => onPress()}>
-      <HStack space="sm" className="w-full items-center rounded-lg py-2">
-        <Avatar>
+    <Card size="sm">
+      <HStack space="sm" className="items-center">
+        <Avatar size="md">
           {otherUser.avatar ? (
             <AvatarImage
               source={{
@@ -24,11 +20,11 @@ const ChatItem: React.FC<any> = ({ otherUser, item }) => {
             <AvatarFallbackText>{otherUser.username}</AvatarFallbackText>
           )}
         </Avatar>
-        <Text size="md" bold={true}>
+        <Text size="sm" bold={true}>
           {otherUser.username}
         </Text>
       </HStack>
-    </TouchableOpacity>
+    </Card>
   );
 };
 

@@ -42,7 +42,6 @@ const Setting: React.FC = () => {
       title: '退出登录',
       description: `确认要退出登录吗？`,
       onConfirm: async () => {
-        toast.close();
         await logout();
         toast.success({
           description: '退出登录成功',

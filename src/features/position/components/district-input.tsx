@@ -239,8 +239,8 @@ export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any
       enablePanDownToClose={true}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}>
-      <VStack className="flex-1 bg-background-100 p-4" space="md">
-        <PageSpinner isVisiable={isLoading} />
+      {isLoading && <PageSpinner />}
+      <VStack className="flex-1 bg-background-100 p-2" space="md">
         <VStack className="mb-4 items-center">
           <Heading className="p-2">请选择所在地区</Heading>
           <Divider />

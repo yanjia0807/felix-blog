@@ -155,38 +155,8 @@ export const fetchUser = async ({ documentId }): Promise<any> => {
 };
 
 export const fetchUsers = async ({ pageParam }: any) => {
-  const { pagination, keyword, documentId } = pageParam;
-  const filters = {
-    $and: [
-      {
-        documentId: {
-          $ne: documentId,
-        },
-      },
-      {
-        blocked: false,
-      },
-      {
-        confirmed: true,
-      },
-      keyword
-        ? {
-            $or: [
-              {
-                username: {
-                  $containsi: keyword,
-                },
-              },
-              {
-                email: {
-                  $containsi: keyword,
-                },
-              },
-            ],
-          }
-        : {},
-    ],
-  };
+  const { pagination, filters } = pageParam;
+
   const query = qs.stringify({
     populate: {
       avatar: {
@@ -201,7 +171,7 @@ export const fetchUsers = async ({ pageParam }: any) => {
 };
 
 export const fetchOnlineUsers = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId } = pageParam;
+  const { pagination } = pageParam;
 
   const query = qs.stringify({
     populate: {
@@ -211,9 +181,6 @@ export const fetchOnlineUsers = async ({ pageParam }: any) => {
     },
     filters: {
       isOnline: true,
-      documentId: {
-        $notIn: [userDocumentId],
-      },
     },
     pagination,
   });

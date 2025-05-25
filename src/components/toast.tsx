@@ -24,9 +24,7 @@ export const Alert = ({ id, action, title, description, close }: any) => {
   );
 };
 
-export const Confirm = ({ id, onConfirm, title, description, close }: any) => {
-  const nativeID = `toast-${id}`;
-
+export const Confirm = ({ nativeID, onConfirm, title, description, close }: any) => {
   return (
     <Toast
       variant="outline"
@@ -47,8 +45,9 @@ export const Confirm = ({ id, onConfirm, title, description, close }: any) => {
             action="positive"
             size="sm"
             className="flex-grow"
-            onPress={() => {
-              onConfirm();
+            onPress={async () => {
+              await onConfirm();
+              close();
             }}>
             <ButtonText>确定</ButtonText>
           </Button>

@@ -64,10 +64,13 @@ export const PostDetailItem: React.FC<any> = memo(({ post }) => {
       {post.cover && isVideo(post.cover.mime) && (
         <VideoCover item={post} width={coverWidth} height={coverHeight} onPress={onCoverPress} />
       )}
-      <HStack className="items-center justify-between" space="xl">
-        <Heading size="lg" className="flex-1">
-          {post.title}
-        </Heading>
+      <HStack className="items-center" space="sm">
+        <Heading size="lg">{post.title}</Heading>
+        {!post.isPublished && (
+          <Text size="sm" sub={true} className="text-gray-400">
+            [未发布]
+          </Text>
+        )}
       </HStack>
       <HStack className="items-center justify-between">
         <Text size="xs">{formatDistance(post?.createdAt)}</Text>

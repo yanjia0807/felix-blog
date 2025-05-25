@@ -20,7 +20,7 @@ export const useCreateComment = ({ postDocumentId }: any) => {
       });
 
       await queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', postDocumentId],
+        queryKey: ['posts', 'detail', { documentId: postDocumentId }],
       });
     },
     onError: (error: any) => {

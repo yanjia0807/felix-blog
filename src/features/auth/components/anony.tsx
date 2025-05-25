@@ -3,29 +3,38 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { twMerge } from 'tailwind-merge';
 import { Button, ButtonText } from '@/components/ui/button';
+import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-export const AnonyView: React.FC<any> = () => {
+export const AnonyView: React.FC<any> = ({ className }) => {
   const router = useRouter();
 
   return (
-    <VStack space="lg" className="mt-28 flex-1 items-center">
-      <VStack>
-        <Heading>登录后，体验完整功能</Heading>
-        <Text sub={true}>登录后，您将能享受更多个性化设置和功能</Text>
-      </VStack>
+    <HStack className={twMerge('items-center', className)} space="sm">
+      <Text size="sm">登录后，体验完整功能</Text>
+      <Divider orientation="vertical" />
       <Button
+        size="sm"
         action="primary"
-        className="rounded"
+        variant="link"
         onPress={() => {
           router.push('/login');
         }}>
-        <ButtonText>密码登录</ButtonText>
+        <ButtonText>登录</ButtonText>
       </Button>
-    </VStack>
+      <Button
+        size="sm"
+        action="primary"
+        variant="link"
+        onPress={() => {
+          router.push('/otp-register');
+        }}>
+        <ButtonText>新用户注册</ButtonText>
+      </Button>
+    </HStack>
   );
 };
 

@@ -4,5 +4,5 @@ import { useAuth } from '@/features/auth/components/auth-provider';
 
 export default function ChatAuthLayout() {
   const { user } = useAuth();
-  return user ? <Stack screenOptions={{ headerShown: false }} /> : <AnonyPage />;
+  return user ? <Stack /> : <AnonyPage />;
 }

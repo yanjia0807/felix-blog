@@ -6,9 +6,9 @@ import { Text } from '@/components/ui/text';
 
 export const SenderItem: React.FC<any> = memo(({ item }) => {
   return (
-    <HStack className="items-center justify-between">
+    <HStack className="my-1 items-center justify-between" space="sm">
       <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
-      <Card size="md" variant="elevated" className="m-3 w-2/3 rounded-md bg-primary-300 p-4">
+      <Card size="md" variant="elevated" className="flex-1 flex-grow rounded-md bg-primary-300 p-4">
         <Text>{item.content}</Text>
       </Card>
     </HStack>

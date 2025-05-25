@@ -83,9 +83,9 @@ export default function RootLayout() {
       <GluestackUIProvider mode={theme}>
         <QueryClientProvider client={queryClient}>
           <ReduxProvider store={store}>
-            <AuthProvider>
-              <SocketProvider>
-                <PushNotificationProvider>
+            <PushNotificationProvider>
+              <AuthProvider>
+                <SocketProvider>
                   <PreferencesProvider theme={theme} updateTheme={updateTheme}>
                     <BottomSheetModalProvider>
                       <KeyboardProvider>
@@ -100,9 +100,9 @@ export default function RootLayout() {
                       </KeyboardProvider>
                     </BottomSheetModalProvider>
                   </PreferencesProvider>
-                </PushNotificationProvider>
-              </SocketProvider>
-            </AuthProvider>
+                </SocketProvider>
+              </AuthProvider>
+            </PushNotificationProvider>
           </ReduxProvider>
         </QueryClientProvider>
       </GluestackUIProvider>

@@ -31,7 +31,9 @@ export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any,
   const debounceKeywords = useDebounce(keywords, 500);
 
   useEffect(() => {
-    setSelectedTags([...value]);
+    setSelectedTags((prev) => {
+      return _.isEqual(value, prev) ? prev : [...value];
+    });
   }, [value]);
 
   const tagsQuery = useInfiniteQuery({

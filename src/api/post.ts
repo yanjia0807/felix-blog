@@ -6,51 +6,51 @@ import { uploadFiles } from './file';
 import { apiClient } from '../utils/api-client';
 
 export const fetchPosts = async ({ pageParam }: any) => {
-  const { pagination } = pageParam;
-
-  const query = qs.stringify(
-    {
-      populate: {
-        author: {
-          fields: ['username'],
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
+  const { pagination, filters } = pageParam;
+  const params = {
+    populate: {
+      author: {
+        fields: ['username'],
+        populate: {
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
           },
-        },
-        likedByUsers: {
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
-          },
-          fields: ['username'],
-        },
-        tags: true,
-        poi: true,
-        cover: true,
-        attachments: true,
-        attachmentExtras: {
-          populate: {
-            attachment: true,
-            thumbnail: true,
-          },
-        },
-        comments: {
-          count: true,
         },
       },
-      filters: {
-        isPublished: true,
+      likedByUsers: {
+        populate: {
+          avatar: {
+            fields: ['alternativeText', 'width', 'height', 'formats'],
+          },
+        },
+        fields: ['username'],
       },
-      sort: 'publishDate:desc',
-      pagination,
+      tags: true,
+      poi: true,
+      cover: {
+        fields: ['formats', 'name', 'alternativeText'],
+      },
+      attachments: true,
+      attachmentExtras: {
+        populate: {
+          attachment: true,
+          thumbnail: true,
+        },
+      },
+      comments: {
+        count: true,
+      },
     },
-    {
-      encodeValuesOnly: false,
+    filters: {
+      isPublished: true,
+      ...filters,
     },
-  );
+    sort: 'publishDate:desc',
+    pagination,
+  };
+  const query = qs.stringify(params, {
+    encodeValuesOnly: false,
+  });
 
   const res = await apiClient.get(`/posts?${query}`);
   return res;
@@ -301,48 +301,6 @@ export const fetchExplorePosts = async ({ pageParam }: any) => {
   }
 };
 
-export const fetchUserPosts = async ({ pageParam }: any) => {
-  const { pagination, userDocumentId, isPublished } = pageParam;
-
-  const params = {
-    populate: {
-      tags: true,
-      poi: true,
-      author: {
-        fields: ['username'],
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
-          },
-        },
-      },
-      likedByUsers: {
-        fields: ['username'],
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
-          },
-        },
-      },
-      cover: {
-        fields: ['formats', 'name', 'alternativeText'],
-      },
-    },
-    filters: {
-      author: {
-        documentId: userDocumentId,
-      },
-      isPublished,
-    },
-    pagination,
-    sort: 'createdAt:desc',
-  };
-  const query = qs.stringify(params);
-
-  const res = await apiClient.get(`/posts?${query}`);
-  return res;
-};
-
 export const fetchUserPhotos = async ({ pageParam }: any) => {
   const { pagination, userDocumentId } = pageParam;
   const query = qs.stringify({
@@ -350,45 +308,6 @@ export const fetchUserPhotos = async ({ pageParam }: any) => {
     pagination,
   });
   const res = await apiClient.get(`/posts/photos?${query}`);
-  return res;
-};
-
-export const fetchMapPosts = async ({ pageParam }: any) => {
-  const { pagination } = pageParam;
-
-  const filters: any = {
-    poi: {
-      $notNull: true,
-    },
-  };
-
-  const query = qs.stringify(
-    {
-      populate: {
-        author: {
-          fields: ['username'],
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
-          },
-        },
-        poi: true,
-        cover: {
-          fields: ['alternativeText', 'width', 'height', 'formats'],
-        },
-      },
-      filters,
-      fields: ['title'],
-      sort: 'createdAt:desc',
-      pagination,
-    },
-    {
-      encodeValuesOnly: false,
-    },
-  );
-
-  const res = await apiClient.get(`/posts?${query}`);
   return res;
 };
 

@@ -123,6 +123,26 @@ export const SocketProvider = ({ children }: any) => {
       });
     });
 
+    client.on('userStatus', ({ data }: any) => {
+      console.log('socket event: updateFollowing', data);
+
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'detail', 'me'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['chats', 'list'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['chats', 'detail'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followings', 'list'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['followers', 'list'],
+      });
+    });
+
     setSocket(client);
 
     return () => {

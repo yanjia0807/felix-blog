@@ -12,7 +12,7 @@ export const FriendRequestItem = memo(
   ({ item, onPress, onFrinedRequestAccept, onFrinedRequestReject }: any) => {
     return (
       <TouchableOpacity onPress={() => onPress()}>
-        <Card variant="ghost">
+        <Card variant="ghost" size="sm">
           <VStack space="md">
             <HStack className="items-center justify-between">
               <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>

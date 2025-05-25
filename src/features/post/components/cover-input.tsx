@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { ImageIcon } from 'lucide-react-native';
+import React, { memo, useState } from 'react';
+import { AlertCircle, ImageIcon } from 'lucide-react-native';
+import {
+  FormControl,
+  FormControlError,
+  FormControlErrorIcon,
+  FormControlErrorText,
+} from '@/components/ui/form-control';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { ImageItem } from '@/features/image/components/image-item';
 import { ImageSheet } from '@/features/image/components/image-sheet';
 
-export const CoverInput = ({ onChange, value, onPress }: any) => {
+export const CoverInput = memo(({ onChange, value, onPress, error }: any) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const imagePickerOptions = {
@@ -16,17 +22,11 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
   const onOpen = () => setIsOpen(true);
   const onClose = () => setIsOpen(false);
   const onRemove = () => onChange(undefined);
-
-  const handleChange = (val: any) => {
-    if (val && val.length > 0) {
-      onChange(val[0]);
-    } else {
-      onChange(undefined);
-    }
-  };
+  const onValueChange = (val: any) =>
+    val && val.length > 0 ? onChange(val[0]) : onChange(undefined);
 
   return (
-    <>
+    <FormControl isInvalid={!!error} size="md">
       {value ? (
         <ImageItem item={value} onPress={onPress} onRemove={onRemove} className="h-40" />
       ) : (
@@ -43,11 +43,15 @@ export const CoverInput = ({ onChange, value, onPress }: any) => {
             isOpen={isOpen}
             onClose={onClose}
             value={value}
-            onChange={handleChange}
+            onChange={onValueChange}
             imagePickerOptions={imagePickerOptions}
           />
         </>
       )}
-    </>
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircle} />
+        <FormControlErrorText>{error?.message}</FormControlErrorText>
+      </FormControlError>
+    </FormControl>
   );
-};
+});

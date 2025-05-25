@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import { Edit, Ellipsis, Redo2, StickyNote, Trash, Undo2 } from 'lucide-react-native';
+import { Edit, Ellipsis, Redo2, Trash, Undo2 } from 'lucide-react-native';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Menu, MenuItem, MenuItemLabel, MenuSeparator } from '@/components/ui/menu';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { CommentSheet } from '@/features/comment/components/comment-sheet';
@@ -76,16 +75,6 @@ const PostDetail: React.FC = () => {
 
   const renderHeaderRight = () => (
     <HStack space="md" className="items-center justify-center">
-      {_.isNil(post)
-        ? null
-        : post.isPublished && (
-            <HStack className="items-center" space="xs">
-              <Icon as={StickyNote} size="sm" />
-              <Text size="sm" className="text-gray-400">
-                未发布
-              </Text>
-            </HStack>
-          )}
       <ShareButton />
       {_.isNil(user) || _.isNil(post)
         ? null
@@ -135,7 +124,6 @@ const PostDetail: React.FC = () => {
     toast.confirm({
       description: `确定要发布吗？`,
       onConfirm: async () => {
-        toast.close();
         editPublishMutation.mutate(
           {
             documentId,
@@ -143,9 +131,13 @@ const PostDetail: React.FC = () => {
           },
           {
             onSuccess: (data, variables) => {
-              toast.success({
-                description: '发布成功',
-              });
+              setTimeout(
+                () =>
+                  toast.success({
+                    description: '发布成功',
+                  }),
+                0,
+              );
             },
             onError(error, variables, context) {
               toast.error({ description: error.message });
@@ -160,7 +152,6 @@ const PostDetail: React.FC = () => {
     toast.confirm({
       description: `确定要取消发布吗？`,
       onConfirm: async () => {
-        toast.close();
         editPublishMutation.mutate(
           {
             documentId,
@@ -185,7 +176,6 @@ const PostDetail: React.FC = () => {
     toast.confirm({
       description: `确认要删除吗？`,
       onConfirm: async () => {
-        toast.close();
         deleteMutation.mutate(
           {
             documentId,

@@ -2,13 +2,13 @@ import React, { useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import { ChevronLeft } from 'lucide-react-native';
 import { useForm } from 'react-hook-form';
 import { PageFallbackUI } from '@/components/fallback';
 import PageSpinner from '@/components/page-spinner';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { PagerViewProvider } from '@/features/image/components/pager-view-provider';
 import { useEditPost } from '@/features/post/api/use-edit-post';
 import { useFetchPost } from '@/features/post/api/use-fetch-post';
 import PostForm, { postSchema, PostSchema } from '@/features/post/components/post-form';
@@ -34,8 +34,7 @@ const PostEditPage = () => {
   const postQuery = useFetchPost({ documentId });
 
   const post = useMemo(() => {
-    if (!postQuery.isSuccess) return null;
-
+    if (!postQuery.data) return null;
     const postData = postQuery.data;
 
     let cover = undefined;
@@ -102,12 +101,12 @@ const PostEditPage = () => {
       album,
       recordings,
     };
-  }, [postQuery.isSuccess, postQuery.data]);
+  }, [postQuery.data]);
 
-  const mutation = useEditPost();
+  const editMutation = useEditPost();
 
   const onSubmit = async (formData: PostSchema) => {
-    return mutation.mutate(formData, {
+    return editMutation.mutate(formData, {
       onSuccess: () => {
         toast.success({
           description: '保存成功',
@@ -129,7 +128,6 @@ const PostEditPage = () => {
       onPress={() => {
         router.back();
       }}>
-      <ButtonIcon as={ChevronLeft} />
       <ButtonText>返回</ButtonText>
     </Button>
   );
@@ -140,7 +138,7 @@ const PostEditPage = () => {
         size="md"
         action="primary"
         variant="link"
-        isDisabled={mutation.isPending}
+        isDisabled={editMutation.isPending}
         onPress={onSave}>
         <ButtonText>保存</ButtonText>
       </Button>
@@ -161,8 +159,10 @@ const PostEditPage = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      {postQuery.isLoading || (mutation.isPending && <PageSpinner />)}
-      <PostForm form={form} />
+      {(postQuery.isLoading || editMutation.isPending) && <PageSpinner />}
+      <PagerViewProvider>
+        <PostForm form={form} />
+      </PagerViewProvider>
     </SafeAreaView>
   );
 };

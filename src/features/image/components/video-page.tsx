@@ -120,7 +120,7 @@ export const VideoPage: React.FC<any> = ({ item, pageNum, isVisible, toggleVisib
 
   return (
     <View className="flex-1">
-      <PageSpinner isVisiable={isLoading} />
+      {isLoading && <PageSpinner />}
       <GestureDetector gesture={Gesture.Exclusive(doubleTap, tap)}>
         <VideoView
           style={{ width: '100%', height: '100%' }}

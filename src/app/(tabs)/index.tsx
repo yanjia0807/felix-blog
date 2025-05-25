@@ -6,33 +6,28 @@ import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { PageFallbackUI } from '@/components/fallback';
 import { MainHeader } from '@/components/header';
 import { ListEmptyView } from '@/components/list-empty-view';
+import { Card } from '@/components/ui/card';
 import { Fab, FabIcon, FabLabel } from '@/components/ui/fab';
 import { AddIcon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { AnonyView } from '@/features/auth/components/anony';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { CommentSheet } from '@/features/comment/components/comment-sheet';
 import { CommentSheetProvider } from '@/features/comment/components/comment-sheet-provider';
 import { PagerViewProvider } from '@/features/image/components/pager-view-provider';
-import { useFetchBanners, useFetchPosts } from '@/features/post/api';
-import { BannerItem } from '@/features/post/components/banner-item';
+import { useFetchPosts } from '@/features/post/api';
+import { Banner } from '@/features/post/components/banner';
 import { PostItem } from '@/features/post/components/post-item';
 import { PostListSkeleton } from '@/features/post/components/post-list-skeleton';
+import { FollowingsBar } from '@/features/user/components/followings-bar';
 import { isImage, isVideo, toAttachmetItem } from '@/utils/file';
 
-const HomeHeader: React.FC<any> = memo(({ bannersQuery }) => {
+const HomeHeader: React.FC<any> = memo(() => {
   const router = useRouter();
-
-  const banners: any = _.flatMap(bannersQuery.data?.pages, (page: any) => page.data);
-
-  const renderItem = ({ item }: any) => <BannerItem item={item} />;
-
-  const onEndReached = () => {
-    if (bannersQuery.hasNextPage && !bannersQuery.isFetchingNextPage) {
-      bannersQuery.fetchNextPage();
-    }
-  };
+  const { user } = useAuth();
 
   return (
     <VStack space="lg">
@@ -53,13 +48,15 @@ const HomeHeader: React.FC<any> = memo(({ bannersQuery }) => {
           </InputSlot>
         </Input>
       </TouchableOpacity>
-      <FlatList
-        data={banners}
-        renderItem={renderItem}
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        onEndReached={onEndReached}
-      />
+      <Banner />
+      <Card size="sm" className="px-4">
+        <VStack space="md">
+          <Text size="md" bold={true}>
+            我的关注
+          </Text>
+          {!_.isNil(user) ? <FollowingsBar /> : <AnonyView />}
+        </VStack>
+      </Card>
     </VStack>
   );
 });
@@ -90,14 +87,9 @@ const PostList: React.FC<any> = () => {
     },
   );
 
-  const bannersQuery = useFetchBanners();
+  const isLoading = postsQuery.isLoading;
 
-  const isLoading = postsQuery.isLoading || bannersQuery.isLoading;
-
-  const renderListHeader = useCallback(
-    (props: any) => <HomeHeader {...props} bannersQuery={bannersQuery}></HomeHeader>,
-    [bannersQuery],
-  );
+  const renderListHeader = useCallback((props: any) => <HomeHeader {...props}></HomeHeader>, []);
 
   const renderListItem = useCallback(
     ({ item, index }: any) => <PostItem item={item} index={index} />,

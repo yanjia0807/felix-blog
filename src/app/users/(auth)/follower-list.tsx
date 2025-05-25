@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import { ChevronLeft } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native';
-import { fetchFollowers } from '@/api';
 import { PageFallbackUI } from '@/components/fallback';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
+import { useFetchFollowers } from '@/features/user/api/use-fetch-followers';
 import UserList from '@/features/user/components/user-list';
 import useDebounce from '@/hooks/use-debounce';
 
@@ -25,41 +23,9 @@ const FollowerListPage: React.FC = () => {
     keywords: debounceKeywords,
   };
 
-  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
-    useInfiniteQuery({
-      queryKey: ['followers', 'list', filters],
-      queryFn: fetchFollowers,
-      placeholderData: (prev) => prev,
-      initialPageParam: {
-        pagination: {
-          page: 1,
-          pageSize: 20,
-        },
-        filters,
-      },
-      getNextPageParam: (lastPage: any) => {
-        const {
-          meta: {
-            pagination: { page, pageSize, pageCount },
-          },
-        } = lastPage;
+  const followersQuery = useFetchFollowers({ filters });
 
-        if (page < pageCount) {
-          return {
-            pagination: { page: page + 1, pageSize },
-            filters,
-          };
-        }
-
-        return null;
-      },
-    });
-
-  const users: any = _.reduce(
-    data?.pages,
-    (result: any, item: any) => [...result, ...item.data],
-    [],
-  );
+  const users: any = _.flatMap(followersQuery.data?.pages, (page) => page.data);
 
   const renderHeaderLeft = () => (
     <Button
@@ -68,7 +34,6 @@ const FollowerListPage: React.FC = () => {
       onPress={() => {
         router.back();
       }}>
-      <ButtonIcon as={ChevronLeft} />
       <ButtonText>返回</ButtonText>
     </Button>
   );
@@ -85,11 +50,11 @@ const FollowerListPage: React.FC = () => {
       <VStack className="flex-1 p-4">
         <UserList
           data={users}
-          isLoading={isLoading}
-          refetch={refetch}
-          fetchNextPage={fetchNextPage}
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
+          isLoading={followersQuery.isLoading}
+          refetch={followersQuery.refetch}
+          fetchNextPage={followersQuery.fetchNextPage}
+          hasNextPage={followersQuery.hasNextPage}
+          isFetchingNextPage={followersQuery.isFetchingNextPage}
           value={keywords}
           onChange={setKeywords}
         />

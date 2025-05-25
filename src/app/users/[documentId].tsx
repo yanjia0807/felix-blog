@@ -15,7 +15,6 @@ import {
 } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import { PageFallbackUI } from '@/components/fallback';
-import PageSpinner from '@/components/page-spinner';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -36,11 +35,7 @@ import { UserDetailSkeleton } from '@/features/user/components/user-detail-skele
 import { UserProfileAvatar } from '@/features/user/components/user-profile-avater';
 import useToast from '@/hooks/use-toast';
 
-interface UserDetailProps {
-  user: any;
-}
-
-const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
+const UserDetail: React.FC<any> = ({ user }) => {
   const { documentId }: any = useLocalSearchParams();
   const { user: currentUser } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -87,7 +82,6 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     toast.confirm({
       description,
       onConfirm: async () => {
-        toast.close();
         followMutation.mutate(
           { documentId },
           {
@@ -113,7 +107,6 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     toast.confirm({
       description,
       onConfirm: async () => {
-        toast.close();
         if (isFriend) {
           cancelFriendMutation.mutate(
             { documentId },
@@ -309,7 +302,6 @@ const UserDetailPage: React.FC = () => {
         }}
       />
       <VStack className="flex-1 p-4">
-        {userQuery.isLoading && <PageSpinner />}
         {userQuery.isLoading && <UserDetailSkeleton />}
         {userQuery.isSuccess && <UserDetail user={userQuery.data} />}
       </VStack>

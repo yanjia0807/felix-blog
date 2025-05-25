@@ -63,7 +63,7 @@ export const fetchChat = async ({ documentId, userDocumentId }: any) => {
     {
       populate: {
         users: {
-          fields: ['username', 'email'],
+          fields: ['username', 'email', 'isOnline'],
           populate: {
             avatar: {
               fields: ['alternativeText', 'width', 'height', 'formats'],
@@ -73,7 +73,7 @@ export const fetchChat = async ({ documentId, userDocumentId }: any) => {
         chatStatuses: {
           populate: {
             user: {
-              fields: ['username', 'email'],
+              fields: ['username', 'email', 'isOnline'],
             },
           },
           filters: {
@@ -157,6 +157,11 @@ export const createChat = async ({ userDocumentIds }: any) => {
     users: userDocumentIds,
   });
   return res.data;
+};
+
+export const deleteChat = async ({ documentId }: any) => {
+  const res = await apiClient.delete(`/chats/${documentId}`);
+  return res;
 };
 
 export const updateChatStatus = async ({ documentId }: any) => {

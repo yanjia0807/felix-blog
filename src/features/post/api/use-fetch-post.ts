@@ -3,6 +3,6 @@ import { fetchPost } from '@/api';
 
 export const useFetchPost = ({ documentId }) =>
   useQuery({
-    queryKey: ['posts', 'detail', documentId],
+    queryKey: ['posts', 'detail', { documentId }],
     queryFn: () => fetchPost({ documentId }),
   });

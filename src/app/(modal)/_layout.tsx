@@ -6,7 +6,7 @@ export default function AuthLayout() {
   return (
     <OverlayProvider>
       <ToastProvider>
-        <Stack />
+        <Stack screenOptions={{ headerShown: false }} />
       </ToastProvider>
     </OverlayProvider>
   );

@@ -10,7 +10,7 @@ import { UserNoticeAvatar } from '@/features/user/components/user-notice-avatar'
 export const FollowItem = memo(({ item, onPress }: any) => {
   return (
     <TouchableOpacity onPress={() => onPress()}>
-      <Card variant="ghost">
+      <Card variant="ghost" size="sm">
         <VStack space="md">
           <HStack className="items-center justify-between">
             <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>

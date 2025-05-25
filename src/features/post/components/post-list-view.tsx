@@ -1,144 +1,52 @@
-import React, { useState } from 'react';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
-import { MapPin } from 'lucide-react-native';
 import { FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Reanimated from 'react-native-reanimated';
-import { fetchUserPosts } from '@/api';
-import { deletePost, editPublish } from '@/api/post';
 import { ListEmptyView } from '@/components/list-empty-view';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
-import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import useToast from '@/hooks/use-toast';
-import { formatDistance } from '@/utils/date';
+import { useFetchPosts } from '../api';
+import { UserPostItem } from './user-post-item';
+import { useDeletePost } from '../api/use-delete-post';
+import { useEditPostPublish } from '../api/use-edit-post-publish';
 
-interface PostListViewProps {
-  userDocumentId: string;
-}
-
-interface PostItemProps {
-  item: any;
-  index: number;
-}
-
-const PostItem: React.FC<PostItemProps> = ({ item, index }) => (
-  <Card size="sm">
-    <VStack space="lg">
-      <VStack space="sm">
-        <HStack className="items-center justify-between">
-          <Heading numberOfLines={1} ellipsizeMode="tail" className="flex-1">
-            {item.title}
-          </Heading>
-        </HStack>
-        <HStack className="items-center justify-between">
-          <Text size="xs" className="items-center">
-            {formatDistance(item.createdAt)}
-          </Text>
-          <HStack space="xs" className="w-1/2 items-center justify-end">
-            {item.poi?.address && (
-              <>
-                <Icon as={MapPin} size="xs" />
-                <Text size="xs" numberOfLines={1}>
-                  {item.poi.address}
-                </Text>
-              </>
-            )}
-          </HStack>
-        </HStack>
-      </VStack>
-      <Text numberOfLines={5}>{item.content}</Text>
-    </VStack>
-  </Card>
-);
-
-const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
+const PostListView: React.FC<any> = ({ userDocumentId }) => {
   const [status, setStatus] = useState('published');
-  const queryClient = useQueryClient();
   const router = useRouter();
   const toast = useToast();
   const { user: currentUser } = useAuth();
   const isMe = userDocumentId === currentUser?.documentId;
   const isPublished = status === 'published';
+  const rowRefs = useRef(new Map());
 
-  const { data, fetchNextPage, hasNextPage, isLoading, isSuccess, isFetchingNextPage, refetch } =
-    useInfiniteQuery({
-      queryKey: ['posts', 'list', { userDocumentId, isPublished }],
-      queryFn: fetchUserPosts,
-      initialPageParam: {
-        pagination: {
-          page: 1,
-          pageSize: 5,
-        },
-        userDocumentId,
-        isPublished,
+  const userPostsQuery = useFetchPosts({
+    filters: {
+      author: {
+        documentId: userDocumentId,
       },
-      getNextPageParam: (lastPage: any) => {
-        const {
-          meta: {
-            pagination: { page, pageSize, pageCount },
-          },
-        } = lastPage;
+      isPublished,
+    },
+  });
 
-        if (page < pageCount) {
-          return {
-            pagination: { page: page + 1, pageSize },
-            userDocumentId,
-            isPublished,
-          };
-        }
+  const deleteMutation = useDeletePost();
 
-        return null;
-      },
+  const editPublishMutation = useEditPostPublish();
+
+  const posts: any = _.flatMap(userPostsQuery.data?.pages, (page) => page.data);
+
+  const closeSwipeables = () => {
+    [...rowRefs.current.entries()].forEach(([key, ref]) => {
+      if (ref) ref.close();
     });
-
-  const deleteMutation = useMutation({
-    mutationFn: ({ documentId }: any) => deletePost({ documentId }),
-    onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', variables.documentId],
-      });
-      toast.success({
-        description: '删除成功',
-      });
-    },
-    onError(error, variables, context) {
-      toast.close();
-      toast.error({ description: error.message });
-    },
-  });
-
-  const editPublishMutation = useMutation({
-    mutationFn: ({ documentId, isPublished }: any) => editPublish({ documentId, isPublished }),
-    onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', variables.documentId],
-      });
-      toast.success({
-        description: variables.isPublished ? '发布成功' : '取消发布成功',
-      });
-    },
-    onError(error, variables, context) {
-      toast.close();
-      toast.error({ description: error.message });
-    },
-  });
-
-  const posts: any = isSuccess
-    ? _.reduce(data?.pages, (result: any, item: any) => [...result, ...item.data], [])
-    : [];
+  };
 
   const onEdit = ({ item }: any) => {
+    closeSwipeables();
     router.push(`/posts/edit/${item.documentId}`);
   };
 
@@ -146,11 +54,22 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
     toast.confirm({
       description: `确定要发布吗？`,
       onConfirm: async () => {
-        toast.close();
-        editPublishMutation.mutate({
-          documentId: item.documentId,
-          isPublished: true,
-        });
+        editPublishMutation.mutate(
+          {
+            documentId: item.documentId,
+            isPublished: true,
+          },
+          {
+            onSuccess: () => {
+              toast.success({
+                description: '发布成功',
+              });
+            },
+            onError(error) {
+              toast.error({ description: error.message });
+            },
+          },
+        );
       },
     });
   };
@@ -159,11 +78,22 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
     toast.confirm({
       description: `确定要取消发布吗？`,
       onConfirm: async () => {
-        toast.close();
-        editPublishMutation.mutate({
-          documentId: item.documentId,
-          isPublished: false,
-        });
+        editPublishMutation.mutate(
+          {
+            documentId: item.documentId,
+            isPublished: false,
+          },
+          {
+            onSuccess: () => {
+              toast.success({
+                description: '取消发布成功',
+              });
+            },
+            onError(error) {
+              toast.error({ description: error.message });
+            },
+          },
+        );
       },
     });
   };
@@ -172,12 +102,31 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
     toast.confirm({
       description: `确认要删除吗？`,
       onConfirm: async () => {
-        toast.close();
-        deleteMutation.mutate({
-          documentId: item.documentId,
-        });
+        deleteMutation.mutate(
+          {
+            documentId: item.documentId,
+          },
+          {
+            onSuccess: () => {
+              toast.success({
+                description: '删除成功',
+              });
+            },
+            onError(error) {
+              toast.error({ description: error.message });
+            },
+          },
+        );
       },
     });
+  };
+
+  const onItemPress = ({ item }) => router.push(`/posts/${item.documentId}`);
+
+  const onEndReached = () => {
+    if (userPostsQuery.hasNextPage && !userPostsQuery.isFetchingNextPage) {
+      userPostsQuery.fetchNextPage();
+    }
   };
 
   const renderRightAction = ({ item }: any) => {
@@ -221,19 +170,28 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
   };
 
   const renderItem = ({ item, index }: any) => {
-    const onItemPress = () => router.push(`/posts/${item.documentId}`);
-
     return (
       <View className={`mt-6 ${index === 0 ? 'mt-0' : ''}`}>
         {isMe ? (
-          <TouchableOpacity onPress={onItemPress}>
-            <ReanimatedSwipeable renderRightActions={() => renderRightAction({ item })}>
-              <PostItem item={item} index={index} />
+          <TouchableOpacity onPress={() => onItemPress({ item })}>
+            <ReanimatedSwipeable
+              renderRightActions={() => renderRightAction({ item })}
+              ref={(ref) => {
+                if (ref && !rowRefs.current.get(item.id)) {
+                  rowRefs.current.set(item.id, ref);
+                }
+              }}
+              onSwipeableWillOpen={() => {
+                [...rowRefs.current.entries()].forEach(([key, ref]) => {
+                  if (key !== item.id && ref) ref.close();
+                });
+              }}>
+              <UserPostItem item={item} index={index} />
             </ReanimatedSwipeable>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={onItemPress}>
-            <PostItem item={item} index={index} />
+          <TouchableOpacity onPress={() => onItemPress({ item })}>
+            <UserPostItem item={item} index={index} />
           </TouchableOpacity>
         )}
       </View>
@@ -270,18 +228,12 @@ const PostListView: React.FC<PostListViewProps> = ({ userDocumentId }) => {
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         ListEmptyComponent={renderEmptyComponent}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
-        }}
+        onEndReached={onEndReached}
         refreshControl={
           <RefreshControl
-            refreshing={isLoading}
+            refreshing={userPostsQuery.isLoading}
             onRefresh={() => {
-              if (!isLoading) {
-                refetch();
-              }
+              if (!userPostsQuery.isLoading) userPostsQuery.refetch();
             }}
           />
         }

@@ -19,7 +19,7 @@ export const LikeButton = memo(function LikeButton({ post, className, size = 'sm
     },
     async onSuccess(data: any) {
       await queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', post.documentId],
+        queryKey: ['posts', 'detail', { documentId: post.documentId }],
         refetchType: 'all',
       });
 

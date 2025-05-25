@@ -9,7 +9,7 @@ export const useUpdateExpoPushToken = () => {
       updateExpoPushToken({ documentId, data: { deviceId, user } }),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['pushNotificationTokens', 'detail', variables.data.deviceId],
+        queryKey: ['pushNotificationTokens', 'detail', variables.deviceId],
       });
     },
     onError(error) {
@@ -19,10 +19,10 @@ export const useUpdateExpoPushToken = () => {
 
   const unRegisterUserPushToken = useMutation({
     mutationFn: ({ documentId, deviceId }: any) =>
-      updateExpoPushToken({ documentId, data: { deviceId, use: null } }),
+      updateExpoPushToken({ documentId, data: { deviceId, user: null } }),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['pushNotificationTokens', 'detail', variables.data.deviceId],
+        queryKey: ['pushNotificationTokens', 'detail', variables.deviceId],
       });
     },
     onError(error) {
@@ -35,7 +35,7 @@ export const useUpdateExpoPushToken = () => {
       updateExpoPushToken({ documentId, data: { deviceId, enabled } }),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['pushNotificationTokens', 'detail', variables.data.deviceId],
+        queryKey: ['pushNotificationTokens', 'detail', variables.deviceId],
       });
     },
     onError(error) {

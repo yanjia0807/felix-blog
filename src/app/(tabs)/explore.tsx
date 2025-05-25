@@ -203,7 +203,7 @@ const ExplorePage: React.FC<any> = () => {
             />
           )
         ) : (
-          <AnonyView />
+          <AnonyView className="mt-32 self-center" />
         )}
       </VStack>
     </SafeAreaView>

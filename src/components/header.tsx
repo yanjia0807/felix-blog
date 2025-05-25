@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import NotificationIcon from '@/features/notification/components/notification-icon';
+import { UserSearchMenu } from '@/features/user/components/user-search-menu';
 import { Button, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 import { useAuth } from '../features/auth/components/auth-provider';
@@ -23,7 +24,8 @@ export const MainHeader: React.FC<any> = memo(() => {
   return (
     <HStack className="w-full items-center justify-between overflow-auto">
       <HeaderLogo />
-      <HStack className="items-center" space="md">
+      <HStack className="items-center" space="lg">
+        <UserSearchMenu />
         {!_.isNil(user) && <NotificationIcon />}
       </HStack>
     </HStack>

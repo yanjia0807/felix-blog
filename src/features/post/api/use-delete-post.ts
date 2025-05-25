@@ -9,7 +9,7 @@ export const useDeletePost = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
       queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', variables.documentId],
+        queryKey: ['posts', 'detail', { documentId: variables.documentId }],
       });
     },
     onError(error, variables, context) {

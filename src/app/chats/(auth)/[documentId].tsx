@@ -8,6 +8,7 @@ import { FlatList } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { PageFallbackUI } from '@/components/fallback';
+import PageSpinner from '@/components/page-spinner';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -95,7 +96,7 @@ const ChatPage: React.FC = () => {
 
   const renderHeaderRight = () => <Icon as={Ellipsis} />;
 
-  const renderMessageItem = ({ item }: any) =>
+  const renderItem = ({ item }: any) =>
     item.sender.documentId === currentUser.documentId
       ? renderSenderItem({ item })
       : renderReceiverItem({ item });
@@ -141,8 +142,11 @@ const ChatPage: React.FC = () => {
         );
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatQuery.isSuccess]);
+  }, [chatQuery.data, chatQuery.isSuccess, updateChatStatusMutation.mutate]);
+
+  if (chatQuery.isLoading) {
+    return <PageSpinner />;
+  }
 
   return (
     <SafeAreaView className="flex-1">
@@ -162,7 +166,7 @@ const ChatPage: React.FC = () => {
           inverted={true}
           initialNumToRender={10}
           keyExtractor={(item: any) => item.documentId}
-          renderItem={renderMessageItem}
+          renderItem={renderItem}
           onEndReached={onEndReached}
         />
         <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={100}>

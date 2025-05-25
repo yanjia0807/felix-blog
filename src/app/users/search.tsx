@@ -1,31 +1,26 @@
 import React, { useState } from 'react';
 import { router, Stack } from 'expo-router';
-import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import { SafeAreaView } from 'react-native';
 import { PageFallbackUI } from '@/components/fallback';
 import { Button, ButtonText } from '@/components/ui/button';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/features/auth/components/auth-provider';
-import { useFetchFriends } from '@/features/user/api/use-fetch-friends';
+import { useFetchUsers } from '@/features/user/api/use-fetch-users';
 import UserList from '@/features/user/components/user-list';
 import useDebounce from '@/hooks/use-debounce';
 
-const FriendListPage: React.FC = () => {
+const SearchUserListPage: React.FC = () => {
   const [keywords, setKeywords] = useState<string>('');
-  const { user: currentUser } = useAuth();
-  const { userDocumentId, username } = useLocalSearchParams();
-  const isMe = currentUser?.documentId === userDocumentId;
 
   const debounceKeywords = useDebounce(keywords, 500);
+
   const filters = {
-    userDocumentId,
     keywords: debounceKeywords,
   };
 
-  const friendsQuery = useFetchFriends({ filters });
+  const usersQuery = useFetchUsers({ filters });
 
-  const users: any = _.flatMap(friendsQuery.data?.pages, (page) => page.data);
+  const users: any = _.flatMap(usersQuery.data?.pages, (page) => page.data);
 
   const renderHeaderLeft = () => (
     <Button
@@ -42,7 +37,7 @@ const FriendListPage: React.FC = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: `${isMe ? '我' : username}的好友`,
+          title: '查询用户',
           headerShown: true,
           headerLeft: renderHeaderLeft,
         }}
@@ -50,11 +45,11 @@ const FriendListPage: React.FC = () => {
       <VStack className="flex-1 p-4">
         <UserList
           data={users}
-          isLoading={friendsQuery.isLoading}
-          refetch={friendsQuery.refetch}
-          fetchNextPage={friendsQuery.fetchNextPage}
-          hasNextPage={friendsQuery.hasNextPage}
-          isFetchingNextPage={friendsQuery.isFetchingNextPage}
+          isLoading={usersQuery.isLoading}
+          refetch={usersQuery.refetch}
+          fetchNextPage={usersQuery.fetchNextPage}
+          hasNextPage={usersQuery.hasNextPage}
+          isFetchingNextPage={usersQuery.isFetchingNextPage}
           value={keywords}
           onChange={setKeywords}
         />
@@ -67,4 +62,4 @@ export const ErrorBoundary = ({ error, retry }: any) => (
   <PageFallbackUI error={error} retry={retry} />
 );
 
-export default FriendListPage;
+export default SearchUserListPage;

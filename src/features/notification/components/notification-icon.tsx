@@ -1,8 +1,8 @@
 import React from 'react';
 import { useRouter } from 'expo-router';
 import { Bell } from 'lucide-react-native';
-import { View, Text } from 'react-native';
-import { Button, ButtonIcon } from '@/components/ui/button';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { Icon } from '@/components/ui/icon';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useFetchNotificationCount } from '../api';
 
@@ -17,9 +17,9 @@ const NotificationIcon = () => {
   return (
     <>
       {user && (
-        <Button onPress={onPress} variant="link">
+        <TouchableOpacity onPress={onPress}>
           {count > 0 && (
-            <View className="absolute right-0 top-[-2] h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
+            <View className="absolute right-0 top-0 h-4 w-4 items-center justify-center self-end rounded-full bg-error-600 p-[0.5]">
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
@@ -28,8 +28,8 @@ const NotificationIcon = () => {
               </Text>
             </View>
           )}
-          <ButtonIcon as={Bell} size={22 as any} className="text-secondary-900" />
-        </Button>
+          <Icon as={Bell} size="xl" className="text-secondary-900" />
+        </TouchableOpacity>
       )}
     </>
   );

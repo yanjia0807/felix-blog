@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import * as Notification from 'expo-notifications';
 import {
   createFetchExpoPushTokenQuery,
   useFetchExpoPushToken,
 } from '../api/use-fetch-expo-push-token';
 import { useUpdateExpoPushToken } from '../api/use-update-expo-push-token';
 import { useDeviceId } from '../hooks/use-deviceId';
-import { useRegisterExpoPushToken } from '../hooks/use-register-expo-push-token';
-import { useQueryClient } from '@tanstack/react-query';
+import { useRegisterExpoPushNotification } from '../hooks/use-reigster-expo-push-notification';
 
 const PushNotificationContext = createContext<any>(undefined);
 
@@ -24,11 +25,18 @@ export const PushNotificationProvider = ({ children }: any) => {
   const expoPushTokenQuery = useFetchExpoPushToken({ deviceId });
   const { registerUserPushToken, unRegisterUserPushToken } = useUpdateExpoPushToken();
 
-  useRegisterExpoPushToken();
+  Notification.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+
+  useRegisterExpoPushNotification();
 
   const registerPushNotification = React.useCallback(
     async ({ user }) => {
-      debugger;
       const pushTokenQuery = await queryClient.fetchQuery(
         createFetchExpoPushTokenQuery({ deviceId }),
       );

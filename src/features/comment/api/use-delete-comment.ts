@@ -16,7 +16,7 @@ export const useDeleteComment = ({ postDocumentId }: any) => {
       });
 
       await queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', postDocumentId],
+        queryKey: ['posts', 'detail', { documentId: postDocumentId }],
       });
 
       await queryClient.invalidateQueries({

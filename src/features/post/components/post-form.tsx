@@ -1,21 +1,10 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import _ from 'lodash';
-import { AlertCircle } from 'lucide-react-native';
 import { Controller, UseFormReturn } from 'react-hook-form';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-import {
-  FormControl,
-  FormControlHelper,
-  FormControlHelperText,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-} from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
-import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { ImageGrid } from '@/features/image/components/image-grid';
 import { ImageInput } from '@/features/image/components/image-input';
@@ -23,11 +12,10 @@ import { usePagerView } from '@/features/image/components/pager-view-provider';
 import { PositionInput } from '@/features/position/components/position-input';
 import { RecordingInput } from '@/features/recording/components/recording-input';
 import { RecordingList } from '@/features/recording/components/recording-list';
-import { TagInput } from '@/features/tag/components/tag-input';
 import { TagList } from '@/features/tag/components/tag-list';
 import { CoverInput } from './cover-input';
-
-const MAX_CHARS = 5000;
+import { MAX_CHARS, PostContentInput } from './post-content-input';
+import { PostTitleInput } from './post-title-input';
 
 export type PostSchema = z.infer<typeof postSchema>;
 
@@ -45,7 +33,7 @@ export const postSchema = z.object({
   poi: z.any(),
   cover: z
     .unknown({})
-    .refine((val) => val !== null && val !== undefined, { message: '封面不能为空' }),
+    .refine((val) => val !== null && val !== undefined, { message: '封面是必填项' }),
   images: z.array(z.any()),
   recordings: z.array(z.any()),
   tags: z.array(z.any()),
@@ -57,37 +45,6 @@ export const postSchema = z.object({
 type PostFormProps = {
   form: UseFormReturn<PostSchema, any, undefined>;
 };
-
-const TextContent: React.FC<any> = memo(({ error, value, onChange, onBlur }) => {
-  const [charCount, setCharCount] = useState(0);
-
-  const onChangeText = (props: any) => {
-    setCharCount(props?.length);
-    onChange(props);
-  };
-
-  return (
-    <FormControl size="md" isInvalid={!!error}>
-      <Textarea className="h-48 border-l-0 border-r-0 border-t-0" size="md" variant="default">
-        <TextareaInput
-          placeholder="你此时的感想..."
-          inputMode="text"
-          autoCapitalize="none"
-          onBlur={onBlur}
-          onChangeText={onChangeText}
-          value={value}
-        />
-      </Textarea>
-      <FormControlHelper className="justify-end">
-        <FormControlHelperText>{`${charCount}/${MAX_CHARS}`}</FormControlHelperText>
-      </FormControlHelper>
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircle} />
-        <FormControlErrorText>{error?.message}</FormControlErrorText>
-      </FormControlError>
-    </FormControl>
-  );
-});
 
 const PostForm: React.FC<PostFormProps> = ({ form }) => {
   const insets = useSafeAreaInsets();
@@ -106,75 +63,35 @@ const PostForm: React.FC<PostFormProps> = ({ form }) => {
   const onImagePress = (index: number) => onOpenPage(index + (formData?.cover ? 1 : 0));
 
   const renderTitle = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors?.title} size="md">
-      <Input variant="underlined" className="border-0 border-b p-2">
-        <InputField
-          placeholder="请输入标题...."
-          inputMode="text"
-          autoCapitalize="none"
-          onBlur={onBlur}
-          onChangeText={onChange}
-          value={value}
-        />
-        <InputSlot>
-          <Controller control={control} name="tags" render={renderTagInput} />
-        </InputSlot>
-      </Input>
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircle} />
-        <FormControlErrorText>{errors?.title?.message}</FormControlErrorText>
-      </FormControlError>
-    </FormControl>
+    <PostTitleInput onChange={onChange} value={value} error={errors?.title} control={control} />
   );
 
   const renderCover = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors?.cover} size="md">
-      <CoverInput value={value} onChange={onChange} onPress={onCoverPress} />
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircle} />
-        <FormControlErrorText>{errors?.cover?.message}</FormControlErrorText>
-      </FormControlError>
-    </FormControl>
+    <CoverInput value={value} onChange={onChange} onPress={onCoverPress} error={errors?.cover} />
   );
 
   const renderContent = ({ field: { onChange, onBlur, value } }: any) => (
-    <TextContent onChange={onChange} value={value} error={errors?.content} />
-  );
-
-  const renderTagInput = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors?.tags} size="md">
-      <TagInput value={value} onChange={onChange} />
-    </FormControl>
+    <PostContentInput onChange={onChange} value={value} error={errors?.content} />
   );
 
   const renderTagList = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors?.tags} size="md">
-      <TagList value={value} onChange={onChange} />
-    </FormControl>
+    <TagList value={value} onChange={onChange} />
   );
 
   const renderImagesInput = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors?.images} size="md">
-      <ImageInput value={value} onChange={onChange} />
-    </FormControl>
+    <ImageInput value={value} onChange={onChange} />
   );
 
   const renderImageGrid = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors?.images} size="md">
-      <ImageGrid value={value} onChange={onChange} onPress={onImagePress} />
-    </FormControl>
+    <ImageGrid value={value} onChange={onChange} onPress={onImagePress} />
   );
 
   const renderRecordingsInput = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors?.recordings} size="md">
-      <RecordingInput value={value} onChange={onChange} />
-    </FormControl>
+    <RecordingInput value={value} onChange={onChange} />
   );
 
   const renderRecordingList = ({ field: { onChange, onBlur, value } }: any) => (
-    <FormControl isInvalid={!!errors.recordings} size="md">
-      <RecordingList value={value} onChange={onChange} />
-    </FormControl>
+    <RecordingList value={value} onChange={onChange} />
   );
 
   const renderPosition = ({ field: { onChange, onBlur, value } }: any) => (

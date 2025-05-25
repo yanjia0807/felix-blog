@@ -1,78 +1,115 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useRouter } from 'expo-router';
 import _ from 'lodash';
-import { FlatList, RefreshControl, SafeAreaView, View } from 'react-native';
+import { FlatList, RefreshControl, SafeAreaView, TouchableOpacity } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Reanimated from 'react-native-reanimated';
 import { PageFallbackUI } from '@/components/fallback';
 import { MainHeader } from '@/components/header';
 import { ListEmptyView } from '@/components/list-empty-view';
 import PageSpinner from '@/components/page-spinner';
-import { Card } from '@/components/ui/card';
+import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
-import { Text } from '@/components/ui/text';
+import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
+import { useDeleteChat } from '@/features/chat/api/use-delete-chat';
 import { useFetchChats } from '@/features/chat/api/use-fetch-chats';
 import ChatItem from '@/features/chat/components/chat-item';
 import ChatMessageItem from '@/features/chat/components/chat-message-item';
-import { useFetchOnlineUsers } from '@/features/user/api/use-fetch-online-users';
-import { OnlineUserHeader, OnlineUserItem } from '@/features/user/components/online-user-item';
+import useToast from '@/hooks/use-toast';
 
 const ChatListHeader: React.FC<any> = () => {
-  const { user } = useAuth();
-
-  const userDocumentId = user.documentId;
-
-  const onlineUsersQuery = useFetchOnlineUsers({ userDocumentId });
-
-  const onlineUsers = _.flatMap(onlineUsersQuery.data?.pages, (page) => page.data);
-
-  const renderHeader = () => <OnlineUserHeader />;
-
-  const renderItem = ({ item }: any) => <OnlineUserItem item={item} />;
-
-  const renderEmptyComponent = () => (
-    <View className="flex-1 items-center justify-center">
-      <Text>没有其他人在线</Text>
-    </View>
-  );
-
   return (
     <VStack space="xl" className="mb-4">
       <MainHeader />
-      <Card size="sm" className="px-4">
-        <VStack space="md">
-          <Text>在线用户</Text>
-          <FlatList
-            data={onlineUsers}
-            ListHeaderComponent={renderHeader}
-            ListEmptyComponent={renderEmptyComponent}
-            renderItem={renderItem}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-          />
-        </VStack>
-      </Card>
     </VStack>
   );
 };
 
 const ChatList: React.FC = () => {
   const { user } = useAuth();
+  const toast = useToast();
+  const router = useRouter();
+  const rowRefs = useRef(new Map());
+
+  const deleteMutation = useDeleteChat();
 
   const chatQuery = useFetchChats({ userDocumentId: user.documentId });
 
   const chats: any = _.flatMap(chatQuery.data?.pages, (page) => page.data);
 
-  const renderListItem = ({ item }: any) => {
-    const otherUser: any = _.find(item.users, (item: any) => item.id !== user.id);
+  const onDeleteBtnPress = ({ item }: any) => {
+    toast.confirm({
+      description: `确认要删除吗？`,
+      onConfirm: async () => {
+        deleteMutation.mutate(
+          {
+            documentId: item.documentId,
+          },
+          {
+            onSuccess: () => {
+              toast.success({
+                description: '删除成功',
+              });
+            },
+            onError(error) {
+              toast.error({ description: error.message });
+            },
+          },
+        );
+      },
+    });
+  };
 
-    return _.isNil(item.lastMessage) ? (
-      <ChatItem otherUser={otherUser} item={item} />
-    ) : (
-      <ChatMessageItem otherUser={otherUser} item={item} />
+  const renderRightAction = ({ item }: any) => {
+    return (
+      <Reanimated.View>
+        <HStack className="h-full">
+          <Button
+            size="sm"
+            className="h-full rounded-bl-none rounded-tl-none"
+            action="negative"
+            onPress={() => onDeleteBtnPress({ item })}>
+            <ButtonText>删除</ButtonText>
+          </Button>
+        </HStack>
+      </Reanimated.View>
     );
   };
 
-  const renderItemSeparator = (props: any) => <Divider {...props} />;
+  const onItemPress = (item) => router.push(`/chats/${item.documentId}`);
+
+  const renderItem = ({ item }: any) => {
+    const otherUser: any = _.find(item.users, (item: any) => item.id !== user.id);
+
+    return (
+      <TouchableOpacity onPress={() => onItemPress(item)}>
+        <ReanimatedSwipeable
+          renderRightActions={() => renderRightAction({ item })}
+          ref={(ref) => {
+            if (ref && !rowRefs.current.get(item.id)) {
+              rowRefs.current.set(item.id, ref);
+            }
+          }}
+          onSwipeableWillOpen={() => {
+            [...rowRefs.current.entries()].forEach(([key, ref]) => {
+              if (key !== item.id && ref) ref.close();
+            });
+          }}>
+          {_.isNil(item.lastMessage) ? (
+            <ChatItem otherUser={otherUser} item={item} />
+          ) : (
+            <ChatMessageItem otherUser={otherUser} item={item} />
+          )}
+        </ReanimatedSwipeable>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderListHeader = () => <ChatListHeader />;
+
+  const renderItemSeparator = () => <Divider />;
 
   const renderEmptyComponent = () => <ListEmptyView text="暂无消息" />;
 
@@ -86,11 +123,11 @@ const ChatList: React.FC = () => {
     <SafeAreaView className="flex-1">
       {chatQuery.isLoading && <PageSpinner />}
       <VStack className="flex-1 px-4">
-        <ChatListHeader />
         <FlatList
           contentContainerClassName="flex-grow"
           data={chats}
-          renderItem={renderListItem}
+          ListHeaderComponent={renderListHeader}
+          renderItem={renderItem}
           ListEmptyComponent={renderEmptyComponent}
           ItemSeparatorComponent={renderItemSeparator}
           showsVerticalScrollIndicator={false}

@@ -1,15 +1,16 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchPosts } from '@/api';
 
-export const useFetchPosts = () =>
-  useInfiniteQuery({
-    queryKey: ['posts', 'list'],
+export const useFetchPosts = (options?) => {
+  return useInfiniteQuery({
+    queryKey: ['posts', 'list', options],
     queryFn: fetchPosts,
     initialPageParam: {
       pagination: {
         page: 1,
         pageSize: 10,
       },
+      ...options,
     },
     getNextPageParam: (lastPage: any) => {
       const {
@@ -21,9 +22,11 @@ export const useFetchPosts = () =>
       if (page < pageCount) {
         return {
           pagination: { page: page + 1, pageSize },
+          ...options,
         };
       }
 
       return null;
     },
   });
+};

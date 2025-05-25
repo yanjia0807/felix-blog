@@ -59,7 +59,7 @@ export const ImagePage: React.FC<any> = ({ item, pageNum, isVisible, toggleVisib
   return (
     <View className="flex-1">
       <Pressable onPress={() => handlePress()} className="flex-1">
-        <PageSpinner isVisiable={isLoading} />
+        {isLoading && <PageSpinner />}
         <Zoom>
           <Image
             source={item.preview}
