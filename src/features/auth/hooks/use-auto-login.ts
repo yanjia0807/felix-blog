@@ -6,7 +6,7 @@ import { useFetchMe } from '@/features/user/api/use-fetch-me';
 export const useAutoLogin = () => {
   const queryClient = useQueryClient();
   const [accessToken, setAccessToken] = useState<string | undefined>();
-  const fetchMeQuery = useFetchMe({ accessToken });
+  const fetchMeQuery = useFetchMe();
   const removeAccessToken = useCallback(() => setAccessToken(undefined), []);
 
   useEffect(() => {

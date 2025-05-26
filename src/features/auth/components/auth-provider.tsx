@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }: any) => {
     };
   }, [accessToken, fetchMeQuery?.data, removeAccessToken]);
 
-  if (fetchMeQuery.isSuccess) {
+  if (!fetchMeQuery.isLoading) {
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
   }
 
