@@ -182,13 +182,6 @@ const UserDetail: React.FC<any> = ({ user }) => {
             className="h-8 w-8 rounded-full p-5">
             <ButtonIcon as={MessageCircle} />
           </Button>
-          <Button
-            action="secondary"
-            size="md"
-            onPress={() => onShare()}
-            className="h-8 w-8 rounded-full p-5">
-            <ButtonIcon as={Share2} />
-          </Button>
           {!isMe && !isFriend && (
             <Button
               action={isFollowing ? 'primary' : 'secondary'}
@@ -302,8 +295,8 @@ const UserDetailPage: React.FC = () => {
         }}
       />
       <VStack className="flex-1 p-4">
-        {userQuery.isLoading && <UserDetailSkeleton />}
         {userQuery.isSuccess && <UserDetail user={userQuery.data} />}
+        {userQuery.isLoading && <UserDetailSkeleton />}
       </VStack>
     </SafeAreaView>
   );

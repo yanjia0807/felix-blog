@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateNotificationState } from '@/api';
+import { updateNotificationsReadState } from '@/api';
 
-export const useUpdateNotificationState = () => {
+export const useUpdateNotificationsReadState = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: updateNotificationState,
+    mutationFn: updateNotificationsReadState,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['notifications', 'count'],

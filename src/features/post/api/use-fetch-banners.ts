@@ -3,7 +3,7 @@ import { fetchBanners } from '@/api';
 
 export const useFetchBanners = () =>
   useInfiniteQuery({
-    queryKey: ['post', 'list', 'banners'],
+    queryKey: ['posts', 'list', 'banners'],
     queryFn: fetchBanners,
     initialPageParam: {
       pagination: {

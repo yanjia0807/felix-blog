@@ -11,7 +11,7 @@ import { imageFormat } from '@/utils/file';
 const ChatMessageItem: React.FC<any> = memo(({ otherUser, item }) => {
   return (
     <Card size="sm">
-      <HStack space="sm" className="rounded-lg">
+      <HStack space="sm" className="items-center rounded-lg">
         <Avatar size="md">
           {otherUser.avatar ? (
             <AvatarImage

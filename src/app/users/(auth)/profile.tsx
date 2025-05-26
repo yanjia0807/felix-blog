@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import { PageFallbackUI } from '@/components/fallback';
@@ -49,11 +49,6 @@ const Profile: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <Stack.Screen
-        options={{
-          title: '我的',
-        }}
-      />
       <VStack className="flex-1 p-4" space="md">
         <HStack className="items-center justify-between">
           <UserProfileAvatar user={user} />

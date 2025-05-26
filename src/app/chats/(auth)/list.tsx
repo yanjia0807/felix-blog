@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import { FlatList, RefreshControl, SafeAreaView, TouchableOpacity } from 'react-native';
@@ -7,7 +7,6 @@ import Reanimated from 'react-native-reanimated';
 import { PageFallbackUI } from '@/components/fallback';
 import { MainHeader } from '@/components/header';
 import { ListEmptyView } from '@/components/list-empty-view';
-import PageSpinner from '@/components/page-spinner';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
@@ -16,6 +15,7 @@ import { useAuth } from '@/features/auth/components/auth-provider';
 import { useDeleteChat } from '@/features/chat/api/use-delete-chat';
 import { useFetchChats } from '@/features/chat/api/use-fetch-chats';
 import ChatItem from '@/features/chat/components/chat-item';
+import { ChatListSkeleton } from '@/features/chat/components/chat-list-skeleton';
 import ChatMessageItem from '@/features/chat/components/chat-message-item';
 import useToast from '@/hooks/use-toast';
 
@@ -27,17 +27,15 @@ const ChatListHeader: React.FC<any> = () => {
   );
 };
 
-const ChatList: React.FC = () => {
-  const { user } = useAuth();
+const ChatList: React.FC<any> = ({ chatsQuery }) => {
   const toast = useToast();
   const router = useRouter();
   const rowRefs = useRef(new Map());
+  const { user } = useAuth();
+
+  const chats: any = _.flatMap(chatsQuery.data?.pages, (page) => page.data);
 
   const deleteMutation = useDeleteChat();
-
-  const chatQuery = useFetchChats({ userDocumentId: user.documentId });
-
-  const chats: any = _.flatMap(chatQuery.data?.pages, (page) => page.data);
 
   const onDeleteBtnPress = ({ item }: any) => {
     toast.confirm({
@@ -107,40 +105,49 @@ const ChatList: React.FC = () => {
     );
   };
 
-  const renderListHeader = () => <ChatListHeader />;
+  const renderListHeader = useCallback(() => <ChatListHeader />, []);
 
   const renderItemSeparator = () => <Divider />;
 
   const renderEmptyComponent = () => <ListEmptyView text="暂无消息" />;
 
   const onEndReached = () => {
-    if (chatQuery.hasNextPage && !chatQuery.isFetchingNextPage) {
-      chatQuery.fetchNextPage();
+    if (chatsQuery.hasNextPage && !chatsQuery.isFetchingNextPage) {
+      chatsQuery.fetchNextPage();
     }
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      {chatQuery.isLoading && <PageSpinner />}
-      <VStack className="flex-1 px-4">
-        <FlatList
-          contentContainerClassName="flex-grow"
-          data={chats}
-          ListHeaderComponent={renderListHeader}
-          renderItem={renderItem}
-          ListEmptyComponent={renderEmptyComponent}
-          ItemSeparatorComponent={renderItemSeparator}
-          showsVerticalScrollIndicator={false}
-          onEndReached={onEndReached}
-          refreshControl={
-            <RefreshControl
-              refreshing={chatQuery.isLoading}
-              onRefresh={() => {
-                if (!chatQuery.isLoading) chatQuery.refetch();
-              }}
-            />
-          }
+    <FlatList
+      contentContainerClassName="flex-grow"
+      data={chats}
+      ListHeaderComponent={renderListHeader}
+      renderItem={renderItem}
+      ListEmptyComponent={renderEmptyComponent}
+      ItemSeparatorComponent={renderItemSeparator}
+      showsVerticalScrollIndicator={false}
+      onEndReached={onEndReached}
+      refreshControl={
+        <RefreshControl
+          refreshing={chatsQuery.isLoading}
+          onRefresh={() => {
+            if (!chatsQuery.isLoading) chatsQuery.refetch();
+          }}
         />
+      }
+    />
+  );
+};
+
+const ChatListPage: React.FC = () => {
+  const { user } = useAuth();
+  const chatsQuery = useFetchChats({ userDocumentId: user.documentId });
+
+  return (
+    <SafeAreaView className="flex-1">
+      <VStack className="flex-1 px-4">
+        {chatsQuery.isSuccess && <ChatList chatsQuery={chatsQuery} />}
+        {chatsQuery.isLoading && <ChatListSkeleton />}
       </VStack>
     </SafeAreaView>
   );
@@ -150,4 +157,4 @@ export const ErrorBoundary = ({ error, retry }: any) => (
   <PageFallbackUI error={error} retry={retry} />
 );
 
-export default ChatList;
+export default ChatListPage;

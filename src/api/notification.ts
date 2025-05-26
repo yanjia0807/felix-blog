@@ -23,10 +23,15 @@ export const fetchNotificationCount = async () => {
   return res.data;
 };
 
-export const updateNotificationState = async ({ documentId, data }: any) => {
+export const updateNotificationReadState = async ({ documentId, data }: any) => {
   const res = await apiClient.put(`/notifications/${documentId}`, {
     data,
   });
+  return res.data;
+};
+
+export const updateNotificationsReadState = async () => {
+  const res = await apiClient.put(`/notifications/all-read`);
   return res.data;
 };
 

@@ -1,9 +1,10 @@
 import React from 'react';
 import { router, Stack } from 'expo-router';
 import _ from 'lodash';
+import { Eraser } from 'lucide-react-native';
 import { PageFallbackUI } from '@/components/fallback';
 import { ListEmptyView } from '@/components/list-empty-view';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { FlatList } from '@/components/ui/flat-list';
 import { RefreshControl } from '@/components/ui/refresh-control';
@@ -11,9 +12,11 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import {
+  useFetchNotificationCount,
   useFetchNotifications,
   useUpdateFriendRequestNotificationMutation,
-  useUpdateNotificationState,
+  useUpdateNotificationReadState,
+  useUpdateNotificationsReadState,
 } from '@/features/notification/api';
 import { FollowItem } from '@/features/notification/components/follow-item';
 import { FriendCancelItem } from '@/features/notification/components/friend-cancel-item';
@@ -27,27 +30,27 @@ const NotificationListPage: React.FC = () => {
     userDocumentId: user.documentId,
   });
 
+  const notificationCountQuery = useFetchNotificationCount({ enabled: !!user });
+
   const notifications: any = _.flatMap(notificationQuery.data?.pages, (page) => page.data);
 
-  const updateNotificationMutation = useUpdateNotificationState();
+  const updateNotificationReadStateMutation = useUpdateNotificationReadState();
+
+  const updateNotificationsReadStateMutation = useUpdateNotificationsReadState();
 
   const updateFriendRequestMutation = useUpdateFriendRequestNotificationMutation();
 
-  const renderHeaderLeft = () => (
-    <Button
-      action="secondary"
-      variant="link"
-      onPress={() => {
-        router.back();
-      }}>
-      <ButtonText>返回</ButtonText>
-    </Button>
-  );
-
   const onItemPress = ({ item }: any) => {
     if (item.state === 'unread') {
-      updateNotificationMutation.mutate({ documentId: item.documentId, data: { state: 'read' } });
+      updateNotificationReadStateMutation.mutate({
+        documentId: item.documentId,
+        data: { state: 'read' },
+      });
     }
+  };
+
+  const onAllReadPress = () => {
+    updateNotificationsReadStateMutation.mutate();
   };
 
   const onFrinedRequestAccept = ({ item }: any) => {
@@ -67,6 +70,30 @@ const NotificationListPage: React.FC = () => {
       state: 'rejected',
     });
   };
+
+  const onEndReached = () => {
+    if (notificationQuery.hasNextPage && !notificationQuery.isFetchingNextPage) {
+      notificationQuery.fetchNextPage();
+    }
+  };
+
+  const renderHeaderLeft = () => (
+    <Button
+      action="secondary"
+      variant="link"
+      onPress={() => {
+        router.back();
+      }}>
+      <ButtonText>返回</ButtonText>
+    </Button>
+  );
+
+  const renderHeaderRight = () => (
+    <Button size="sm" variant="link" onPress={() => onAllReadPress()}>
+      <ButtonIcon as={Eraser} />
+      <ButtonText>全部已读({notificationCountQuery.data})</ButtonText>
+    </Button>
+  );
 
   const renderFollowItem = ({ item }: any) => (
     <FollowItem item={item} onPress={() => onItemPress({ item })} />
@@ -112,12 +139,6 @@ const NotificationListPage: React.FC = () => {
 
   const renderItemSeparator = (props: any) => <Divider {...props} />;
 
-  const onEndReached = () => {
-    if (notificationQuery.hasNextPage && !notificationQuery.isFetchingNextPage) {
-      notificationQuery.fetchNextPage();
-    }
-  };
-
   return (
     <>
       <Stack.Screen
@@ -125,6 +146,7 @@ const NotificationListPage: React.FC = () => {
           title: '通知中心',
           headerShown: true,
           headerLeft: renderHeaderLeft,
+          headerRight: renderHeaderRight,
         }}
       />
       <SafeAreaView className="flex-1">

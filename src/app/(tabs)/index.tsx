@@ -105,9 +105,7 @@ const PostList: React.FC<any> = () => {
   return (
     <SafeAreaView className="flex-1">
       <VStack className="flex-1 px-4" space="md">
-        {isLoading ? (
-          <PostListSkeleton />
-        ) : (
+        {postsQuery.isSuccess && (
           <>
             <FlatList
               data={posts}
@@ -135,10 +133,11 @@ const PostList: React.FC<any> = () => {
                 <FabLabel>发帖</FabLabel>
               </Fab>
             )}
+            <CommentSheet />
           </>
         )}
+        {isLoading && <PostListSkeleton />}
       </VStack>
-      <CommentSheet />
     </SafeAreaView>
   );
 };

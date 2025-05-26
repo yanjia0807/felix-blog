@@ -210,14 +210,14 @@ const PostDetail: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      {postQuery.isLoading && <PostDetailSkeleton />}
       {postQuery.isSuccess && (
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
-          <VStack className="flex-1 p-4" space="lg">
+        <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={true}>
+          <VStack space="md">
             <PostDetailItem post={post} />
           </VStack>
         </ScrollView>
       )}
+      {postQuery.isLoading && <PostDetailSkeleton />}
     </SafeAreaView>
   );
 };

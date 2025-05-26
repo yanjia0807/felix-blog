@@ -173,38 +173,39 @@ const ExplorePage: React.FC<any> = () => {
           selectedIndex={selectedIndex}
           setSelectedIndex={setSelectedIndex}
         />
-        {isShow ? (
-          postsQuery.isLoading ? (
-            <ExploreListSkeleton />
-          ) : (
-            <MasonryFlashList
-              renderItem={renderListItem}
-              ListEmptyComponent={
-                <View className="mt-32 flex-1 items-center justify-center">
-                  <Text size="sm">暂无数据</Text>
-                </View>
-              }
-              keyExtractor={(item: any) => item.documentId}
-              data={posts}
-              numColumns={2}
-              estimatedItemSize={260}
-              showsVerticalScrollIndicator={false}
-              onEndReached={onEndReached}
-              refreshControl={
-                <RefreshControl
-                  refreshing={postsQuery.isLoading}
-                  onRefresh={() => {
-                    if (postsQuery.hasNextPage && !postsQuery.isLoading) {
-                      postsQuery.refetch();
-                    }
-                  }}
-                />
-              }
-            />
-          )
-        ) : (
-          <AnonyView className="mt-32 self-center" />
+        {postsQuery.isSuccess && (
+          <>
+            {isShow ? (
+              <MasonryFlashList
+                renderItem={renderListItem}
+                ListEmptyComponent={
+                  <View className="mt-32 flex-1 items-center justify-center">
+                    <Text size="sm">暂无数据</Text>
+                  </View>
+                }
+                keyExtractor={(item: any) => item.documentId}
+                data={posts}
+                numColumns={2}
+                estimatedItemSize={260}
+                showsVerticalScrollIndicator={false}
+                onEndReached={onEndReached}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={postsQuery.isLoading}
+                    onRefresh={() => {
+                      if (postsQuery.hasNextPage && !postsQuery.isLoading) {
+                        postsQuery.refetch();
+                      }
+                    }}
+                  />
+                }
+              />
+            ) : (
+              <AnonyView className="mt-32 self-center" />
+            )}
+          </>
         )}
+        {postsQuery.isLoading && <ExploreListSkeleton />}
       </VStack>
     </SafeAreaView>
   );

@@ -23,9 +23,9 @@ export const AuthProvider = ({ children }: any) => {
     };
   }, [accessToken, fetchMeQuery?.data, removeAccessToken]);
 
-  if (fetchMeQuery.isLoading) {
-    return <PageSpinner />;
+  if (fetchMeQuery.isSuccess) {
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <PageSpinner />;
 };

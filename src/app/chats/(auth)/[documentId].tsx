@@ -8,7 +8,6 @@ import { FlatList } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { z } from 'zod';
 import { PageFallbackUI } from '@/components/fallback';
-import PageSpinner from '@/components/page-spinner';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -20,6 +19,7 @@ import { useFetchChat } from '@/features/chat/api/use-fetch-chat';
 import { useFetchChatMessages } from '@/features/chat/api/use-fetch-chat-messages';
 import { useUpdateChatStatus } from '@/features/chat/api/use-update-chat-status';
 import { MessageInput } from '@/features/chat/components/message-input';
+import { MessageListSkeleton } from '@/features/chat/components/message-list-skeleton';
 import { ReceiverItem } from '@/features/chat/components/receiver-item';
 import { SenderItem } from '@/features/chat/components/sender-item';
 import { UserChatAvatar } from '@/features/user/components/user-chat-avatar';
@@ -31,10 +31,8 @@ const messageFormSchema = z.object({
   content: z.string().min(1, '内容不能为空').max(100, '内容不能多余5000个字符'),
 });
 
-const ChatPage: React.FC = () => {
-  const { user: currentUser } = useAuth();
+const MessageList: React.FC<any> = ({ chatQuery, currentUser, otherUser }) => {
   const { documentId }: any = useLocalSearchParams();
-
   const flatListRef = useRef<FlatList>(null);
   const toast = useToast();
 
@@ -50,19 +48,9 @@ const ChatPage: React.FC = () => {
     },
   });
 
-  const chatQuery = useFetchChat({ documentId, userDocumentId: currentUser.documentId });
-
   const updateChatStatusMutation = useUpdateChatStatus();
-
   const createMessageMutate = useCreateMessage({ documentId });
-
   const chatMessageQuery = useFetchChatMessages({ chatDocumentId: documentId });
-
-  const otherUser = chatQuery.isSuccess
-    ? _.find(chatQuery.data.users, (item: any) => item.documentId !== currentUser.documentId)
-    : null;
-
-  const messages = _.flatMap(chatMessageQuery.data?.pages, (page) => page.data);
 
   const onSubmit = useCallback(
     ({ content }: MessageFormSchema) => {
@@ -85,16 +73,11 @@ const ChatPage: React.FC = () => {
     [createMessageMutate, currentUser.documentId, documentId, otherUser?.documentId, reset, toast],
   );
 
-  const renderHeaderLeft = () => (
-    <HStack className="items-center" space="xl">
-      <Button action="secondary" variant="link" onPress={() => router.back()}>
-        <ButtonText>返回</ButtonText>
-      </Button>
-      <UserChatAvatar user={otherUser} />
-    </HStack>
-  );
-
-  const renderHeaderRight = () => <Icon as={Ellipsis} />;
+  const onEndReached = () => {
+    if (chatMessageQuery.hasNextPage && !chatMessageQuery.isFetchingNextPage) {
+      chatMessageQuery.fetchNextPage();
+    }
+  };
 
   const renderItem = ({ item }: any) =>
     item.sender.documentId === currentUser.documentId
@@ -121,11 +104,7 @@ const ChatPage: React.FC = () => {
     [errors.content, handleSubmit, onSubmit],
   );
 
-  const onEndReached = () => {
-    if (chatMessageQuery.hasNextPage && !chatMessageQuery.isFetchingNextPage) {
-      chatMessageQuery.fetchNextPage();
-    }
-  };
+  const messages = _.flatMap(chatMessageQuery.data?.pages, (page) => page.data);
 
   useEffect(() => {
     return () => {
@@ -144,9 +123,47 @@ const ChatPage: React.FC = () => {
     };
   }, [chatQuery.data, chatQuery.isSuccess, updateChatStatusMutation.mutate]);
 
-  if (chatQuery.isLoading) {
-    return <PageSpinner />;
-  }
+  return (
+    <VStack className="flex-1 justify-between">
+      <FlatList
+        contentContainerClassName="flex-grow justify-end p-4"
+        ref={flatListRef}
+        data={messages}
+        inverted={true}
+        initialNumToRender={10}
+        keyExtractor={(item: any) => item.documentId}
+        renderItem={renderItem}
+        onEndReached={onEndReached}
+      />
+      <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={100}>
+        <HStack className="px-4">
+          <Controller name="content" control={control} render={renderInput} />
+        </HStack>
+      </KeyboardAvoidingView>
+    </VStack>
+  );
+};
+
+const ChatPage: React.FC = () => {
+  const { user: currentUser } = useAuth();
+  const { documentId }: any = useLocalSearchParams();
+
+  const chatQuery = useFetchChat({ documentId, userDocumentId: currentUser.documentId });
+
+  const otherUser = chatQuery.isSuccess
+    ? _.find(chatQuery.data.users, (item: any) => item.documentId !== currentUser.documentId)
+    : null;
+
+  const renderHeaderLeft = () => (
+    <HStack className="items-center" space="xl">
+      <Button action="secondary" variant="link" onPress={() => router.dismissTo('/chat')}>
+        <ButtonText>返回</ButtonText>
+      </Button>
+      {otherUser && <UserChatAvatar user={otherUser} />}
+    </HStack>
+  );
+
+  const renderHeaderRight = () => <Icon as={Ellipsis} />;
 
   return (
     <SafeAreaView className="flex-1">
@@ -158,23 +175,10 @@ const ChatPage: React.FC = () => {
           headerRight: renderHeaderRight,
         }}
       />
-      <VStack className="flex-1 justify-between">
-        <FlatList
-          contentContainerClassName="flex-grow justify-end p-4"
-          ref={flatListRef}
-          data={messages}
-          inverted={true}
-          initialNumToRender={10}
-          keyExtractor={(item: any) => item.documentId}
-          renderItem={renderItem}
-          onEndReached={onEndReached}
-        />
-        <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={100}>
-          <HStack className="bg-background-100 p-2">
-            <Controller name="content" control={control} render={renderInput} />
-          </HStack>
-        </KeyboardAvoidingView>
-      </VStack>
+      {chatQuery.isSuccess && (
+        <MessageList chatQuery={chatQuery} currentUser={currentUser} otherUser={otherUser} />
+      )}
+      {chatQuery.isLoading && <MessageListSkeleton />}
     </SafeAreaView>
   );
 };
