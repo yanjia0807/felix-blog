@@ -9,7 +9,6 @@ import {
   MapPin,
   MessageCircle,
   ScanFace,
-  Share2,
   UserRoundMinus,
   UserRoundPlus,
 } from 'lucide-react-native';
@@ -42,8 +41,8 @@ const UserDetail: React.FC<any> = ({ user }) => {
   const toast = useToast();
   const userDocumentIds = currentUser ? [currentUser.documentId, documentId] : [];
   const isMe = documentId === currentUser?.documentId;
-  const isFollowing = _.some(currentUser.followings, { documentId });
-  const isFriend = _.some(currentUser.friends, { documentId });
+  const isFollowing = _.some(currentUser?.followings, { documentId });
+  const isFriend = _.some(currentUser?.friends, { documentId });
 
   const chatQuery = useFetchChatByUsers({
     enabled: !_.isNil(currentUser),
@@ -57,8 +56,6 @@ const UserDetail: React.FC<any> = ({ user }) => {
   const cancelFriendMutation = useCancelFriend();
 
   const createChatMutation = useCreateChat({ userDocumentIds });
-
-  const onShare = () => {};
 
   const onShowChat = () => {
     if (chatQuery.isSuccess) {
@@ -174,33 +171,35 @@ const UserDetail: React.FC<any> = ({ user }) => {
     <VStack className="flex-1" space="md">
       <HStack className="items-center justify-between">
         <UserProfileAvatar user={user} />
-        <HStack className="items-center" space="md">
-          <Button
-            size="md"
-            action="secondary"
-            onPress={() => onShowChat()}
-            className="h-8 w-8 rounded-full p-5">
-            <ButtonIcon as={MessageCircle} />
-          </Button>
-          {!isMe && !isFriend && (
+        {!_.isNil(currentUser) && (
+          <HStack className="items-center" space="md">
             <Button
-              action={isFollowing ? 'primary' : 'secondary'}
               size="md"
-              className="h-8 w-8 rounded-full p-5"
-              onPress={() => onModifyFollowing()}>
-              <ButtonIcon as={isFollowing ? Eye : EyeClosed} />
+              action="secondary"
+              onPress={() => onShowChat()}
+              className="h-8 w-8 rounded-full p-5">
+              <ButtonIcon as={MessageCircle} />
             </Button>
-          )}
-          {!isMe && (
-            <Button
-              action={isFriend ? 'primary' : 'secondary'}
-              size="md"
-              className="h-8 w-8 rounded-full p-5"
-              onPress={() => onModifyFriend()}>
-              <ButtonIcon as={isFriend ? UserRoundMinus : UserRoundPlus}></ButtonIcon>
-            </Button>
-          )}
-        </HStack>
+            {!isMe && !isFriend && (
+              <Button
+                action={isFollowing ? 'primary' : 'secondary'}
+                size="md"
+                className="h-8 w-8 rounded-full p-5"
+                onPress={() => onModifyFollowing()}>
+                <ButtonIcon as={isFollowing ? Eye : EyeClosed} />
+              </Button>
+            )}
+            {!isMe && (
+              <Button
+                action={isFriend ? 'primary' : 'secondary'}
+                size="md"
+                className="h-8 w-8 rounded-full p-5"
+                onPress={() => onModifyFriend()}>
+                <ButtonIcon as={isFriend ? UserRoundMinus : UserRoundPlus}></ButtonIcon>
+              </Button>
+            )}
+          </HStack>
+        )}
       </HStack>
       <HStack space="sm" className="items-center">
         <HStack className="items-center" space="xs">
