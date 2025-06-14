@@ -1,7 +1,6 @@
 import PageSpinner from '@/components/page-spinner';
 import { useFetchMe } from '@/features/user/api/use-fetch-me';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -18,7 +17,6 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: any) => {
   const [accessToken, setAccessToken] = useState<string | undefined>();
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const fetchMeQuery = useFetchMe(accessToken);
 
