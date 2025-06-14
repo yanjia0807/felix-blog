@@ -55,7 +55,7 @@ export const SocketProvider = ({ children }: any) => {
 
       queryClient.invalidateQueries({ queryKey: ['chats', 'list'] });
       queryClient.invalidateQueries({
-        queryKey: ['messsages', 'list', { chatDocumentId }],
+        queryKey: ['messages', 'list', { chatDocumentId }],
       });
     });
 

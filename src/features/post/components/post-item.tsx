@@ -1,3 +1,5 @@
+import { useCarousel } from '@/components/carousel-provider';
+import { ImageryList } from '@/components/imagery-list';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
@@ -7,8 +9,6 @@ import { VStack } from '@/components/ui/vstack';
 import { CommentIcon } from '@/features/comment/components/comment-icon';
 import { LastCommentItem } from '@/features/comment/components/last-comment-item';
 import { useCommentActions } from '@/features/comment/store';
-import { useCarousel } from '@/features/image/components/carousel-provider';
-import { ImageList } from '@/features/image/components/image-list';
 import PostItemMenu from '@/features/post/components/post-menu-popover';
 import useCoverDimensions from '@/features/post/hooks/use-cover-dimensions';
 import { TagList } from '@/features/tag/components/tag-list';
@@ -20,9 +20,8 @@ import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import React, { memo } from 'react';
 import { Pressable } from 'react-native';
-import { ImageCover } from './image-cover';
+import { ImageryCover } from './imagery-cover';
 import { LikeButton } from './like-button';
-import { VideoCover } from './video-cover';
 
 export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
   const router = useRouter();
@@ -44,6 +43,7 @@ export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
     setCommentPostDocumentId(item.documentId);
     router.push(`/posts/${item.documentId}`);
   };
+  console.log('@@', item.cover);
 
   return (
     <Pressable onPress={() => onItemPress()}>
@@ -72,24 +72,17 @@ export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
             </HStack>
             <TagList tags={item.tags || []}></TagList>
           </VStack>
-          {item.cover && _.startsWith(item.cover.mime, 'image') && (
-            <ImageCover
-              item={item.cover}
-              width={coverWidth}
-              height={coverHeight}
-              onPress={onCoverPress}
-            />
-          )}
-          {item.cover && _.startsWith(item.cover.mime, 'video') && (
-            <VideoCover
-              item={item.cover}
-              width={coverWidth}
-              height={coverHeight}
-              onPress={onCoverPress}
-            />
-          )}
+          <ImageryCover
+            uri={item.cover.thumbnail}
+            name={item.cover.name}
+            alternativeText={item.cover.alternativeText}
+            mime={item.cover.mime}
+            width={coverWidth}
+            height={coverHeight}
+            onPress={onCoverPress}
+          />
           <Text numberOfLines={5}>{item.content}</Text>
-          <ImageList value={item.images} onPress={onImagePress} />
+          <ImageryList value={item.images} onPress={onImagePress} />
           <HStack className="h-6 items-center justify-between">
             <LikeButton post={item} />
             <UserAvatars users={item.likedByUsers} />

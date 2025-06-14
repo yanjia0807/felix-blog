@@ -1,11 +1,9 @@
 import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { ImageIcon } from 'lucide-react-native';
+import { Image } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ImageSheet } from './image-sheet';
+import { ImagerySheet } from './imagery-sheet';
 
-const SELECTION_LIMIT = 9;
-
-export const ImageInput = ({ onChange, value = [] }: any) => {
+export const ImageryPicker = ({ onChange, value = [] }: any) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const onPress = () => setIsOpen(true);
@@ -14,18 +12,18 @@ export const ImageInput = ({ onChange, value = [] }: any) => {
   const imagePickerOptions = {
     mediaTypes: ['images', 'videos', 'livePhotos'],
     allowsMultipleSelection: true,
-    selectionLimit: SELECTION_LIMIT,
+    selectionLimit: 9,
   };
 
   return (
     <>
       <ButtonGroup space="sm">
         <Button variant="link" action="secondary" onPress={onPress}>
-          <ButtonIcon as={ImageIcon} />
+          <ButtonIcon as={Image} />
           <ButtonText>图片</ButtonText>
         </Button>
       </ButtonGroup>
-      <ImageSheet
+      <ImagerySheet
         isOpen={isOpen}
         onClose={onClose}
         value={value}

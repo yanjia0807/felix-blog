@@ -1,9 +1,9 @@
 import { fetchChatMessages } from '@/api';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 
-export const useFetchChatMessages = ({ chatDocumentId }) =>
-  useInfiniteQuery({
-    queryKey: ['messsages', 'list', { chatDocumentId }],
+export const useFetchChatMessages = ({ chatDocumentId }) => {
+  return useInfiniteQuery({
+    queryKey: ['messages', 'list', { chatDocumentId }],
     queryFn: fetchChatMessages,
     placeholderData: keepPreviousData,
     initialPageParam: {
@@ -34,3 +34,4 @@ export const useFetchChatMessages = ({ chatDocumentId }) =>
       return null;
     },
   });
+};

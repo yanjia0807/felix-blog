@@ -1,5 +1,5 @@
+import { useCarousel } from '@/components/carousel-provider';
 import { ListEmptyView } from '@/components/list-empty-view';
-import { useCarousel } from '@/features/image/components/carousel-provider';
 import { fileFullUrl, imageFormat } from '@/utils/file';
 import { MasonryFlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';

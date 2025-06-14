@@ -1,3 +1,6 @@
+import { CarouselProvider, useCarousel } from '@/components/carousel-provider';
+import CarouselViewer from '@/components/carousel-viewer';
+import { ImageryList } from '@/components/imagery-list';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
@@ -11,17 +14,13 @@ import { useAuth } from '@/features/auth/components/auth-provider';
 import { CommentIcon } from '@/features/comment/components/comment-icon';
 import { CommentSheet } from '@/features/comment/components/comment-sheet';
 import { CommentSheetProvider } from '@/features/comment/components/comment-sheet-provider';
-import { CarouselProvider, useCarousel } from '@/features/image/components/carousel-provider';
-import CarouselViewer from '@/features/image/components/carousel-viewer';
-import { ImageList } from '@/features/image/components/image-list';
 import { useDeletePost } from '@/features/post/api/use-delete-post';
 import { useEditPostPublish } from '@/features/post/api/use-edit-post-publish';
 import { useFetchPost } from '@/features/post/api/use-fetch-post';
-import { ImageCover } from '@/features/post/components/image-cover';
+import { ImageryCover } from '@/features/post/components/imagery-cover';
 import { LikeButton } from '@/features/post/components/like-button';
 import { PostDetailSkeleton } from '@/features/post/components/post-detail-skeleton';
 import { ShareButton } from '@/features/post/components/share-button';
-import { VideoCover } from '@/features/post/components/video-cover';
 import useCoverDimensions from '@/features/post/hooks/use-cover-dimensions';
 import { TagList } from '@/features/tag/components/tag-list';
 import { UserAvatar } from '@/features/user/components/user-avatar';
@@ -43,18 +42,15 @@ const PostDetail: React.FC<any> = () => {
   const { coverWidth, coverHeight } = useCoverDimensions(14);
   const postQuery = useFetchPost({ documentId });
 
-  const post = {
+  const post = postQuery.data && {
     ...postQuery.data,
-    cover:
-      postQuery.data && toAttachmetItem(postQuery.data?.cover, postQuery.data?.attachmentExtras),
-    images:
-      postQuery.data &&
-      _.map(postQuery.data?.attachments || [], (attachment: any) =>
-        toAttachmetItem(attachment, postQuery.data?.attachmentExtras),
-      ),
+    cover: toAttachmetItem(postQuery.data.cover, postQuery.data.attachmentExtras),
+    imageries: _.map(postQuery.data.attachments || [], (attachment: any) =>
+      toAttachmetItem(attachment, postQuery.data.attachmentExtras),
+    ),
   };
 
-  const carouselData = _.concat(post.cover ? post.cover : [], post.images || []);
+  const carouselData = post && _.concat([post.cover], post.imageries || []);
 
   const onCoverPress = () => onOpen(carouselData, 0);
 
@@ -206,22 +202,13 @@ const PostDetail: React.FC<any> = () => {
         />
         <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
           <VStack space="md">
-            {post.cover && _.startsWith(post.cover.mime, 'image') && (
-              <ImageCover
-                item={post.cover}
-                width={coverWidth}
-                height={coverHeight}
-                onPress={onCoverPress}
-              />
-            )}
-            {post.cover && _.startsWith(post.cover.mime, 'video') && (
-              <VideoCover
-                item={post.cover}
-                width={coverWidth}
-                height={coverHeight}
-                onPress={onCoverPress}
-              />
-            )}
+            <ImageryCover
+              uri={post.cover.thumbnail}
+              mime={post.cover.mime}
+              width={coverWidth}
+              height={coverHeight}
+              onPress={onCoverPress}
+            />
             <HStack className="items-center" space="sm">
               <Heading size="lg">{post.title}</Heading>
               {!post.isPublished && (
@@ -249,7 +236,7 @@ const PostDetail: React.FC<any> = () => {
               </HStack>
             </HStack>
             <TagList value={post.tags} readonly={true} />
-            <ImageList value={post.images} onPress={onImagePress} />
+            <ImageryList value={post.images} onPress={onImagePress} />
             <Divider />
             <Text size="lg">{post.content}</Text>
             <Divider />

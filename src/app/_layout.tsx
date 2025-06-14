@@ -1,9 +1,9 @@
+import { CarouselProvider } from '@/components/carousel-provider';
 import { PreferencesProvider, Theme } from '@/components/preferences-provider';
 import { QueryBoundaries } from '@/components/query-boundaries';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { DarkTheme, DefaultTheme } from '@/constants/router-theme';
 import { AuthProvider } from '@/features/auth/components/auth-provider';
-import { CarouselProvider } from '@/features/image/components/carousel-provider';
 import { PushNotificationProvider } from '@/features/push-notification/components/push-notification-provider';
 import { SocketProvider } from '@/features/socket/components/socket-provider';
 import '@/global.css';
@@ -29,6 +29,7 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: 0,
+      staleTime: 6000,
     },
   },
 });

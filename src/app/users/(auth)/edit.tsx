@@ -1,4 +1,6 @@
 import { updateMe } from '@/api';
+import { DateInput } from '@/components/date-input';
+import { DistrictPicker } from '@/components/district-picker';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -28,8 +30,6 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { genderEnum } from '@/constants/enum';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import { DateInput } from '@/features/date/components/date-input';
-import { DistrictInput } from '@/features/position/components/district-input';
 import { AvatarInput } from '@/features/user/components/avatar-input';
 import useToast from '@/hooks/use-toast';
 import { imageFormat } from '@/utils/file';
@@ -200,7 +200,7 @@ const UserEdit: React.FC = () => {
       <FormControlLabel>
         <FormControlLabelText>所在地区</FormControlLabelText>
       </FormControlLabel>
-      <DistrictInput value={value} onChange={onChange} placeholder="请选择所在地区" />
+      <DistrictPicker value={value} onChange={onChange} placeholder="请选择所在地区" />
       <FormControlError>
         <FormControlErrorIcon as={AlertCircle} />
       </FormControlError>

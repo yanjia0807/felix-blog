@@ -1,6 +1,6 @@
+import { ImagerySheet } from '@/components/imagery-sheet';
 import { Avatar, AvatarBadge, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Icon } from '@/components/ui/icon';
-import { ImageSheet } from '@/features/image/components/image-sheet';
 import { X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -45,7 +45,7 @@ export const AvatarInput = ({ onChange, value, fallbackText }: any) => {
           </AvatarBadge>
         </Avatar>
       </TouchableOpacity>
-      <ImageSheet
+      <ImagerySheet
         isOpen={isOpen}
         onClose={onClose}
         onChange={handleChange}

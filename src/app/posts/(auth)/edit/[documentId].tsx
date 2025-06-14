@@ -1,9 +1,9 @@
+import { CarouselProvider } from '@/components/carousel-provider';
+import CarouselViewer from '@/components/carousel-viewer';
 import PageSpinner from '@/components/page-spinner';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { CarouselProvider } from '@/features/image/components/carousel-provider';
-import CarouselViewer from '@/features/image/components/carousel-viewer';
 import { useEditPost } from '@/features/post/api/use-edit-post';
 import { useFetchPost } from '@/features/post/api/use-fetch-post';
 import PostForm, { postSchema, PostSchema } from '@/features/post/components/post-form';
@@ -12,7 +12,7 @@ import { toAttachmetItem } from '@/utils/file';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 const PostEditPage = () => {
@@ -25,30 +25,16 @@ const PostEditPage = () => {
 
   const postQuery = useFetchPost({ documentId });
 
-  const post = useMemo(() => {
-    if (!postQuery.data) return null;
-    const postData = postQuery.data;
-
-    let cover = postData.cover
-      ? toAttachmetItem(postData.cover, postData.attachmentExtras)
-      : undefined;
-
-    const images = _.map(
-      _.filter(
-        postData.attachments || [],
-        (item: any) => _.startsWith(item.mime, 'image') || _.startsWith(item.mime, 'video'),
-      ) || [],
-      (item: any) => toAttachmetItem(item, postData.attachmentExtras),
+  const post = React.useMemo(() => {
+    return (
+      postQuery.data && {
+        ...postQuery.data,
+        cover: toAttachmetItem(postQuery.data.cover, postQuery.data.attachmentExtras),
+        imageries: _.map(postQuery.data.attachments || [], (attachment: any) =>
+          toAttachmetItem(attachment, postQuery.data.attachmentExtras),
+        ),
+      }
     );
-
-    const album = _.concat(cover ? [cover] : [], images);
-
-    return {
-      ...postData,
-      cover,
-      images,
-      album,
-    };
   }, [postQuery.data]);
 
   const editMutation = useEditPost();

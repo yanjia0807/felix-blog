@@ -7519,6 +7519,7 @@ __metadata:
     react-hook-form: ^7.56.4
     react-native: 0.79.3
     react-native-amap-geolocation: ^1.2.3
+    react-native-audio-recorder-player: ^3.6.12
     react-native-create-thumbnail: ^2.1.1
     react-native-css-interop: ^0.1.22
     react-native-drawer-layout: ^4.1.8
@@ -8164,6 +8165,15 @@ __metadata:
     agent-base: ^7.1.2
     debug: 4
   checksum: b882377a120aa0544846172e5db021fa8afbf83fea2a897d397bd2ddd8095ab268c24bc462f40a15f2a8c600bf4aa05ce52927f70038d4014e68aefecfa94e8d
+  languageName: node
+  linkType: hard
+
+"hyochan-welcome@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "hyochan-welcome@npm:1.0.1"
+  bin:
+    hyochan-welcome: bin/hello.js
+  checksum: 2ea7093b54eefcde4c65e4a8ffd3f3926a55ff0bce20a3f5142fe1108e76c0dfcb98517b47714c536f9de8302b92ae02bf240891d3114d527ccd497e2ea9478e
   languageName: node
   linkType: hard
 
@@ -11088,6 +11098,18 @@ __metadata:
   version: 1.2.3
   resolution: "react-native-amap-geolocation@npm:1.2.3"
   checksum: 93bdabdc47943c7865c0205fcffc6815a11d28980c8730df3f66da59d5f879c0236e4049f777389b4ca5b84816a4ca3fd85a4c53d087710874a9b2dfd80706ff
+  languageName: node
+  linkType: hard
+
+"react-native-audio-recorder-player@npm:^3.6.12":
+  version: 3.6.12
+  resolution: "react-native-audio-recorder-player@npm:3.6.12"
+  dependencies:
+    hyochan-welcome: ^1.0.0
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: a0c74694fe54eacd8f705b38d77d8ee35ddb9e964243ac0a727483d001e7ad24178b5ed3edcb0b4ddccf87d65af3233a823d5dd73fc98099ddbe0602134586e7
   languageName: node
   linkType: hard
 

@@ -1,0 +1,45 @@
+import { ImageryItem } from '@/components/imagery-item';
+import { HStack } from '@/components/ui/hstack';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { imageFormat, videoThumbnailUrl } from '@/utils/file';
+import { format } from 'date-fns';
+import _ from 'lodash';
+import React, { memo } from 'react';
+
+export const SenderImageryItem: React.FC<any> = memo(function SenderImageryItem({ item }) {
+  const { attachments, attachmentExtras } = item;
+
+  const Imageries = _.map(attachments, (imagery) => {
+    if (_.startsWith(imagery.mime, 'image')) {
+      return {
+        ...imagery,
+        thumbnail: imageFormat(imagery, 's').fullUrl,
+      };
+    } else {
+      return {
+        ...imagery,
+        thumbnail: videoThumbnailUrl(imagery, attachmentExtras),
+      };
+    }
+  });
+
+  return (
+    <HStack className="my-2 w-full items-center" space="xs">
+      <Text size="xs" className="w-1/4">
+        {format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}
+      </Text>
+      <VStack space="md" className="flex-1">
+        {_.map(Imageries, (item) => (
+          <ImageryItem
+            item={item}
+            style={{
+              height: 120,
+              borderRadius: 8,
+            }}
+          />
+        ))}
+      </VStack>
+    </HStack>
+  );
+});

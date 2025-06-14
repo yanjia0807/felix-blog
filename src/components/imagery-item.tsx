@@ -7,7 +7,7 @@ import React, { memo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 
-export const ImageItem: React.FC<any> = memo(function ImageItem({
+export const ImageryItem: React.FC<any> = memo(function ImageryItem({
   item,
   onPress,
   onRemove,

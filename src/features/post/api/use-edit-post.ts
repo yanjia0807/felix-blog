@@ -1,12 +1,11 @@
 import { editPost } from '@/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { PostSchema } from '../components/post-form';
 
 export const useEditPost = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: PostSchema) => {
+    mutationFn: (data: any) => {
       return editPost(data);
     },
     onSuccess: (data, variables) => {

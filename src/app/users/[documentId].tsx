@@ -1,3 +1,5 @@
+import { CarouselProvider } from '@/components/carousel-provider';
+import CarouselViewer from '@/components/carousel-viewer';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -7,8 +9,6 @@ import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useCreateChat } from '@/features/chat/api/use-create-chat';
 import { useFetchChatByUsers } from '@/features/chat/api/use-fetch-chat-by-users';
-import { CarouselProvider } from '@/features/image/components/carousel-provider';
-import CarouselViewer from '@/features/image/components/carousel-viewer';
 import { useFetchPosts } from '@/features/post/api/use-fetch-posts';
 import { useFetchUserPhotos } from '@/features/post/api/use-fetch-user-photos';
 import PhotoListView from '@/features/post/components/photo-list-view';

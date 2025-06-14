@@ -57,11 +57,7 @@ const TabButton = forwardRef(function TabButton(
   const colors = theme === 'light' ? DefaultTheme.colors : DarkTheme.colors;
   const primaryColor = useSharedValue(colors.primary);
   const animatedStyles = useAnimatedStyle(() => ({
-    backgroundColor: withSpring(isFocused ? primaryColor.value : 'transparent', {
-      damping: 15,
-      stiffness: 150,
-      mass: 0.5,
-    }),
+    backgroundColor: withSpring(isFocused ? primaryColor.value : 'transparent'),
     transform: [{ scale: withSpring(isFocused ? 1.25 : 1) }],
     opacity: withSpring(isFocused ? 1 : 0.75),
   }));

@@ -1,3 +1,4 @@
+import { DateInput } from '@/components/date-input';
 import { Button, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -8,7 +9,6 @@ import {
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
-import { DateInput } from '@/features/date/components/date-input';
 import { TagSelect } from '@/features/tag/components/tag-select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle } from 'lucide-react-native';

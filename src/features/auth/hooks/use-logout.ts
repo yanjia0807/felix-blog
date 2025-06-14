@@ -5,9 +5,9 @@ export const useLogout = () => {
   const { doLogout } = useAuth();
   const { unRegisterPushNotification } = usePushNotification();
 
-  const logout = async () => {
+  const logout = () => {
     doLogout();
-    await unRegisterPushNotification();
+    unRegisterPushNotification();
   };
 
   return { logout };

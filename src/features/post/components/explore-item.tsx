@@ -5,13 +5,11 @@ import { VStack } from '@/components/ui/vstack';
 import { UserAvatar } from '@/features/user/components/user-avatar';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import _ from 'lodash';
 import React, { memo } from 'react';
 import { View } from 'react-native';
 import useExploreItemDimensions from '../hooks/use-explore-item-dimensions';
-import { ImageCover } from './image-cover';
+import { ImageryCover } from './imagery-cover';
 import { LikeButton } from './like-button';
-import { VideoCover } from './video-cover';
 
 export const ExploreItem: React.FC<any> = memo(function ExploreItem({ item, columnIndex }) {
   const { theme } = usePreferences();
@@ -32,21 +30,15 @@ export const ExploreItem: React.FC<any> = memo(function ExploreItem({ item, colu
         marginRight: columnIndex === 1 ? 0 : 7,
       }}>
       <View className="flex-1 items-center justify-end">
-        {_.startsWith(item.cover.mime, 'image') ? (
-          <ImageCover
-            item={item.cover}
-            width={itemWidth}
-            height={itemHeight}
-            onPress={() => router.push(`/posts/${item.documentId}`)}
-          />
-        ) : (
-          <VideoCover
-            item={item.cover}
-            width={itemWidth}
-            height={itemHeight}
-            onPress={() => router.push(`/posts/${item.documentId}`)}
-          />
-        )}
+        <ImageryCover
+          uri={item.cover.thumbnail}
+          mime={item.cover.mime}
+          name={item.cover.name}
+          alternativeText={item.cover.alternativeText}
+          width={itemWidth}
+          height={itemHeight}
+          onPress={() => router.push(`/posts/${item.documentId}`)}
+        />
         <View className="absolute w-full items-center justify-between">
           <BlurView
             intensity={10}

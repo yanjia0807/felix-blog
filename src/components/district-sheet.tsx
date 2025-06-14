@@ -4,7 +4,6 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import {
@@ -15,40 +14,11 @@ import {
 } from '@gorhom/bottom-sheet';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { MapPin } from 'lucide-react-native';
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export const DistrictInput = ({ value, onChange, placeholder }: any) => {
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-
-  const onInputPressed = () => {
-    bottomSheetRef.current?.present();
-  };
-
-  const displayValue = value
-    ? `${value.provinceName || ''} ${value.cityName || ''} ${value.districtName || ''}`
-    : '';
-
-  return (
-    <>
-      <Input variant="rounded" isReadOnly={true}>
-        <InputField
-          placeholder={placeholder}
-          value={displayValue}
-          onPress={() => onInputPressed()}
-        />
-        <InputSlot className="mr-2">
-          <InputIcon as={MapPin}></InputIcon>
-        </InputSlot>
-      </Input>
-      <DistrictPicker ref={bottomSheetRef} onChange={(val: any) => onChange(val)} value={value} />
-    </>
-  );
-};
-
-export const DistrictPicker = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
+export const DistrictSheet = forwardRef(function Sheet({ value, onChange }: any, ref: any) {
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const insets = useSafeAreaInsets();
   const [keywords, setKeywords] = useState('');

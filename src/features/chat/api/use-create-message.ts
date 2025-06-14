@@ -16,7 +16,7 @@ export const useCreateMessage = ({ documentId }) => {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['messsages', 'list', { chatDocumentId: documentId }],
+        queryKey: ['messages', 'list', { chatDocumentId: documentId }],
       });
     },
   });

@@ -358,7 +358,7 @@ export const createPost = async (formData: any) => {
   }
 
   const uploadUris: any = [];
-  _.forEach(formData.images, (item: any) => {
+  _.forEach(formData.imageries, (item: any) => {
     uploadUris.push(item.uri);
     if (_.startsWith(item.mime, 'video')) {
       uploadUris.push(item.thumbnail);
@@ -367,11 +367,11 @@ export const createPost = async (formData: any) => {
 
   const uploadRes = await uploadFiles(uploadUris);
   const attachments = _.map(
-    formData.images,
+    formData.imageries,
     (item: any) => _.find(uploadRes, ['uri', item.uri]).id,
   );
 
-  _.forEach(formData.images, (item: any) => {
+  _.forEach(formData.imageries, (item: any) => {
     if (_.startsWith(item.mime, 'video')) {
       attachmentExtras.push({
         attachment: _.find(uploadRes, ['uri', item.uri]).id,
@@ -420,36 +420,34 @@ export const editPost = async (formData: any) => {
   let coverId = null;
   const attachmentExtras: any = [];
 
-  if (formData.cover) {
-    if (formData.cover.id) {
-      coverId = formData.cover.id;
+  if (formData.cover.id) {
+    coverId = formData.cover.id;
 
-      if (_.startsWith(formData.cover.mime, 'video')) {
-        const extra = _.find(
-          formData.attachmentExtras,
-          (item1: any) => item1.attachment.id === formData.cover.id,
-        );
+    if (_.startsWith(formData.cover.mime, 'video')) {
+      const extra = _.find(
+        formData.attachmentExtras,
+        (item1: any) => item1.attachment.id === formData.cover.id,
+      );
 
-        attachmentExtras.push({
-          attachment: extra.attachment.id,
-          thumbnail: extra.thumbnail.id,
-        });
-      }
-    } else {
-      coverId = (await uploadFiles(formData.cover.uri)).id;
+      attachmentExtras.push({
+        attachment: extra.attachment.id,
+        thumbnail: extra.thumbnail.id,
+      });
+    }
+  } else {
+    coverId = (await uploadFiles(formData.cover.uri)).id;
 
-      if (_.startsWith(formData.cover.mime, 'video')) {
-        const thumbnailId = (await uploadFiles(formData.cover.thumbnail)).id;
-        attachmentExtras.push({
-          attachment: coverId,
-          thumbnail: thumbnailId,
-        });
-      }
+    if (_.startsWith(formData.cover.mime, 'video')) {
+      const thumbnailId = (await uploadFiles(formData.cover.thumbnail)).id;
+      attachmentExtras.push({
+        attachment: coverId,
+        thumbnail: thumbnailId,
+      });
     }
   }
 
   const uploadUris: any = [];
-  _.forEach(formData.images, (item: any) => {
+  _.forEach(formData.imageries, (item: any) => {
     if (!item.id) {
       uploadUris.push(item.uri);
       if (_.startsWith(item.mime, 'video')) {
@@ -460,11 +458,11 @@ export const editPost = async (formData: any) => {
 
   const uploadRes = await uploadFiles(uploadUris);
 
-  const attachments = _.map(formData.images, (item: any) =>
+  const attachments = _.map(formData.imageries, (item: any) =>
     item.id ? item.id : _.find(uploadRes, ['uri', item.uri]).id,
   );
 
-  _.forEach(formData.images, (item: any) => {
+  _.forEach(formData.imageries, (item: any) => {
     if (_.startsWith(item.mime, 'video')) {
       if (item.id) {
         const extra = _.find(

@@ -2,9 +2,9 @@ import { HStack } from '@/components/ui/hstack';
 import _ from 'lodash';
 import React from 'react';
 import { useWindowDimensions } from 'react-native';
-import { ImageItem } from './image-item';
+import { ImageryItem } from './imagery-item';
 
-export const ImageGrid = ({ value = [], onPress, onChange }: any) => {
+export const ImageryGrid = ({ value = [], onPress, onChange }: any) => {
   const { width: screenWidth } = useWindowDimensions();
   const numColumns = 4;
   const spacing = 16;
@@ -19,7 +19,7 @@ export const ImageGrid = ({ value = [], onPress, onChange }: any) => {
     return (
       <HStack className="flex-wrap">
         {value.map((item: any, index: number) => (
-          <ImageItem
+          <ImageryItem
             key={item.uri}
             className="my-2"
             style={{

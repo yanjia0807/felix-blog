@@ -10,7 +10,7 @@ import { PositionSheet } from './position-sheet';
 
 const appName = Constants?.expoConfig?.extra?.name || '';
 
-export const PositionInput = ({ value, onChange }: any) => {
+export const PositionPicker = ({ value, onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const toast = useToast();
 

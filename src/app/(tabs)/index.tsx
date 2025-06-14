@@ -1,3 +1,5 @@
+import { CarouselProvider } from '@/components/carousel-provider';
+import CarouselViewer from '@/components/carousel-viewer';
 import { MainHeader } from '@/components/header';
 import { ListEmptyView } from '@/components/list-empty-view';
 import { Card } from '@/components/ui/card';
@@ -11,8 +13,6 @@ import { AnonyView } from '@/features/auth/components/anony';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { CommentSheet } from '@/features/comment/components/comment-sheet';
 import { CommentSheetProvider } from '@/features/comment/components/comment-sheet-provider';
-import { CarouselProvider } from '@/features/image/components/carousel-provider';
-import CarouselViewer from '@/features/image/components/carousel-viewer';
 import { useFetchPosts } from '@/features/post/api/use-fetch-posts';
 import { Banner } from '@/features/post/components/banner';
 import { PostItem } from '@/features/post/components/post-item';

@@ -1,10 +1,10 @@
 import { createPost } from '@/api/post';
+import CarouselViewer from '@/components/carousel-viewer';
 import PageSpinner from '@/components/page-spinner';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import CarouselViewer from '@/features/image/components/carousel-viewer';
 import PostForm, { postSchema, PostSchema } from '@/features/post/components/post-form';
 import useToast from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +17,26 @@ const PostCreatePage: React.FC = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { user } = useAuth();
+
+  const defaultValues: Partial<PostSchema> = {
+    title: undefined,
+    content: undefined,
+    author: user.documentId,
+    poi: undefined,
+    cover: undefined,
+    imageries: [],
+    tags: [],
+    isPublished: false,
+    attachments: [],
+    attachmentExtras: [],
+  };
+
+  const form = useForm<PostSchema>({
+    resolver: zodResolver(postSchema),
+    defaultValues,
+  });
+
+  const { setValue, handleSubmit } = form;
 
   const mutation = useMutation({
     mutationFn: (data: PostSchema) => createPost(data),
@@ -31,26 +51,6 @@ const PostCreatePage: React.FC = () => {
       toast.error({ description: error.message });
     },
   });
-
-  const defaultValues: Partial<PostSchema> = {
-    title: undefined,
-    content: undefined,
-    author: user.documentId,
-    poi: undefined,
-    cover: undefined,
-    images: [],
-    tags: [],
-    attachments: [],
-    attachmentExtras: [],
-    isPublished: false,
-  };
-
-  const form = useForm<PostSchema>({
-    resolver: zodResolver(postSchema),
-    defaultValues,
-  });
-
-  const { setValue, handleSubmit } = form;
 
   const onSubmit = async (formData: PostSchema) => {
     return mutation.mutate(formData);

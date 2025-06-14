@@ -7,32 +7,35 @@ import {
   ActionsheetItem,
   ActionsheetItemText,
 } from '@/components/ui/actionsheet';
+import { useMediaCamPermissions } from '@/hooks/use-media-cam-permissions';
+import { useMediaLibPermissions } from '@/hooks/use-media-lib-permissions';
 import useToast from '@/hooks/use-toast';
 import { createVideoThumbnail } from '@/utils/file';
-import { useCameraPermissions } from 'expo-camera';
-import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 import _ from 'lodash';
 import React, { useState } from 'react';
-import { ImageCamera } from './image-camera';
+import { ImageryCamera } from './imagery-camera';
 
-const SELECTION_LIMIT = 9;
-const appName = Constants?.expoConfig?.extra?.name || '';
-
-export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerOptions }: any) => {
-  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [libraryPermissions, requestLibraryPermission] = ImagePicker.useMediaLibraryPermissions();
+export const ImagerySheet = ({
+  onChange,
+  value = [],
+  isOpen,
+  onClose,
+  imagePickerOptions,
+}: any) => {
   const [cameraIsOpen, setCameraIsOpen] = useState(false);
   const toast = useToast();
+  const limit = imagePickerOptions.selectionLimit || 9;
+  const { requestMediaLibPermissions } = useMediaLibPermissions();
+  const { requestMediaCamPermissions } = useMediaCamPermissions();
 
   const onFail = () => {
-    toast.info({ description: `最多只能选择${SELECTION_LIMIT}个` });
+    toast.info({ description: `最多只能选择${limit}个` });
   };
 
   const selectFromLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync(imagePickerOptions);
     if (result.canceled) return value;
-
     const val: any = [...value];
 
     for (let i = 0; i < result.assets.length; i++) {
@@ -63,7 +66,7 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
       }
     }
 
-    if (val.length > SELECTION_LIMIT) {
+    if (val.length > limit) {
       onFail();
       return;
     }
@@ -74,46 +77,22 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
   };
 
   const openLibrary = async () => {
-    if (libraryPermissions?.granted) {
+    requestMediaLibPermissions(async () => {
       await selectFromLibrary();
       onClose();
-    } else {
-      const result = await requestLibraryPermission();
-      if (result.granted) {
-        await selectFromLibrary();
-        onClose();
-      } else {
-        if (!result.canAskAgain) {
-          toast.info({
-            description: `请在 [系统设置] 里允许 ${appName} 访问您的照片。`,
-          });
-        }
-      }
-    }
+    });
   };
 
   const openCamera = async () => {
-    if (value.length === SELECTION_LIMIT) {
+    if (value.length === limit) {
       onFail();
       return;
     }
 
-    if (cameraPermission?.granted) {
+    requestMediaCamPermissions(() => {
       setCameraIsOpen(true);
-    } else {
-      const result = await requestCameraPermission();
-      if (result.granted) {
-        setCameraIsOpen(true);
-      } else {
-        if (!result.canAskAgain) {
-          toast.info({
-            description: `请在 [系统设置] 里允许 ${appName} 访问您的相机。`,
-          });
-        }
-      }
-    }
-
-    onClose();
+      onClose();
+    });
   };
 
   const closeCamera = () => setCameraIsOpen(false);
@@ -134,7 +113,12 @@ export const ImageSheet = ({ onChange, value = [], isOpen, onClose, imagePickerO
           </ActionsheetItem>
         </ActionsheetContent>
       </Actionsheet>
-      <ImageCamera value={value} onChange={onChange} isOpen={cameraIsOpen} onClose={closeCamera} />
+      <ImageryCamera
+        value={value}
+        onChange={onChange}
+        isOpen={cameraIsOpen}
+        onClose={closeCamera}
+      />
     </>
   );
 };

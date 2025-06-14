@@ -1,3 +1,5 @@
+import { CarouselProvider } from '@/components/carousel-provider';
+import CarouselViewer from '@/components/carousel-viewer';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
@@ -6,8 +8,6 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import { CarouselProvider } from '@/features/image/components/carousel-provider';
-import CarouselViewer from '@/features/image/components/carousel-viewer';
 import { useFetchPosts } from '@/features/post/api/use-fetch-posts';
 import { useFetchUserPhotos } from '@/features/post/api/use-fetch-user-photos';
 import PhotoListView from '@/features/post/components/photo-list-view';

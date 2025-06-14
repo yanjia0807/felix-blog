@@ -1,17 +1,17 @@
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-} from '@/components/ui/form-control';
+import { ImageryItem } from '@/components/imagery-item';
+import { ImagerySheet } from '@/components/imagery-sheet';
+import { FormControl } from '@/components/ui/form-control';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
-import { ImageItem } from '@/features/image/components/image-item';
-import { ImageSheet } from '@/features/image/components/image-sheet';
-import { AlertCircle, ImageIcon } from 'lucide-react-native';
+import { ImageIcon } from 'lucide-react-native';
 import React, { memo, useState } from 'react';
 
-export const CoverInput = memo(function CoverInput({ onChange, value, onPress, error }: any) {
+export const CoverPickerIcon = memo(function CoverPickerIcon({
+  onChange,
+  value,
+  onPress,
+  error,
+}: any) {
   const [isOpen, setIsOpen] = useState(false);
 
   const imagePickerOptions = {
@@ -28,7 +28,7 @@ export const CoverInput = memo(function CoverInput({ onChange, value, onPress, e
   return (
     <FormControl isInvalid={!!error} size="md">
       {value ? (
-        <ImageItem item={value} onPress={onPress} onRemove={onRemove} className="h-40" />
+        <ImageryItem item={value} onPress={onPress} onRemove={onRemove} className="h-40" />
       ) : (
         <>
           <Pressable onPress={onOpen} pointerEvents="box-only">
@@ -39,7 +39,7 @@ export const CoverInput = memo(function CoverInput({ onChange, value, onPress, e
               </InputSlot>
             </Input>
           </Pressable>
-          <ImageSheet
+          <ImagerySheet
             isOpen={isOpen}
             onClose={onClose}
             value={value}
@@ -48,10 +48,6 @@ export const CoverInput = memo(function CoverInput({ onChange, value, onPress, e
           />
         </>
       )}
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircle} />
-        <FormControlErrorText>{error?.message}</FormControlErrorText>
-      </FormControlError>
     </FormControl>
   );
 });

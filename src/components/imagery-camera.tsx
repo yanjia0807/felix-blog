@@ -12,7 +12,7 @@ import { TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export const ImageCamera = ({ isOpen, onClose, onChange, value }: any) => {
+export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
   const [facing, setFacing] = useState<CameraType>('back');
   const [mode, setMode] = useState<CameraMode>('picture');
   const [flash, setFlash] = useState<FlashMode>('auto');
