@@ -6,8 +6,6 @@ import { NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
 export const CommentInput: React.FC<any> = memo(
   forwardRef<any, any>(
     ({ onFocus, onBlur, onChange, value, isPending, placeholder, onSubmitEditing }, ref) => {
-      console.log('@render CommentInput');
-
       const { shouldHandleKeyboardEvents } = useBottomSheetInternal();
 
       const handleOnFocus = useCallback(

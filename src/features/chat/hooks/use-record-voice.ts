@@ -17,7 +17,6 @@ export const useRecordVoice = ({ startCb, stopCb, successCb }) => {
       startCb();
 
       audioRecorderPlayer.addRecordBackListener((e: any) => {
-        console.log(e);
         setRecordingStatus({
           metering: e.currentMetering,
           position: e.currentPosition,

@@ -6863,9 +6863,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-camera@npm:~16.1.6":
-  version: 16.1.7
-  resolution: "expo-camera@npm:16.1.7"
+"expo-cached-image@npm:^53.0.11":
+  version: 53.0.11
+  resolution: "expo-cached-image@npm:53.0.11"
+  dependencies:
+    expo: ~53.0.11
+  peerDependencies:
+    react: ">=18.2.0"
+    react-native: ">=0.73.0"
+  checksum: 0708b64624db7451a5be5ff2eda53dea0a8bdbbcddbc5ecfeb1c9eaa40f33d2fa8aef7ce8b03346e20d1299f8ee4abe1346767ce38954eb81ad910c445c8b562
+  languageName: node
+  linkType: hard
+
+"expo-camera@npm:~16.1.8":
+  version: 16.1.8
+  resolution: "expo-camera@npm:16.1.8"
   dependencies:
     invariant: ^2.2.4
   peerDependencies:
@@ -6876,7 +6888,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-web:
       optional: true
-  checksum: 1a72e37a9dde234b2ce7f4d97319315469ebcf1fd08448b505db765fb0e198249e9f8f24c3ac25d5f87aa8b28ffcdd84176eb43993aac23034f5665acd539200
+  checksum: fc4e7be488cc8a57af8650928f668b6ddb4b83cc0d3fc66dfda538da13b2ef09f5c8abba8fc4a90e5f131a875d5d1b6e02eefdf76325383426eaaa2690ce1b9a
   languageName: node
   linkType: hard
 
@@ -7022,9 +7034,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-image@npm:~2.2.0":
-  version: 2.2.0
-  resolution: "expo-image@npm:2.2.0"
+"expo-image@npm:~2.3.0":
+  version: 2.3.0
+  resolution: "expo-image@npm:2.3.0"
   peerDependencies:
     expo: "*"
     react: "*"
@@ -7033,7 +7045,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-web:
       optional: true
-  checksum: 72c33b5ddc71f92fa055d66915cae23b65c0b46046267e1cc84e7966e05ddd0c3313ad3d89a23e431155a98b3033665729200a6ee1cfd6635232d99d161b900f
+  checksum: 14d6585175b56bb0536c7023addc57c69cde0b8446a0a9568ce02c132ccc21f78ab9f075aa36de569af1d486c984df25a3f44d0379b9a05ebd2231cdcfd856f6
   languageName: node
   linkType: hard
 
@@ -7124,9 +7136,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-router@npm:~5.0.6":
-  version: 5.0.7
-  resolution: "expo-router@npm:5.0.7"
+"expo-router@npm:~5.1.0":
+  version: 5.1.0
+  resolution: "expo-router@npm:5.1.0"
   dependencies:
     "@expo/metro-runtime": 5.0.4
     "@expo/server": ^0.6.2
@@ -7157,7 +7169,7 @@ __metadata:
       optional: true
     react-native-reanimated:
       optional: true
-  checksum: cedd65030eb3357ea9e71df568ccca32f54a7825d44bf616d3b35734f13207d3606b78185dc0ea798b49c847eeb6d162704212d3c2b71308961358292e21749d
+  checksum: 3a8849b77846fc1ecfc873dc393424b98c865e71429f5c0a894dfebc61d95f49a800f98b300bdaf2cdbef5adb5329c774aaa3210d9650bc4d689dcb12b78d24f
   languageName: node
   linkType: hard
 
@@ -7275,7 +7287,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo@npm:53.0.11":
+"expo@npm:53.0.11, expo@npm:~53.0.11":
   version: 53.0.11
   resolution: "expo@npm:53.0.11"
   dependencies:
@@ -7485,19 +7497,20 @@ __metadata:
     eslint-plugin-prettier: ^5.4.0
     expo: 53.0.11
     expo-blur: ~14.1.4
-    expo-camera: ~16.1.6
+    expo-cached-image: ^53.0.11
+    expo-camera: ~16.1.8
     expo-constants: ~17.1.6
     expo-dev-client: ~5.2.0
     expo-device: ~7.1.4
     expo-file-system: ~18.1.10
     expo-font: ~13.3.1
     expo-haptics: ~14.1.4
-    expo-image: ~2.2.0
+    expo-image: ~2.3.0
     expo-image-manipulator: ~13.1.7
     expo-image-picker: ~16.1.4
     expo-linking: ~7.1.5
     expo-notifications: ~0.31.2
-    expo-router: ~5.0.6
+    expo-router: ~5.1.0
     expo-secure-store: ~14.2.3
     expo-splash-screen: ~0.30.8
     expo-status-bar: ~2.2.3

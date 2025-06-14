@@ -39,7 +39,7 @@ export const TabButtonList = forwardRef(function TabButtonList(
       {...props}
       className="flex-row items-center justify-around"
       style={{
-        paddingTop: 20,
+        height: 92,
         paddingBottom: insets.bottom,
         backgroundColor: colors.card,
       }}>

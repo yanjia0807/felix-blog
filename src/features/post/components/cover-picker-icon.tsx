@@ -28,7 +28,16 @@ export const CoverPickerIcon = memo(function CoverPickerIcon({
   return (
     <FormControl isInvalid={!!error} size="md">
       {value ? (
-        <ImageryItem item={value} onPress={onPress} onRemove={onRemove} className="h-40" />
+        <ImageryItem
+          assetId={value.assetId}
+          source={{ uri: value.thumbnail }}
+          cacheKey={value.name}
+          mime={value.mime}
+          alt={value.alternativeText || value.name}
+          onPress={onPress}
+          onRemove={onRemove}
+          className="h-40 w-full rounded-md"
+        />
       ) : (
         <>
           <Pressable onPress={onOpen} pointerEvents="box-only">

@@ -1,5 +1,6 @@
 import { CarouselProvider, useCarousel } from '@/components/carousel-provider';
 import CarouselViewer from '@/components/carousel-viewer';
+import { ImageryItem } from '@/components/imagery-item';
 import { ImageryList } from '@/components/imagery-list';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
@@ -17,7 +18,6 @@ import { CommentSheetProvider } from '@/features/comment/components/comment-shee
 import { useDeletePost } from '@/features/post/api/use-delete-post';
 import { useEditPostPublish } from '@/features/post/api/use-edit-post-publish';
 import { useFetchPost } from '@/features/post/api/use-fetch-post';
-import { ImageryCover } from '@/features/post/components/imagery-cover';
 import { LikeButton } from '@/features/post/components/like-button';
 import { PostDetailSkeleton } from '@/features/post/components/post-detail-skeleton';
 import { ShareButton } from '@/features/post/components/share-button';
@@ -202,12 +202,17 @@ const PostDetail: React.FC<any> = () => {
         />
         <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
           <VStack space="md">
-            <ImageryCover
-              uri={post.cover.thumbnail}
+            <ImageryItem
+              source={{ uri: post.cover.thumbnail }}
+              cacheKey={post.cover.name}
               mime={post.cover.mime}
-              width={coverWidth}
-              height={coverHeight}
+              alt={post.cover.alternativeText || post.cover.name}
               onPress={onCoverPress}
+              style={{
+                width: coverWidth,
+                height: coverHeight,
+              }}
+              className="rounded-md"
             />
             <HStack className="items-center" space="sm">
               <Heading size="lg">{post.title}</Heading>

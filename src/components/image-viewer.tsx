@@ -1,5 +1,4 @@
 import { ZOOM_TYPE, Zoomable } from '@likashefqet/react-native-image-zoom';
-import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -9,6 +8,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { ImageryItem } from './imagery-item';
 
 const ImageViewer: React.FC<any> = ({ item, onClose }) => {
   const [isZoomed, setIsZoomed] = useState(false);
@@ -61,15 +61,17 @@ const ImageViewer: React.FC<any> = ({ item, onClose }) => {
             onInteractionStart={() => onZoom()}
             onDoubleTap={(zoomType) => onZoom(zoomType)}
             onResetAnimationEnd={(finished, values) => onAnimationEnd(finished)}>
-            <Image
+            <ImageryItem
               style={{
                 width: '100%',
                 height: '100%',
               }}
               source={{ uri: item.preview }}
-              placeholder={require('@assets/images/image-placeholder.png')}
-              placeholderContentFit="contain"
-              contentFit="contain"
+              cacheKey={item.name}
+              assetId={item.assetId}
+              mime={item.mime}
+              alt={item.alternativeText || item.name}
+              resizeMode="contain"
             />
           </Zoomable>
         </Animated.View>

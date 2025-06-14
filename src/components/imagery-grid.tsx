@@ -18,20 +18,26 @@ export const ImageryGrid = ({ value = [], onPress, onChange }: any) => {
   if (value.length > 0) {
     return (
       <HStack className="flex-wrap">
-        {value.map((item: any, index: number) => (
-          <ImageryItem
-            key={item.uri}
-            className="my-2"
-            style={{
-              width: imageSize,
-              height: imageSize,
-              marginRight: (index + 1) % numColumns === 0 ? 0 : spacing,
-            }}
-            item={item}
-            onPress={() => onPress(index)}
-            onRemove={() => onRemove(item.uri)}
-          />
-        ))}
+        {value.map((item: any, index: number) => {
+          return (
+            <ImageryItem
+              key={item.uri}
+              source={{ uri: item.thumbnail }}
+              cacheKey={item.name}
+              assetId={item.assetId}
+              mime={item.mime}
+              alt={item.alternativeText || item.name}
+              className="my-2 rounded-md"
+              style={{
+                width: imageSize,
+                height: imageSize,
+                marginRight: (index + 1) % numColumns === 0 ? 0 : spacing,
+              }}
+              onPress={() => onPress(index)}
+              onRemove={() => onRemove(item.uri)}
+            />
+          );
+        })}
       </HStack>
     );
   }

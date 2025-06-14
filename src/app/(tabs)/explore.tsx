@@ -15,9 +15,10 @@ import { toAttachmetItem } from '@/utils/file';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { MasonryFlashList } from '@shopify/flash-list';
 import _ from 'lodash';
-import React, { memo, useCallback } from 'react';
-import { FlatList, RefreshControl } from 'react-native';
+import React, { memo, useCallback, useState } from 'react';
+import { FlatList, RefreshControl, useWindowDimensions } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const segments = [
   {
@@ -64,14 +65,14 @@ const ExploreTagList: React.FC<any> = memo(function ExploreTagList() {
   );
 });
 
-const ExploreHeader: React.FC<any> = () => {
+const ExploreHeader: React.FC<any> = ({ onLayout }) => {
   const segmentNames = _.map(segments, (item: any) => item.name);
   const selectedIndex = useSelectedIndex();
   const { setSelectedIndex } = usePostExploreActions();
   const onSegmentChange = (event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex);
 
   return (
-    <VStack space="md" className="mb-4">
+    <VStack space="md" className="mb-4" onLayout={onLayout}>
       <MainHeader />
       <SegmentedControl
         values={segmentNames}
@@ -85,6 +86,15 @@ const ExploreHeader: React.FC<any> = () => {
 
 const Explore: React.FC<any> = () => {
   const postsQuery = useFetchExplorePosts({ segments });
+  const [headerLayout, setHeaderLayout] = useState(null);
+  const { height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const tabbarHeight = 92;
+  const listHeight = windowHeight - insets.top - headerLayout?.height || 0 - tabbarHeight;
+  console.log('@@', listHeight);
+  const onHeaderLayout = (event) => {
+    setHeaderLayout(event.nativeEvent.layout);
+  };
 
   const posts: any = _.map(
     _.flatMap(postsQuery.data?.pages, (page: any) => page.data),
@@ -99,7 +109,7 @@ const Explore: React.FC<any> = () => {
     [],
   );
 
-  const renderListHeader = useCallback(() => <ExploreHeader />, []);
+  const renderListHeader = useCallback(() => <ExploreHeader onLayout={onHeaderLayout} />, []);
 
   const renderEmptyComponent = () => <ListEmptyView />;
 
@@ -110,7 +120,7 @@ const Explore: React.FC<any> = () => {
   if (postsQuery.data) {
     return (
       <SafeAreaView className="flex-1">
-        <VStack className="flex-1 px-4" space="md">
+        <VStack className="px-4" space="md" style={{ height: listHeight }}>
           <MasonryFlashList
             ListHeaderComponent={renderListHeader}
             renderItem={renderItem}
@@ -118,7 +128,7 @@ const Explore: React.FC<any> = () => {
             keyExtractor={(item: any) => item.documentId}
             data={posts}
             numColumns={2}
-            estimatedItemSize={260}
+            estimatedItemSize={380}
             showsVerticalScrollIndicator={false}
             onEndReached={onEndReached}
             refreshControl={

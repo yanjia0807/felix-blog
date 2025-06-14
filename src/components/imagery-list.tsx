@@ -6,9 +6,12 @@ export const ImageryList = memo(function ImageryList({ value = [], onPress }: an
   const renderItem = useCallback(
     ({ item, index }: any) => (
       <ImageryItem
-        item={item}
+        source={{ uri: item.uri }}
+        cacheKey={item.name}
+        mime={item.mime}
+        alt={item.alternativeText || item.name}
         onPress={() => onPress(index)}
-        className={`mx-1 h-16 w-16 ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}
+        className={`mx-1 h-16 w-16 rounded-md ${index === 0 ? 'ml-0' : ''} ${index === value.length - 1 ? 'mr-0' : ''}`}
       />
     ),
     [onPress, value.length],

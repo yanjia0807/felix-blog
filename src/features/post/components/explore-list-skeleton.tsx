@@ -25,7 +25,7 @@ const ItemSkeleton: React.FC<any> = ({ columnIndex }) => {
       }}
       space="sm">
       <Skeleton variant="rounded" className="flex-1" />
-      <SkeletonText _lines={2} className="h-4" />
+      <SkeletonText _lines={2} className="h-3" />
       <HStack className="items-center justify-between">
         <HStack className="items-center" space="xs">
           <Skeleton variant="circular" className="h-8 w-8" />
@@ -43,23 +43,14 @@ const ExploreListSkeleton: React.FC<any> = () => {
         <HStack className="w-full items-center justify-between overflow-auto">
           <HeaderLogo />
         </HStack>
+        <HStack space="sm" className="w-full">
+          <Skeleton variant="rounded" className="h-8 flex-1" />
+          <Skeleton variant="rounded" className="h-8 flex-1" />
+          <Skeleton variant="rounded" className="h-8 flex-1" />
+        </HStack>
         <HStack className="flex-1">
-          <VStack className="flex-1">
-            {_.map(
-              _.map(new Array(4), () => ({ documentId: _.uniqueId() })),
-              (item) => (
-                <ItemSkeleton key={item.documentId} columnIndex={0} />
-              ),
-            )}
-          </VStack>
-          <VStack className="flex-1">
-            {_.map(
-              _.map(new Array(4), () => ({ documentId: _.uniqueId() })),
-              (item) => (
-                <ItemSkeleton key={item.documentId} columnIndex={1} />
-              ),
-            )}
-          </VStack>
+          <ItemSkeleton key={_.uniqueId()} columnIndex={0} />
+          <ItemSkeleton key={_.uniqueId()} columnIndex={1} />
         </HStack>
       </VStack>
     </SafeAreaView>

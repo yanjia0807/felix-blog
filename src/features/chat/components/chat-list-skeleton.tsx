@@ -1,6 +1,5 @@
 import { MainHeader } from '@/components/header';
 import { Card } from '@/components/ui/card';
-import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
@@ -25,7 +24,7 @@ export const ChatItemSkeleton: React.FC<any> = () => {
         <VStack space="xs" className="flex-1">
           <HStack className="items-center justify-between">
             <SkeletonText className="h-3 w-24" />
-            <SkeletonText className="h-3 w-32" />
+            <Skeleton variant="rounded" className="h-3 w-32" />
           </HStack>
           <HStack className="items-center justify-between">
             <SkeletonText _lines={1} className="h-3 w-full" />
@@ -37,7 +36,7 @@ export const ChatItemSkeleton: React.FC<any> = () => {
 };
 
 export const ChatListSkeleton: React.FC<any> = () => {
-  const placeholders = _.map(new Array(2), () => ({ documentId: _.uniqueId() }));
+  const placeholders = _.map(new Array(1), () => ({ documentId: _.uniqueId() }));
 
   return (
     <SafeAreaView className="flex-1">
@@ -46,7 +45,6 @@ export const ChatListSkeleton: React.FC<any> = () => {
         {placeholders.map((item: any) => (
           <View key={item.documentId}>
             <ChatItemSkeleton />
-            <Divider />
           </View>
         ))}
       </VStack>

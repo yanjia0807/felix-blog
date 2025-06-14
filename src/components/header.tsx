@@ -1,9 +1,9 @@
 import NotificationIcon from '@/features/notification/components/notification-icon';
 import { UserSearchMenu } from '@/features/user/components/user-search-menu';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import _ from 'lodash';
 import React, { memo } from 'react';
+import { Image } from 'react-native';
 import { useAuth } from '../features/auth/components/auth-provider';
 import { Button, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';

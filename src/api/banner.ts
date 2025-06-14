@@ -8,9 +8,7 @@ export const fetchBanners = async ({ pageParam }: any) => {
       isActive: true,
     },
     populate: {
-      image: {
-        fields: ['alternativeText', 'width', 'height', 'formats'],
-      },
+      image: true,
       link: true,
       author: {
         populate: {

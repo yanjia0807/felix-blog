@@ -4,9 +4,9 @@ import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import { Image } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 
 export const AnonyView: React.FC<any> = ({ className }) => {

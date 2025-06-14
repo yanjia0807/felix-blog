@@ -1,4 +1,5 @@
 import { useCarousel } from '@/components/carousel-provider';
+import { ImageryItem } from '@/components/imagery-item';
 import { ImageryList } from '@/components/imagery-list';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
@@ -20,7 +21,6 @@ import _ from 'lodash';
 import { MapPin } from 'lucide-react-native';
 import React, { memo } from 'react';
 import { Pressable } from 'react-native';
-import { ImageryCover } from './imagery-cover';
 import { LikeButton } from './like-button';
 
 export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
@@ -43,7 +43,6 @@ export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
     setCommentPostDocumentId(item.documentId);
     router.push(`/posts/${item.documentId}`);
   };
-  console.log('@@', item.cover);
 
   return (
     <Pressable onPress={() => onItemPress()}>
@@ -72,13 +71,16 @@ export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
             </HStack>
             <TagList tags={item.tags || []}></TagList>
           </VStack>
-          <ImageryCover
-            uri={item.cover.thumbnail}
-            name={item.cover.name}
-            alternativeText={item.cover.alternativeText}
+          <ImageryItem
+            source={{ uri: item.cover.thumbnail }}
+            cacheKey={item.cover.name}
             mime={item.cover.mime}
-            width={coverWidth}
-            height={coverHeight}
+            alt={item.cover.alternativeText || item.cover.name}
+            style={{
+              width: coverWidth,
+              height: coverHeight,
+              borderRadius: 6,
+            }}
             onPress={onCoverPress}
           />
           <Text numberOfLines={5}>{item.content}</Text>

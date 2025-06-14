@@ -1,3 +1,4 @@
+import { ImageryItem } from '@/components/imagery-item';
 import { usePreferences } from '@/components/preferences-provider';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { HStack } from '@/components/ui/hstack';
@@ -6,7 +7,6 @@ import { VStack } from '@/components/ui/vstack';
 import { imageFormat } from '@/utils/file';
 import { format } from 'date-fns';
 import { BlurView } from 'expo-blur';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { memo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
@@ -25,15 +25,12 @@ export const BannerItem: React.FC<any> = memo(function BannerItem({ item }) {
 
   return (
     <TouchableOpacity onPress={() => onItemPress()} className={`mr-4 h-48 w-80`}>
-      <Image
-        source={{
-          uri: imageFormat(item.image, 'l')?.fullUrl,
-        }}
-        style={{
-          width: '100%',
-          height: '100%',
-          borderRadius: 6,
-        }}
+      <ImageryItem
+        source={{ uri: imageFormat(item.image, 'l')?.fullUrl }}
+        cacheKey={item.image.name}
+        mime={item.image.mime}
+        alt={item.image.alternativeText || item.image.name}
+        className="h-full w-full rounded-md"
       />
       <View className="absolute bottom-0 w-full rounded-md">
         <BlurView intensity={10} tint={theme === 'light' ? 'light' : 'dark'}>

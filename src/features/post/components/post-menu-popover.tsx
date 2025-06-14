@@ -5,9 +5,7 @@ import { Ellipsis, Share } from 'lucide-react-native';
 import React from 'react';
 
 const PostItemMenu = ({ post, ...props }: any) => {
-  const onShareItemPressed = () => {
-    console.log('user');
-  };
+  const onShareItemPressed = () => {};
 
   const renderTrigger = (triggerProps: any) => {
     return (

@@ -15,13 +15,13 @@ export const PostItemSkeleton: React.FC<any> = () => (
     <HStack className="items-center justify-between">
       <HStack className="items-center" space="xs">
         <Skeleton variant="circular" className="h-8 w-8" />
-        <SkeletonText className="h-4 w-24" />
+        <SkeletonText className="h-3 w-24" />
       </HStack>
-      <Skeleton variant="sharp" className="h-4 w-24" />
+      <Skeleton variant="rounded" className="h-3 w-24" />
     </HStack>
-    <SkeletonText _lines={2} className="h-3" />
+    <SkeletonText _lines={1} className="h-3" />
     <Skeleton variant="rounded" className="h-52" />
-    <SkeletonText _lines={3} className="h-3" />
+    <SkeletonText _lines={1} className="h-3" />
     <HStack className="items-center" space="sm">
       <Skeleton variant="rounded" className="h-14 w-14" />
       <Skeleton variant="rounded" className="h-14 w-14" />

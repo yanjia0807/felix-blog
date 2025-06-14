@@ -32,11 +32,11 @@ export const SenderImageryItem: React.FC<any> = memo(function SenderImageryItem(
       <VStack space="md" className="flex-1">
         {_.map(Imageries, (item) => (
           <ImageryItem
-            item={item}
-            style={{
-              height: 120,
-              borderRadius: 8,
-            }}
+            source={{ uri: item.thumbnail }}
+            cacheKey={item.name}
+            mime={item.mime}
+            alt={item.alternativeText || item.name}
+            className="aspect-[1] w-full rounded-md"
           />
         ))}
       </VStack>

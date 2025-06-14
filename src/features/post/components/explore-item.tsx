@@ -1,3 +1,4 @@
+import { ImageryItem } from '@/components/imagery-item';
 import { usePreferences } from '@/components/preferences-provider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
@@ -8,7 +9,6 @@ import { useRouter } from 'expo-router';
 import React, { memo } from 'react';
 import { View } from 'react-native';
 import useExploreItemDimensions from '../hooks/use-explore-item-dimensions';
-import { ImageryCover } from './imagery-cover';
 import { LikeButton } from './like-button';
 
 export const ExploreItem: React.FC<any> = memo(function ExploreItem({ item, columnIndex }) {
@@ -30,13 +30,16 @@ export const ExploreItem: React.FC<any> = memo(function ExploreItem({ item, colu
         marginRight: columnIndex === 1 ? 0 : 7,
       }}>
       <View className="flex-1 items-center justify-end">
-        <ImageryCover
-          uri={item.cover.thumbnail}
+        <ImageryItem
+          source={{ uri: item.cover.thumbnail }}
+          cacheKey={item.cover.name}
           mime={item.cover.mime}
-          name={item.cover.name}
-          alternativeText={item.cover.alternativeText}
-          width={itemWidth}
-          height={itemHeight}
+          alt={item.cover.alternativeText || item.cover.name}
+          style={{
+            width: itemWidth,
+            height: itemHeight,
+          }}
+          className="rounded-md"
           onPress={() => router.push(`/posts/${item.documentId}`)}
         />
         <View className="absolute w-full items-center justify-between">

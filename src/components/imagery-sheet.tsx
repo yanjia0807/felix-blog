@@ -58,7 +58,7 @@ export const ImagerySheet = ({
             assetId: item.assetId,
             name: item.fileName,
             mime: item.mimeType,
-            uri: item.uri,
+            uri: thumbnail?.path,
             thumbnail: thumbnail?.path,
             preview: item.uri,
           });

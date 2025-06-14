@@ -1,11 +1,11 @@
 import { useCarousel } from '@/components/carousel-provider';
+import { ImageryItem } from '@/components/imagery-item';
 import { ListEmptyView } from '@/components/list-empty-view';
 import { fileFullUrl, imageFormat } from '@/utils/file';
 import { MasonryFlashList } from '@shopify/flash-list';
-import { Image } from 'expo-image';
 import _ from 'lodash';
 import React from 'react';
-import { RefreshControl, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { RefreshControl, useWindowDimensions, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 const AnimatedMasonryFlashList = Animated.createAnimatedComponent(MasonryFlashList);
@@ -27,13 +27,12 @@ const PhotoListView: React.FC<any> = ({ query, userDocumentId, headerHeight, scr
           return _.startsWith(item.mime, 'image')
             ? {
                 ...item,
-                uri: imageFormat(item, 's', 't')?.fullUrl,
+                thumbnail: imageFormat(item, 's', 't')?.fullUrl,
                 preview: imageFormat(item, 'l')?.fullUrl,
               }
             : {
-                id: item.id,
-                data: item,
-                uri: imageFormat(item.attachmentExtras?.thumbnail, 's', 't')?.fullUrl,
+                ...item,
+                thumbnail: imageFormat(item.attachmentExtras?.thumbnail, 's', 't')?.fullUrl,
                 preview: fileFullUrl(item),
               };
         }),
@@ -46,19 +45,15 @@ const PhotoListView: React.FC<any> = ({ query, userDocumentId, headerHeight, scr
 
   const renderItem = ({ item, index }: any) => {
     return (
-      <TouchableOpacity onPress={() => onImagePress(index)}>
-        <Image
-          recyclingKey={item.assetId}
-          source={{ uri: item.uri }}
-          contentFit="cover"
-          style={{
-            flex: 1,
-            aspectRatio: 1,
-            marginLeft: 1,
-          }}
-          alt={item.alternativeText}
-        />
-      </TouchableOpacity>
+      <ImageryItem
+        source={{ uri: item.thumbnail }}
+        cacheKey={item.name}
+        mime={item.mime}
+        alt={item.alternativeText || item.name}
+        resizeMode="cover"
+        className="ml-[1] aspect-[1] w-full"
+        onPress={() => onImagePress(index)}
+      />
     );
   };
 

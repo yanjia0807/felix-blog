@@ -12,8 +12,8 @@ import { View } from 'react-native';
 const SenderItemSkeleton = () => {
   return (
     <HStack className="my-1 items-center justify-between" space="sm">
-      <SkeletonText className="h-3 w-24" />
-      <Card size="md" variant="elevated" className="flex-1 flex-grow rounded-md bg-primary-300 p-4">
+      <Skeleton variant="rounded" className="h-3 w-24" />
+      <Card size="md" variant="elevated" className="flex-1 flex-grow rounded-md p-4">
         <SkeletonText className="h-3 w-full" _lines={2} />
       </Card>
     </HStack>
@@ -25,11 +25,11 @@ const ReceiverItemSkeleton = () => {
     <HStack>
       <Skeleton variant="circular" className="h-6 w-6" />
       <HStack className="flex-1 items-center justify-between">
-        <Card size="md" variant="elevated" className="m-3 w-2/3 rounded-md bg-primary-200 p-4">
+        <Card size="md" variant="elevated" className="m-3 w-2/3 rounded-md p-4">
           <SkeletonText className="h-3 w-full" _lines={2} />
         </Card>
         <View className="flex-1">
-          <SkeletonText className="h-3 w-full" />
+          <Skeleton variant="rounded" className="h-3 w-full" />
         </View>
       </HStack>
     </HStack>
@@ -39,7 +39,7 @@ const ReceiverItemSkeleton = () => {
 export const ChatDetailSkeleton: React.FC<any> = () => {
   const router = useRouter();
 
-  const placeholders = _.map(new Array(4), (item, index) => ({
+  const placeholders = _.map(new Array(2), (item, index) => ({
     documentId: _.uniqueId(),
     sender: index % 2 === 0,
   }));
