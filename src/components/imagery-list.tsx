@@ -6,7 +6,7 @@ export const ImageryList = memo(function ImageryList({ value = [], onPress }: an
   const renderItem = useCallback(
     ({ item, index }: any) => (
       <ImageryItem
-        source={{ uri: item.uri }}
+        source={{ uri: item.thumbnail }}
         cacheKey={item.name}
         mime={item.mime}
         alt={item.alternativeText || item.name}

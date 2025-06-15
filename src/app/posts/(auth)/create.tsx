@@ -78,7 +78,7 @@ const PostCreatePage: React.FC = () => {
   );
 
   const renderHeaderRight = () => (
-    <HStack space="md" className="items-center">
+    <HStack space="sm" className="items-center">
       <Button
         size="md"
         action="primary"

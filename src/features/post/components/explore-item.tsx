@@ -1,7 +1,7 @@
 import { ImageryItem } from '@/components/imagery-item';
 import { usePreferences } from '@/components/preferences-provider';
-import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
+import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserAvatar } from '@/features/user/components/user-avatar';
 import { BlurView } from 'expo-blur';
@@ -54,7 +54,9 @@ export const ExploreItem: React.FC<any> = memo(function ExploreItem({ item, colu
         </View>
       </View>
       <VStack space="sm">
-        <Heading numberOfLines={2}>{item.title}</Heading>
+        <Text size="lg" numberOfLines={2} className="font-bold">
+          {item.title}
+        </Text>
         <HStack className="items-center">
           <UserAvatar user={item.author} size="xs" />
         </HStack>

@@ -1,5 +1,4 @@
 import { Card } from '@/components/ui/card';
-import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -13,9 +12,9 @@ export const UserPostItem: React.FC<any> = memo(function UserPostItem({ item, in
     <Card size="sm">
       <VStack space="md">
         <HStack className="items-center justify-between">
-          <Heading numberOfLines={1} ellipsizeMode="tail" className="flex-1">
+          <Text size="lg" numberOfLines={1} ellipsizeMode="tail" className="flex-1 font-bold">
             {item.title}
-          </Heading>
+          </Text>
         </HStack>
         <HStack className="items-center justify-between">
           <Text size="xs" className="items-center">

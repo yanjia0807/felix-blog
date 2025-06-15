@@ -4,7 +4,6 @@ import { ImageryItem } from '@/components/imagery-item';
 import { ImageryList } from '@/components/imagery-list';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
-import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Menu, MenuItem, MenuItemLabel, MenuSeparator } from '@/components/ui/menu';
@@ -194,7 +193,7 @@ const PostDetail: React.FC<any> = () => {
       <SafeAreaView className="flex-1">
         <Stack.Screen
           options={{
-            title: '',
+            title: post.title,
             headerShown: true,
             headerLeft: renderHeaderLeft,
             headerRight: renderHeaderRight,
@@ -215,7 +214,6 @@ const PostDetail: React.FC<any> = () => {
               className="rounded-md"
             />
             <HStack className="items-center" space="sm">
-              <Heading size="lg">{post.title}</Heading>
               {!post.isPublished && (
                 <Text size="sm" sub={true} className="text-gray-400">
                   [未发布]
@@ -241,9 +239,9 @@ const PostDetail: React.FC<any> = () => {
               </HStack>
             </HStack>
             <TagList value={post.tags} readonly={true} />
-            <ImageryList value={post.images} onPress={onImagePress} />
+            <ImageryList value={post.imageries} onPress={onImagePress} />
             <Divider />
-            <Text size="lg">{post.content}</Text>
+            <Text size="md">{post.content}</Text>
             <Divider />
             <HStack className="items-center justify-end">
               <HStack space="md" className="items-center justify-end">

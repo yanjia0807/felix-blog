@@ -2,7 +2,6 @@ import { useCarousel } from '@/components/carousel-provider';
 import { ImageryItem } from '@/components/imagery-item';
 import { ImageryList } from '@/components/imagery-list';
 import { Card } from '@/components/ui/card';
-import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -53,9 +52,9 @@ export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
               <UserAvatar user={item.author} />
               <PostItemMenu post={item} />
             </HStack>
-            <Heading numberOfLines={1} ellipsizeMode="tail" bold={true}>
+            <Text size="lg" numberOfLines={1} ellipsizeMode="tail" className="font-bold">
               {item.title}
-            </Heading>
+            </Text>
             <HStack className="items-center justify-between">
               <Text size="xs">{formatDistance(item.publishDate)}</Text>
               <HStack space="xs" className="w-1/2 items-center justify-end">

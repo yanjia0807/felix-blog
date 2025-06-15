@@ -68,12 +68,7 @@ const PostEditPage = () => {
 
   const renderHeaderRight = () => (
     <HStack space="md" className="items-center">
-      <Button
-        size="md"
-        action="primary"
-        variant="link"
-        isDisabled={editMutation.isPending}
-        onPress={onSave}>
+      <Button action="primary" variant="link" isDisabled={editMutation.isPending} onPress={onSave}>
         <ButtonText>保存</ButtonText>
       </Button>
     </HStack>
@@ -87,8 +82,8 @@ const PostEditPage = () => {
     <SafeAreaView className="flex-1">
       <Stack.Screen
         options={{
-          title: '编辑帖子',
           headerShown: true,
+          title: '编辑帖子',
           headerLeft: renderHeaderLeft,
           headerRight: renderHeaderRight,
         }}
