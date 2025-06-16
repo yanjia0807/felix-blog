@@ -71,7 +71,7 @@ export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
             <TagList tags={item.tags || []}></TagList>
           </VStack>
           <ImageryItem
-            source={{ uri: item.cover.thumbnail }}
+            uri={item.cover.thumbnail}
             cacheKey={item.cover.name}
             mime={item.cover.mime}
             alt={item.cover.alternativeText || item.cover.name}

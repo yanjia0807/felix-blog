@@ -26,7 +26,7 @@ export const BannerItem: React.FC<any> = memo(function BannerItem({ item }) {
   return (
     <TouchableOpacity onPress={() => onItemPress()} className={`mr-4 h-48 w-80`}>
       <ImageryItem
-        source={{ uri: imageFormat(item.image, 'l')?.fullUrl }}
+        uri={imageFormat(item.image, 'l')?.fullUrl}
         cacheKey={item.image.name}
         mime={item.image.mime}
         alt={item.image.alternativeText || item.image.name}

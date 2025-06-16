@@ -8,14 +8,14 @@ export const useMediaCamPermissions = () => {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const toast = useToast();
 
-  const requestMediaCamPermissions = async (successCb) => {
+  const requestMediaCamPermissions = async () => {
     if (cameraPermission?.granted) {
-      return successCb();
+      return true;
     }
 
     const result = await requestCameraPermission();
     if (result.granted) {
-      return successCb();
+      return true;
     } else {
       if (!result.canAskAgain) {
         toast.info({

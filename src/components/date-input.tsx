@@ -90,12 +90,12 @@ export const DateInput: React.FC<MyComponentProps> = ({
               locale="zh-CN"
             />
             <HStack className="items-center justify-around">
-              <Button action="positive" variant="link" className="flex-1" onPress={() => onClear()}>
+              <Button action="negative" variant="link" className="flex-1" onPress={() => onClear()}>
                 <ButtonText>清除</ButtonText>
               </Button>
               <Divider orientation="vertical" />
               <Button
-                action="negative"
+                action="positive"
                 variant="link"
                 className="flex-1"
                 onPress={() => onCommit()}>

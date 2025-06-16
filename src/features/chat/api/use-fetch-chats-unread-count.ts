@@ -4,9 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 
 export const useFetchChatsUnreadCount = () => {
   const { user } = useAuth();
+
   const queryChatsUnreadCount = async () => {
     if (!user) return null;
-    return fetchChatsUnreadCount;
+    return fetchChatsUnreadCount();
   };
 
   return useQuery({

@@ -1,6 +1,7 @@
 import { apiClient } from '../utils/api-client';
 
 export const login = async ({ identifier, password }: any) => {
+  debugger;
   try {
     const res = await apiClient.post(`/auth/local`, {
       identifier,

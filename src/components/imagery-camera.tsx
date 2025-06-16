@@ -6,11 +6,78 @@ import { Slider, SliderFilledTrack, SliderTrack } from '@/components/ui/slider';
 import { createVideoThumbnail } from '@/utils/file';
 import { CameraMode, CameraType, CameraView, FlashMode } from 'expo-camera';
 import { Image } from 'expo-image';
-import { Camera, Check, CircleX, SwitchCamera, Undo, Zap, ZapOff } from 'lucide-react-native';
+import _ from 'lodash';
+import { Camera, CircleX, SwitchCamera, Zap, ZapOff } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import VideoPlayer from 'react-native-video-player';
+import { Divider } from './ui/divider';
+import { VStack } from './ui/vstack';
+
+const PictureViewer: React.FC<any> = ({ data, onCommit, onUndo }) => {
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const bodyHeight = windowHeight - insets.bottom - 35;
+
+  return (
+    <View className="flex-1 justify-between">
+      <Image
+        source={{
+          uri: data.uri,
+        }}
+        style={{
+          width: '100%',
+          height: bodyHeight,
+        }}
+      />
+      <HStack
+        className="w-full items-center justify-center bg-background-50 p-2"
+        style={{ paddingBottom: insets.bottom }}>
+        <Button action="negative" variant="link" className="flex-1" onPress={onUndo}>
+          <ButtonText>取消</ButtonText>
+        </Button>
+        <Button action="positive" className="flex-1" onPress={onCommit}>
+          <ButtonText>确定</ButtonText>
+        </Button>
+      </HStack>
+    </View>
+  );
+};
+
+const VideoViewer: React.FC<any> = ({ data, onCommit, onUndo }) => {
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const bodyHeight = windowHeight - insets.bottom - 35;
+
+  return (
+    <View className="flex-1 justify-between">
+      <VideoPlayer
+        source={{
+          uri: data.uri,
+        }}
+        controls={true}
+        showDuration={true}
+        style={{
+          width: '100%',
+          height: bodyHeight,
+        }}
+      />
+      <HStack
+        className="w-full items-center justify-center bg-background-50 p-2"
+        style={{ paddingBottom: insets.bottom }}>
+        <Button action="negative" variant="link" className="flex-1" onPress={onUndo}>
+          <ButtonText>取消</ButtonText>
+        </Button>
+        <Divider orientation="vertical" />
+        <Button action="positive" className="flex-1" onPress={onCommit}>
+          <ButtonText>确定</ButtonText>
+        </Button>
+      </HStack>
+    </View>
+  );
+};
 
 export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -50,20 +117,8 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
     setData(picture);
   };
 
-  const capturePicGesture = Gesture.Tap()
-    .onEnd(async (e, success) => {
-      if (success) {
-        if (mode === 'picture') {
-          capturePic();
-        } else {
-          setMode('picture');
-          setTimeout(async () => capturePic(), 600);
-        }
-      }
-    })
-    .runOnJS(true);
-
-  const captureVideo = async () => {
+  const startCaptureVideo = async () => {
+    setMode('video');
     setIsRecording(true);
     intervalRef.current = setInterval(() => {
       setRecordingTime((prev) => prev + 1);
@@ -82,37 +137,26 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
     await cameraRef.current?.stopRecording();
   };
 
-  const captureVideoGesture = Gesture.LongPress()
-    .onStart(async () => {
-      if (mode === 'video') {
-        captureVideo();
-      } else {
-        setMode('video');
-        setTimeout(async () => captureVideo(), 600);
-      }
-    })
-    .onEnd(async (e, success) => {
-      stopCaptureVideo();
-    })
-    .runOnJS(true);
-
-  const captureGesture = Gesture.Exclusive(captureVideoGesture, capturePicGesture);
-
   const onCommit = async () => {
     let val;
+    const uri = _.replace(data.uri, 'file://', '');
+    const name = _.last(data.uri.split('/'));
+
     if (mode === 'picture') {
       val = {
-        uri: data.uri,
-        thumbnail: data.uri,
-        preview: data.uri,
+        name,
+        uri,
+        thumbnail: uri,
+        preview: uri,
       };
     } else {
-      const thumbnail = await createVideoThumbnail(data.uri);
+      const thumbnail = await createVideoThumbnail(uri);
 
       val = {
-        uri: data.uri,
+        name,
+        uri,
         thumbnail: thumbnail?.path,
-        preview: data.uri,
+        preview: uri,
       };
     }
 
@@ -125,6 +169,26 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
     setData(null);
   };
 
+  const capturePicGesture = Gesture.Tap()
+    .onEnd(async (e, success) => {
+      if (success) {
+        setMode('picture');
+        capturePic();
+      }
+    })
+    .runOnJS(true);
+
+  const captureVideoGesture = Gesture.LongPress()
+    .onStart(async () => {
+      startCaptureVideo();
+    })
+    .onEnd(async (e, success) => {
+      stopCaptureVideo();
+    })
+    .runOnJS(true);
+
+  const captureGesture = Gesture.Exclusive(captureVideoGesture, capturePicGesture);
+
   useEffect(() => {
     if (isRecording && recordingTime >= MAX_DURATION) {
       cameraRef.current?.stopRecording();
@@ -133,81 +197,27 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
 
   return (
     <Portal isOpen={isOpen} style={{ flex: 1, backgroundColor: 'white' }}>
-      <>
-        {data ? (
-          <>
-            {mode === 'picture' ? (
-              <View className="flex-1 items-center">
-                <Image
-                  source={{
-                    uri: data.uri,
-                  }}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: 8,
-                  }}
-                />
-                <HStack
-                  className="absolute bottom-0 w-full items-center justify-center self-center px-4"
-                  style={{
-                    paddingBottom: insets.bottom,
-                  }}
-                  space="4xl">
-                  <Button
-                    size="xl"
-                    variant="solid"
-                    className="rounded-full"
-                    action="secondary"
-                    onPress={onCommit}>
-                    <ButtonIcon as={Check} />
-                  </Button>
-                  <Button
-                    action="negative"
-                    onPress={onUndo}
-                    className="absolute right-4 rounded-full opacity-50">
-                    <ButtonIcon as={Undo} />
-                  </Button>
-                </HStack>
-              </View>
-            ) : (
-              <View className="flex-1 items-center">
-                <HStack
-                  className="absolute bottom-0 w-full items-center justify-center self-center px-4"
-                  space="4xl"
-                  style={{
-                    paddingBottom: insets.bottom,
-                  }}>
-                  <Button
-                    variant="solid"
-                    className="rounded-full"
-                    action="secondary"
-                    size="xl"
-                    onPress={onCommit}>
-                    <ButtonIcon as={Check} />
-                  </Button>
-                  <Button
-                    action="negative"
-                    onPress={onUndo}
-                    className="absolute right-4 rounded-full opacity-50">
-                    <ButtonIcon as={Undo} />
-                  </Button>
-                </HStack>
-              </View>
-            )}
-          </>
-        ) : (
+      {data ? (
+        <>
+          {mode === 'picture' ? (
+            <PictureViewer data={data} onCommit={onCommit} onUndo={onUndo} />
+          ) : (
+            <VideoViewer data={data} onCommit={onCommit} onUndo={onUndo} />
+          )}
+        </>
+      ) : (
+        <View className="flex-1">
           <CameraView
             ref={cameraRef}
-            style={{ flex: 1, width: '100%' }}
+            style={StyleSheet.absoluteFill}
             facing={facing}
             flash={flash}
-            mode={mode}>
+            mode={mode}
+          />
+          <VStack className="flex-1 justify-between">
             <HStack
               className="absolute top-0 w-full items-center justify-between px-4"
-              style={{
-                paddingTop: insets.top,
-              }}>
+              style={{ paddingTop: insets.top }}>
               <Button
                 size="lg"
                 variant="link"
@@ -249,7 +259,6 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
             {mode === 'video' && isRecording && (
               <Slider
                 className="absolute top-1/2 w-4/5 flex-1 self-center opacity-70"
-                isDisabled={false}
                 value={recordingTime}
                 maxValue={MAX_DURATION}
                 size="sm">
@@ -258,9 +267,9 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
                 </SliderTrack>
               </Slider>
             )}
-          </CameraView>
-        )}
-      </>
+          </VStack>
+        </View>
+      )}
     </Portal>
   );
 };

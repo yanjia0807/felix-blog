@@ -30,7 +30,9 @@ export const createExpoPushToken = async (data) => {
   return res.data;
 };
 
-export const updateExpoPushToken = async ({ documentId, data }: any) => {
+export const updateExpoPushToken = async ({ data }: any) => {
+  const { documentId, ...rest } = data;
+
   const query = qs.stringify({
     populate: {
       user: {
@@ -39,6 +41,6 @@ export const updateExpoPushToken = async ({ documentId, data }: any) => {
     },
   });
 
-  const res = await apiClient.put(`/expo-push-tokens/${documentId}?${query}`, { data });
+  const res = await apiClient.put(`/expo-push-tokens/${documentId}?${query}`, { data: rest });
   return res.data;
 };

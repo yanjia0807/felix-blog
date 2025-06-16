@@ -66,9 +66,8 @@ const ImageViewer: React.FC<any> = ({ item, onClose }) => {
                 width: '100%',
                 height: '100%',
               }}
-              source={{ uri: item.preview }}
+              uri={item.preview}
               cacheKey={item.name}
-              assetId={item.assetId}
               mime={item.mime}
               alt={item.alternativeText || item.name}
               resizeMode="contain"

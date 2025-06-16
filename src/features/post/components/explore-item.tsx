@@ -31,7 +31,7 @@ export const ExploreItem: React.FC<any> = memo(function ExploreItem({ item, colu
       }}>
       <View className="flex-1 items-center justify-end">
         <ImageryItem
-          source={{ uri: item.cover.thumbnail }}
+          uri={item.cover.thumbnail}
           cacheKey={item.cover.name}
           mime={item.cover.mime}
           alt={item.cover.alternativeText || item.cover.name}

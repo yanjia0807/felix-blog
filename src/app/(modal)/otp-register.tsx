@@ -206,12 +206,13 @@ const OtpRegisterPage: React.FC = () => {
           <VStack>
             <Button
               className="rounded"
+              action="positive"
               onPress={handleSubmit(onSubmit)}
               disabled={registerOtpMutation.isPending}>
               <ButtonText>注册</ButtonText>
               {registerOtpMutation.isPending && <ButtonSpinner />}
             </Button>
-            <Button variant="link" action="secondary" onPress={onCancel}>
+            <Button variant="link" action="negative" onPress={onCancel}>
               <ButtonText>取消</ButtonText>
             </Button>
           </VStack>

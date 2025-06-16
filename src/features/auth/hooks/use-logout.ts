@@ -1,12 +1,15 @@
 import { usePushNotification } from '@/features/push-notification/components/push-notification-provider';
-import { useAuth } from '../components/auth-provider';
+import { useQueryClient } from '@tanstack/react-query';
+import * as SecureStore from 'expo-secure-store';
 
 export const useLogout = () => {
-  const { doLogout } = useAuth();
   const { unRegisterPushNotification } = usePushNotification();
+  const queryClient = useQueryClient();
 
-  const logout = () => {
-    doLogout();
+  const logout = async () => {
+    await SecureStore.deleteItemAsync('accessToken');
+    await queryClient.invalidateQueries({ queryKey: ['users', 'detail', 'me'] });
+    queryClient.clear();
     unRegisterPushNotification();
   };
 

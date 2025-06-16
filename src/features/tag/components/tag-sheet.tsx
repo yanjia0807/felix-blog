@@ -117,8 +117,7 @@ export const TagSheet = forwardRef(function Sheet({ value = [], onChange }: any,
           <Button action="negative" variant="link" className="flex-1" onPress={() => onClose()}>
             <ButtonText>取消</ButtonText>
           </Button>
-          <Divider orientation="vertical" />
-          <Button action="positive" variant="link" className="flex-1" onPress={() => onCommit()}>
+          <Button action="positive" className="flex-1" onPress={() => onCommit()}>
             <ButtonText>确定</ButtonText>
           </Button>
         </HStack>

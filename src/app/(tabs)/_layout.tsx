@@ -88,7 +88,6 @@ const TabButton = forwardRef(function TabButton(
 
 export default function TabLayout() {
   const chatsUnreadCount = useFetchChatsUnreadCount();
-
   const renderChatBadge = () => {
     return (
       chatsUnreadCount.data && (

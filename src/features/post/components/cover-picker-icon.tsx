@@ -29,8 +29,7 @@ export const CoverPickerIcon = memo(function CoverPickerIcon({
     <FormControl isInvalid={!!error} size="md">
       {value ? (
         <ImageryItem
-          assetId={value.assetId}
-          source={{ uri: value.thumbnail }}
+          uri={value.thumbnail}
           cacheKey={value.name}
           mime={value.mime}
           alt={value.alternativeText || value.name}

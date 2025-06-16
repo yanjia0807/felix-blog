@@ -146,7 +146,11 @@ export const DistrictSheet = forwardRef(function Sheet({ value, onChange }: any,
         <HStack
           className="items-center justify-around bg-background-50 p-2"
           style={{ paddingBottom: insets.bottom }}>
-          <Button className="flex-1" variant="link" onPress={() => onClearBtnPressed()}>
+          <Button
+            className="flex-1"
+            variant="link"
+            action="negative"
+            onPress={() => onClearBtnPressed()}>
             <ButtonText>清除</ButtonText>
           </Button>
           <Divider orientation="vertical"></Divider>

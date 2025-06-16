@@ -202,7 +202,7 @@ const PostDetail: React.FC<any> = () => {
         <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
           <VStack space="md">
             <ImageryItem
-              source={{ uri: post.cover.thumbnail }}
+              uri={post.cover.thumbnail}
               cacheKey={post.cover.name}
               mime={post.cover.mime}
               alt={post.cover.alternativeText || post.cover.name}

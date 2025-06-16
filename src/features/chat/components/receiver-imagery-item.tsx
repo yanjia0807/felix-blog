@@ -44,7 +44,7 @@ export const ReceiverImageryItem: React.FC<any> = memo(function ReceiverImageryI
           <VStack space="md" className="flex-1">
             {_.map(Imageries, (item) => (
               <ImageryItem
-                source={{ uri: item.thumbnail }}
+                uri={item.thumbnail}
                 cacheKey={item.name}
                 mime={item.mime}
                 alt={item.alternativeText || item.name}

@@ -1,18 +1,14 @@
 import { createFetchMeQuery } from '@/features/user/api/use-fetch-me';
+import { useNotificationPermissions } from '@/hooks/use-notification-permissions';
 import { getDeviceId, getProjectId } from '@/utils/common';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useCreateExpoPushToken } from '../api/use-create-expo-push-token';
-import {
-  createFetchExpoPushTokenQuery,
-  useFetchExpoPushToken,
-} from '../api/use-fetch-expo-push-token';
+import { createFetchExpoPushTokenQuery } from '../api/use-fetch-expo-push-token';
 import { useUpdateExpoPushToken } from '../api/use-update-expo-push-token';
-import { useDeviceId } from '../hooks/use-deviceId';
 
 const PushNotificationContext = createContext<any>(undefined);
 
@@ -27,12 +23,11 @@ export const usePushNotification = () => {
 export const PushNotificationProvider = ({ children }: any) => {
   useEffect(() => console.log('@render PushNotificationProvider'));
 
-  const { deviceId } = useDeviceId();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const expoPushTokenQuery = useFetchExpoPushToken({ deviceId });
-  const { registerUserPushToken, unRegisterUserPushToken } = useUpdateExpoPushToken();
-  const createExpoPushTokenMutation = useCreateExpoPushToken();
+  const updateExpoPushToken = useUpdateExpoPushToken();
+  const { mutate: createExpoPushToken } = useCreateExpoPushToken();
+  const { requestNotificationPermissions } = useNotificationPermissions();
 
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -45,40 +40,40 @@ export const PushNotificationProvider = ({ children }: any) => {
   });
 
   const registerPushNotification = React.useCallback(async () => {
+    const deviceId = await getDeviceId();
+
     const pushTokenQuery = await queryClient.fetchQuery(
       createFetchExpoPushTokenQuery({ deviceId }),
     );
-
-    const accessToken = await SecureStore.getItemAsync('accessToken');
-    const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
+    const user = await queryClient.fetchQuery(createFetchMeQuery());
 
     if (pushTokenQuery) {
-      await registerUserPushToken.mutate({
+      await updateExpoPushToken.mutate({
         documentId: pushTokenQuery.documentId,
         deviceId: pushTokenQuery.deviceId,
-        user: user.id,
+        user: user?.id,
       });
     }
-  }, [queryClient, deviceId, registerUserPushToken]);
+  }, [queryClient, updateExpoPushToken]);
 
   const unRegisterPushNotification = React.useCallback(async () => {
+    const deviceId = await getDeviceId();
     const pushTokenQuery = await queryClient.fetchQuery(
       createFetchExpoPushTokenQuery({ deviceId }),
     );
 
-    unRegisterUserPushToken.mutate({
+    updateExpoPushToken.mutate({
       documentId: pushTokenQuery.documentId,
-      deviceId: pushTokenQuery.deviceId,
+      user: null,
     });
-  }, [queryClient, deviceId, unRegisterUserPushToken]);
+  }, [queryClient, updateExpoPushToken]);
 
   const value = useMemo(
     () => ({
-      expoPushToken: expoPushTokenQuery.data,
       registerPushNotification,
       unRegisterPushNotification,
     }),
-    [expoPushTokenQuery.data, registerPushNotification, unRegisterPushNotification],
+    [registerPushNotification, unRegisterPushNotification],
   );
 
   useEffect(() => {
@@ -88,14 +83,8 @@ export const PushNotificationProvider = ({ children }: any) => {
         return;
       }
 
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      const finalStatus =
-        existingStatus === 'granted'
-          ? existingStatus
-          : (await Notifications.requestPermissionsAsync()).status;
-
-      if (finalStatus !== 'granted') {
-        console.log('failed to get push notification token.');
+      const status = await requestNotificationPermissions();
+      if (status !== 'granted') {
         return;
       }
 
@@ -115,10 +104,9 @@ export const PushNotificationProvider = ({ children }: any) => {
           return;
         }
 
-        const accessToken = await SecureStore.getItemAsync('accessToken');
-        const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
+        const user = await queryClient.fetchQuery(createFetchMeQuery());
 
-        await createExpoPushTokenMutation.mutate({
+        await createExpoPushToken({
           deviceId,
           token,
           user: user?.id,
@@ -133,8 +121,7 @@ export const PushNotificationProvider = ({ children }: any) => {
         async (response) => {
           const data = response.notification.request.content.data;
           if (data.type === 'chat') {
-            const accessToken = await SecureStore.getItemAsync('accessToken');
-            const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
+            const user = await queryClient.fetchQuery(createFetchMeQuery());
             if (user) {
               router.navigate(`/chats/${data.chatId}`);
             }
@@ -149,7 +136,7 @@ export const PushNotificationProvider = ({ children }: any) => {
     };
 
     register();
-  }, []);
+  }, [createExpoPushToken, queryClient, requestNotificationPermissions, router]);
 
   return (
     <PushNotificationContext.Provider value={value}>{children}</PushNotificationContext.Provider>

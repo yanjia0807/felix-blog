@@ -8,14 +8,14 @@ export const useMediaLibPermissions = () => {
   const [libraryPermissions, requestLibraryPermission] = ImagePicker.useMediaLibraryPermissions();
   const toast = useToast();
 
-  const requestMediaLibPermissions = async (successCb) => {
+  const requestMediaLibPermissions = async () => {
     if (libraryPermissions?.granted) {
-      return successCb();
+      return true;
     }
 
     const result = await requestLibraryPermission();
     if (result.granted) {
-      return successCb();
+      return true;
     } else {
       if (!result.canAskAgain) {
         toast.info({

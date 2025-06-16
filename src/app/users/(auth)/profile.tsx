@@ -16,6 +16,7 @@ import { ProfileSkeleton } from '@/features/user/components/profile-skeleton';
 import { UserProfileAvatar } from '@/features/user/components/user-profile-avater';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { router } from 'expo-router';
+import _ from 'lodash';
 import { Calendar, EditIcon, MapPin, ScanFace, Settings } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
@@ -123,11 +124,19 @@ const ProfileHeader: React.FC<any> = ({
                 {user.gender ? (user.gender === 'male' ? '男' : '女') : '未设置'}
               </Text>
             </HStack>
-            {user.district && (
+            {user.district ? (
               <HStack className="items-center" space="xs">
                 <Icon size="xs" as={MapPin} />
-                <Text size="xs">{`${user.district?.provinceName}|${user.district?.cityName}|${user.district?.districtName}`}</Text>
+                <Text size="xs">
+                  {_.concat(
+                    !!user.district?.provinceName ? user.district?.provinceName : '',
+                    !!user.district?.cityName ? ' ' + user.district?.cityName : '',
+                    !!user.district?.districtName ? ' ' + user.district?.districtName : '',
+                  )}
+                </Text>
               </HStack>
+            ) : (
+              '未设置'
             )}
           </HStack>
           <Text size="sm">{user?.bio || '个人签名'}</Text>

@@ -167,12 +167,13 @@ const SetPasswordPage: React.FC = () => {
           </VStack>
           <Button
             className="rounded"
+            action="positive"
             onPress={handleSubmit(onSubmit)}
             disabled={resetPasswordByOtpMutation.isPending}>
             <ButtonText>确定</ButtonText>
             {resetPasswordByOtpMutation.isPending && <ButtonSpinner />}
           </Button>
-          <Button variant="link" action="secondary" onPress={onCancel}>
+          <Button variant="link" action="negative" onPress={onCancel}>
             <ButtonText>取消</ButtonText>
           </Button>
         </KeyboardAwareScrollView>

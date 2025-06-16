@@ -46,7 +46,7 @@ const PhotoListView: React.FC<any> = ({ query, userDocumentId, headerHeight, scr
   const renderItem = ({ item, index }: any) => {
     return (
       <ImageryItem
-        source={{ uri: item.thumbnail }}
+        uri={item.thumbnail}
         cacheKey={item.name || item.thumbnail}
         mime={item.mime}
         alt={item.alternativeText || item.name}

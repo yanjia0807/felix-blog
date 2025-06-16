@@ -151,12 +151,13 @@ const Login: React.FC = () => {
           <VStack>
             <Button
               className="rounded"
+              action="positive"
               onPress={handleSubmit(onSubmit)}
               disabled={loginMutation.isPending}>
               <ButtonText>登录</ButtonText>
               {loginMutation.isPending && <ButtonSpinner />}
             </Button>
-            <Button variant="link" action="secondary" onPress={onCancel}>
+            <Button variant="link" action="negative" onPress={onCancel}>
               <ButtonText>取消</ButtonText>
             </Button>
           </VStack>

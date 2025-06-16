@@ -134,12 +134,13 @@ const SendOtpForm: React.FC<SendOtpFormProps> = ({ title, purpose }) => {
           <VStack>
             <Button
               className="rounded"
+              action="positive"
               disabled={sendOtpMutation.isPending}
               onPress={handleSubmit(onSubmit)}>
               <ButtonText>发送</ButtonText>
               {sendOtpMutation.isPending && <ButtonSpinner />}
             </Button>
-            <Button variant="link" action="secondary" onPress={onCancel}>
+            <Button variant="link" action="negative" onPress={onCancel}>
               <ButtonText>取消</ButtonText>
             </Button>
           </VStack>

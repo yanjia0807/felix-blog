@@ -44,7 +44,6 @@ export const ImagerySheet = ({
       if (item.assetId && !_.some(val, ['assetId', item.assetId])) {
         if (_.startsWith(item.mimeType, 'image')) {
           val.push({
-            assetId: item.assetId,
             name: item.fileName,
             mime: item.mimeType,
             uri: item.uri,
@@ -55,7 +54,6 @@ export const ImagerySheet = ({
           const thumbnail = await createVideoThumbnail(item.uri);
 
           val.push({
-            assetId: item.assetId,
             name: item.fileName,
             mime: item.mimeType,
             uri: thumbnail?.path,
@@ -77,10 +75,11 @@ export const ImagerySheet = ({
   };
 
   const openLibrary = async () => {
-    requestMediaLibPermissions(async () => {
+    const hasPermission = await requestMediaLibPermissions();
+    if (hasPermission) {
       await selectFromLibrary();
       onClose();
-    });
+    }
   };
 
   const openCamera = async () => {
@@ -89,10 +88,11 @@ export const ImagerySheet = ({
       return;
     }
 
-    requestMediaCamPermissions(() => {
+    const hasPermission = await requestMediaCamPermissions();
+    if (hasPermission) {
       setCameraIsOpen(true);
       onClose();
-    });
+    }
   };
 
   const closeCamera = () => setCameraIsOpen(false);

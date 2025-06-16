@@ -1,4 +1,5 @@
 import { Button, ButtonIcon } from '@/components/ui/button';
+import { isLocalFile } from '@/utils/file';
 import { Ionicons } from '@expo/vector-icons';
 import CachedImage from 'expo-cached-image';
 import _ from 'lodash';
@@ -8,10 +9,9 @@ import { Image, TouchableOpacity, View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 
 export const ImageryItem: React.FC<any> = memo(function ImageryItem({
-  source,
+  uri,
   alt,
   cacheKey,
-  assetId,
   mime,
   onPress,
   onRemove,
@@ -31,9 +31,9 @@ export const ImageryItem: React.FC<any> = memo(function ImageryItem({
   return (
     <Wrapper onPress={onPress}>
       <View className="items-center justify-center">
-        {!!assetId ? (
+        {isLocalFile(uri) ? (
           <Image
-            source={source}
+            source={{ uri }}
             alt={alt}
             style={[defaultStyle, style]}
             className={twMerge([className])}
@@ -41,7 +41,7 @@ export const ImageryItem: React.FC<any> = memo(function ImageryItem({
           />
         ) : (
           <CachedImage
-            source={source}
+            source={{ uri }}
             cacheKey={cacheKey}
             alt={alt}
             style={[defaultStyle, style]}

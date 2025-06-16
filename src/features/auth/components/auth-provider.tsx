@@ -1,8 +1,6 @@
 import PageSpinner from '@/components/page-spinner';
 import { useFetchMe } from '@/features/user/api/use-fetch-me';
-import { useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 
 const AuthContext = createContext<any>(undefined);
 
@@ -15,54 +13,16 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: any) => {
-  const [accessToken, setAccessToken] = useState<string | undefined>();
-  const queryClient = useQueryClient();
-
-  const fetchMeQuery = useFetchMe(accessToken);
-
-  const doLogin = useCallback(
-    (token) => {
-      setAccessToken(token);
-      SecureStore.setItemAsync('accessToken', token);
-      queryClient.invalidateQueries({ queryKey: ['users', 'detail', 'me'] });
-    },
-    [queryClient],
-  );
-
-  const doLogout = useCallback(async () => {
-    setAccessToken(undefined);
-    queryClient.clear();
-    await SecureStore.deleteItemAsync('accessToken');
-  }, [queryClient]);
-
-  useEffect(() => {
-    const load = async () => {
-      const token = await SecureStore.getItemAsync('accessToken');
-      if (token) {
-        setAccessToken(token);
-      }
-    };
-
-    load();
-  }, [queryClient, setAccessToken]);
+  const fetchMeQuery = useFetchMe();
 
   const value = useMemo(() => {
     return {
-      accessToken,
-      doLogin,
-      doLogout,
       user: fetchMeQuery.data,
     };
-  }, [accessToken, fetchMeQuery.data, doLogin, doLogout]);
+  }, [fetchMeQuery.data]);
 
   if (fetchMeQuery.isLoading) {
     return <PageSpinner />;
-  }
-
-  if (fetchMeQuery.isError) {
-    SecureStore.deleteItemAsync('accessToken');
-    setAccessToken(undefined);
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

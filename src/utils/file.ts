@@ -69,7 +69,7 @@ export const videoThumbnailUrl = (file: any, attachmentExtras: any = []) => {
 export const createVideoThumbnail = async (url: string) => {
   try {
     const thumbnail = await createThumbnail({
-      url: url.replace('file://', ''),
+      url,
       timeStamp: 10000,
     });
     return thumbnail;
@@ -92,4 +92,8 @@ export const toAttachmetItem = (attachment, attachmentExtras) => {
         thumbnail: videoThumbnailUrl(attachment, attachmentExtras),
         preview: fileFullUrl(attachment),
       };
+};
+
+export const isLocalFile = (url) => {
+  return _.startsWith(url, 'file://') || _.startsWith(url, '/') || /^[a-zA-Z]:\\/.test(url);
 };

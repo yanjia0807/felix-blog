@@ -21,10 +21,9 @@ export const ImageryGrid = ({ value = [], onPress, onChange }: any) => {
         {value.map((item: any, index: number) => {
           return (
             <ImageryItem
-              key={item.uri}
-              source={{ uri: item.thumbnail }}
+              key={item.name}
+              uri={item.thumbnail}
               cacheKey={item.name}
-              assetId={item.assetId}
               mime={item.mime}
               alt={item.alternativeText || item.name}
               className="my-2 rounded-md"

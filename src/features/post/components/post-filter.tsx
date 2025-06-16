@@ -166,8 +166,8 @@ export const PostFilter = memo(function PostFilter() {
             <Button action="positive" onPress={handleSubmit(onSubmit)}>
               <ButtonText>搜索</ButtonText>
             </Button>
-            <Button action="negative" onPress={() => onReset()}>
-              <ButtonText>重置</ButtonText>
+            <Button action="negative" variant="link" onPress={() => onReset()}>
+              <ButtonText>清除</ButtonText>
             </Button>
           </VStack>
         </VStack>
