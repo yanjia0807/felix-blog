@@ -1,6 +1,8 @@
 import PageSpinner from '@/components/page-spinner';
 import { useFetchMe } from '@/features/user/api/use-fetch-me';
-import React, { createContext, useContext, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import * as SecureStore from 'expo-secure-store';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 const AuthContext = createContext<any>(undefined);
 
@@ -13,15 +15,43 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: any) => {
-  const fetchMeQuery = useFetchMe();
+  const [accessToken, setAccessToken] = useState<undefined | string>();
+  const { isLoading, isError, data } = useFetchMe(accessToken);
+  const queryClient = useQueryClient();
+
+  const updateAccessToken = useCallback(async (token) => {
+    await SecureStore.setItemAsync('accessToken', token);
+    setAccessToken(token);
+  }, []);
+
+  const clearAccessToken = useCallback(async () => {
+    await SecureStore.deleteItemAsync('accessToken');
+    setAccessToken(null);
+  }, []);
+
+  if (isError) {
+    clearAccessToken();
+  }
+
+  useEffect(() => {
+    const loadToken = async () => {
+      const token = await SecureStore.getItemAsync('accessToken');
+      setAccessToken(token);
+    };
+
+    loadToken();
+  }, [queryClient]);
 
   const value = useMemo(() => {
     return {
-      user: fetchMeQuery.data,
+      accessToken,
+      user: data,
+      updateAccessToken,
+      clearAccessToken,
     };
-  }, [fetchMeQuery.data]);
+  }, [accessToken, data, clearAccessToken, updateAccessToken]);
 
-  if (fetchMeQuery.isLoading) {
+  if (isLoading) {
     return <PageSpinner />;
   }
 

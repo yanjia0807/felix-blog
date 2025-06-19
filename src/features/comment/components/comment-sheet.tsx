@@ -22,11 +22,18 @@ import { z } from 'zod';
 import { useCreateComment } from '../api/use-create-comment';
 import { useFetchPostCommentCount } from '../api/use-fetch-post-comment-count';
 import { useFetchPostComments } from '../api/use-fetch-post-comments';
-import { useCommentActions, useCommentPostDocumentId, useReplyComment } from '../store';
+import {
+  useCommentActions,
+  useCommentPostDocumentId,
+  useReplyComment,
+  useSelectComment,
+} from '../store';
 import { CommentInput } from './comment-input';
+import { CommentMenuSheet } from './comment-menu-sheet';
 import { CommentSectionFooter } from './comment-section-footer';
 import { CommentSectionHeader } from './comment-section-header';
 import { useCommentSheetContext } from './comment-sheet-provider';
+import { CommentSubSheet } from './comment-sub-sheet';
 
 type CommentFormSchema = z.infer<typeof commentFormSchema>;
 
@@ -41,9 +48,20 @@ const commentFormSchema = z.object({
 
 export const CommentSheet = memo(function CommentSheet() {
   const postDocumentId = useCommentPostDocumentId();
+  const selectComment = useSelectComment();
   const replyComment = useReplyComment();
   const { setReplyComment, addExpandCommentDocumentId } = useCommentActions();
-
+  const {
+    commentSheetRef,
+    commentMenuSheetRef,
+    commentSubSheetRef,
+    openMenu,
+    closeMenu,
+    openSub,
+    closeSub,
+    isExpanded,
+    onMenuChange,
+  } = useCommentSheetContext();
   const { user } = useAuth();
   const inputRef = useRef<any>(null);
   const snapPoints = useMemo(() => ['95%'], []);
@@ -57,11 +75,15 @@ export const CommentSheet = memo(function CommentSheet() {
     },
   });
 
-  const { commentSheetRef } = useCommentSheetContext();
+  const commentsQuery = useFetchPostComments({
+    postDocumentId,
+    blockUsers: _.map(user?.blockUsers, (item) => item.documentId),
+  });
 
-  const commentsQuery = useFetchPostComments({ postDocumentId });
-
-  const commentCountQuery = useFetchPostCommentCount({ postDocumentId });
+  const commentCountQuery = useFetchPostCommentCount({
+    postDocumentId,
+    blockUsers: _.map(user?.blockUsers, (item) => item.documentId),
+  });
 
   const createMutation = useCreateComment();
 
@@ -76,8 +98,7 @@ export const CommentSheet = memo(function CommentSheet() {
     }),
   );
 
-  const commentCount =
-    commentCountQuery.status === 'success' ? commentCountQuery.data.comments.count : 0;
+  const commentCount = commentCountQuery.status === 'success' ? commentCountQuery.data : 0;
 
   const onSubmit = (formData: CommentFormSchema) => {
     const data = {
@@ -112,7 +133,15 @@ export const CommentSheet = memo(function CommentSheet() {
   };
 
   const renderSectionHeader = ({ section, index }: any) => {
-    return <CommentSectionHeader index={index} item={section} inputRef={inputRef} />;
+    return (
+      <CommentSectionHeader
+        index={index}
+        item={section}
+        inputRef={inputRef}
+        commentMenuSheetRef={commentMenuSheetRef}
+        openMenu={openMenu}
+      />
+    );
   };
 
   const renderSectionFooter = ({ section }: any) => {
@@ -153,13 +182,13 @@ export const CommentSheet = memo(function CommentSheet() {
   );
 
   const renderFooter = (props: any) => {
+    if (isExpanded || !user) return null;
+
     return (
       <BottomSheetFooter {...props}>
-        {user && (
-          <HStack className="bg-background-100 p-2" style={{ paddingBottom: insets.bottom }}>
-            <Controller name="content" control={control} render={renderCommentInput} />
-          </HStack>
-        )}
+        <HStack className="bg-background-100 p-2" style={{ paddingBottom: insets.bottom }}>
+          <Controller name="content" control={control} render={renderCommentInput} />
+        </HStack>
       </BottomSheetFooter>
     );
   };
@@ -194,6 +223,17 @@ export const CommentSheet = memo(function CommentSheet() {
           stickySectionHeadersEnabled={false}
           onEndReached={onEndReached}
         />
+        {selectComment && (
+          <>
+            <CommentMenuSheet
+              menuRef={commentMenuSheetRef}
+              close={closeMenu}
+              openSub={openSub}
+              onChange={onMenuChange}
+            />
+            <CommentSubSheet subRef={commentSubSheetRef} onChange={onMenuChange} close={closeSub} />
+          </>
+        )}
       </VStack>
     </BottomSheetModal>
   );

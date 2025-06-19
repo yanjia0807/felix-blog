@@ -5,7 +5,6 @@ import { useFetchFollowings } from '@/features/user/api/use-fetch-followings';
 import UserList from '@/features/user/components/user-list';
 import useDebounce from '@/hooks/use-debounce';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import _ from 'lodash';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native';
 
@@ -22,8 +21,6 @@ const FollowingListPage: React.FC = () => {
   };
 
   const followingsQuery = useFetchFollowings({ filters });
-
-  const users: any = _.flatMap(followingsQuery.data?.pages, (page) => page.data);
 
   const renderHeaderLeft = () => (
     <Button
@@ -46,16 +43,7 @@ const FollowingListPage: React.FC = () => {
         }}
       />
       <VStack className="flex-1 p-4">
-        <UserList
-          data={users}
-          isLoading={followingsQuery.isLoading}
-          refetch={followingsQuery.refetch}
-          fetchNextPage={followingsQuery.fetchNextPage}
-          hasNextPage={followingsQuery.hasNextPage}
-          isFetchingNextPage={followingsQuery.isFetchingNextPage}
-          value={keywords}
-          onChange={setKeywords}
-        />
+        <UserList query={followingsQuery} value={keywords} onChange={setKeywords} />
       </VStack>
     </SafeAreaView>
   );

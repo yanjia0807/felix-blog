@@ -19,20 +19,30 @@ import { useCommentActions, useIsCommentExpanded } from '../store';
 import { CommentItem } from './comment-item';
 
 export const CommentSectionHeader: React.FC<any> = memo(function CommentSectionHeader({
-  index,
   item,
   inputRef,
+  openMenu,
 }) {
   const postDocumentId = item.post.documentId;
   const commentDocumentId = item.documentId;
-
-  const relatedCommentsQuery = useFetchRelatedComments({ postDocumentId, commentDocumentId });
-  const isCommentExpanded = useIsCommentExpanded(commentDocumentId);
-  const relatedComments = _.flatMap(relatedCommentsQuery.data?.pages, (page) => page.data);
-  const deleteMutation = useDeleteComment();
   const { user } = useAuth();
   const toast = useToast();
-  const { addExpandCommentDocumentId, setReplyComment } = useCommentActions();
+  const isCommentExpanded = useIsCommentExpanded(commentDocumentId);
+  const { addExpandCommentDocumentId, setReplyComment, setSelectComment } = useCommentActions();
+
+  const deleteMutation = useDeleteComment();
+
+  const relatedCommentsQuery = useFetchRelatedComments({
+    postDocumentId,
+    commentDocumentId,
+    blockUsers: _.map(user?.blockUsers, (item) => item.documentId),
+  });
+  const relatedComments = _.flatMap(relatedCommentsQuery.data?.pages, (page) => page.data);
+
+  const onOpenCommentMenu = (item) => {
+    setSelectComment(item);
+    openMenu();
+  };
 
   const onExpand = async (commentDocumentId: any) => addExpandCommentDocumentId(commentDocumentId);
 
@@ -63,70 +73,82 @@ export const CommentSectionHeader: React.FC<any> = memo(function CommentSectionH
   };
 
   return (
-    <HStack className={`my-2 ${index === 0 ? 'mt-0' : ''}`}>
-      <View className="w-12">
-        <Avatar size="sm">
-          <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
-          <AvatarImage
-            source={{
-              uri: imageFormat(item.user.avatar, 's', 't')?.fullUrl,
-            }}
-          />
-        </Avatar>
-      </View>
-      <VStack className="flex-1" space="xs">
+    <VStack space="sm">
+      <HStack space="sm" className="items-center">
+        <View className="w-8">
+          <Avatar size="sm">
+            <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
+            <AvatarImage
+              source={{
+                uri: imageFormat(item.user.avatar, 's', 't')?.fullUrl,
+              }}
+            />
+          </Avatar>
+        </View>
         <Text size="sm">{item.user.username}</Text>
-        <Text size="md">{item.content}</Text>
-        <HStack className="items-center justify-between">
-          <HStack className="items-center" space="md">
-            <Text size="sm">{formatDistance(item.createdAt)}</Text>
-            {user && (
-              <Button size="sm" variant="link" onPress={() => onReply()}>
-                <ButtonText>回复</ButtonText>
-              </Button>
-            )}
+      </HStack>
+      <HStack space="sm">
+        <View className="w-8"></View>
+        <VStack space="sm" className="flex-1">
+          <TouchableOpacity onLongPress={() => onOpenCommentMenu(item)}>
+            <Text size="sm">{item.content}</Text>
+            <HStack className="items-center justify-between" space="sm">
+              <HStack className="items-center" space="sm">
+                <Text size="sm">{formatDistance(item.createdAt)}</Text>
+                {user && (
+                  <Button size="sm" variant="link" onPress={() => onReply()}>
+                    <ButtonText>回复</ButtonText>
+                  </Button>
+                )}
 
-            {user && item.user.documentId === user.documentId && (
-              <Button size="sm" action="secondary" variant="link" onPress={() => onDelete()}>
-                <ButtonText>删除</ButtonText>
-              </Button>
+                {user && item.user.documentId === user.documentId && (
+                  <Button size="sm" action="secondary" variant="link" onPress={() => onDelete()}>
+                    <ButtonText>删除</ButtonText>
+                  </Button>
+                )}
+              </HStack>
+              <HStack className="items-center justify-end" space="md">
+                <TouchableOpacity>
+                  <HStack className="items-center" space="sm">
+                    <Icon as={Heart} size="sm" />
+                    <Text size="xs">{item.likes}</Text>
+                  </HStack>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <HStack className="items-center" space="sm">
+                    <Icon as={HeartCrack} size="sm" />
+                    <Text size="xs">{item.unlikes}</Text>
+                  </HStack>
+                </TouchableOpacity>
+              </HStack>
+            </HStack>
+            {item.relatedComments?.count > 0 && !isCommentExpanded && (
+              <HStack>
+                <Button
+                  size="sm"
+                  variant="link"
+                  action="secondary"
+                  onPress={() => onExpand(item.documentId)}>
+                  {relatedCommentsQuery.isLoading && <ButtonSpinner />}
+                  <ButtonText>展开回复</ButtonText>
+                </Button>
+              </HStack>
             )}
-          </HStack>
-          <HStack className="flex-1 items-center justify-end" space="md">
-            <TouchableOpacity>
-              <HStack className="items-center" space="sm">
-                <Icon as={Heart} size="sm" />
-                <Text size="xs">{item.likes}</Text>
-              </HStack>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <HStack className="items-center" space="sm">
-                <Icon as={HeartCrack} size="sm" />
-                <Text size="xs">{item.unlikes}</Text>
-              </HStack>
-            </TouchableOpacity>
-          </HStack>
-        </HStack>
-        {item.relatedComments?.count > 0 && !isCommentExpanded && (
-          <HStack>
-            <Button
-              size="sm"
-              variant="link"
-              action="secondary"
-              onPress={() => onExpand(item.documentId)}>
-              {relatedCommentsQuery.isLoading && <ButtonSpinner />}
-              <ButtonText>展开回复</ButtonText>
-            </Button>
-          </HStack>
-        )}
-        {isCommentExpanded && (
-          <Animated.View entering={FadeIn} exiting={FadeOut}>
-            {_.map(relatedComments, (item: any) => (
-              <CommentItem key={item.documentId} item={item} inputRef={inputRef} />
-            ))}
-          </Animated.View>
-        )}
-      </VStack>
-    </HStack>
+          </TouchableOpacity>
+          {isCommentExpanded && (
+            <Animated.View entering={FadeIn} exiting={FadeOut}>
+              {_.map(relatedComments, (item: any) => (
+                <CommentItem
+                  key={item.documentId}
+                  item={item}
+                  inputRef={inputRef}
+                  openMenu={openMenu}
+                />
+              ))}
+            </Animated.View>
+          )}
+        </VStack>
+      </HStack>
+    </VStack>
   );
 });

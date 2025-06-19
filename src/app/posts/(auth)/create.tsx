@@ -1,20 +1,18 @@
-import { createPost } from '@/api/post';
 import CarouselViewer from '@/components/carousel-viewer';
 import PageSpinner from '@/components/page-spinner';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { useAuth } from '@/features/auth/components/auth-provider';
+import { useCreatePost } from '@/features/post/api/use-create-post';
 import PostForm, { postSchema, PostSchema } from '@/features/post/components/post-form';
 import useToast from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
 const PostCreatePage: React.FC = () => {
-  const queryClient = useQueryClient();
   const toast = useToast();
   const { user } = useAuth();
 
@@ -38,22 +36,20 @@ const PostCreatePage: React.FC = () => {
 
   const { setValue, handleSubmit } = form;
 
-  const mutation = useMutation({
-    mutationFn: (data: PostSchema) => createPost(data),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['posts', 'list'] });
-      toast.success({
-        description: variables.isPublished ? '发布成功' : '保存成功',
-      });
-      router.dismiss();
-    },
-    onError(error, variables, context) {
-      toast.error({ description: error.message });
-    },
-  });
+  const mutation = useCreatePost();
 
   const onSubmit = async (formData: PostSchema) => {
-    return mutation.mutate(formData);
+    return mutation.mutate(formData, {
+      onSuccess: (data, variables) => {
+        toast.success({
+          description: variables.isPublished ? '发布成功' : '保存成功',
+        });
+        router.dismiss();
+      },
+      onError(error, variables, context) {
+        toast.error({ description: error.message });
+      },
+    });
   };
 
   const onSaveDraft = () => {

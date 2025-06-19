@@ -6,8 +6,8 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import useToast from '@/hooks/use-toast';
+import { formatDistance } from '@/utils/date';
 import { imageFormat } from '@/utils/file';
-import { format } from 'date-fns';
 import { Heart, HeartCrack } from 'lucide-react-native';
 import React, { memo } from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -15,9 +15,10 @@ import { useDeleteComment } from '../api/use-delete-comment';
 import { useCommentActions } from '../store';
 
 export const CommentItem: React.FC<any> = memo(
-  function CommentItem({ item, inputRef }) {
+  function CommentItem({ item, inputRef, openMenu }) {
     const postDocumentId = item.post?.documentId;
     const commentDocumentId = item.documentId;
+    const { setSelectComment } = useCommentActions();
 
     const { user } = useAuth();
     const deleteMutation = useDeleteComment();
@@ -50,57 +51,60 @@ export const CommentItem: React.FC<any> = memo(
       );
     };
 
+    const onOpenCommentMenu = (item) => {
+      setSelectComment(item);
+      openMenu();
+    };
+
     return (
-      <HStack className={`my-2 items-start`}>
-        <HStack space="sm">
+      <VStack space="sm">
+        <HStack space="sm" className="items-center">
           <Avatar size="xs">
             <AvatarFallbackText>{item.user.username}</AvatarFallbackText>
             <AvatarImage source={{ uri: imageFormat(item.user.avatar, 's', 't')?.fullUrl }} />
           </Avatar>
-          <VStack className="flex-1">
+          <Text size="sm">{item.user.username}</Text>
+          {item.reply && (
+            <>
+              <Text size="sm">→</Text>
+              <Text size="sm">{item.reply.user.username}</Text>
+            </>
+          )}
+        </HStack>
+        <TouchableOpacity onPress={() => onOpenCommentMenu(item)}>
+          <Text size="sm">{item.content}</Text>
+          <HStack className="items-center justify-between" space="sm">
             <HStack className="items-center" space="sm">
-              <Text size="sm">{item.user.username}</Text>
-              {item.reply && (
-                <>
-                  <Text>→</Text>
-                  <Text size="sm">{item.reply.user.username}</Text>
-                </>
+              <Text size="sm">{formatDistance(item.createdAt)}</Text>
+              {user && (
+                <Button size="sm" variant="link" onPress={() => onReply()}>
+                  <ButtonText>回复</ButtonText>
+                </Button>
+              )}
+
+              {user && item.user.documentId === user.documentId && (
+                <Button size="sm" variant="link" action="secondary" onPress={() => onDelete()}>
+                  <ButtonText>删除</ButtonText>
+                </Button>
               )}
             </HStack>
-            <Text size="md">{item.content}</Text>
-            <HStack className="items-center justify-between">
-              <HStack className="items-center" space="md">
-                <Text size="sm">{format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}</Text>
-                {user && (
-                  <Button size="sm" variant="link" onPress={() => onReply()}>
-                    <ButtonText>回复</ButtonText>
-                  </Button>
-                )}
-
-                {user && item.user.documentId === user.documentId && (
-                  <Button size="sm" variant="link" action="secondary" onPress={() => onDelete()}>
-                    <ButtonText>删除</ButtonText>
-                  </Button>
-                )}
-              </HStack>
-              <HStack className="flex-1 items-center justify-end" space="md">
-                <TouchableOpacity>
-                  <HStack className="items-center" space="sm">
-                    <Icon as={Heart} size="sm" />
-                    <Text size="xs">{item.likes}</Text>
-                  </HStack>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <HStack className="items-center" space="sm">
-                    <Icon as={HeartCrack} size="sm" />
-                    <Text size="xs">{item.unlikes}</Text>
-                  </HStack>
-                </TouchableOpacity>
-              </HStack>
+            <HStack className="flex-1 items-center justify-end" space="md">
+              <TouchableOpacity>
+                <HStack className="items-center" space="sm">
+                  <Icon as={Heart} size="sm" />
+                  <Text size="xs">{item.likes}</Text>
+                </HStack>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <HStack className="items-center" space="sm">
+                  <Icon as={HeartCrack} size="sm" />
+                  <Text size="xs">{item.unlikes}</Text>
+                </HStack>
+              </TouchableOpacity>
             </HStack>
-          </VStack>
-        </HStack>
-      </HStack>
+          </HStack>
+        </TouchableOpacity>
+      </VStack>
     );
   },
   (prevProps, nextProps) => {

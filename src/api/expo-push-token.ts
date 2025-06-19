@@ -18,7 +18,6 @@ export const fetchExpoPushToken = async ({ deviceId }) => {
 };
 
 export const createExpoPushToken = async (data) => {
-  console.log('@@createExpoPushToken', data);
   const query = qs.stringify({
     populate: {
       user: {

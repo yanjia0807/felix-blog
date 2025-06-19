@@ -55,21 +55,9 @@ export const useFilters = ({ segments }) => {
   );
 
   const filterType = segments[selectedIndex].key;
-  const followings = user ? user.followings : [];
-  const filters: any = { filterType };
-
-  switch (filterType) {
-    case 'discover':
-      _.merge(filters, { tags: filterTags });
-      break;
-    case 'following':
-      _.merge(filters, {
-        followings: _.map(followings || [], (item: any) => item.documentId),
-      });
-      break;
-    default:
-      break;
-  }
+  const followings = user ? _.map(user.followings, (item: any) => item.documentId) : [];
+  const blockUsers = user ? _.map(user.blockUsers, (item: any) => item.documentId) : [];
+  const filters = { filterType, tags: filterTags, blockUsers, followings };
 
   return filters;
 };

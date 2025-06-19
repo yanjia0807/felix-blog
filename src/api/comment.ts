@@ -4,81 +4,148 @@ import { apiClient } from '../utils/api-client';
 export type CommentData = any;
 
 export const fetchPostComments = async ({ pageParam }: any) => {
-  const { postDocumentId, pagination } = pageParam;
+  const { params, pagination } = pageParam;
 
-  const query = qs.stringify({
-    populate: {
-      user: {
-        fields: ['username'],
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
-          },
+  const filters: any = {
+    $and: [
+      {
+        post: {
+          documentId: params.postDocumentId,
+        },
+        topComment: {
+          $null: true,
         },
       },
-      post: {
-        fields: ['id'],
+    ],
+  };
+
+  if (params.blockUsers) {
+    filters['$and'].push({
+      user: {
+        documentId: {
+          $notIn: params.blockUsers,
+        },
       },
-      relatedComments: {
-        count: true,
+    });
+  }
+
+  const populate = {
+    user: {
+      fields: ['username'],
+      populate: {
+        avatar: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
       },
     },
-    sort: ['createdAt:desc'],
-    filters: {
-      post: {
-        documentId: postDocumentId,
-      },
-      topComment: {
-        $null: true,
-      },
+    post: {
+      fields: ['id'],
     },
+    relatedComments: {
+      count: true,
+    },
+  };
+
+  const query = qs.stringify({
+    filters,
+    populate,
     pagination,
+    sort: ['createdAt:desc'],
   });
+
   const res: any = await apiClient.get(`/comments/?${query}`);
   return res;
 };
 
-export const fetchRelatedComments = async ({ pageParam }: any) => {
-  const { topDocumentId, pagination } = pageParam;
-
-  const query = qs.stringify({
-    populate: {
-      user: {
-        fields: ['username'],
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
-          },
+export const fetchPostCommentCount = async (params: any) => {
+  const filters: any = {
+    $and: [
+      {
+        post: {
+          documentId: params.postDocumentId,
         },
       },
-      topComment: {
-        fields: ['id'],
+    ],
+  };
+
+  if (params.blockUsers) {
+    filters['$and'].push({
+      user: {
+        documentId: {
+          $notIn: params.blockUsers,
+        },
       },
-      post: {
-        fields: ['id'],
+    });
+  }
+
+  const query = qs.stringify({
+    filters,
+    pagination: { pageSize: 0, withCount: true },
+  });
+
+  const res: any = await apiClient.get(`/comments/?${query}`);
+  return res.meta.pagination.total;
+};
+
+export const fetchRelatedComments = async ({ pageParam }: any) => {
+  const { params, pagination } = pageParam;
+
+  const filters: any = {
+    $and: [
+      {
+        topComment: {
+          documentId: params.commentDocumentId,
+        },
       },
-      reply: {
-        populate: {
-          user: {
-            fields: ['username'],
-            populate: {
-              avatar: {
-                fields: ['alternativeText', 'width', 'height', 'formats'],
-              },
+    ],
+  };
+
+  if (params.blockUsers) {
+    filters['$and'].push({
+      user: {
+        documentId: {
+          $notIn: params.blockUsers,
+        },
+      },
+    });
+  }
+
+  const populate = {
+    user: {
+      fields: ['username'],
+      populate: {
+        avatar: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
+      },
+    },
+    topComment: {
+      fields: ['id'],
+    },
+    post: {
+      fields: ['id'],
+    },
+    reply: {
+      populate: {
+        user: {
+          fields: ['username'],
+          populate: {
+            avatar: {
+              fields: ['alternativeText', 'width', 'height', 'formats'],
             },
           },
         },
       },
-      relatedComments: {
-        count: true,
-      },
     },
+    relatedComments: {
+      count: true,
+    },
+  };
+
+  const query = qs.stringify({
+    populate,
     sort: ['createdAt:desc'],
-    filters: {
-      topComment: {
-        documentId: topDocumentId,
-      },
-    },
+    filters,
     pagination,
   });
 

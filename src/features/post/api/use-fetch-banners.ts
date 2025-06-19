@@ -1,9 +1,9 @@
 import { fetchBanners } from '@/api';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 
-export const useFetchBanners = () =>
+export const useFetchBanners = (params = {}) =>
   useInfiniteQuery({
-    queryKey: ['posts', 'list', 'banners'],
+    queryKey: ['banners', 'list', params],
     queryFn: fetchBanners,
     placeholderData: keepPreviousData,
     initialPageParam: {
@@ -11,6 +11,7 @@ export const useFetchBanners = () =>
         page: 1,
         pageSize: 5,
       },
+      params,
     },
     getNextPageParam: (lastPage: any) => {
       const {
@@ -22,6 +23,7 @@ export const useFetchBanners = () =>
       if (page < pageCount) {
         return {
           pagination: { page: page + 1, pageSize },
+          params,
         };
       }
 

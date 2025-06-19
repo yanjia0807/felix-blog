@@ -5,7 +5,6 @@ import { useFetchFriends } from '@/features/user/api/use-fetch-friends';
 import UserList from '@/features/user/components/user-list';
 import useDebounce from '@/hooks/use-debounce';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import _ from 'lodash';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native';
 
@@ -22,8 +21,6 @@ const FriendListPage: React.FC = () => {
   };
 
   const friendsQuery = useFetchFriends({ filters });
-
-  const users: any = _.flatMap(friendsQuery.data?.pages, (page) => page.data);
 
   const renderHeaderLeft = () => (
     <Button
@@ -46,16 +43,7 @@ const FriendListPage: React.FC = () => {
         }}
       />
       <VStack className="flex-1 p-4">
-        <UserList
-          data={users}
-          isLoading={friendsQuery.isLoading}
-          refetch={friendsQuery.refetch}
-          fetchNextPage={friendsQuery.fetchNextPage}
-          hasNextPage={friendsQuery.hasNextPage}
-          isFetchingNextPage={friendsQuery.isFetchingNextPage}
-          value={keywords}
-          onChange={setKeywords}
-        />
+        <UserList query={friendsQuery} value={keywords} onChange={setKeywords} />
       </VStack>
     </SafeAreaView>
   );

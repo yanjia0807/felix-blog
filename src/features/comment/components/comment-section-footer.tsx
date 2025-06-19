@@ -1,5 +1,7 @@
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import _ from 'lodash';
 import React, { memo } from 'react';
 import { useFetchRelatedComments } from '../api/use-fetch-related-comments';
 import { useCommentActions, useIsCommentExpanded } from '../store';
@@ -7,12 +9,14 @@ import { useCommentActions, useIsCommentExpanded } from '../store';
 export const CommentSectionFooter: React.FC<any> = memo(function CommentSectionFooter({ item }) {
   const postDocumentId = item.post.documentId;
   const commentDocumentId = item.documentId;
+  const { user } = useAuth();
   const isCommentExpanded = useIsCommentExpanded(commentDocumentId);
   const { removeExpandCommentDocumentId } = useCommentActions();
 
   const relatedCommentQuery = useFetchRelatedComments({
     postDocumentId,
     commentDocumentId,
+    blockUsers: _.map(user?.blockUsers, (item) => item.documentId),
   });
 
   const onExpandMore = () => {

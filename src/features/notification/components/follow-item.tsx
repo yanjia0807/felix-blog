@@ -4,7 +4,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { UserNoticeAvatar } from '@/features/user/components/user-notice-avatar';
 import { format } from 'date-fns';
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
 export const FollowItem = memo(function FollowItem({ item, onPress }: any) {

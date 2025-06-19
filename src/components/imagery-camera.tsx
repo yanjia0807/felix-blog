@@ -9,17 +9,17 @@ import { Image } from 'expo-image';
 import _ from 'lodash';
 import { Camera, CircleX, SwitchCamera, Zap, ZapOff } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ResizeMode } from 'react-native-video';
 import VideoPlayer from 'react-native-video-player';
 import { Divider } from './ui/divider';
 import { VStack } from './ui/vstack';
 
 const PictureViewer: React.FC<any> = ({ data, onCommit, onUndo }) => {
   const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  const bodyHeight = windowHeight - insets.bottom - 35;
 
   return (
     <View className="flex-1 justify-between">
@@ -29,11 +29,11 @@ const PictureViewer: React.FC<any> = ({ data, onCommit, onUndo }) => {
         }}
         style={{
           width: '100%',
-          height: bodyHeight,
+          height: '100%',
         }}
       />
       <HStack
-        className="w-full items-center justify-center bg-background-50 p-2"
+        className="absolute bottom-0 w-full items-center justify-center bg-background-50 p-2"
         style={{ paddingBottom: insets.bottom }}>
         <Button action="negative" variant="link" className="flex-1" onPress={onUndo}>
           <ButtonText>取消</ButtonText>
@@ -63,9 +63,10 @@ const VideoViewer: React.FC<any> = ({ data, onCommit, onUndo }) => {
           width: '100%',
           height: bodyHeight,
         }}
+        resizeMode={ResizeMode.COVER}
       />
       <HStack
-        className="w-full items-center justify-center bg-background-50 p-2"
+        className="absolute bottom-0 w-full items-center justify-center bg-background-50 p-2"
         style={{ paddingBottom: insets.bottom }}>
         <Button action="negative" variant="link" className="flex-1" onPress={onUndo}>
           <ButtonText>取消</ButtonText>
@@ -83,13 +84,22 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
   const [facing, setFacing] = useState<CameraType>('back');
   const [mode, setMode] = useState<CameraMode>('picture');
   const [flash, setFlash] = useState<FlashMode>('auto');
+  const [maxDuration, setMaxDuration] = useState(30);
   const [data, setData] = useState<any>();
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const intervalRef = useRef<any>(null);
+  const timerRef = useRef<any>(null);
   const cameraRef = React.useRef<CameraView>(null);
+  const dataRef = useRef(null);
   const insets = useSafeAreaInsets();
-  const MAX_DURATION = 60;
+
+  const opacity = useSharedValue(1);
+  const scale = useSharedValue(1);
+
+  const buttonStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
 
   const toggleFacing = () => {
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
@@ -112,29 +122,56 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
     }
   };
 
-  const capturePic = async () => {
+  const capture = async () => {
     const picture = await cameraRef.current?.takePictureAsync();
     setData(picture);
   };
 
-  const startCaptureVideo = async () => {
-    setMode('video');
-    setIsRecording(true);
-    intervalRef.current = setInterval(() => {
-      setRecordingTime((prev) => prev + 1);
-    }, 1000);
+  const startRecording = async () => {
+    if (cameraRef.current && !isRecording) {
+      setIsRecording(true);
+      setRecordingTime(0);
+      scale.value = withSpring(1.2);
+      opacity.value = withSpring(0.75);
 
-    const video = await cameraRef.current?.recordAsync({
-      maxDuration: MAX_DURATION,
-    });
-    setData(video);
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => {
+          if (prev + 1 >= maxDuration) {
+            stopRecording(true);
+            return maxDuration;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+
+      try {
+        dataRef.current = await cameraRef.current.recordAsync({
+          maxDuration: maxDuration,
+        });
+      } catch (error) {
+        console.error(error);
+      } finally {
+        clearInterval(timerRef.current);
+        setIsRecording(false);
+      }
+    }
   };
 
-  const stopCaptureVideo = async () => {
-    clearInterval(intervalRef.current);
-    setIsRecording(false);
-    setRecordingTime(0);
-    await cameraRef.current?.stopRecording();
+  const stopRecording = async (success) => {
+    if (isRecording) {
+      clearInterval(timerRef.current);
+      setIsRecording(false);
+      scale.value = withSpring(1);
+      opacity.value = withSpring(1);
+      try {
+        await cameraRef.current.stopRecording();
+        if (success) {
+          setData(dataRef.current);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
   };
 
   const onCommit = async () => {
@@ -170,30 +207,33 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
   };
 
   const capturePicGesture = Gesture.Tap()
+    .onStart(() => setMode('picture'))
     .onEnd(async (e, success) => {
-      if (success) {
-        setMode('picture');
-        capturePic();
-      }
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      if (success) capture();
     })
     .runOnJS(true);
 
   const captureVideoGesture = Gesture.LongPress()
     .onStart(async () => {
-      startCaptureVideo();
+      setMode('video');
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      startRecording();
     })
     .onEnd(async (e, success) => {
-      stopCaptureVideo();
+      stopRecording(success);
     })
     .runOnJS(true);
 
-  const captureGesture = Gesture.Exclusive(captureVideoGesture, capturePicGesture);
+  const pressGesture = Gesture.Exclusive(captureVideoGesture, capturePicGesture);
 
   useEffect(() => {
-    if (isRecording && recordingTime >= MAX_DURATION) {
-      cameraRef.current?.stopRecording();
-    }
-  }, [isRecording, recordingTime]);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <Portal isOpen={isOpen} style={{ flex: 1, backgroundColor: 'white' }}>
@@ -244,10 +284,12 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
               style={{
                 paddingBottom: insets.bottom,
               }}>
-              <GestureDetector gesture={captureGesture}>
-                <TouchableOpacity className="h-20 w-20 items-center justify-center rounded-full bg-primary-500 opacity-50">
+              <GestureDetector gesture={pressGesture}>
+                <Animated.View
+                  style={buttonStyle}
+                  className="h-20 w-20 items-center justify-center rounded-full bg-primary-500 opacity-50">
                   <Icon as={Camera} size={32 as any} />
-                </TouchableOpacity>
+                </Animated.View>
               </GestureDetector>
               <Button
                 action="negative"
@@ -260,7 +302,7 @@ export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
               <Slider
                 className="absolute top-1/2 w-4/5 flex-1 self-center opacity-70"
                 value={recordingTime}
-                maxValue={MAX_DURATION}
+                maxValue={maxDuration}
                 size="sm">
                 <SliderTrack>
                   <SliderFilledTrack />

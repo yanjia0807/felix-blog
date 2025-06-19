@@ -29,7 +29,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     console.log(
-      `[api ${response.status}] ${response.config.method?.toUpperCase()} ${response.config.url} - headers: ${response.config.headers} - params: ${response.config.params} - data: ${response.config.data} `,
+      `[api ${response.status}] ${response.config.method?.toUpperCase()} ${response.config.url} - headers: ${response.config.headers} - params: ${response.request.params} - data: ${JSON.stringify(response.data)} `,
     );
     return response.data;
   },

@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useCreateExpoPushToken } from '../api/use-create-expo-push-token';
 import { createFetchExpoPushTokenQuery } from '../api/use-fetch-expo-push-token';
@@ -25,7 +26,7 @@ export const PushNotificationProvider = ({ children }: any) => {
 
   const queryClient = useQueryClient();
   const router = useRouter();
-  const updateExpoPushToken = useUpdateExpoPushToken();
+  const { mutate: updateExpoPushToken } = useUpdateExpoPushToken();
   const { mutate: createExpoPushToken } = useCreateExpoPushToken();
   const { requestNotificationPermissions } = useNotificationPermissions();
 
@@ -45,10 +46,12 @@ export const PushNotificationProvider = ({ children }: any) => {
     const pushTokenQuery = await queryClient.fetchQuery(
       createFetchExpoPushTokenQuery({ deviceId }),
     );
-    const user = await queryClient.fetchQuery(createFetchMeQuery());
+
+    const accessToken = await SecureStore.getItemAsync('accessToken');
+    const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
 
     if (pushTokenQuery) {
-      await updateExpoPushToken.mutate({
+      await updateExpoPushToken({
         documentId: pushTokenQuery.documentId,
         deviceId: pushTokenQuery.deviceId,
         user: user?.id,
@@ -62,7 +65,7 @@ export const PushNotificationProvider = ({ children }: any) => {
       createFetchExpoPushTokenQuery({ deviceId }),
     );
 
-    updateExpoPushToken.mutate({
+    updateExpoPushToken({
       documentId: pushTokenQuery.documentId,
       user: null,
     });
@@ -104,7 +107,8 @@ export const PushNotificationProvider = ({ children }: any) => {
           return;
         }
 
-        const user = await queryClient.fetchQuery(createFetchMeQuery());
+        const accessToken = await SecureStore.getItemAsync('accessToken');
+        const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
 
         await createExpoPushToken({
           deviceId,
@@ -121,7 +125,8 @@ export const PushNotificationProvider = ({ children }: any) => {
         async (response) => {
           const data = response.notification.request.content.data;
           if (data.type === 'chat') {
-            const user = await queryClient.fetchQuery(createFetchMeQuery());
+            const accessToken = await SecureStore.getItemAsync('accessToken');
+            const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
             if (user) {
               router.navigate(`/chats/${data.chatId}`);
             }

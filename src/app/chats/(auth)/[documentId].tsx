@@ -30,6 +30,8 @@ const ChatDetail: React.FC<any> = () => {
     (item: any) => item.documentId !== currentUser.documentId,
   );
 
+  const isBlock = _.some(currentUser?.blockUsers, ['documentId', otherUser?.documentId]);
+
   const chatMessageQuery = useFetchChatMessages({ chatDocumentId: documentId });
   const messages = _.flatMap(chatMessageQuery.data?.pages, (page) => page.data);
 
@@ -49,10 +51,10 @@ const ChatDetail: React.FC<any> = () => {
 
   const renderHeaderLeft = () => (
     <HStack className="items-center" space="xl">
-      <Button action="secondary" variant="link" onPress={() => router.dismissTo('/chat')}>
+      <Button action="secondary" variant="link" onPress={() => router.back()}>
         <ButtonText>返回</ButtonText>
       </Button>
-      {otherUser && <UserChatAvatar user={otherUser} />}
+      <UserChatAvatar user={otherUser} />
     </HStack>
   );
 
@@ -111,6 +113,7 @@ const ChatDetail: React.FC<any> = () => {
             chatDocumentId={documentId}
             sender={currentUser.documentId}
             receiver={otherUser.documentId}
+            isBlock={isBlock}
             successCb={successCb}
           />
         </VStack>

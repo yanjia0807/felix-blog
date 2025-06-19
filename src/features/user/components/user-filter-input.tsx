@@ -20,7 +20,7 @@ export const UserFilterInput: React.FC<any> = memo(function UserFilterInput({
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
-        onChangeText={onChange}
+        onChangeText={(text: any) => onChange(text)}
         onSubmitEditing={onSubmitEditing}
         value={value}
       />

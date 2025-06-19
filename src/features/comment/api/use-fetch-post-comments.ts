@@ -1,24 +1,17 @@
 import { fetchPostComments } from '@/api';
-import { useInfiniteQuery, usePrefetchInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
-export const usePrefetchPostComments = ({ postDocumentId }) =>
-  usePrefetchInfiniteQuery({
-    queryKey: ['comments', 'list', { postDocumentId }],
-    queryFn: fetchPostComments,
-    initialPageParam: undefined,
-  });
-
-export const useFetchPostComments = ({ postDocumentId }) =>
+export const useFetchPostComments = (params) =>
   useInfiniteQuery<any>({
-    queryKey: ['comments', 'list', { postDocumentId }],
+    queryKey: ['comments', 'list', params],
     queryFn: fetchPostComments,
-    enabled: !!postDocumentId,
+    enabled: !!params.postDocumentId,
     initialPageParam: {
-      postDocumentId,
       pagination: {
         page: 1,
         pageSize: 20,
       },
+      params,
     },
     getNextPageParam: (lastPage: any) => {
       const {
@@ -29,8 +22,8 @@ export const useFetchPostComments = ({ postDocumentId }) =>
 
       if (page < pageCount) {
         return {
-          postDocumentId,
           pagination: { page: page + 1, pageSize },
+          params,
         };
       }
 

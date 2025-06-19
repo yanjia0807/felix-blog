@@ -65,7 +65,11 @@ const PostList: React.FC<any> = () => {
   const router = useRouter();
   const { user } = useAuth();
 
-  const postsQuery = useFetchPosts();
+  const postsQuery = useFetchPosts({
+    blockUsers: _.map(user?.blockUsers, (item) => item.documentId),
+    isPublished: true,
+  });
+
   const posts: any = _.map(
     _.flatMap(postsQuery.data?.pages, (page: any) => page.data),
     (item: any) => ({
@@ -135,9 +139,9 @@ const HomeLayout: React.FC<any> = () => {
     <CarouselProvider>
       <CommentSheetProvider>
         <PostList />
-        <CarouselViewer />
         <CommentSheet />
       </CommentSheetProvider>
+      <CarouselViewer />
     </CarouselProvider>
   );
 };

@@ -3,10 +3,10 @@ import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useFilters } from '../store/use-post-explore-store';
 
 export const useFetchExplorePosts = ({ segments }) => {
-  const filters = useFilters({ segments });
+  const params = useFilters({ segments });
 
   return useInfiniteQuery({
-    queryKey: ['posts', 'list', filters],
+    queryKey: ['posts', 'list', params],
     queryFn: fetchExplorePosts,
     placeholderData: keepPreviousData,
     initialPageParam: {
@@ -14,7 +14,7 @@ export const useFetchExplorePosts = ({ segments }) => {
         page: 1,
         pageSize: 10,
       },
-      filters,
+      params,
     },
     getNextPageParam: (lastPage: any) => {
       const {
@@ -26,7 +26,7 @@ export const useFetchExplorePosts = ({ segments }) => {
       if (page < pageCount) {
         return {
           pagination: { page: page + 1, pageSize },
-          filters,
+          params,
         };
       }
 

@@ -1,28 +1,22 @@
 import { fetchMe } from '@/api';
 import { useQuery } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
 
-export const createFetchMeQuery = () => {
-  const queryMe = async () => {
+export const createFetchMeQuery = (accessToken) => {
+  const queryMe = async (accessToken) => {
     try {
-      const accessToken = await SecureStore.getItemAsync('accessToken');
-      if (accessToken) {
-        return fetchMe();
-      }
-      return null;
+      if (!accessToken) return null;
+      return fetchMe();
     } catch (error) {
-      console.error(error);
-      SecureStore.deleteItemAsync('accessToken');
       throw error;
     }
   };
 
   return {
-    queryKey: ['users', 'detail', 'me'],
-    queryFn: queryMe,
+    queryKey: ['users', 'detail', 'me', accessToken],
+    queryFn: () => queryMe(accessToken),
   };
 };
 
-export const useFetchMe = () => {
-  return useQuery(createFetchMeQuery());
+export const useFetchMe = (accessToken) => {
+  return useQuery(createFetchMeQuery(accessToken));
 };

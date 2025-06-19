@@ -210,12 +210,8 @@ const Profile: React.FC<any> = () => {
   const isPublished = publishStatus === 'published';
 
   const userPostsQuery = useFetchPosts({
-    filters: {
-      author: {
-        documentId: userDocumentId,
-      },
-      isPublished,
-    },
+    authorDocumentId: userDocumentId,
+    isPublished,
   });
 
   const userPhotosQuery = useFetchUserPhotos({ userDocumentId });

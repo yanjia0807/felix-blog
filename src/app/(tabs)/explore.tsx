@@ -85,13 +85,14 @@ const ExploreHeader: React.FC<any> = ({ onLayout }) => {
 };
 
 const Explore: React.FC<any> = () => {
-  const postsQuery = useFetchExplorePosts({ segments });
   const [headerLayout, setHeaderLayout] = useState(null);
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const tabbarHeight = 92;
   const listHeight = windowHeight - insets.top - headerLayout?.height || 0 - tabbarHeight;
-  console.log('@@', listHeight);
+
+  const postsQuery = useFetchExplorePosts({ segments });
+
   const onHeaderLayout = (event) => {
     setHeaderLayout(event.nativeEvent.layout);
   };

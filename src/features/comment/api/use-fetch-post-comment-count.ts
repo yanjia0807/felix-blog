@@ -1,9 +1,9 @@
 import { fetchPostCommentCount } from '@/api';
 import { useQuery } from '@tanstack/react-query';
 
-export const useFetchPostCommentCount = ({ postDocumentId }) =>
+export const useFetchPostCommentCount = (params) =>
   useQuery<any>({
-    queryKey: ['comments', 'count', { postDocumentId }],
-    enabled: !!postDocumentId,
-    queryFn: () => fetchPostCommentCount({ documentId: postDocumentId }),
+    queryKey: ['comments', 'count', params],
+    enabled: !!params.postDocumentId,
+    queryFn: () => fetchPostCommentCount(params),
   });

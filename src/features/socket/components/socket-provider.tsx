@@ -23,8 +23,6 @@ export const SocketProvider = ({ children }: any) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!accessToken) return;
-
     const client = io(process.env.EXPO_PUBLIC_API_SERVER as string, {
       auth: { token: accessToken },
     });

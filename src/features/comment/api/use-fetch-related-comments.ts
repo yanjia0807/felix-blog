@@ -2,19 +2,19 @@ import { fetchRelatedComments } from '@/api';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useIsCommentExpanded } from '../store';
 
-export const useFetchRelatedComments = ({ postDocumentId, commentDocumentId }) => {
-  const isCommentExpanded = useIsCommentExpanded(commentDocumentId);
+export const useFetchRelatedComments = (params) => {
+  const isCommentExpanded = useIsCommentExpanded(params.commentDocumentId);
 
   return useInfiniteQuery<any>({
-    queryKey: ['comments', 'list', { postDocumentId, commentDocumentId }],
+    queryKey: ['comments', 'list', params],
     queryFn: fetchRelatedComments,
     enabled: isCommentExpanded,
     initialPageParam: {
-      topDocumentId: commentDocumentId,
       pagination: {
         page: 1,
-        pageSize: 5,
+        pageSize: 20,
       },
+      params,
     },
     getNextPageParam: (lastPage: any) => {
       const {
@@ -25,8 +25,8 @@ export const useFetchRelatedComments = ({ postDocumentId, commentDocumentId }) =
 
       if (page < pageCount) {
         return {
-          topDocumentId: commentDocumentId,
           pagination: { page: page + 1, pageSize },
+          params,
         };
       }
 

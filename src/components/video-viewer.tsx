@@ -7,6 +7,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { ResizeMode } from 'react-native-video';
 import VideoPlayer, { type VideoPlayerRef } from 'react-native-video-player';
 
 const VideoViewer: React.FC<any> = ({ item, onClose }) => {
@@ -53,6 +54,7 @@ const VideoViewer: React.FC<any> = ({ item, onClose }) => {
             onFullscreenPlayerDidDismiss={() => setIsFullscreen(false)}
             showDuration={true}
             hideControlsOnStart={true}
+            resizeMode={ResizeMode.COVER}
             style={{
               width: '100%',
               height: '100%',

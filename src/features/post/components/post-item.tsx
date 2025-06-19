@@ -9,7 +9,7 @@ import { VStack } from '@/components/ui/vstack';
 import { CommentIcon } from '@/features/comment/components/comment-icon';
 import { LastCommentItem } from '@/features/comment/components/last-comment-item';
 import { useCommentActions } from '@/features/comment/store';
-import PostItemMenu from '@/features/post/components/post-menu-popover';
+import { PostContextMenu } from '@/features/post/components/post-context-menu';
 import useCoverDimensions from '@/features/post/hooks/use-cover-dimensions';
 import { TagList } from '@/features/tag/components/tag-list';
 import { UserAvatar } from '@/features/user/components/user-avatar';
@@ -50,7 +50,7 @@ export const PostItem: React.FC<any> = memo(function PostItem({ item }) {
           <VStack space="sm">
             <HStack className="items-center justify-between">
               <UserAvatar user={item.author} />
-              <PostItemMenu post={item} />
+              <PostContextMenu documentId={item.documentId} />
             </HStack>
             <Text size="lg" numberOfLines={1} ellipsizeMode="tail" className="font-bold">
               {item.title}

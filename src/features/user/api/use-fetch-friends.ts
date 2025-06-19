@@ -1,10 +1,11 @@
 import { fetchFriends } from '@/api';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 
 export const useFetchFriends = ({ filters }) =>
   useInfiniteQuery({
     queryKey: ['friends', 'list', filters],
     queryFn: fetchFriends,
+    placeholderData: keepPreviousData,
     initialPageParam: {
       pagination: {
         page: 1,

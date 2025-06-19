@@ -6,11 +6,13 @@ interface State {
   commentPostDocumentId: string | undefined;
   expandedCommentDocumentIds: any[];
   replyComment: any;
+  selectComment: any;
 }
 
 interface Actions {
   setCommentPostDocumentId: (postDocumentId: string) => void;
   setReplyComment: (replyComment: any) => void;
+  setSelectComment: (replyComment: any) => void;
   addExpandCommentDocumentId: (commentDocumentId: string) => void;
   removeExpandCommentDocumentId: (commentDocumentId: string) => void;
 }
@@ -19,6 +21,7 @@ const initialState: State = {
   commentPostDocumentId: undefined,
   expandedCommentDocumentIds: [],
   replyComment: undefined,
+  selectComment: undefined,
 };
 
 export const useCommentStore = create<State & { actions: Actions }>()(
@@ -33,6 +36,11 @@ export const useCommentStore = create<State & { actions: Actions }>()(
       setReplyComment: (replyComment) =>
         set((state) => {
           state.replyComment = replyComment;
+        }),
+
+      setSelectComment: (selectComment) =>
+        set((state) => {
+          state.selectComment = selectComment;
         }),
 
       addExpandCommentDocumentId: (commentDocumentId) =>
@@ -56,6 +64,8 @@ export const useCommentPostDocumentId = () =>
   useCommentStore((state) => state.commentPostDocumentId);
 
 export const useReplyComment = () => useCommentStore((state) => state.replyComment);
+
+export const useSelectComment = () => useCommentStore((state) => state.selectComment);
 
 export const useIsCommentExpanded = (commentDocumentId) => {
   const expandedCommentDocumentIds = useCommentStore((state) => state.expandedCommentDocumentIds);

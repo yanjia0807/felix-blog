@@ -30,6 +30,9 @@ export const fetchMe = async () => {
         likePosts: {
           fields: ['id', 'documentId'],
         },
+        blockUsers: {
+          fields: ['id', 'documentId'],
+        },
       },
     },
     {
@@ -240,6 +243,20 @@ export const fetchFriends = async ({ pageParam }: any) => {
 
 export const cancelFriend = async (params: any) => {
   const res = await apiClient.put(`/users/custom/cancel-friend`, {
+    data: params,
+  });
+  return res.data;
+};
+
+export const addBlockUser = async (params: any) => {
+  const res = await apiClient.put(`/users/custom/add-block-user`, {
+    data: params,
+  });
+  return res.data;
+};
+
+export const removeBlockUser = async (params: any) => {
+  const res = await apiClient.put(`/users/custom/remove-block-user`, {
     data: params,
   });
   return res.data;

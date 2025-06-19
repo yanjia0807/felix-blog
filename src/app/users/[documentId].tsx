@@ -17,6 +17,7 @@ import { useCancelFriend } from '@/features/user/api/use-cancel-friend';
 import { useCreateFriendRequestMutation } from '@/features/user/api/use-create-friend-request';
 import { useEditFollow } from '@/features/user/api/use-edit-follow';
 import { useFetchUser } from '@/features/user/api/use-fetch-user';
+import { UserContextMenu } from '@/features/user/components/user-context-menu';
 import { UserDetailSkeleton } from '@/features/user/components/user-detail-skeleton';
 import { UserProfileAvatar } from '@/features/user/components/user-profile-avater';
 import useToast from '@/hooks/use-toast';
@@ -43,7 +44,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 
-const HEADER_HEIGHT = 280;
+const HEADER_HEIGHT = 290;
 
 const UserDetailHeader: React.FC<any> = ({
   user,
@@ -203,39 +204,38 @@ const UserDetailHeader: React.FC<any> = ({
   return (
     <Animated.View style={[styles, { height: HEADER_HEIGHT, zIndex: 10 }]}>
       <VStack className="flex-1" space="md">
+        {!!currentUser && (
+          <HStack className="items-center justify-end" space="md">
+            {!isMe && (
+              <Button size="sm" action="secondary" variant="link" onPress={() => onShowChat()}>
+                <ButtonIcon as={MessageCircle} />
+                <ButtonText>发消息</ButtonText>
+              </Button>
+            )}
+            {!isMe && !isFriend && (
+              <Button
+                action={isFollowing ? 'primary' : 'secondary'}
+                variant="link"
+                size="sm"
+                onPress={() => onModifyFollowing()}>
+                <ButtonIcon as={isFollowing ? Eye : EyeClosed} />
+                <ButtonText>{isFollowing ? '已关注' : '关注'}</ButtonText>
+              </Button>
+            )}
+            {!isMe && (
+              <Button
+                action={isFriend ? 'primary' : 'secondary'}
+                variant="link"
+                size="sm"
+                onPress={() => onModifyFriend()}>
+                <ButtonIcon as={isFriend ? UserRoundMinus : UserRoundPlus} />
+                <ButtonText>{isFriend ? '删好友' : '加好友'}</ButtonText>
+              </Button>
+            )}
+          </HStack>
+        )}
         <HStack className="items-center justify-between">
           <UserProfileAvatar user={user} />
-          {!!currentUser && (
-            <HStack className="items-center" space="md">
-              {!isMe && (
-                <Button
-                  size="md"
-                  action="secondary"
-                  onPress={() => onShowChat()}
-                  className="h-8 w-8 rounded-full p-5">
-                  <ButtonIcon as={MessageCircle} />
-                </Button>
-              )}
-              {!isMe && !isFriend && (
-                <Button
-                  action={isFollowing ? 'primary' : 'secondary'}
-                  size="md"
-                  className="h-8 w-8 rounded-full p-5"
-                  onPress={() => onModifyFollowing()}>
-                  <ButtonIcon as={isFollowing ? Eye : EyeClosed} />
-                </Button>
-              )}
-              {!isMe && (
-                <Button
-                  action={isFriend ? 'primary' : 'secondary'}
-                  size="md"
-                  className="h-8 w-8 rounded-full p-5"
-                  onPress={() => onModifyFriend()}>
-                  <ButtonIcon as={isFriend ? UserRoundMinus : UserRoundPlus}></ButtonIcon>
-                </Button>
-              )}
-            </HStack>
-          )}
         </HStack>
         <HStack space="sm" className="items-center">
           <HStack className="items-center" space="xs">
@@ -299,6 +299,7 @@ const UserDetailHeader: React.FC<any> = ({
 };
 
 const UserDetail: React.FC<any> = () => {
+  const { user: currentUser } = useAuth();
   const { documentId }: any = useLocalSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -307,12 +308,8 @@ const UserDetail: React.FC<any> = () => {
   const userDocumentId = user?.documentId;
 
   const userPostsQuery = useFetchPosts({
-    filters: {
-      author: {
-        documentId: userDocumentId,
-      },
-      isPublished: true,
-    },
+    authorDocumentId: userDocumentId,
+    isPublished: true,
   });
 
   const userPhotosQuery = useFetchUserPhotos({ userDocumentId });
@@ -333,6 +330,11 @@ const UserDetail: React.FC<any> = () => {
     </Button>
   );
 
+  const renderHeaderRight = () => {
+    if (!currentUser) return null;
+    return <UserContextMenu documentId={documentId} />;
+  };
+
   if (user) {
     return (
       <>
@@ -341,6 +343,7 @@ const UserDetail: React.FC<any> = () => {
             title: '',
             headerShown: true,
             headerLeft: renderHeaderLeft,
+            headerRight: renderHeaderRight,
           }}
         />
         <SafeAreaView className="flex-1">

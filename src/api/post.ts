@@ -5,49 +5,92 @@ import { apiClient } from '../utils/api-client';
 import { uploadFiles } from './file';
 
 export const fetchPosts = async ({ pageParam }: any) => {
-  const { pagination, filters } = pageParam;
-  const params = {
-    populate: {
-      author: {
-        fields: ['username'],
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
-          },
-        },
-      },
-      likedByUsers: {
-        populate: {
-          avatar: {
-            fields: ['alternativeText', 'width', 'height', 'formats'],
-          },
-        },
-        fields: ['username'],
-      },
-      tags: true,
-      poi: true,
-      cover: true,
-      attachments: true,
-      attachmentExtras: {
-        populate: {
-          attachment: true,
-          thumbnail: true,
-        },
-      },
-      comments: {
-        count: true,
-      },
-    },
-    filters: {
-      isPublished: true,
-      ...filters,
-    },
-    sort: 'publishDate:desc',
-    pagination,
+  const { params, pagination } = pageParam;
+
+  const filters: any = {
+    $and: [],
   };
-  const query = qs.stringify(params, {
-    encodeValuesOnly: false,
-  });
+
+  const commentFilters: any = {
+    $and: [],
+  };
+
+  if (!_.isNil(params.isPublished)) {
+    filters['$and'].push({
+      isPublished: params.isPublished,
+    });
+  }
+
+  if (params.author) {
+    filters['$and'].push({
+      author: {
+        documentId: params.author,
+      },
+    });
+  }
+
+  if (params.blockUsers) {
+    filters['$and'].push({
+      author: {
+        documentId: {
+          $notIn: params.blockUsers,
+        },
+      },
+    });
+
+    commentFilters['$and'].push({
+      user: {
+        documentId: {
+          $notIn: params.blockUsers,
+        },
+      },
+    });
+  }
+
+  const populate = {
+    author: {
+      fields: ['username'],
+      populate: {
+        avatar: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
+      },
+    },
+    likedByUsers: {
+      populate: {
+        avatar: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
+      },
+      fields: ['username'],
+    },
+    tags: true,
+    poi: true,
+    cover: true,
+    attachments: true,
+    attachmentExtras: {
+      populate: {
+        attachment: true,
+        thumbnail: true,
+      },
+    },
+    comments: {
+      filters: commentFilters,
+      count: true,
+    },
+  };
+
+  const query = qs.stringify(
+    {
+      populate,
+      filters,
+      pagination: pagination,
+      sort: 'publishDate:desc',
+    },
+    {
+      encodeValuesOnly: false,
+    },
+  );
 
   const res = await apiClient.get(`/posts?${query}`);
   return res;
@@ -134,22 +177,10 @@ export const fetchPostOutlines = async ({ pageParam }: any) => {
   return res;
 };
 
-export const fetchPostCommentCount = async ({ documentId }: any) => {
-  const query = qs.stringify({
-    populate: {
-      comments: {
-        count: true,
-      },
-    },
-  });
-  const res = await apiClient.get(`/posts/${documentId}?${query}`);
-  return res.data;
-};
-
-export const fetchTrendingPosts = async ({ pagination }: any) => {
+export const fetchTrendingPosts = async ({ pageParam }: any) => {
   const query = qs.stringify(
     {
-      pagination,
+      pagination: pageParam.pagination,
     },
     {
       encodeValuesOnly: false,
@@ -160,7 +191,23 @@ export const fetchTrendingPosts = async ({ pagination }: any) => {
   return res;
 };
 
-export const fetchFollowingPosts = async ({ pagination, followings }: any) => {
+export const fetchFollowingPosts = async ({ pageParam }: any) => {
+  const { params, pagination } = pageParam;
+
+  if (params.followings.length === 0) {
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: pagination.pageSize,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+
   const filters: any = {
     $and: [
       {
@@ -169,47 +216,56 @@ export const fetchFollowingPosts = async ({ pagination, followings }: any) => {
       {
         author: {
           documentId: {
-            $in: followings,
+            $in: params.followings,
+          },
+        },
+      },
+      {
+        author: {
+          documentId: {
+            $notIn: params.blockUsers,
           },
         },
       },
     ],
   };
 
-  const query = qs.stringify(
-    {
+  const populate = {
+    author: {
+      fields: ['username'],
       populate: {
-        author: {
-          fields: ['username'],
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
-          },
-        },
-        likedByUsers: {
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
-          },
-          fields: ['username'],
-        },
-        cover: true,
-        attachments: true,
-        attachmentExtras: {
-          populate: {
-            attachment: true,
-            thumbnail: true,
-          },
+        avatar: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
         },
       },
+    },
+    likedByUsers: {
+      populate: {
+        avatar: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
+      },
+      fields: ['username'],
+    },
+    cover: true,
+    attachments: true,
+    attachmentExtras: {
+      populate: {
+        attachment: true,
+        thumbnail: true,
+      },
+    },
+  };
+
+  const query = qs.stringify(
+    {
+      populate,
       filters,
-      pagination,
+      pagination: pagination,
+      sort: 'publishDate:desc',
     },
     {
-      encodeValuesOnly: true,
-      allowEmptyArrays: true,
+      encodeValuesOnly: false,
     },
   );
 
@@ -217,54 +273,65 @@ export const fetchFollowingPosts = async ({ pagination, followings }: any) => {
   return res;
 };
 
-export const fetchDiscoverPosts = async ({ pagination, tags }: any) => {
+export const fetchDiscoverPosts = async ({ pageParam }: any) => {
+  const { params, pagination } = pageParam;
+
   const filters: any = {
     $and: [
       {
         isPublished: true,
       },
+      {
+        author: {
+          documentId: {
+            $notIn: params.blockUsers,
+          },
+        },
+      },
     ],
   };
 
-  if (!_.isNil(tags) && !_.isEmpty(tags)) {
+  if (!_.isNil(params.tags) && params.tags.length > 0) {
     filters['$and'].push({
       tags: {
-        $in: tags,
+        $in: params.tags,
       },
     });
   }
 
-  const query = qs.stringify(
-    {
+  const populate = {
+    author: {
+      fields: ['username'],
       populate: {
-        author: {
-          fields: ['username'],
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
-          },
-        },
-        likedByUsers: {
-          populate: {
-            avatar: {
-              fields: ['alternativeText', 'width', 'height', 'formats'],
-            },
-          },
-          fields: ['username'],
-        },
-        cover: true,
-        attachments: true,
-        attachmentExtras: {
-          populate: {
-            attachment: true,
-            thumbnail: true,
-          },
+        avatar: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
         },
       },
+    },
+    likedByUsers: {
+      populate: {
+        avatar: {
+          fields: ['alternativeText', 'width', 'height', 'formats'],
+        },
+      },
+      fields: ['username'],
+    },
+    cover: true,
+    attachments: true,
+    attachmentExtras: {
+      populate: {
+        attachment: true,
+        thumbnail: true,
+      },
+    },
+  };
+
+  const query = qs.stringify(
+    {
       filters,
+      populate,
+      pagination: pagination,
       sort: 'publishDate:desc',
-      pagination,
     },
     {
       encodeValuesOnly: false,
@@ -276,16 +343,15 @@ export const fetchDiscoverPosts = async ({ pagination, tags }: any) => {
 };
 
 export const fetchExplorePosts = async ({ pageParam }: any) => {
-  const {
-    pagination,
-    filters: { tags, filterType, followings },
-  } = pageParam;
-  if (filterType === 'trending') {
-    return fetchTrendingPosts({ pagination });
-  } else if (filterType === 'following') {
-    return fetchFollowingPosts({ pagination, followings });
-  } else if (filterType === 'discover') {
-    return fetchDiscoverPosts({ pagination, tags });
+  switch (pageParam.params.filterType) {
+    case 'trending':
+      return fetchTrendingPosts({ pageParam });
+    case 'following':
+      return fetchFollowingPosts({ pageParam });
+    case 'discover':
+      return fetchDiscoverPosts({ pageParam });
+    default:
+      break;
   }
 };
 
