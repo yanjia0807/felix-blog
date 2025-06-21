@@ -17,16 +17,16 @@ const PostCreatePage: React.FC = () => {
   const { user } = useAuth();
 
   const defaultValues: Partial<PostSchema> = {
-    title: undefined,
-    content: undefined,
+    title: '',
+    content: '',
     author: user.documentId,
     poi: undefined,
     cover: undefined,
     imageries: [],
     tags: [],
-    isPublished: false,
     attachments: [],
     attachmentExtras: [],
+    isPublished: false,
   };
 
   const form = useForm<PostSchema>({
@@ -63,12 +63,7 @@ const PostCreatePage: React.FC = () => {
   };
 
   const renderHeaderLeft = () => (
-    <Button
-      action="secondary"
-      variant="link"
-      onPress={() => {
-        router.back();
-      }}>
+    <Button action="secondary" variant="link" onPress={() => router.back()}>
       <ButtonText>返回</ButtonText>
     </Button>
   );
@@ -77,11 +72,11 @@ const PostCreatePage: React.FC = () => {
     <HStack space="sm" className="items-center">
       <Button
         size="md"
-        action="primary"
+        action="secondary"
         variant="link"
         isDisabled={mutation.isPending}
         onPress={onSaveDraft}>
-        <ButtonText>存草稿</ButtonText>
+        <ButtonText>[存草稿]</ButtonText>
       </Button>
       <Button
         action="primary"

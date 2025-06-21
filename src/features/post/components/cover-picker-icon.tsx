@@ -1,9 +1,14 @@
 import { ImageryItem } from '@/components/imagery-item';
 import { ImagerySheet } from '@/components/imagery-sheet';
-import { FormControl } from '@/components/ui/form-control';
+import {
+  FormControl,
+  FormControlError,
+  FormControlErrorIcon,
+  FormControlErrorText,
+} from '@/components/ui/form-control';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
-import { ImageIcon } from 'lucide-react-native';
+import { AlertCircle, ImageIcon } from 'lucide-react-native';
 import React, { memo, useState } from 'react';
 
 export const CoverPickerIcon = memo(function CoverPickerIcon({
@@ -38,7 +43,7 @@ export const CoverPickerIcon = memo(function CoverPickerIcon({
           className="h-40 w-full rounded-md"
         />
       ) : (
-        <>
+        <FormControl size="md" isInvalid={!!error}>
           <Pressable onPress={onOpen} pointerEvents="box-only">
             <Input variant="underlined" className="border-0 border-b p-2" isReadOnly={true}>
               <InputField placeholder="请选择封面...." />
@@ -54,7 +59,11 @@ export const CoverPickerIcon = memo(function CoverPickerIcon({
             onChange={onValueChange}
             imagePickerOptions={imagePickerOptions}
           />
-        </>
+          <FormControlError>
+            <FormControlErrorIcon as={AlertCircle} />
+            <FormControlErrorText>{error?.message}</FormControlErrorText>
+          </FormControlError>
+        </FormControl>
       )}
     </FormControl>
   );
