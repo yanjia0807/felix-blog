@@ -55,6 +55,7 @@ export const CommentSheet = memo(function CommentSheet() {
     commentSheetRef,
     commentMenuSheetRef,
     commentSubSheetRef,
+    close,
     openMenu,
     closeMenu,
     openSub,
@@ -158,7 +159,7 @@ export const CommentSheet = memo(function CommentSheet() {
     return (
       <FormControl className="flex-1" size="md">
         <CommentInput
-          ref={inputRef}
+          inputRef={inputRef}
           onChange={onChange}
           value={value}
           isPending={isPending}
@@ -227,7 +228,9 @@ export const CommentSheet = memo(function CommentSheet() {
           <>
             <CommentMenuSheet
               menuRef={commentMenuSheetRef}
-              close={closeMenu}
+              inputRef={inputRef}
+              close={close}
+              closeMenu={closeMenu}
               openSub={openSub}
               onChange={onMenuChange}
             />

@@ -9,19 +9,20 @@ export const useMediaLibPermissions = () => {
   const toast = useToast();
 
   const requestMediaLibPermissions = async () => {
-    if (libraryPermissions?.granted) {
-      return true;
+    if (libraryPermissions.granted) {
+      return libraryPermissions;
     }
 
     const result = await requestLibraryPermission();
     if (result.granted) {
-      return true;
+      return libraryPermissions;
     } else {
       if (!result.canAskAgain) {
         toast.info({
           description: `请在 [系统设置] 里允许 ${appName} 访问您的照片。`,
         });
       }
+      return libraryPermissions;
     }
   };
 

@@ -1,14 +1,14 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
 
 export const getDeviceId = async () => {
-  let deviceId = await SecureStore.getItemAsync('deviceId');
+  let deviceId = await AsyncStorage.getItem('deviceId');
 
   if (_.isNil(deviceId)) {
     deviceId = `${Device.modelName}-${Date.now()}`;
-    await SecureStore.setItemAsync('deviceId', deviceId);
+    await AsyncStorage.setItem('deviceId', deviceId);
   }
   return deviceId;
 };

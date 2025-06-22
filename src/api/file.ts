@@ -1,5 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
-import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
 import { apiClient } from '../utils/api-client';
 
@@ -13,7 +13,7 @@ export const uploadFiles = async (files: any) => {
     fieldName: 'files',
   };
 
-  const accessToken = await SecureStore.getItemAsync('accessToken');
+  const accessToken = await AsyncStorage.getItem('accessToken');
   if (accessToken) {
     config.headers.Authorization = 'Bearer ' + accessToken;
   } else {

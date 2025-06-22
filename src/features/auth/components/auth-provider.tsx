@@ -1,7 +1,7 @@
 import PageSpinner from '@/components/page-spinner';
 import { useFetchMe } from '@/features/user/api/use-fetch-me';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 const AuthContext = createContext<any>(undefined);
@@ -20,12 +20,12 @@ export const AuthProvider = ({ children }: any) => {
   const queryClient = useQueryClient();
 
   const updateAccessToken = useCallback(async (token) => {
-    await SecureStore.setItemAsync('accessToken', token);
+    await AsyncStorage.setItem('accessToken', token);
     setAccessToken(token);
   }, []);
 
   const clearAccessToken = useCallback(async () => {
-    await SecureStore.deleteItemAsync('accessToken');
+    await AsyncStorage.removeItem('accessToken');
     setAccessToken(null);
   }, []);
 
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     const loadToken = async () => {
-      const token = await SecureStore.getItemAsync('accessToken');
+      const token = await AsyncStorage.getItem('accessToken');
       setAccessToken(token);
     };
 

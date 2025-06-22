@@ -26,15 +26,14 @@ export const CommentItem: React.FC<any> = memo(
     const { setReplyComment } = useCommentActions();
 
     const onReply = () => {
-      setReplyComment({
+      const replyComment = {
         documentId: commentDocumentId,
         topDocumentId: item.topComment.documentId,
         username: item.user.username,
-      });
+      };
+      setReplyComment(replyComment);
 
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 300);
+      setTimeout(() => inputRef.current?.focus(), 300);
     };
 
     const onDelete = () => {
@@ -52,8 +51,10 @@ export const CommentItem: React.FC<any> = memo(
     };
 
     const onOpenCommentMenu = (item) => {
-      setSelectComment(item);
-      openMenu();
+      if (user) {
+        setSelectComment(item);
+        openMenu();
+      }
     };
 
     return (
@@ -75,15 +76,15 @@ export const CommentItem: React.FC<any> = memo(
           <Text size="sm">{item.content}</Text>
           <HStack className="items-center justify-between" space="sm">
             <HStack className="items-center" space="sm">
-              <Text size="sm">{formatDistance(item.createdAt)}</Text>
+              <Text size="xs">{formatDistance(item.createdAt)}</Text>
               {user && (
-                <Button size="sm" variant="link" onPress={() => onReply()}>
+                <Button size="xs" variant="link" onPress={() => onReply()}>
                   <ButtonText>回复</ButtonText>
                 </Button>
               )}
 
               {user && item.user.documentId === user.documentId && (
-                <Button size="sm" variant="link" action="secondary" onPress={() => onDelete()}>
+                <Button size="xs" variant="link" action="secondary" onPress={() => onDelete()}>
                   <ButtonText>删除</ButtonText>
                 </Button>
               )}

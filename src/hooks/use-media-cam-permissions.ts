@@ -1,32 +1,35 @@
-import { useCameraPermissions } from 'expo-camera';
 import Constants from 'expo-constants';
+import { useState } from 'react';
+import { Camera, CameraPermissionStatus } from 'react-native-vision-camera';
 import useToast from './use-toast';
 
 const appName = Constants?.expoConfig?.extra?.name || '';
 
 export const useMediaCamPermissions = () => {
-  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const toast = useToast();
+  const [meidaCamPermission, setMeidaCamPermission] = useState<CameraPermissionStatus>();
 
   const requestMediaCamPermissions = async () => {
-    if (cameraPermission?.granted) {
-      return true;
+    let permission = Camera.getCameraPermissionStatus();
+    setMeidaCamPermission(permission);
+    if (permission === 'granted') {
+      return permission;
     }
 
-    const result = await requestCameraPermission();
-    if (result.granted) {
-      return true;
+    permission = await Camera.requestCameraPermission();
+    setMeidaCamPermission(permission);
+    if (permission === 'granted') {
+      return permission;
     } else {
-      if (!result.canAskAgain) {
-        toast.info({
-          description: `请在 [系统设置] 里允许 ${appName} 访问您的相机。`,
-        });
-      }
+      toast.info({
+        description: `请在 [系统设置] 里允许 ${appName} 访问您的相机。`,
+      });
+      return permission;
     }
   };
 
   return {
-    cameraPermission,
+    meidaCamPermission,
     requestMediaCamPermissions,
   };
 };

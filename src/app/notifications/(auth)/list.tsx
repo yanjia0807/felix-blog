@@ -150,7 +150,6 @@ const NotificationListPage: React.FC = () => {
         <VStack className="flex-1 p-4">
           <FlatList
             data={notifications}
-            contentContainerClassName="flex-grow"
             renderItem={renderItem}
             ItemSeparatorComponent={renderItemSeparator}
             ListEmptyComponent={renderEmptyComponent}

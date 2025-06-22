@@ -1,317 +1,295 @@
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { Portal } from '@/components/ui/portal';
-import { Slider, SliderFilledTrack, SliderTrack } from '@/components/ui/slider';
-import { createVideoThumbnail } from '@/utils/file';
-import { CameraMode, CameraType, CameraView, FlashMode } from 'expo-camera';
-import { Image } from 'expo-image';
-import _ from 'lodash';
-import { Camera, CircleX, SwitchCamera, Zap, ZapOff } from 'lucide-react-native';
+import { Text } from '@/components/ui/text';
+import { useIsForeground } from '@/hooks/use-is-foreground';
+import { useMediaCamPermissions } from '@/hooks/use-media-cam-permissions';
+import { useMediaMicPermissions } from '@/hooks/use-media-mic-permissions';
+import { createVideoThumbnail, getFilename } from '@/utils/file';
+import { useIsFocused } from '@react-navigation/core';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { GestureResponderEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ResizeMode } from 'react-native-video';
-import VideoPlayer from 'react-native-video-player';
-import { Divider } from './ui/divider';
-import { VStack } from './ui/vstack';
+import Animated, {
+  Extrapolate,
+  interpolate,
+  runOnJS,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import {
+  Camera,
+  CameraProps,
+  CameraRuntimeError,
+  PhotoFile,
+  useCameraDevice,
+  useCameraFormat,
+  VideoFile,
+} from 'react-native-vision-camera';
+import { CameraCaptureButton } from './camera-capture-button';
+import { CameraPreview } from './camera-preview';
+import { CameraSettings } from './camera-settings';
+import { CameraTimer } from './camera-timer';
 
-const PictureViewer: React.FC<any> = ({ data, onCommit, onUndo }) => {
-  const insets = useSafeAreaInsets();
+const ReanimatedCamera = Animated.createAnimatedComponent(Camera);
+Animated.addWhitelistedNativeProps({
+  zoom: true,
+});
 
-  return (
-    <View className="flex-1 justify-between">
-      <Image
-        source={{
-          uri: data.uri,
-        }}
-        style={{
-          width: '100%',
-          height: '100%',
-        }}
-      />
-      <HStack
-        className="absolute bottom-0 w-full items-center justify-center bg-background-50 p-2"
-        style={{ paddingBottom: insets.bottom }}>
-        <Button action="negative" variant="link" className="flex-1" onPress={onUndo}>
-          <ButtonText>取消</ButtonText>
-        </Button>
-        <Button action="positive" className="flex-1" onPress={onCommit}>
-          <ButtonText>确定</ButtonText>
-        </Button>
-      </HStack>
-    </View>
-  );
-};
-
-const VideoViewer: React.FC<any> = ({ data, onCommit, onUndo }) => {
-  const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  const bodyHeight = windowHeight - insets.bottom - 35;
-
-  return (
-    <View className="flex-1 justify-between">
-      <VideoPlayer
-        source={{
-          uri: data.uri,
-        }}
-        controls={true}
-        showDuration={true}
-        style={{
-          width: '100%',
-          height: bodyHeight,
-        }}
-        resizeMode={ResizeMode.COVER}
-      />
-      <HStack
-        className="absolute bottom-0 w-full items-center justify-center bg-background-50 p-2"
-        style={{ paddingBottom: insets.bottom }}>
-        <Button action="negative" variant="link" className="flex-1" onPress={onUndo}>
-          <ButtonText>取消</ButtonText>
-        </Button>
-        <Divider orientation="vertical" />
-        <Button action="positive" className="flex-1" onPress={onCommit}>
-          <ButtonText>确定</ButtonText>
-        </Button>
-      </HStack>
-    </View>
-  );
-};
-
-export const ImageryCamera = ({ isOpen, onClose, onChange, value }: any) => {
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [mode, setMode] = useState<CameraMode>('picture');
-  const [flash, setFlash] = useState<FlashMode>('auto');
-  const [maxDuration, setMaxDuration] = useState(30);
+export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
   const [data, setData] = useState<any>();
+  const [type, setType] = useState<'photo' | 'video'>('photo');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const timerRef = useRef<any>(null);
-  const cameraRef = React.useRef<CameraView>(null);
-  const dataRef = useRef(null);
-  const insets = useSafeAreaInsets();
+  const [maxDuration] = useState(30);
 
+  const [isCameraInitialized, setIsCameraInitialized] = useState(false);
+  const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('back');
+  const [enableHdr, setEnableHdr] = useState(false);
+  const [flash, setFlash] = useState<'off' | 'on'>('off');
+  const [enableNightMode, setEnableNightMode] = useState(false);
+  const [targetFps, setTargetFps] = useState(60);
+
+  const device = useCameraDevice(cameraPosition);
+  const camera = useRef<Camera>(null);
+  const { requestMediaCamPermissions } = useMediaCamPermissions();
+  const { meidaMicPermission, requestMediaMicPermissions } = useMediaMicPermissions();
+  const isFocussed = useIsFocused();
+  const isForeground = useIsForeground();
+  const isActive = isFocussed && isForeground;
+
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const screenAspectRatio = windowHeight / windowWidth;
+
+  const format = useCameraFormat(device, [
+    { fps: targetFps },
+    { videoAspectRatio: screenAspectRatio },
+    { videoResolution: 'max' },
+    { photoAspectRatio: screenAspectRatio },
+    { photoResolution: 'max' },
+  ]);
+
+  const fps = Math.min(format?.maxFps ?? 1, targetFps);
+  const supportsFlash = device?.hasFlash ?? false;
+  const minZoom = device?.minZoom ?? 1;
+  const maxZoom = Math.min(device?.maxZoom ?? 1, 10);
+  const videoHdr = format?.supportsVideoHdr && enableHdr;
+  const photoHdr = format?.supportsPhotoHdr && enableHdr && !videoHdr;
+
+  const zoom = useSharedValue(1);
+  const startZoom = useSharedValue(0);
+  const offsetY = useSharedValue(0);
   const opacity = useSharedValue(1);
-  const scale = useSharedValue(1);
 
-  const buttonStyle = useAnimatedStyle(() => ({
+  const cameraAnimatedProps = useAnimatedProps<CameraProps>(() => {
+    const z = Math.max(Math.min(zoom.value, maxZoom), minZoom);
+    return {
+      zoom: z,
+    };
+  }, [maxZoom, minZoom, zoom]);
+
+  const containerAnimatiedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: offsetY.value }],
     opacity: opacity.value,
-    transform: [{ scale: scale.value }],
   }));
 
-  const toggleFacing = () => {
-    setFacing((current) => (current === 'back' ? 'front' : 'back'));
+  const onInitialized = () => {
+    setIsCameraInitialized(true);
   };
 
-  const toggleFlash = () => {
-    switch (flash) {
-      case 'auto':
-        setFlash('on');
-        break;
-      case 'on':
-        setFlash('off');
-        break;
-      case 'off':
-        setFlash('auto');
-        break;
-
-      default:
-        break;
-    }
+  const onError = (error: CameraRuntimeError) => {
+    console.error(error);
   };
 
-  const capture = async () => {
-    const picture = await cameraRef.current?.takePictureAsync();
-    setData(picture);
+  const onFlipCameraPressed = () => {
+    setCameraPosition((p) => (p === 'back' ? 'front' : 'back'));
   };
 
-  const startRecording = async () => {
-    if (cameraRef.current && !isRecording) {
-      setIsRecording(true);
-      setRecordingTime(0);
-      scale.value = withSpring(1.2);
-      opacity.value = withSpring(0.75);
-
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => {
-          if (prev + 1 >= maxDuration) {
-            stopRecording(true);
-            return maxDuration;
-          }
-          return prev + 1;
-        });
-      }, 1000);
-
-      try {
-        dataRef.current = await cameraRef.current.recordAsync({
-          maxDuration: maxDuration,
-        });
-      } catch (error) {
-        console.error(error);
-      } finally {
-        clearInterval(timerRef.current);
-        setIsRecording(false);
-      }
-    }
+  const onFocusTap = ({ nativeEvent: event }: GestureResponderEvent) => {
+    if (!device?.supportsFocus) return;
+    camera.current?.focus({
+      x: event.locationX,
+      y: event.locationY,
+    });
   };
 
-  const stopRecording = async (success) => {
-    if (isRecording) {
-      clearInterval(timerRef.current);
-      setIsRecording(false);
-      scale.value = withSpring(1);
-      opacity.value = withSpring(1);
-      try {
-        await cameraRef.current.stopRecording();
-        if (success) {
-          setData(dataRef.current);
-        }
-      } catch (error) {
-        console.error(error);
-      }
+  const onDoubleTap = () => {
+    onFlipCameraPressed();
+  };
+
+  const onCaptured = async (media: PhotoFile | VideoFile, type: 'photo' | 'video') => {
+    setType(type);
+
+    if (type === 'photo') {
+      const data = {
+        uri: media.path,
+        name: getFilename(media.path),
+        thumbnail: media.path,
+        preview: media.path,
+        width: media.width,
+        height: media.height,
+        mime: 'image',
+      };
+      setData(data);
+    } else {
+      const thumbnail = await createVideoThumbnail(media.path);
+      const data = {
+        uri: media.path,
+        name: getFilename(media.path),
+        thumbnail: thumbnail?.path,
+        preview: media.path,
+        width: media.width,
+        height: media.height,
+        mime: 'video',
+      };
+      setData(data);
     }
   };
 
   const onCommit = async () => {
-    let val;
-    const uri = _.replace(data.uri, 'file://', '');
-    const name = _.last(data.uri.split('/'));
-
-    if (mode === 'picture') {
-      val = {
-        name,
-        uri,
-        thumbnail: uri,
-        preview: uri,
-      };
-    } else {
-      const thumbnail = await createVideoThumbnail(uri);
-
-      val = {
-        name,
-        uri,
-        thumbnail: thumbnail?.path,
-        preview: uri,
-      };
-    }
-
-    onChange([...value, val]);
-    setData(null);
+    onChange(data);
+    setType(undefined);
+    setData(undefined);
     onClose();
   };
 
-  const onUndo = async () => {
-    setData(null);
+  const onClosePreview = () => {
+    setType(undefined);
+    setData(undefined);
   };
 
-  const capturePicGesture = Gesture.Tap()
-    .onStart(() => setMode('picture'))
-    .onEnd(async (e, success) => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      if (success) capture();
+  const pinch = Gesture.Pinch()
+    .enabled(isActive)
+    .onStart(() => {
+      startZoom.value = zoom.value;
     })
-    .runOnJS(true);
+    .onUpdate((e) => {
+      const scale = interpolate(e.scale, [1 - 1 / 3, 1, 3], [-1, 0, 1], Extrapolate.CLAMP);
+      zoom.value = interpolate(
+        scale,
+        [-1, 0, 1],
+        [minZoom, startZoom.value, maxZoom],
+        Extrapolate.CLAMP,
+      );
+    });
 
-  const captureVideoGesture = Gesture.LongPress()
-    .onStart(async () => {
-      setMode('video');
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      startRecording();
+  const pan = Gesture.Pan()
+    .activeOffsetY([-5, 5])
+    .onUpdate((e) => {
+      if (Math.abs(e.translationX) < Math.abs(e.translationY)) {
+        offsetY.value = e.translationY;
+        opacity.value = 1 - Math.min(1, Math.abs(e.translationY) / 300);
+      }
     })
-    .onEnd(async (e, success) => {
-      stopRecording(success);
-    })
-    .runOnJS(true);
+    .onEnd((e) => {
+      if (Math.abs(e.translationY) > 100 || Math.abs(e.velocityY) > 800) {
+        runOnJS(onClose)();
+      } else {
+        offsetY.value = withSpring(0, { damping: 15, stiffness: 120 });
+        opacity.value = withSpring(1, { damping: 15, stiffness: 120 });
+      }
+    });
 
-  const pressGesture = Gesture.Exclusive(captureVideoGesture, capturePicGesture);
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onEnd(() => {
+      runOnJS(onDoubleTap)();
+    });
 
   useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
+    requestMediaCamPermissions();
+    requestMediaMicPermissions();
+  }, [requestMediaCamPermissions, requestMediaMicPermissions]);
+
+  useEffect(() => {
+    zoom.value = device?.neutralZoom ?? 1;
+  }, [zoom, device, opacity, offsetY, startZoom]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      opacity.value = 1;
+      offsetY.value = 0;
+    }
+  }, [isOpen, offsetY, opacity]);
+
+  if (data) {
+    return <CameraPreview type={type} data={data} onClose={onClosePreview} onCommit={onCommit} />;
+  }
+
+  if (!device) {
+    return (
+      <Portal isOpen={isOpen} style={{ flex: 1, backgroundColor: 'black' }}>
+        <GestureDetector gesture={pan}>
+          <Animated.View style={[{ flex: 1 }, containerAnimatiedStyle]}>
+            <View className="flex-1 items-center justify-center">
+              <Text size="sm">未找到相机</Text>
+            </View>
+          </Animated.View>
+        </GestureDetector>
+      </Portal>
+    );
+  }
 
   return (
-    <Portal isOpen={isOpen} style={{ flex: 1, backgroundColor: 'white' }}>
-      {data ? (
-        <>
-          {mode === 'picture' ? (
-            <PictureViewer data={data} onCommit={onCommit} onUndo={onUndo} />
-          ) : (
-            <VideoViewer data={data} onCommit={onCommit} onUndo={onUndo} />
-          )}
-        </>
-      ) : (
-        <View className="flex-1">
-          <CameraView
-            ref={cameraRef}
-            style={StyleSheet.absoluteFill}
-            facing={facing}
-            flash={flash}
-            mode={mode}
-          />
-          <VStack className="flex-1 justify-between">
-            <HStack
-              className="absolute top-0 w-full items-center justify-between px-4"
-              style={{ paddingTop: insets.top }}>
-              <Button
-                size="lg"
-                variant="link"
-                onPress={toggleFacing}
-                className="rounded-full opacity-50"
-                action="secondary">
-                <ButtonIcon as={SwitchCamera} />
-              </Button>
-              <Button
-                size="lg"
-                variant="link"
-                onPress={toggleFlash}
-                className="rounded-full opacity-50"
-                action="secondary">
-                {flash === 'auto' ? (
-                  <ButtonText>auto</ButtonText>
-                ) : (
-                  <ButtonIcon as={flash === 'on' ? Zap : ZapOff} />
-                )}
-              </Button>
-            </HStack>
-            <HStack
-              className="absolute bottom-0 w-full items-center justify-center self-center px-4"
-              style={{
-                paddingBottom: insets.bottom,
-              }}>
-              <GestureDetector gesture={pressGesture}>
-                <Animated.View
-                  style={buttonStyle}
-                  className="h-20 w-20 items-center justify-center rounded-full bg-primary-500 opacity-50">
-                  <Icon as={Camera} size={32 as any} />
-                </Animated.View>
-              </GestureDetector>
-              <Button
-                action="negative"
-                onPress={onClose}
-                className="absolute right-4 rounded-full opacity-50">
-                <ButtonIcon as={CircleX} />
-              </Button>
-            </HStack>
-            {mode === 'video' && isRecording && (
-              <Slider
-                className="absolute top-1/2 w-4/5 flex-1 self-center opacity-70"
-                value={recordingTime}
-                maxValue={maxDuration}
-                size="sm">
-                <SliderTrack>
-                  <SliderFilledTrack />
-                </SliderTrack>
-              </Slider>
-            )}
-          </VStack>
-        </View>
-      )}
+    <Portal isOpen={isOpen} style={{ flex: 1, backgroundColor: 'black' }}>
+      <View className="flex-1">
+        <GestureDetector gesture={pan}>
+          <Animated.View style={[{ flex: 1 }, containerAnimatiedStyle]}>
+            <GestureDetector gesture={pinch}>
+              <Animated.View onTouchEnd={onFocusTap} style={StyleSheet.absoluteFill}>
+                <GestureDetector gesture={doubleTap}>
+                  <ReanimatedCamera
+                    style={StyleSheet.absoluteFill}
+                    device={device}
+                    isActive={isActive}
+                    ref={camera}
+                    onInitialized={onInitialized}
+                    onError={onError}
+                    format={format}
+                    fps={fps}
+                    photoHdr={photoHdr}
+                    videoHdr={videoHdr}
+                    photoQualityBalance="quality"
+                    lowLightBoost={device.supportsLowLightBoost && enableNightMode}
+                    enableZoomGesture={false}
+                    animatedProps={cameraAnimatedProps}
+                    exposure={0}
+                    outputOrientation="device"
+                    photo={true}
+                    video={true}
+                    audio={meidaMicPermission === 'granted'}
+                  />
+                </GestureDetector>
+              </Animated.View>
+            </GestureDetector>
+          </Animated.View>
+        </GestureDetector>
+
+        <CameraCaptureButton
+          camera={camera}
+          onCaptured={onCaptured}
+          flash={supportsFlash ? flash : 'off'}
+          enabled={isCameraInitialized && isActive}
+          setIsRecording={setIsRecording}
+          setRecordingTime={setRecordingTime}
+          maxDuration={maxDuration}
+        />
+
+        <CameraSettings
+          device={device}
+          flash={flash}
+          setFlash={setFlash}
+          setCameraPosition={setCameraPosition}
+          targetFps={targetFps}
+          setTargetFps={setTargetFps}
+          enableHdr={enableHdr}
+          setEnableHdr={setEnableHdr}
+          enableNightMode={enableNightMode}
+          setEnableNightMode={setEnableNightMode}
+        />
+
+        {isRecording && <CameraTimer recordingTime={recordingTime} maxDuration={maxDuration} />}
+      </View>
     </Portal>
   );
 };

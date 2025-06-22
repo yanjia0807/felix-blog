@@ -1,11 +1,11 @@
 import { createFetchMeQuery } from '@/features/user/api/use-fetch-me';
 import { useNotificationPermissions } from '@/hooks/use-notification-permissions';
 import { getDeviceId, getProjectId } from '@/utils/common';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useCreateExpoPushToken } from '../api/use-create-expo-push-token';
 import { createFetchExpoPushTokenQuery } from '../api/use-fetch-expo-push-token';
@@ -47,7 +47,7 @@ export const PushNotificationProvider = ({ children }: any) => {
       createFetchExpoPushTokenQuery({ deviceId }),
     );
 
-    const accessToken = await SecureStore.getItemAsync('accessToken');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
 
     if (pushTokenQuery) {
@@ -107,7 +107,7 @@ export const PushNotificationProvider = ({ children }: any) => {
           return;
         }
 
-        const accessToken = await SecureStore.getItemAsync('accessToken');
+        const accessToken = await AsyncStorage.getItem('accessToken');
         const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
 
         await createExpoPushToken({
@@ -125,7 +125,7 @@ export const PushNotificationProvider = ({ children }: any) => {
         async (response) => {
           const data = response.notification.request.content.data;
           if (data.type === 'chat') {
-            const accessToken = await SecureStore.getItemAsync('accessToken');
+            const accessToken = await AsyncStorage.getItem('accessToken');
             const user = await queryClient.fetchQuery(createFetchMeQuery(accessToken));
             if (user) {
               router.navigate(`/chats/${data.chatId}`);

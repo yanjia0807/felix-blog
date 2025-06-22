@@ -15,9 +15,7 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
-        "NSLocationWhenInUseUsageDescription": "允许 $(PRODUCT_NAME) 访问您的位置信息。",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "允许 $(PRODUCT_NAME) 访问您的位置信息。",
-        "NSLocationAlwaysUsageDescription": "允许 $(PRODUCT_NAME) 访问您的位置信息。"
+        "NSLocationWhenInUseUsageDescription": "允许 $(PRODUCT_NAME) 访问您的位置信息。"
       },
       "config": {
         "usesNonExemptEncryption": false
@@ -44,28 +42,7 @@
       [
         "react-native-permissions",
         {
-          "iosPermissions": ["LocationAccuracy", "LocationAlways", "LocationWhenInUse"]
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "允许 $(PRODUCT_NAME) 访问您的相机。",
-          "microphonePermission": "允许 $(PRODUCT_NAME) 访问您的麦克风。",
-          "recordAudioAndroid": true
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "允许 $(PRODUCT_NAME) 访问您的相册。"
-        }
-      ],
-      [
-        "expo-secure-store",
-        {
-          "configureAndroidBackup": true,
-          "faceIDPermission": "允许 $(PRODUCT_NAME) 访问您的面容ID生物识别数据。"
+          "iosPermissions": ["LocationAccuracy", "LocationWhenInUse"]
         }
       ],
       [
@@ -78,6 +55,12 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "允许 $(PRODUCT_NAME) 访问您的相册。"
+        }
+      ],
+      [
         "react-native-video",
         {
           "enableNotificationControls": true,
@@ -87,6 +70,14 @@
             "useExoplayerHls": false,
             "useExoplayerDash": false
           }
+        }
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "允许 $(PRODUCT_NAME) 访问您的相机。",
+          "microphonePermissionText": "允许 $(PRODUCT_NAME) 访问您的麦克风。",
+          "enableMicrophonePermission": true
         }
       ]
     ],

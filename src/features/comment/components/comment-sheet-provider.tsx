@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useMemo, useRef, useStat
 
 interface CommentSheetContextType {
   open: () => void;
+  close: () => void;
   openMenu: (item: any) => void;
   closeMenu: () => void;
   openSub: () => void;
@@ -31,6 +32,8 @@ export const CommentSheetProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const commentSubSheetRef = useRef<BottomSheet>(null);
 
   const open = useCallback(() => commentSheetRef.current?.present(), []);
+  const close = useCallback(() => commentSheetRef.current?.close(), []);
+
   const openMenu = useCallback(() => {
     commentMenuSheetRef.current?.expand();
   }, []);
@@ -55,6 +58,7 @@ export const CommentSheetProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const value = useMemo(
     () => ({
       open,
+      close,
       openMenu,
       closeMenu,
       openSub,
@@ -65,7 +69,7 @@ export const CommentSheetProvider: React.FC<{ children: React.ReactNode }> = ({ 
       commentSubSheetRef,
       isExpanded,
     }),
-    [open, openMenu, closeMenu, openSub, closeSub, onMenuChange, isExpanded],
+    [open, close, openMenu, closeMenu, openSub, closeSub, onMenuChange, isExpanded],
   );
 
   return <CommentSheetContext.Provider value={value}>{children}</CommentSheetContext.Provider>;

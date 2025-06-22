@@ -1,15 +1,17 @@
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
-import { fileFullUrl } from '@/utils/file';
+import { fileFullUrl, voiceSecs } from '@/utils/file';
 import { format } from 'date-fns';
 import React, { memo } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { usePlayVoice } from '../hooks/use-play-voice';
 import { VoicePlayIcon } from './voice-play-icon';
 
-export const SenderVoiceItem: React.FC<any> = memo(function SenderItem({ item }) {
-  const url = fileFullUrl(item.voice?.file);
+export const SenderVoiceItem: React.FC<any> = memo(function SenderVoiceItem({ item }) {
+  const { attachments, attachmentExtras } = item;
+  const url = fileFullUrl(attachments[0]);
+  const secs = voiceSecs(attachments[0], attachmentExtras);
   const { isPlaying, onPlay } = usePlayVoice({ url });
 
   return (
@@ -23,7 +25,7 @@ export const SenderVoiceItem: React.FC<any> = memo(function SenderItem({ item })
           variant="elevated"
           className="flex-1 items-end justify-start rounded-lg bg-primary-300 p-2">
           <HStack className="items-center" space="xs">
-            <Text size="xs">{item.voice?.secs}</Text>
+            <Text size="xs">{secs}</Text>
             <VoicePlayIcon isPlaying={isPlaying} />
           </HStack>
         </Card>

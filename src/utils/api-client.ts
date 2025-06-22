@@ -1,5 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { isAxiosError } from 'axios';
-import * as SecureStore from 'expo-secure-store';
 
 const apiServerURL = process.env.EXPO_PUBLIC_API_SERVER;
 
@@ -12,7 +12,7 @@ const apiClient = axios.create(config);
 
 apiClient.interceptors.request.use(
   async (config: any) => {
-    const accessToken = await SecureStore.getItemAsync('accessToken');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     if (accessToken) {
       config.headers.Authorization = 'Bearer ' + accessToken;
     } else {
@@ -28,9 +28,9 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(
-      `[api ${response.status}] ${response.config.method?.toUpperCase()} ${response.config.url} - headers: ${response.config.headers} - params: ${response.request.params} - data: ${JSON.stringify(response.data)} `,
-    );
+    // console.log(
+    //   `[api ${response.status}] ${response.config.method?.toUpperCase()} ${response.config.url} - headers: ${response.config.headers} - params: ${response.request.params} - data: ${JSON.stringify(response.data)} `,
+    // );
     return response.data;
   },
   async (error: Error) => {

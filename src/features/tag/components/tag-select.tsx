@@ -63,7 +63,7 @@ export const TagSelect = ({ value = [], onChange }: any) => {
           onPress={onRemoveAll}
           key={-2}
           size="sm"
-          action="secondary"
+          action="negative"
           variant="link"
           className="ml-3">
           <ButtonText>清空</ButtonText>

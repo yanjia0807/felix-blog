@@ -40,22 +40,23 @@ export const CommentSectionHeader: React.FC<any> = memo(function CommentSectionH
   const relatedComments = _.flatMap(relatedCommentsQuery.data?.pages, (page) => page.data);
 
   const onOpenCommentMenu = (item) => {
-    setSelectComment(item);
-    openMenu();
+    if (user) {
+      setSelectComment(item);
+      openMenu();
+    }
   };
 
   const onExpand = async (commentDocumentId: any) => addExpandCommentDocumentId(commentDocumentId);
 
   const onReply = () => {
-    setReplyComment({
+    const replyComment = {
       documentId: commentDocumentId,
       topDocumentId: commentDocumentId,
       username: item.user.username,
-    });
+    };
+    setReplyComment(replyComment);
 
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 300);
+    setTimeout(() => inputRef.current?.focus(), 300);
   };
 
   const onDelete = () => {
@@ -94,15 +95,15 @@ export const CommentSectionHeader: React.FC<any> = memo(function CommentSectionH
             <Text size="sm">{item.content}</Text>
             <HStack className="items-center justify-between" space="sm">
               <HStack className="items-center" space="sm">
-                <Text size="sm">{formatDistance(item.createdAt)}</Text>
+                <Text size="xs">{formatDistance(item.createdAt)}</Text>
                 {user && (
-                  <Button size="sm" variant="link" onPress={() => onReply()}>
+                  <Button size="xs" variant="link" onPress={() => onReply()}>
                     <ButtonText>回复</ButtonText>
                   </Button>
                 )}
 
                 {user && item.user.documentId === user.documentId && (
-                  <Button size="sm" action="secondary" variant="link" onPress={() => onDelete()}>
+                  <Button size="xs" action="secondary" variant="link" onPress={() => onDelete()}>
                     <ButtonText>删除</ButtonText>
                   </Button>
                 )}
@@ -125,7 +126,7 @@ export const CommentSectionHeader: React.FC<any> = memo(function CommentSectionH
             {item.relatedComments?.count > 0 && !isCommentExpanded && (
               <HStack>
                 <Button
-                  size="sm"
+                  size="xs"
                   variant="link"
                   action="secondary"
                   onPress={() => onExpand(item.documentId)}>

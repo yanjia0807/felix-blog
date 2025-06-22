@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 const CarouselContext = createContext<any>(undefined);
@@ -21,6 +22,13 @@ export const CarouselProvider = ({ children }: any) => {
     setIndex(index);
   }, []);
 
+  const onOpenName = useCallback((data, name) => {
+    const index = _.findIndex(data, (item: any) => item.name === name);
+    setIsOpen(true);
+    setData(data);
+    setIndex(index);
+  }, []);
+
   const onClose = useCallback(() => setIsOpen(false), []);
 
   const value = useMemo(
@@ -29,11 +37,12 @@ export const CarouselProvider = ({ children }: any) => {
       data,
       setData,
       onOpen,
+      onOpenName,
       onClose,
       isOpen,
       index,
     }),
-    [onOpen, onClose, isOpen, data, index],
+    [onOpen, onOpenName, onClose, isOpen, data, index],
   );
 
   return <CarouselContext.Provider value={value}>{children}</CarouselContext.Provider>;

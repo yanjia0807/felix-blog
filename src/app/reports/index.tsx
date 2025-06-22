@@ -1,6 +1,7 @@
 import { ListEmptyView } from '@/components/list-empty-view';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Divider } from '@/components/ui/divider';
 import { FlatList } from '@/components/ui/flat-list';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -46,9 +47,7 @@ const ReportPage: React.FC<any> = () => {
         <Card size="md" variant="ghost">
           <VStack space="md">
             <HStack className="items-center justify-between">
-              <Text size="md" bold={true}>
-                {item.word}
-              </Text>
+              <Text size="md">{item.word}</Text>
               {selectedItem?.documentId === item.documentId && <Icon as={CheckIcon} />}
             </HStack>
             {selectedItem?.documentId === item.documentId && (
@@ -61,6 +60,8 @@ const ReportPage: React.FC<any> = () => {
   };
 
   const renderEmptyComponent = <ListEmptyView />;
+
+  const renderItemSeparator = (props: any) => <Divider {...props} />;
 
   const renderHeaderLeft = () => (
     <Button
@@ -92,11 +93,13 @@ const ReportPage: React.FC<any> = () => {
       <SafeAreaView className="flex-1">
         <FlatList
           data={reportLegals}
-          className="flex-1"
+          contentContainerClassName="p-4"
           renderItem={renderItem}
+          ItemSeparatorComponent={renderItemSeparator}
           ListEmptyComponent={renderEmptyComponent}
           showsVerticalScrollIndicator={false}
         />
+
         <HStack
           className="absolute bottom-0 items-center p-4"
           style={{ paddingBottom: insets.bottom }}>

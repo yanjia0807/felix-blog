@@ -44,7 +44,7 @@ export const imageFormat = (file: any, type: 's' | 'l' = 's', spec?: 't' | 's' |
       }
     }
     if (type === 'l') {
-      for (const item of _.reverse(specs)) {
+      for (const item of specs.slice().reverse()) {
         if (formats[item]) {
           selected = formats[item];
           break;
@@ -64,6 +64,12 @@ export const videoThumbnailUrl = (file: any, attachmentExtras: any = []) => {
   const item = _.find(attachmentExtras, (item: any) => item.attachment.id === file.id);
   if (!item) return undefined;
   return `${apiServerURL}${item.thumbnail.formats.thumbnail.url}`;
+};
+
+export const voiceSecs = (file: any, attachmentExtras: any = []) => {
+  const item = _.find(attachmentExtras, (item: any) => item.attachment.id === file.id);
+  if (!item) return undefined;
+  return item.secs;
 };
 
 export const createVideoThumbnail = async (url: string) => {
@@ -96,4 +102,12 @@ export const toAttachmetItem = (attachment, attachmentExtras) => {
 
 export const isLocalFile = (url) => {
   return _.startsWith(url, 'file://') || _.startsWith(url, '/') || /^[a-zA-Z]:\\/.test(url);
+};
+
+export const getFilename = (uri) => {
+  if (!uri || typeof uri !== 'string') return '';
+  const pathParts = _.split(uri, '/');
+  const fileName = _.last(_.filter(pathParts, (part) => !_.isEmpty(part))) || '';
+  const nameParts = _.split(fileName, '.');
+  return nameParts.length > 1 ? _.initial(nameParts).join('.') : fileName;
 };

@@ -7,14 +7,17 @@ import { format } from 'date-fns';
 import _ from 'lodash';
 import React, { memo } from 'react';
 
-export const SenderImageryItem: React.FC<any> = memo(function SenderImageryItem({ item }) {
+export const SenderImageryItem: React.FC<any> = memo(function SenderImageryItem({
+  item,
+  onImageryPress,
+}) {
   const { attachments, attachmentExtras } = item;
 
   const Imageries = _.map(attachments, (imagery) => {
     if (_.startsWith(imagery.mime, 'image')) {
       return {
         ...imagery,
-        thumbnail: imageFormat(imagery, 's').fullUrl,
+        thumbnail: imageFormat(imagery, 's', 's').fullUrl,
       };
     } else {
       return {
@@ -24,19 +27,24 @@ export const SenderImageryItem: React.FC<any> = memo(function SenderImageryItem(
     }
   });
 
+  const onPress = (name) => {
+    onImageryPress(name);
+  };
+
   return (
     <HStack className="my-2 w-full items-center" space="xs">
       <Text size="xs" className="w-1/4">
         {format(item.createdAt, 'yyyy-MM-dd HH:mm:ss')}
       </Text>
       <VStack space="md" className="flex-1">
-        {_.map(Imageries, (item) => (
+        {_.map(Imageries, (imagery) => (
           <ImageryItem
-            uri={item.thumbnail}
-            cacheKey={item.name}
-            mime={item.mime}
-            alt={item.alternativeText || item.name}
+            uri={imagery.thumbnail}
+            cacheKey={imagery.name}
+            mime={imagery.mime}
+            alt={imagery.alternativeText || imagery.name}
             className="aspect-[1] w-full rounded-md"
+            onPress={() => onPress(imagery.name)}
           />
         ))}
       </VStack>

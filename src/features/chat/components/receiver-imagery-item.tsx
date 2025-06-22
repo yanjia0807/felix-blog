@@ -12,6 +12,7 @@ import { TouchableOpacity } from 'react-native';
 export const ReceiverImageryItem: React.FC<any> = memo(function ReceiverImageryItem({
   item,
   otherUser,
+  onImageryPress,
 }) {
   const { attachments, attachmentExtras } = item;
 
@@ -19,7 +20,7 @@ export const ReceiverImageryItem: React.FC<any> = memo(function ReceiverImageryI
     if (_.startsWith(imagery.mime, 'image')) {
       return {
         ...imagery,
-        thumbnail: imageFormat(imagery, 's').fullUrl,
+        thumbnail: imageFormat(imagery, 's', 's').fullUrl,
       };
     } else {
       return {
@@ -28,6 +29,10 @@ export const ReceiverImageryItem: React.FC<any> = memo(function ReceiverImageryI
       };
     }
   });
+
+  const onPress = (name) => {
+    onImageryPress(name);
+  };
 
   return (
     <TouchableOpacity>
@@ -42,13 +47,14 @@ export const ReceiverImageryItem: React.FC<any> = memo(function ReceiverImageryI
             />
           </Avatar>
           <VStack space="md" className="flex-1">
-            {_.map(Imageries, (item) => (
+            {_.map(Imageries, (imagery) => (
               <ImageryItem
-                uri={item.thumbnail}
-                cacheKey={item.name}
-                mime={item.mime}
-                alt={item.alternativeText || item.name}
+                uri={imagery.thumbnail}
+                cacheKey={imagery.name}
+                mime={imagery.mime}
+                alt={imagery.alternativeText || imagery.name}
                 className="aspect-[1] w-full rounded-md"
+                onPress={() => onPress(imagery.name)}
               />
             ))}
           </VStack>

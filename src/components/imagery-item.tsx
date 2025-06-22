@@ -1,4 +1,3 @@
-import { Button, ButtonIcon } from '@/components/ui/button';
 import { isLocalFile } from '@/utils/file';
 import { Ionicons } from '@expo/vector-icons';
 import CachedImage from 'expo-cached-image';
@@ -7,6 +6,7 @@ import { CircleX } from 'lucide-react-native';
 import React, { memo } from 'react';
 import { Image, TouchableOpacity, View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
+import { Button, ButtonIcon } from './ui/button';
 
 export const ImageryItem: React.FC<any> = memo(function ImageryItem({
   uri,
@@ -21,7 +21,6 @@ export const ImageryItem: React.FC<any> = memo(function ImageryItem({
   ...props
 }) {
   const defaultStyle: any = {
-    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
   };
@@ -29,42 +28,46 @@ export const ImageryItem: React.FC<any> = memo(function ImageryItem({
   const Wrapper = !!onPress ? TouchableOpacity : View;
 
   return (
-    <Wrapper onPress={onPress}>
-      <View className="items-center justify-center">
-        {isLocalFile(uri) ? (
-          <Image
-            source={{ uri }}
-            alt={alt}
-            style={[defaultStyle, style]}
-            className={twMerge([className])}
-            {...props}
-          />
-        ) : (
-          <CachedImage
-            source={{ uri }}
-            cacheKey={cacheKey}
-            alt={alt}
-            style={[defaultStyle, style]}
-            className={twMerge([className])}
-            {...props}
-          />
-        )}
+    <Wrapper onPress={onPress} style={[defaultStyle, style]} className={className}>
+      {isLocalFile(uri) ? (
+        <Image
+          source={{ uri }}
+          alt={alt ?? uri}
+          style={{
+            width: '100%',
+            height: '100%',
+          }}
+          className={twMerge([className])}
+          {...props}
+        />
+      ) : (
+        <CachedImage
+          source={{ uri }}
+          cacheKey={cacheKey}
+          alt={alt}
+          style={{
+            width: '100%',
+            height: '100%',
+          }}
+          className={twMerge([className])}
+          {...props}
+        />
+      )}
 
-        {_.startsWith(mime, 'video') && (
-          <View className="absolute">
-            <Ionicons name="play-circle-outline" size={24} className="opacity-50" color="white" />
-          </View>
-        )}
-        {onRemove && (
-          <Button
-            size="xs"
-            action="secondary"
-            className="absolute right-0 top-0 h-auto p-1 opacity-80"
-            onPress={onRemove}>
-            <ButtonIcon as={CircleX} />
-          </Button>
-        )}
-      </View>
+      {_.startsWith(mime, 'video') && (
+        <View className="absolute self-center">
+          <Ionicons name="play-circle-outline" size={24} className="opacity-50" color="white" />
+        </View>
+      )}
+      {onRemove && (
+        <Button
+          size="xs"
+          action="secondary"
+          className="absolute right-0 top-0 h-auto p-1 opacity-80"
+          onPress={onRemove}>
+          <ButtonIcon as={CircleX} />
+        </Button>
+      )}
     </Wrapper>
   );
 });

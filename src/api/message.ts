@@ -49,7 +49,6 @@ export const fetchChatMessages = async ({ pageParam }: any) => {
 
 export const createMessage = async (formData: any) => {
   let data = {};
-
   if (formData.messageType === 'text') {
     const { voice, imageries, ...rest } = formData;
     data = rest;

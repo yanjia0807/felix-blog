@@ -1,38 +1,15 @@
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
-import useToast from '@/hooks/use-toast';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import Constants from 'expo-constants';
 import { MapPinIcon } from 'lucide-react-native';
 import React, { useRef } from 'react';
-import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import { PositionSheet } from './position-sheet';
-
-const appName = Constants?.expoConfig?.extra?.name || '';
 
 export const PositionPicker = ({ value, onChange }: any) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const toast = useToast();
 
   const onInputButtonPress = async () => {
-    const status = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-
-    if (status === RESULTS.GRANTED) {
-      bottomSheetRef.current?.present();
-    } else if (status === RESULTS.BLOCKED) {
-      toast.info({
-        description: `请在 [系统设置] 里允许 ${appName} 访问您的位置。`,
-      });
-    } else {
-      const status = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-      if (status === RESULTS.GRANTED) {
-        bottomSheetRef.current?.present();
-      } else {
-        toast.info({
-          description: `请在 [系统设置] 里允许 ${appName} 访问您的位置。`,
-        });
-      }
-    }
+    bottomSheetRef.current?.present();
   };
 
   const onClearButtonPress = () => {

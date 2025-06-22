@@ -34,7 +34,7 @@ export const ReportRemarkInput: React.FC<any> = memo(function ReportContentInput
 
   return (
     <FormControl size="md" isInvalid={!!error}>
-      <Textarea className="h-48 border-l-0 border-r-0 border-t-0" size="md" variant="default">
+      <Textarea className="h-52 border-l-0 border-r-0 border-t-0" size="md" variant="default">
         <TextareaInput
           placeholder={placeholder}
           inputMode="text"

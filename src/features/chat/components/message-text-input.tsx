@@ -13,7 +13,7 @@ export const MessageTextInput: React.FC<any> = memo(function MessageInput({
       <Input variant="rounded">
         <InputField
           size="lg"
-          autoFocus={true}
+          autoFocus={false}
           autoCorrect={false}
           autoCapitalize="none"
           inputMode="text"

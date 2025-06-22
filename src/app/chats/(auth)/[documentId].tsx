@@ -1,3 +1,5 @@
+import { CarouselProvider, useCarousel } from '@/components/carousel-provider';
+import CarouselViewer from '@/components/carousel-viewer';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -12,6 +14,7 @@ import { MessageInput } from '@/features/chat/components/message-input';
 import { ReceiverItem } from '@/features/chat/components/receiver-item';
 import { SenderItem } from '@/features/chat/components/sender-item';
 import { UserChatAvatar } from '@/features/user/components/user-chat-avatar';
+import { toAttachmetItem } from '@/utils/file';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import { Ellipsis } from 'lucide-react-native';
@@ -22,7 +25,7 @@ const ChatDetail: React.FC<any> = () => {
   const { documentId }: any = useLocalSearchParams();
   const { user: currentUser } = useAuth();
   const flatListRef = useRef<FlatList>(null);
-
+  const { onOpenName } = useCarousel();
   const chatQuery = useFetchChat({ documentId, userDocumentId: currentUser.documentId });
 
   const otherUser = _.find(
@@ -34,8 +37,23 @@ const ChatDetail: React.FC<any> = () => {
 
   const chatMessageQuery = useFetchChatMessages({ chatDocumentId: documentId });
   const messages = _.flatMap(chatMessageQuery.data?.pages, (page) => page.data);
+  const carouselData = _.flatMap(
+    _.filter(messages, (item) => item.messageType === 'imagery'),
+    (item) => {
+      return _.map(item.attachments || [], (attachment: any) =>
+        toAttachmetItem(attachment, item.attachmentExtras),
+      );
+    },
+  );
 
   const { mutate: updateChatStatus } = useUpdateChatStatus();
+
+  const onImageryPress = useCallback(
+    (name: string) => {
+      onOpenName(carouselData, name);
+    },
+    [carouselData, onOpenName],
+  );
 
   const onEndReached = () => {
     if (chatMessageQuery.hasNextPage && !chatMessageQuery.isFetchingNextPage) {
@@ -65,11 +83,16 @@ const ChatDetail: React.FC<any> = () => {
       ? renderSenderItem({ item })
       : renderReceiverItem({ item });
 
-  const renderSenderItem = useCallback(({ item }: any) => <SenderItem item={item} />, []);
+  const renderSenderItem = useCallback(
+    ({ item }: any) => <SenderItem item={item} onImageryPress={onImageryPress} />,
+    [onImageryPress],
+  );
 
   const renderReceiverItem = useCallback(
-    ({ item }: any) => <ReceiverItem item={item} otherUser={otherUser} />,
-    [otherUser],
+    ({ item }: any) => (
+      <ReceiverItem item={item} otherUser={otherUser} onImageryPress={onImageryPress} />
+    ),
+    [onImageryPress, otherUser],
   );
 
   useEffect(() => {
@@ -125,7 +148,12 @@ const ChatDetail: React.FC<any> = () => {
 };
 
 const ChatDetailLayout: React.FC<any> = () => {
-  return <ChatDetail />;
+  return (
+    <CarouselProvider>
+      <ChatDetail />
+      <CarouselViewer />
+    </CarouselProvider>
+  );
 };
 
 export default ChatDetailLayout;

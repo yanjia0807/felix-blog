@@ -88,17 +88,17 @@ const CommentReport: React.FC<any> = ({ close }) => {
 
   const renderReportLegals = useCallback(
     ({ field: { onChange, onBlur, value } }: any) => (
-      <FormControl size="md" isInvalid={!!errors?.legalDocumentId?.message}>
-        <HStack className="w-full flex-wrap items-center justify-center" space="md">
+      <FormControl size="sm" isInvalid={!!errors?.legalDocumentId?.message}>
+        <HStack className="w-full flex-wrap items-center justify-start" space="md">
           {_.map(reportLegals, (item) => (
             <Button
               key={item.documentId}
-              variant="outline"
+              variant={selectedItem?.documentId === item.documentId ? 'solid' : 'outline'}
               onPress={() => {
                 setSelectedItem(item);
                 onChange(item.documentId);
               }}
-              action={selectedItem?.documentId === item.documentId ? 'negative' : 'secondary'}>
+              action="secondary">
               <ButtonText>{item.word}</ButtonText>
             </Button>
           ))}

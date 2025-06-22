@@ -30,7 +30,7 @@ export const TagList = ({ value = [], onChange, className, readonly = false }: a
             onPress={onRemoveAll}
             key={0}
             size="sm"
-            action="secondary"
+            action="negative"
             variant="link"
             className="ml-3">
             <ButtonText>清空</ButtonText>

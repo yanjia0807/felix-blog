@@ -97,6 +97,10 @@ export const ImagerySheet = ({
 
   const closeCamera = () => setCameraIsOpen(false);
 
+  const handleCameraChange = (result) => {
+    onChange([...value, result]);
+  };
+
   return (
     <>
       <Actionsheet isOpen={isOpen} onClose={onClose}>
@@ -113,12 +117,7 @@ export const ImagerySheet = ({
           </ActionsheetItem>
         </ActionsheetContent>
       </Actionsheet>
-      <ImageryCamera
-        value={value}
-        onChange={onChange}
-        isOpen={cameraIsOpen}
-        onClose={closeCamera}
-      />
+      <ImageryCamera onChange={handleCameraChange} isOpen={cameraIsOpen} onClose={closeCamera} />
     </>
   );
 };

@@ -2,7 +2,7 @@ import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
-import { fileFullUrl, imageFormat } from '@/utils/file';
+import { fileFullUrl, imageFormat, voiceSecs } from '@/utils/file';
 import { format } from 'date-fns';
 import React, { memo } from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -13,7 +13,9 @@ export const ReceiverVoiceItem: React.FC<any> = memo(function ReceiverVoiceItem(
   item,
   otherUser,
 }) {
-  const url = fileFullUrl(item.voice?.file);
+  const { attachments, attachmentExtras } = item;
+  const url = fileFullUrl(attachments[0]);
+  const secs = voiceSecs(attachments[0], attachmentExtras);
   const { isPlaying, onPlay } = usePlayVoice({ url });
 
   return (
@@ -33,7 +35,7 @@ export const ReceiverVoiceItem: React.FC<any> = memo(function ReceiverVoiceItem(
             variant="elevated"
             className="flex-1 items-end justify-start rounded-lg bg-primary-200 p-2">
             <HStack className="items-center" space="xs">
-              <Text size="xs">{item.voice?.secs}</Text>
+              <Text size="xs">{secs}</Text>
               <VoicePlayIcon isPlaying={isPlaying} />
             </HStack>
           </Card>

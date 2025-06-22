@@ -91,7 +91,7 @@ export default function TabLayout() {
   const renderChatBadge = () => {
     return (
       chatsUnreadCount.data && (
-        <View className="absolute right-0 top-[-2] h-2 w-2 rounded-full bg-error-600 p-[0.5]" />
+        <View className="absolute right-0 top-[-2] h-2 w-2 rounded-full bg-error-600 p-[0.5]"></View>
       )
     );
   };
