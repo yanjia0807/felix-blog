@@ -33,7 +33,7 @@ export const TagList = ({ value = [], onChange, className, readonly = false }: a
             action="negative"
             variant="link"
             className="ml-3">
-            <ButtonText>清空</ButtonText>
+            <ButtonText>[清空]</ButtonText>
           </Button>
         )}
       </HStack>

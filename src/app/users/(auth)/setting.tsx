@@ -9,8 +9,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useLogout } from '@/features/auth/hooks/use-logout';
-import { useUpdateExpoPushToken } from '@/features/push-notification/api/use-update-expo-push-token';
-import { usePushNotification } from '@/features/push-notification/components/push-notification-provider';
+import { useDeleteMe } from '@/features/user/api/use-delete-me';
 import useToast from '@/hooks/use-toast';
 import { router, Stack } from 'expo-router';
 import {
@@ -33,8 +32,7 @@ const Setting: React.FC = () => {
   const { theme, updateTheme } = usePreferences();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(theme === 'dark');
   const [pushTokenEnabled, setPushTokenEnabled] = useState<boolean>(true);
-  const { updatePushTokenEnabled } = useUpdateExpoPushToken();
-  const { expoPushToken } = usePushNotification();
+  const { mutate: deleteMe } = useDeleteMe();
 
   const onLogoutBtnPress = () => {
     toast.confirm({
@@ -52,6 +50,23 @@ const Setting: React.FC = () => {
     });
   };
 
+  const onDeleteAccount = () => {
+    toast.confirm({
+      title: '删除账号',
+      description: `确认要删除账号吗？请谨慎操作！`,
+      onConfirm: async () => {
+        debugger;
+        await deleteMe();
+        toast.success({
+          description: '账号删除成功',
+          onCloseComplete: () => {
+            router.dismissTo('/');
+          },
+        });
+      },
+    });
+  };
+
   const onThemeSwitch = (value: boolean) => {
     setIsDarkMode(value);
     updateTheme(value ? 'dark' : 'light');
@@ -59,13 +74,6 @@ const Setting: React.FC = () => {
 
   const onPushTokenEnabledSwitch = (value: boolean) => {
     setPushTokenEnabled(value);
-    updatePushTokenEnabled.mutate({
-      documentId: expoPushToken.documentId,
-      data: {
-        deviceId: expoPushToken.deviceId,
-        enabled: value,
-      },
-    });
   };
 
   const renderHeaderLeft = () => (
@@ -119,6 +127,16 @@ const Setting: React.FC = () => {
                     <HStack className="items-center" space="md">
                       <Icon as={KeyRound} size="lg" />
                       <Text>修改密码</Text>
+                    </HStack>
+                    <Icon as={ChevronRightIcon} size="lg" />
+                  </HStack>
+                </TouchableOpacity>
+                <Divider />
+                <TouchableOpacity onPress={() => onDeleteAccount()}>
+                  <HStack className="h-14 items-center justify-between p-3">
+                    <HStack className="items-center" space="md">
+                      <Icon as={KeyRound} size="lg" />
+                      <Text>删除账号</Text>
                     </HStack>
                     <Icon as={ChevronRightIcon} size="lg" />
                   </HStack>

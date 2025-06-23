@@ -14,6 +14,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { Keyboard } from 'react-native';
 
 const PostEditPage = () => {
   const { documentId } = useLocalSearchParams();
@@ -53,7 +54,10 @@ const PostEditPage = () => {
     });
   };
 
-  const onSave = () => handleSubmit(onSubmit)();
+  const onSave = () => {
+    handleSubmit(onSubmit)();
+    Keyboard.dismiss();
+  };
 
   const renderHeaderLeft = () => (
     <Button

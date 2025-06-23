@@ -54,6 +54,7 @@ const CarouselViewer: React.FC<any> = () => {
         space="md">
         <Carousel
           ref={ref}
+          loop={false}
           width={windowWidth}
           containerStyle={{ flex: 1 }}
           onProgressChange={onProgressChange}

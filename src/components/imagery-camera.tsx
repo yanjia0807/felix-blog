@@ -4,6 +4,7 @@ import { useIsForeground } from '@/hooks/use-is-foreground';
 import { useMediaCamPermissions } from '@/hooks/use-media-cam-permissions';
 import { useMediaMicPermissions } from '@/hooks/use-media-mic-permissions';
 import { createVideoThumbnail, getFilename } from '@/utils/file';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { useIsFocused } from '@react-navigation/core';
 import React, { useEffect, useRef, useState } from 'react';
 import { GestureResponderEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -119,6 +120,10 @@ export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
 
   const onCaptured = async (media: PhotoFile | VideoFile, type: 'photo' | 'video') => {
     setType(type);
+
+    await CameraRoll.saveAsset(media.path, {
+      type,
+    });
 
     if (type === 'photo') {
       const data = {
@@ -249,15 +254,16 @@ export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
                     fps={fps}
                     photoHdr={photoHdr}
                     videoHdr={videoHdr}
-                    photoQualityBalance="quality"
+                    photoQualityBalance="speed"
+                    outputOrientation="device"
                     lowLightBoost={device.supportsLowLightBoost && enableNightMode}
                     enableZoomGesture={false}
                     animatedProps={cameraAnimatedProps}
                     exposure={0}
-                    outputOrientation="device"
                     photo={true}
                     video={true}
                     audio={meidaMicPermission === 'granted'}
+                    videoBitRate="low"
                   />
                 </GestureDetector>
               </Animated.View>

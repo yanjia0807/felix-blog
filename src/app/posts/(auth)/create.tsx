@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack } from 'expo-router';
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { Keyboard } from 'react-native';
 
 const PostCreatePage: React.FC = () => {
   const toast = useToast();
@@ -53,11 +54,13 @@ const PostCreatePage: React.FC = () => {
   };
 
   const onSaveDraft = () => {
+    Keyboard.dismiss();
     setValue('isPublished', false);
     handleSubmit(onSubmit)();
   };
 
   const onSave = () => {
+    Keyboard.dismiss();
     setValue('isPublished', true);
     handleSubmit(onSubmit)();
   };

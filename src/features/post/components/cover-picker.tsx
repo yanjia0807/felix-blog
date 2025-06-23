@@ -10,14 +10,12 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { AlertCircle, ImageIcon } from 'lucide-react-native';
 import React, { memo, useState } from 'react';
+import { useWindowDimensions } from 'react-native';
 
-export const CoverPickerIcon = memo(function CoverPickerIcon({
-  onChange,
-  value,
-  onPress,
-  error,
-}: any) {
+export const CoverPicker = memo(function CoverPickerIcon({ onChange, value, onPress, error }: any) {
   const [isOpen, setIsOpen] = useState(false);
+  const { height: windowHeight } = useWindowDimensions();
+  const coverHeight = windowHeight / 4; // Limit cover height to 200px or 1/3 of the window height
 
   const imagePickerOptions = {
     mediaTypes: ['images', 'videos', 'livePhotos'],
@@ -40,7 +38,8 @@ export const CoverPickerIcon = memo(function CoverPickerIcon({
           alt={value.alternativeText || value.name}
           onPress={onPress}
           onRemove={onRemove}
-          className="h-40 w-full rounded-md"
+          style={{ height: coverHeight }}
+          className="w-full rounded-md"
         />
       ) : (
         <FormControl size="md" isInvalid={!!error}>

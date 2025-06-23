@@ -66,7 +66,7 @@ export const TagSelect = ({ value = [], onChange }: any) => {
           action="negative"
           variant="link"
           className="ml-3">
-          <ButtonText>清空</ButtonText>
+          <ButtonText>[清空]</ButtonText>
         </Button>
       </HStack>
       <TagSheet ref={bottomSheetRef} onChange={onMoreChange} value={value} />

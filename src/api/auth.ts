@@ -11,7 +11,7 @@ export const login = async ({ identifier, password }: any) => {
     if (error.name === 'ValidationError') {
       throw new Error('无效的登录凭证或密码');
     } else if (error.name === 'ApplicationError') {
-      throw new Error('您的账户邮箱尚未验证');
+      throw new Error('登录失败');
     }
 
     throw new Error('发生了错误');

@@ -19,13 +19,13 @@ export const PositionPicker = ({ value, onChange }: any) => {
   return (
     <>
       {value ? (
-        <HStack space="lg">
+        <HStack space="md" className="items-center">
           <Button variant="link" action="secondary" onPress={() => onInputButtonPress()}>
             <ButtonIcon as={MapPinIcon} />
             <ButtonText>{value.name}</ButtonText>
           </Button>
-          <Button variant="link" action="negative" onPress={() => onClearButtonPress()}>
-            <ButtonText>[清除]</ButtonText>
+          <Button variant="link" size="sm" action="negative" onPress={() => onClearButtonPress()}>
+            <ButtonText>[清空]</ButtonText>
           </Button>
         </HStack>
       ) : (

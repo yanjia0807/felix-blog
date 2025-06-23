@@ -1,4 +1,3 @@
-import { updateMe } from '@/api';
 import { DateInput } from '@/components/date-input';
 import { DistrictPicker } from '@/components/district-picker';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
@@ -30,11 +29,11 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { genderEnum } from '@/constants/enum';
 import { useAuth } from '@/features/auth/components/auth-provider';
+import { useUpdateMe } from '@/features/user/api/use-update-me';
 import { AvatarInput } from '@/features/user/components/avatar-input';
 import useToast from '@/hooks/use-toast';
 import { imageFormat } from '@/utils/file';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import { AlertCircle, AlertCircleIcon, ChevronDownIcon } from 'lucide-react-native';
 import React from 'react';
@@ -76,7 +75,6 @@ const userFormSchema = z.object({
 
 const UserEdit: React.FC = () => {
   const { user }: any = useAuth();
-  const queryClient = useQueryClient();
   const toast = useToast();
   const insets = useSafeAreaInsets();
 
@@ -106,25 +104,7 @@ const UserEdit: React.FC = () => {
     },
   });
 
-  const { isPending, mutate } = useMutation({
-    mutationFn: ({ formData }: any) => {
-      return updateMe(formData);
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', 'me'],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'detail', { documentId: user.documentId }],
-      });
-
-      toast.success({ title: '操作完成', description: '您的资料已更新' });
-      router.back();
-    },
-    onError(error, variables, context) {
-      toast.error({ description: error.message });
-    },
-  });
+  const { isPending, mutate } = useUpdateMe(user.documentId);
 
   const renderAvatar = ({ field: { onChange, onBlur, value } }: any) => (
     <FormControl isInvalid={!!errors.avatar}>
@@ -230,9 +210,25 @@ const UserEdit: React.FC = () => {
   );
 
   const onSubmit = (formData: UserFormSchema) => {
-    mutate({
-      formData,
-    });
+    mutate(
+      {
+        formData,
+      },
+      {
+        onSuccess: (data: any) => {
+          toast.success({
+            title: '操作完成',
+            description: '您的资料已更新',
+            onCloseComplete: () => {
+              router.back();
+            },
+          });
+        },
+        onError(error, variables, context) {
+          toast.error({ description: error.message });
+        },
+      },
+    );
   };
 
   const renderHeaderLeft = () => (

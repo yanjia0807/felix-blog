@@ -34,7 +34,14 @@ export const ImagerySheet = ({
   };
 
   const selectFromLibrary = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync(imagePickerOptions);
+    const result = await ImagePicker.launchImageLibraryAsync(
+      _.merge(
+        {
+          quality: 0.7,
+        },
+        imagePickerOptions,
+      ),
+    );
     if (result.canceled) return value;
     const val: any = [...value];
 
@@ -56,7 +63,7 @@ export const ImagerySheet = ({
           val.push({
             name: item.fileName,
             mime: item.mimeType,
-            uri: thumbnail?.path,
+            uri: item.uri,
             thumbnail: thumbnail?.path,
             preview: item.uri,
           });

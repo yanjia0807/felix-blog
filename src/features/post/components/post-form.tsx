@@ -11,7 +11,7 @@ import { Controller } from 'react-hook-form';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-import { CoverPickerIcon } from './cover-picker-icon';
+import { CoverPicker } from './cover-picker';
 import { MAX_CHARS, PostContentInput } from './post-content-input';
 import { PostTitleInput } from './post-title-input';
 
@@ -66,12 +66,7 @@ const PostForm: React.FC<any> = ({ form }) => {
   );
 
   const renderCover = ({ field: { onChange, onBlur, value } }: any) => (
-    <CoverPickerIcon
-      value={value}
-      onChange={onChange}
-      onPress={onCoverPress}
-      error={errors?.cover}
-    />
+    <CoverPicker value={value} onChange={onChange} onPress={onCoverPress} error={errors?.cover} />
   );
 
   const renderContent = ({ field: { onChange, onBlur, value } }: any) => (

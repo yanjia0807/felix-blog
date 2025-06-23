@@ -89,6 +89,11 @@ export const updateMe = async (params: any) => {
   return res;
 };
 
+export const deleteMe = async () => {
+  const res = await apiClient.delete(`/users/custom/me`);
+  return res;
+};
+
 export const updateFollowings = async (params: any) => {
   const query = qs.stringify(
     {

@@ -8,6 +8,13 @@ export const fileFullUrl = (file: any) => {
   return `${apiServerURL}${file.url}`;
 };
 
+function ensureFileProtocol(path) {
+  if (!_.startsWith(path, 'file://')) {
+    return 'file://' + path;
+  }
+  return path;
+}
+
 export const imageFormat = (file: any, type: 's' | 'l' = 's', spec?: 't' | 's' | 'm' | 'l') => {
   if (!file) return undefined;
 
@@ -72,17 +79,38 @@ export const voiceSecs = (file: any, attachmentExtras: any = []) => {
   return item.secs;
 };
 
-export const createVideoThumbnail = async (url: string) => {
+export const createVideoThumbnail = async (localUrl: string) => {
+  const url = _.replace(localUrl, 'file://', '');
   try {
     const thumbnail = await createThumbnail({
       url,
-      timeStamp: 10000,
+      timeStamp: 1000,
     });
     return thumbnail;
   } catch (error) {
     console.error(error);
   }
 };
+
+export const compressFile = async (localUrl: string, fileType: string) => {
+  const fileUrl = localUrl;
+  switch (fileType) {
+    case 'image':
+      return compressImage(fileUrl);
+    case 'video':
+      return compressVideo(fileUrl);
+    case 'audio':
+      return compressAudio(fileUrl);
+    default:
+      return null;
+  }
+};
+
+export const compressImage = async (fileUrl: string) => {};
+
+export const compressVideo = async (fileUrl: string) => {};
+
+export const compressAudio = async (fileUrl: string) => {};
 
 export const toAttachmetItem = (attachment, attachmentExtras) => {
   return _.startsWith(attachment.mime, 'image')
