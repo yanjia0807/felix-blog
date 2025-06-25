@@ -1,24 +1,32 @@
 'use client';
-
+import React from 'react';
 import { createModal as createDrawer } from '@gluestack-ui/modal';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import {
+  Pressable,
+  View,
+  ScrollView,
+  Dimensions,
+  ViewStyle,
+} from 'react-native';
+import {
+  Motion,
   AnimatePresence,
   createMotionAnimatedComponent,
-  Motion,
   MotionComponentProps,
 } from '@legendapp/motion';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import {
+  withStyleContext,
+  useStyleContext,
+} from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
-import React from 'react';
-import { Dimensions, Pressable, ScrollView, View, ViewStyle } from 'react-native';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 
 type IAnimatedPressableProps = React.ComponentProps<typeof Pressable> &
   MotionComponentProps<typeof Pressable, ViewStyle, unknown, unknown, unknown>;
 
 const AnimatedPressable = createMotionAnimatedComponent(
-  Pressable,
+  Pressable
 ) as React.ComponentType<IAnimatedPressableProps>;
 
 const SCOPE = 'MODAL';
@@ -51,7 +59,7 @@ cssInterop(AnimatedPressable, { className: 'style' });
 cssInterop(MotionView, { className: 'style' });
 
 const drawerStyle = tva({
-  base: 'relative h-full w-full web:pointer-events-none',
+  base: 'w-full h-full web:pointer-events-none relative',
   variants: {
     size: {
       sm: '',
@@ -69,11 +77,11 @@ const drawerStyle = tva({
 });
 
 const drawerBackdropStyle = tva({
-  base: 'absolute bottom-0 left-0 right-0 top-0 bg-background-dark web:cursor-default',
+  base: 'absolute left-0 top-0 right-0 bottom-0 bg-background-dark web:cursor-default',
 });
 
 const drawerContentStyle = tva({
-  base: 'absolute overflow-scroll border-outline-100 bg-background-0 p-6',
+  base: 'bg-background-0 overflow-scroll border-outline-100 p-6 absolute',
   parentVariants: {
     size: {
       sm: 'w-1/4',
@@ -133,19 +141,19 @@ const drawerContentStyle = tva({
 });
 
 const drawerCloseButtonStyle = tva({
-  base: 'z-10 cursor-pointer rounded web:outline-0 data-[focus-visible=true]:web:bg-background-100',
+  base: 'z-10 rounded data-[focus-visible=true]:web:bg-background-100 web:outline-0 cursor-pointer',
 });
 
 const drawerHeaderStyle = tva({
-  base: 'flex-row items-center justify-between',
+  base: 'justify-between items-center flex-row',
 });
 
 const drawerBodyStyle = tva({
-  base: 'mb-6 mt-4 shrink-0',
+  base: 'mt-4 mb-6 shrink-0',
 });
 
 const drawerFooterStyle = tva({
-  base: 'flex-row items-center justify-end',
+  base: 'flex-row justify-end items-center',
 });
 
 type IDrawerProps = React.ComponentProps<typeof UIDrawer> &
@@ -166,13 +174,15 @@ type IDrawerBodyProps = React.ComponentProps<typeof UIDrawer.Body> &
 type IDrawerFooterProps = React.ComponentProps<typeof UIDrawer.Footer> &
   VariantProps<typeof drawerFooterStyle> & { className?: string };
 
-type IDrawerCloseButtonProps = React.ComponentProps<typeof UIDrawer.CloseButton> &
+type IDrawerCloseButtonProps = React.ComponentProps<
+  typeof UIDrawer.CloseButton
+> &
   VariantProps<typeof drawerCloseButtonStyle> & { className?: string };
 
-const Drawer = React.forwardRef<React.ComponentRef<typeof UIDrawer>, IDrawerProps>(function Drawer(
-  { className, size = 'sm', anchor = 'left', ...props },
-  ref,
-) {
+const Drawer = React.forwardRef<
+  React.ComponentRef<typeof UIDrawer>,
+  IDrawerProps
+>(function Drawer({ className, size = 'sm', anchor = 'left', ...props }, ref) {
   return (
     <UIDrawer
       ref={ref}
@@ -280,19 +290,20 @@ const DrawerHeader = React.forwardRef<
   );
 });
 
-const DrawerBody = React.forwardRef<React.ComponentRef<typeof UIDrawer.Body>, IDrawerBodyProps>(
-  function DrawerBody({ className, ...props }, ref) {
-    return (
-      <UIDrawer.Body
-        ref={ref}
-        {...props}
-        className={drawerBodyStyle({
-          class: className,
-        })}
-      />
-    );
-  },
-);
+const DrawerBody = React.forwardRef<
+  React.ComponentRef<typeof UIDrawer.Body>,
+  IDrawerBodyProps
+>(function DrawerBody({ className, ...props }, ref) {
+  return (
+    <UIDrawer.Body
+      ref={ref}
+      {...props}
+      className={drawerBodyStyle({
+        class: className,
+      })}
+    />
+  );
+});
 
 const DrawerFooter = React.forwardRef<
   React.ComponentRef<typeof UIDrawer.Footer>,

@@ -1,37 +1,45 @@
 'use client';
-
-import { createCheckbox } from '@gluestack-ui/checkbox';
-import { IPrimitiveIcon, PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { cssInterop } from 'nativewind';
 import React from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { createCheckbox } from '@gluestack-ui/checkbox';
+import { View, Pressable, Text, Platform } from 'react-native';
 import type { TextProps, ViewProps } from 'react-native';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { PrimitiveIcon, IPrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
+import {
+  withStyleContext,
+  useStyleContext,
+} from '@gluestack-ui/nativewind-utils/withStyleContext';
+import { cssInterop } from 'nativewind';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 
-const IndicatorWrapper = React.forwardRef<React.ComponentRef<typeof View>, ViewProps>(
-  function IndicatorWrapper({ ...props }, ref) {
-    return <View {...props} ref={ref} />;
-  },
-);
+const IndicatorWrapper = React.forwardRef<
+  React.ComponentRef<typeof View>,
+  ViewProps
+>(function IndicatorWrapper({ ...props }, ref) {
+  return <View {...props} ref={ref} />;
+});
 
-const LabelWrapper = React.forwardRef<React.ComponentRef<typeof Text>, TextProps>(
-  function LabelWrapper({ ...props }, ref) {
-    return <Text {...props} ref={ref} />;
-  },
-);
+const LabelWrapper = React.forwardRef<
+  React.ComponentRef<typeof Text>,
+  TextProps
+>(function LabelWrapper({ ...props }, ref) {
+  return <Text {...props} ref={ref} />;
+});
 
-const IconWrapper = React.forwardRef<React.ComponentRef<typeof PrimitiveIcon>, IPrimitiveIcon>(
-  function IconWrapper({ ...props }, ref) {
-    return <UIIcon {...props} ref={ref} />;
-  },
-);
+const IconWrapper = React.forwardRef<
+  React.ComponentRef<typeof PrimitiveIcon>,
+  IPrimitiveIcon
+>(function IconWrapper({ ...props }, ref) {
+  return <UIIcon {...props} ref={ref} />;
+});
 
 const SCOPE = 'CHECKBOX';
 const UICheckbox = createCheckbox({
   // @ts-expect-error : internal implementation for r-19/react-native-web
-  Root: Platform.OS === 'web' ? withStyleContext(View, SCOPE) : withStyleContext(Pressable, SCOPE),
+  Root:
+    Platform.OS === 'web'
+      ? withStyleContext(View, SCOPE)
+      : withStyleContext(Pressable, SCOPE),
   Group: View,
   Icon: IconWrapper,
   Label: LabelWrapper,
@@ -63,18 +71,18 @@ const checkboxStyle = tva({
 });
 
 const checkboxIndicatorStyle = tva({
-  base: 'items-center justify-center rounded border-outline-400 bg-transparent data-[checked=true]:border-primary-600 data-[checked=true]:bg-primary-600 data-[invalid=true]:border-error-700 web:data-[focus-visible=true]:outline-none web:data-[focus-visible=true]:ring-2 web:data-[focus-visible=true]:ring-indicator-primary data-[hover=true]:data-[checked=false]:border-outline-500 data-[hover=true]:data-[checked=true]:bg-primary-700 data-[hover=true]:data-[checked=true]:border-primary-700 data-[hover=true]:data-[checked=true]:data-[disabled=true]:bg-primary-600 data-[hover=true]:data-[checked=true]:data-[disabled=true]:border-primary-600 data-[hover=true]:data-[checked=true]:data-[disabled=true]:data-[invalid=true]:border-error-700 data-[hover=true]:data-[checked=true]:data-[disabled=true]:opacity-40 data-[hover=true]:data-[invalid=true]:border-error-700 data-[hover=true]:bg-transparent data-[hover=true]:data-[disabled=true]:data-[invalid=true]:border-error-700 data-[hover=true]:data-[disabled=true]:border-outline-400 data-[active=true]:data-[checked=true]:bg-primary-800 data-[active=true]:data-[checked=true]:border-primary-800 data-[disabled=true]:opacity-40',
+  base: 'justify-center items-center border-outline-400 bg-transparent rounded web:data-[focus-visible=true]:outline-none web:data-[focus-visible=true]:ring-2 web:data-[focus-visible=true]:ring-indicator-primary data-[checked=true]:bg-primary-600 data-[checked=true]:border-primary-600 data-[hover=true]:data-[checked=false]:border-outline-500 data-[hover=true]:bg-transparent data-[hover=true]:data-[invalid=true]:border-error-700 data-[hover=true]:data-[checked=true]:bg-primary-700 data-[hover=true]:data-[checked=true]:border-primary-700 data-[hover=true]:data-[checked=true]:data-[disabled=true]:border-primary-600 data-[hover=true]:data-[checked=true]:data-[disabled=true]:bg-primary-600 data-[hover=true]:data-[checked=true]:data-[disabled=true]:opacity-40 data-[hover=true]:data-[checked=true]:data-[disabled=true]:data-[invalid=true]:border-error-700 data-[hover=true]:data-[disabled=true]:border-outline-400 data-[hover=true]:data-[disabled=true]:data-[invalid=true]:border-error-700 data-[active=true]:data-[checked=true]:bg-primary-800 data-[active=true]:data-[checked=true]:border-primary-800 data-[invalid=true]:border-error-700 data-[disabled=true]:opacity-40',
   parentVariants: {
     size: {
-      lg: 'h-6 w-6 border-[3px]',
-      md: 'h-5 w-5 border-2',
-      sm: 'h-4 w-4 border-2',
+      lg: 'w-6 h-6 border-[3px]',
+      md: 'w-5 h-5 border-2',
+      sm: 'w-4 h-4 border-2',
     },
   },
 });
 
 const checkboxLabelStyle = tva({
-  base: 'text-typography-600 web:select-none data-[checked=true]:text-typography-900 data-[hover=true]:data-[checked=true]:data-[disabled=true]:text-typography-900 data-[hover=true]:data-[checked=true]:text-typography-900 data-[hover=true]:text-typography-900 data-[hover=true]:data-[disabled=true]:text-typography-400 data-[active=true]:data-[checked=true]:text-typography-900 data-[active=true]:text-typography-900 data-[disabled=true]:opacity-40',
+  base: 'text-typography-600 data-[checked=true]:text-typography-900 data-[hover=true]:text-typography-900 data-[hover=true]:data-[checked=true]:text-typography-900 data-[hover=true]:data-[checked=true]:data-[disabled=true]:text-typography-900 data-[hover=true]:data-[disabled=true]:text-typography-400 data-[active=true]:text-typography-900 data-[active=true]:data-[checked=true]:text-typography-900 data-[disabled=true]:opacity-40 web:select-none',
   parentVariants: {
     size: {
       lg: 'text-lg',
@@ -85,7 +93,7 @@ const checkboxLabelStyle = tva({
 });
 
 const checkboxIconStyle = tva({
-  base: 'fill-none text-typography-50',
+  base: 'text-typography-50 fill-none',
 
   parentVariants: {
     size: {
@@ -101,25 +109,28 @@ const CheckboxGroup = UICheckbox.Group;
 type ICheckboxProps = React.ComponentPropsWithoutRef<typeof UICheckbox> &
   VariantProps<typeof checkboxStyle>;
 
-const Checkbox = React.forwardRef<React.ComponentRef<typeof UICheckbox>, ICheckboxProps>(
-  function Checkbox({ className, size = 'md', ...props }, ref) {
-    return (
-      <UICheckbox
-        className={checkboxStyle({
-          class: className,
-          size,
-        })}
-        {...props}
-        context={{
-          size,
-        }}
-        ref={ref}
-      />
-    );
-  },
-);
+const Checkbox = React.forwardRef<
+  React.ComponentRef<typeof UICheckbox>,
+  ICheckboxProps
+>(function Checkbox({ className, size = 'md', ...props }, ref) {
+  return (
+    <UICheckbox
+      className={checkboxStyle({
+        class: className,
+        size,
+      })}
+      {...props}
+      context={{
+        size,
+      }}
+      ref={ref}
+    />
+  );
+});
 
-type ICheckboxIndicatorProps = React.ComponentPropsWithoutRef<typeof UICheckbox.Indicator> &
+type ICheckboxIndicatorProps = React.ComponentPropsWithoutRef<
+  typeof UICheckbox.Indicator
+> &
   VariantProps<typeof checkboxIndicatorStyle>;
 
 const CheckboxIndicator = React.forwardRef<
@@ -142,7 +153,9 @@ const CheckboxIndicator = React.forwardRef<
   );
 });
 
-type ICheckboxLabelProps = React.ComponentPropsWithoutRef<typeof UICheckbox.Label> &
+type ICheckboxLabelProps = React.ComponentPropsWithoutRef<
+  typeof UICheckbox.Label
+> &
   VariantProps<typeof checkboxLabelStyle>;
 const CheckboxLabel = React.forwardRef<
   React.ComponentRef<typeof UICheckbox.Label>,
@@ -163,7 +176,9 @@ const CheckboxLabel = React.forwardRef<
   );
 });
 
-type ICheckboxIconProps = React.ComponentPropsWithoutRef<typeof UICheckbox.Icon> &
+type ICheckboxIconProps = React.ComponentPropsWithoutRef<
+  typeof UICheckbox.Icon
+> &
   VariantProps<typeof checkboxIconStyle>;
 
 const CheckboxIcon = React.forwardRef<
@@ -181,9 +196,16 @@ const CheckboxIcon = React.forwardRef<
         size={size}
       />
     );
-  } else if ((props.height !== undefined || props.width !== undefined) && size === undefined) {
+  } else if (
+    (props.height !== undefined || props.width !== undefined) &&
+    size === undefined
+  ) {
     return (
-      <UICheckbox.Icon ref={ref} {...props} className={checkboxIconStyle({ class: className })} />
+      <UICheckbox.Icon
+        ref={ref}
+        {...props}
+        className={checkboxIconStyle({ class: className })}
+      />
     );
   }
 
@@ -207,4 +229,10 @@ CheckboxIndicator.displayName = 'CheckboxIndicator';
 CheckboxLabel.displayName = 'CheckboxLabel';
 CheckboxIcon.displayName = 'CheckboxIcon';
 
-export { Checkbox, CheckboxIndicator, CheckboxLabel, CheckboxIcon, CheckboxGroup };
+export {
+  Checkbox,
+  CheckboxIndicator,
+  CheckboxLabel,
+  CheckboxIcon,
+  CheckboxGroup,
+};

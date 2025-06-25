@@ -1,13 +1,16 @@
 'use client';
-
+import React from 'react';
+import { createTooltip } from '@gluestack-ui/tooltip';
+import { View, Text, ViewStyle } from 'react-native';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { createTooltip } from '@gluestack-ui/tooltip';
-import { AnimatePresence, Motion, MotionComponentProps } from '@legendapp/motion';
+import {
+  Motion,
+  AnimatePresence,
+  MotionComponentProps,
+} from '@legendapp/motion';
 import { cssInterop } from 'nativewind';
-import React from 'react';
-import { Text, View, ViewStyle } from 'react-native';
 
 type IMotionViewProps = React.ComponentProps<typeof View> &
   MotionComponentProps<typeof View, ViewStyle, unknown, unknown, unknown>;
@@ -24,15 +27,15 @@ export const UITooltip = createTooltip({
 cssInterop(MotionView, { className: 'style' });
 
 const tooltipStyle = tva({
-  base: 'h-full w-full web:pointer-events-none',
+  base: 'w-full h-full web:pointer-events-none',
 });
 
 const tooltipContentStyle = tva({
-  base: 'rounded-sm bg-background-900 px-3 py-1 web:pointer-events-auto',
+  base: 'py-1 px-3 rounded-sm bg-background-900 web:pointer-events-auto',
 });
 
 const tooltipTextStyle = tva({
-  base: 'text-xs font-normal tracking-normal text-typography-50 web:select-none',
+  base: 'font-normal tracking-normal web:select-none text-xs text-typography-50',
 
   variants: {
     isTruncated: {
@@ -51,11 +54,11 @@ const tooltipTextStyle = tva({
     },
     size: {
       '2xs': 'text-2xs',
-      xs: 'text-xs',
-      sm: 'text-sm',
-      md: 'text-base',
-      lg: 'text-lg',
-      xl: 'text-xl',
+      'xs': 'text-xs',
+      'sm': 'text-sm',
+      'md': 'text-base',
+      'lg': 'text-lg',
+      'xl': 'text-xl',
       '2xl': 'text-2xl',
       '3xl': 'text-3xl',
       '4xl': 'text-4xl',
@@ -81,11 +84,18 @@ type ITooltipContentProps = React.ComponentProps<typeof UITooltip.Content> &
 type ITooltipTextProps = React.ComponentProps<typeof UITooltip.Text> &
   VariantProps<typeof tooltipTextStyle> & { className?: string };
 
-const Tooltip = React.forwardRef<React.ComponentRef<typeof UITooltip>, ITooltipProps>(
-  function Tooltip({ className, ...props }, ref) {
-    return <UITooltip ref={ref} className={tooltipStyle({ class: className })} {...props} />;
-  },
-);
+const Tooltip = React.forwardRef<
+  React.ComponentRef<typeof UITooltip>,
+  ITooltipProps
+>(function Tooltip({ className, ...props }, ref) {
+  return (
+    <UITooltip
+      ref={ref}
+      className={tooltipStyle({ class: className })}
+      {...props}
+    />
+  );
+});
 
 const TooltipContent = React.forwardRef<
   React.ComponentRef<typeof UITooltip.Content>,
@@ -108,7 +118,11 @@ const TooltipText = React.forwardRef<
   ITooltipTextProps & { className?: string }
 >(function TooltipText({ size, className, ...props }, ref) {
   return (
-    <UITooltip.Text ref={ref} className={tooltipTextStyle({ size, class: className })} {...props} />
+    <UITooltip.Text
+      ref={ref}
+      className={tooltipTextStyle({ size, class: className })}
+      {...props}
+    />
   );
 });
 

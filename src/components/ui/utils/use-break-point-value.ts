@@ -1,7 +1,8 @@
-import * as tailwindConfig from '@/tailwind.config';
-import { useEffect, useState } from 'react';
 import { Dimensions, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+
 import resolveConfig from 'tailwindcss/resolveConfig';
+import * as tailwindConfig from '@/tailwind.config';
 
 const TailwindTheme = resolveConfig(tailwindConfig as any);
 const screenSize = TailwindTheme.theme.screens;
@@ -27,11 +28,14 @@ Object.entries(screenSize).forEach(([key, value]) => {
   }
 });
 
-export const getBreakPointValue = (values: BreakPointValue, width: number): unknown => {
+export const getBreakPointValue = (
+  values: BreakPointValue,
+  width: number
+): unknown => {
   if (typeof values !== 'object') return values;
 
   let finalBreakPointResolvedValue: unknown;
-  const mediaQueriesBreakpoints: MediaQueriesBreakpoints[] = [
+  const mediaQueriesBreakpoints: Array<MediaQueriesBreakpoints> = [
     {
       key: 'default',
       breakpoint: 0,
@@ -49,14 +53,18 @@ export const getBreakPointValue = (values: BreakPointValue, width: number): unkn
   });
 
   mediaQueriesBreakpoints.sort(
-    (a: MediaQueriesBreakpoints, b: MediaQueriesBreakpoints) => a.breakpoint - b.breakpoint,
+    (a: MediaQueriesBreakpoints, b: MediaQueriesBreakpoints) =>
+      a.breakpoint - b.breakpoint
   );
 
-  mediaQueriesBreakpoints.forEach((breakpoint: MediaQueriesBreakpoints, index: number) => {
-    breakpoint.value = values.hasOwnProperty(breakpoint.key)
-      ? values[breakpoint.key]
-      : mediaQueriesBreakpoints[index - 1]?.value || mediaQueriesBreakpoints[0]?.value;
-  });
+  mediaQueriesBreakpoints.forEach(
+    (breakpoint: MediaQueriesBreakpoints, index: number) => {
+      breakpoint.value = values.hasOwnProperty(breakpoint.key)
+        ? values[breakpoint.key]
+        : mediaQueriesBreakpoints[index - 1]?.value ||
+          mediaQueriesBreakpoints[0]?.value;
+    }
+  );
 
   const lastValidObject = getLastValidObject(mediaQueriesBreakpoints);
 
@@ -72,7 +80,7 @@ export function useBreakpointValue(values: BreakPointValue): unknown {
   const { width } = useWindowDimensions();
 
   const [currentBreakPointValue, setCurrentBreakPointValue] = useState<unknown>(
-    getBreakPointValue(values, width),
+    getBreakPointValue(values, width)
   );
 
   useEffect(() => {
@@ -89,7 +97,7 @@ export function useBreakpointValue(values: BreakPointValue): unknown {
 
 export function isValidBreakpoint(
   breakPointWidth: number,
-  width: number = Dimensions.get('window')?.width || 0,
+  width: number = Dimensions.get('window')?.width || 0
 ) {
   const windowWidth = width;
 
@@ -97,12 +105,12 @@ export function isValidBreakpoint(
 }
 
 function getLastValidObject(
-  mediaQueries: {
+  mediaQueries: Array<{
     key: breakpoints;
     breakpoint: number;
     isValid: boolean;
     value?: unknown;
-  }[],
+  }>
 ) {
   for (let i = mediaQueries.length - 1; i >= 0; i--) {
     if (mediaQueries[i].isValid) {

@@ -1,24 +1,26 @@
 'use client';
-
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { createPopover } from '@gluestack-ui/popover';
+import React from 'react';
+import { View, Pressable, ScrollView, ViewStyle } from 'react-native';
 import {
-  AnimatePresence,
-  createMotionAnimatedComponent,
   Motion,
+  createMotionAnimatedComponent,
+  AnimatePresence,
   MotionComponentProps,
 } from '@legendapp/motion';
+import { createPopover } from '@gluestack-ui/popover';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import {
+  withStyleContext,
+  useStyleContext,
+} from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
-import React from 'react';
-import { Pressable, ScrollView, View, ViewStyle } from 'react-native';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 
 type IAnimatedPressableProps = React.ComponentProps<typeof Pressable> &
   MotionComponentProps<typeof Pressable, ViewStyle, unknown, unknown, unknown>;
 
 const AnimatedPressable = createMotionAnimatedComponent(
-  Pressable,
+  Pressable
 ) as React.ComponentType<IAnimatedPressableProps>;
 
 const SCOPE = 'POPOVER';
@@ -44,7 +46,7 @@ cssInterop(MotionView, { className: 'style' });
 cssInterop(AnimatedPressable, { className: 'style' });
 
 const popoverStyle = tva({
-  base: 'group/popover h-full w-full items-center justify-center web:pointer-events-none',
+  base: 'group/popover w-full h-full justify-center items-center web:pointer-events-none',
   variants: {
     size: {
       xs: '',
@@ -57,45 +59,47 @@ const popoverStyle = tva({
 });
 
 const popoverArrowStyle = tva({
-  base: 'absolute z-[1] h-3.5 w-3.5 overflow-hidden border border-outline-100 bg-background-0',
+  base: 'bg-background-0 z-[1] border absolute overflow-hidden h-3.5 w-3.5 border-outline-100',
   variants: {
     placement: {
       'top left':
-        'data-[flip=false]:border-l-0 data-[flip=false]:border-t-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
-      top: 'data-[flip=false]:border-l-0 data-[flip=false]:border-t-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
+        'data-[flip=false]:border-t-0 data-[flip=false]:border-l-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
+      'top':
+        'data-[flip=false]:border-t-0 data-[flip=false]:border-l-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
       'top right':
-        'data-[flip=false]:border-l-0 data-[flip=false]:border-t-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
-      bottom:
-        'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-l-0 data-[flip=true]:border-t-0',
+        'data-[flip=false]:border-t-0 data-[flip=false]:border-l-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
+      'bottom':
+        'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-t-0 data-[flip=true]:border-l-0',
       'bottom left':
-        'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-l-0 data-[flip=true]:border-t-0',
+        'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-t-0 data-[flip=true]:border-l-0',
       'bottom right':
-        'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-l-0 data-[flip=true]:border-t-0',
-      left: 'data-[flip=false]:border-b-0 data-[flip=false]:border-l-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
+        'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-t-0 data-[flip=true]:border-l-0',
+      'left':
+        'data-[flip=false]:border-l-0 data-[flip=false]:border-b-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
       'left top':
-        'data-[flip=false]:border-b-0 data-[flip=false]:border-l-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
+        'data-[flip=false]:border-l-0 data-[flip=false]:border-b-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
       'left bottom':
-        'data-[flip=false]:border-b-0 data-[flip=false]:border-l-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
-      right:
-        'data-[flip=false]:border-r-0 data-[flip=false]:border-t-0 data-[flip=true]:border-b-0 data-[flip=true]:border-l-0',
+        'data-[flip=false]:border-l-0 data-[flip=false]:border-b-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
+      'right':
+        'data-[flip=false]:border-r-0 data-[flip=false]:border-t-0 data-[flip=true]:border-l-0 data-[flip=true]:border-b-0',
       'right top':
-        'data-[flip=false]:border-r-0 data-[flip=false]:border-t-0 data-[flip=true]:border-b-0 data-[flip=true]:border-l-0',
+        'data-[flip=false]:border-r-0 data-[flip=false]:border-t-0 data-[flip=true]:border-l-0 data-[flip=true]:border-b-0',
       'right bottom':
-        'data-[flip=false]:border-r-0 data-[flip=false]:border-t-0 data-[flip=true]:border-b-0 data-[flip=true]:border-l-0',
+        'data-[flip=false]:border-r-0 data-[flip=false]:border-t-0 data-[flip=true]:border-l-0 data-[flip=true]:border-b-0',
     },
   },
 });
 
 const popoverBackdropStyle = tva({
-  base: 'absolute bottom-0 left-0 right-0 top-0 web:cursor-default',
+  base: 'absolute left-0 top-0 right-0 bottom-0 web:cursor-default',
 });
 
 const popoverCloseButtonStyle = tva({
-  base: 'group/popover-close-button z-[1] rounded-sm web:cursor-pointer web:outline-0 data-[focus-visible=true]:web:bg-background-100',
+  base: 'group/popover-close-button z-[1] rounded-sm data-[focus-visible=true]:web:bg-background-100 web:outline-0 web:cursor-pointer',
 });
 
 const popoverContentStyle = tva({
-  base: 'w-full overflow-hidden rounded-lg border border-outline-100 bg-background-0',
+  base: 'bg-background-0 rounded-lg overflow-hidden border border-outline-100 w-full',
   parentVariants: {
     size: {
       xs: 'max-w-[360px] p-3.5',
@@ -108,7 +112,7 @@ const popoverContentStyle = tva({
 });
 
 const popoverHeaderStyle = tva({
-  base: 'flex-row items-center justify-between',
+  base: 'flex-row justify-between items-center',
 });
 
 const popoverBodyStyle = tva({
@@ -116,7 +120,7 @@ const popoverBodyStyle = tva({
 });
 
 const popoverFooterStyle = tva({
-  base: 'flex-row items-center justify-between',
+  base: 'flex-row justify-between items-center',
 });
 
 type IPopoverProps = React.ComponentProps<typeof UIPopover> &
@@ -140,23 +144,29 @@ type IPopoverBodyProps = React.ComponentProps<typeof UIPopover.Body> &
 type IPopoverBackdropProps = React.ComponentProps<typeof UIPopover.Backdrop> &
   VariantProps<typeof popoverBackdropStyle> & { className?: string };
 
-type IPopoverCloseButtonProps = React.ComponentProps<typeof UIPopover.CloseButton> &
+type IPopoverCloseButtonProps = React.ComponentProps<
+  typeof UIPopover.CloseButton
+> &
   VariantProps<typeof popoverCloseButtonStyle> & { className?: string };
 
-const Popover = React.forwardRef<React.ComponentRef<typeof UIPopover>, IPopoverProps>(
-  function Popover({ className, size = 'md', placement = 'bottom', ...props }, ref) {
-    return (
-      <UIPopover
-        ref={ref}
-        placement={placement}
-        {...props}
-        className={popoverStyle({ size, class: className })}
-        context={{ size, placement }}
-        pointerEvents="box-none"
-      />
-    );
-  },
-);
+const Popover = React.forwardRef<
+  React.ComponentRef<typeof UIPopover>,
+  IPopoverProps
+>(function Popover(
+  { className, size = 'md', placement = 'bottom', ...props },
+  ref
+) {
+  return (
+    <UIPopover
+      ref={ref}
+      placement={placement}
+      {...props}
+      className={popoverStyle({ size, class: className })}
+      context={{ size, placement }}
+      pointerEvents="box-none"
+    />
+  );
+});
 
 const PopoverContent = React.forwardRef<
   React.ComponentRef<typeof UIPopover.Content>,
@@ -254,19 +264,20 @@ const PopoverBackdrop = React.forwardRef<
   );
 });
 
-const PopoverBody = React.forwardRef<React.ComponentRef<typeof UIPopover.Body>, IPopoverBodyProps>(
-  function PopoverBody({ className, ...props }, ref) {
-    return (
-      <UIPopover.Body
-        ref={ref}
-        {...props}
-        className={popoverBodyStyle({
-          class: className,
-        })}
-      />
-    );
-  },
-);
+const PopoverBody = React.forwardRef<
+  React.ComponentRef<typeof UIPopover.Body>,
+  IPopoverBodyProps
+>(function PopoverBody({ className, ...props }, ref) {
+  return (
+    <UIPopover.Body
+      ref={ref}
+      {...props}
+      className={popoverBodyStyle({
+        class: className,
+      })}
+    />
+  );
+});
 
 const PopoverCloseButton = React.forwardRef<
   React.ComponentRef<typeof UIPopover.CloseButton>,

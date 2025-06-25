@@ -1,9 +1,8 @@
 'use client';
-
+import { ActivityIndicator } from 'react-native';
+import React from 'react';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { cssInterop } from 'nativewind';
-import React from 'react';
-import { ActivityIndicator } from 'react-native';
 
 cssInterop(ActivityIndicator, {
   className: { target: 'style', nativeStyleToProp: { color: true } },
@@ -15,8 +14,14 @@ const Spinner = React.forwardRef<
   React.ComponentRef<typeof ActivityIndicator>,
   React.ComponentProps<typeof ActivityIndicator>
 >(function Spinner(
-  { className, color, focusable = false, 'aria-label': ariaLabel = 'loading', ...props },
-  ref,
+  {
+    className,
+    color,
+    focusable = false,
+    'aria-label': ariaLabel = 'loading',
+    ...props
+  },
+  ref
 ) {
   return (
     <ActivityIndicator
