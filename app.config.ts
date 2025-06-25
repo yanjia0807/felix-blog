@@ -21,13 +21,23 @@ const getAppName = () => {
   return 'felix博客';
 };
 
+const getAssociatedDomains = () => {
+  if (IS_DEV) {
+    return ['applinks:192.168.2.5:1337'];
+  } else if (IS_PREVIEW) {
+    return ['applinks:felixblog.yanjia.info'];
+  }
+  return ['applinks:felixblog.yanjia.info'];
+};
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: getAppName(),
-  slug: 'felix-blog',
+  slug: 'felixblog',
   ios: {
     ...config.ios,
     bundleIdentifier: getBundleId(),
+    associatedDomains: getAssociatedDomains(),
   },
   android: {
     ...config.android,

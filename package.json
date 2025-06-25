@@ -114,7 +114,8 @@
     "tailwindcss": "^3.4.17",
     "use-zustand": "^0.2.0",
     "zod": "^3.25.36",
-    "zustand": "^5.0.5"
+    "zustand": "^5.0.5",
+    "expo-sharing": "~13.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
