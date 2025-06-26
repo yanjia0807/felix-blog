@@ -1,8 +1,6 @@
 import { Portal } from '@/components/ui/portal';
 import { Text } from '@/components/ui/text';
 import { useIsForeground } from '@/hooks/use-is-foreground';
-import { useMediaCamPermissions } from '@/hooks/use-media-cam-permissions';
-import { useMediaMicPermissions } from '@/hooks/use-media-mic-permissions';
 import { createVideoThumbnail, getFilename } from '@/utils/file';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { useIsFocused } from '@react-navigation/core';
@@ -37,7 +35,7 @@ Animated.addWhitelistedNativeProps({
   zoom: true,
 });
 
-export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
+export const ImageryCamera = ({ isOpen, onClose, onChange, hasMicPermission }: any) => {
   const [data, setData] = useState<any>();
   const [type, setType] = useState<'photo' | 'video'>('photo');
   const [isRecording, setIsRecording] = useState(false);
@@ -53,8 +51,7 @@ export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
 
   const device = useCameraDevice(cameraPosition);
   const camera = useRef<Camera>(null);
-  const { requestMediaCamPermissions } = useMediaCamPermissions();
-  const { meidaMicPermission, requestMediaMicPermissions } = useMediaMicPermissions();
+
   const isFocussed = useIsFocused();
   const isForeground = useIsForeground();
   const isActive = isFocussed && isForeground;
@@ -202,20 +199,13 @@ export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
     });
 
   useEffect(() => {
-    requestMediaCamPermissions();
-    requestMediaMicPermissions();
-  }, [requestMediaCamPermissions, requestMediaMicPermissions]);
-
-  useEffect(() => {
-    zoom.value = device?.neutralZoom ?? 1;
-  }, [zoom, device, opacity, offsetY, startZoom]);
-
-  useEffect(() => {
     if (!isOpen) {
+      zoom.value = 1;
+      startZoom.value = 0;
       opacity.value = 1;
       offsetY.value = 0;
     }
-  }, [isOpen, offsetY, opacity]);
+  }, [isOpen, offsetY, opacity, startZoom, zoom]);
 
   if (data) {
     return <CameraPreview type={type} data={data} onClose={onClosePreview} onCommit={onCommit} />;
@@ -235,9 +225,9 @@ export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
     );
   }
 
-  return (
-    <Portal isOpen={isOpen} style={{ flex: 1, backgroundColor: 'black' }}>
-      <View className="flex-1">
+  if (isOpen) {
+    return (
+      <Portal isOpen={true} style={{ flex: 1, backgroundColor: 'black' }}>
         <GestureDetector gesture={pan}>
           <Animated.View style={[{ flex: 1 }, containerAnimatiedStyle]}>
             <GestureDetector gesture={pinch}>
@@ -262,7 +252,7 @@ export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
                     exposure={0}
                     photo={true}
                     video={true}
-                    audio={meidaMicPermission === 'granted'}
+                    audio={hasMicPermission}
                     videoBitRate="low"
                   />
                 </GestureDetector>
@@ -295,7 +285,7 @@ export const ImageryCamera = ({ isOpen, onClose, onChange }: any) => {
         />
 
         {isRecording && <CameraTimer recordingTime={recordingTime} maxDuration={maxDuration} />}
-      </View>
-    </Portal>
-  );
+      </Portal>
+    );
+  }
 };

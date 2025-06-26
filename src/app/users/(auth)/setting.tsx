@@ -55,7 +55,6 @@ const Setting: React.FC = () => {
       title: '删除账号',
       description: `确认要删除账号吗？请谨慎操作！`,
       onConfirm: async () => {
-        debugger;
         await deleteMe();
         toast.success({
           description: '账号删除成功',

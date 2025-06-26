@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useRef } from 'react';
+import { Linking } from 'react-native';
 import useToast from './use-toast';
 
 const appName = Constants?.expoConfig?.extra?.name || '';
@@ -14,24 +15,22 @@ export const useMediaLibPermissions = () => {
 
   const requestMediaLibPermissions = useCallback(async () => {
     if (libraryPermissions.granted) {
-      return libraryPermissions;
+      return true;
     }
 
     const result = await requestLibraryPermission();
-    if (result.granted) {
-      return libraryPermissions;
-    } else {
-      if (!result.canAskAgain) {
-        onToast.current('info', {
-          description: `请在 [系统设置] 里允许 ${appName} 访问您的照片。`,
-        });
-      }
-      return libraryPermissions;
+    if (!result.canAskAgain) {
+      onToast.current('confirm', {
+        description: `请在 [系统设置] 里允许 ${appName} 访问您的照片。`,
+        onConfirm: async () => {
+          Linking.openURL('app-settings:');
+        },
+      });
     }
+    return result.granted;
   }, [libraryPermissions, requestLibraryPermission]);
 
   return {
-    libraryPermissions,
     requestMediaLibPermissions,
   };
 };

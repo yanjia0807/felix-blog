@@ -1,20 +1,17 @@
 import { amapIosApiKey } from '@/api';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Geolocation, init, Position, PositionError } from 'react-native-amap-geolocation';
+import { RESULTS } from 'react-native-permissions';
 import { useLocationPermissions } from './use-location-permissions';
 
 function usePosition() {
   const [position, setPosition] = useState<Position | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const { requesLocationPermissions } = useLocationPermissions();
 
-  useEffect(() => {
-    const getCurrentPosition = async () => {
-      console.log('getCurrentPosition');
+  const getCurrentPosition = useCallback(async () => {
+    const permission = await requesLocationPermissions();
 
-      const permission = await requesLocationPermissions();
-      if (permission !== 'granted') return;
-
+    if (permission === RESULTS.GRANTED) {
       try {
         await init({
           ios: amapIosApiKey as string,
@@ -27,19 +24,15 @@ function usePosition() {
           },
           (error: PositionError) => {
             console.error(error);
-            setError(`定位失败: ${error.message}`);
           },
         );
       } catch (error) {
         console.error(error);
-        setError('定位服务初始化失败');
       }
-    };
+    }
+  }, [requesLocationPermissions]);
 
-    getCurrentPosition();
-  }, []);
-
-  return { position, setPosition, error };
+  return { position, getCurrentPosition };
 }
 
 export default usePosition;

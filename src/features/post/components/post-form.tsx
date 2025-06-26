@@ -77,7 +77,7 @@ const PostForm: React.FC<any> = ({ form }) => {
     <TagList value={value} onChange={onChange} />
   );
 
-  const renderImageryInput = ({ field: { onChange, onBlur, value } }: any) => (
+  const renderImageryPicker = ({ field: { onChange, onBlur, value } }: any) => (
     <ImageryPicker value={value} onChange={onChange} />
   );
 
@@ -107,7 +107,7 @@ const PostForm: React.FC<any> = ({ form }) => {
       </KeyboardAwareScrollView>
       <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
         <HStack space="md" className="w-full bg-background-100 px-4">
-          <Controller control={control} name="imageries" render={renderImageryInput} />
+          <Controller control={control} name="imageries" render={renderImageryPicker} />
         </HStack>
       </KeyboardStickyView>
     </>

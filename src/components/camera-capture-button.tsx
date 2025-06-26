@@ -19,6 +19,7 @@ export const CameraCaptureButton: React.FC<any> = memo(function CameraCaptureBut
   enabled,
   setIsRecording,
   setRecordingTime,
+  setHasMicPermission,
   maxDuration,
   ...props
 }): React.ReactElement {
@@ -62,7 +63,7 @@ export const CameraCaptureButton: React.FC<any> = memo(function CameraCaptureBut
     clearInterval(timerRef.current);
   };
 
-  const startRecording = () => {
+  const startRecording = async () => {
     try {
       if (camera.current == null) throw new Error('Camera ref is null!');
       onStartedRecording();

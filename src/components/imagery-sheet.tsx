@@ -7,8 +7,9 @@ import {
   ActionsheetItem,
   ActionsheetItemText,
 } from '@/components/ui/actionsheet';
-import { useMediaCamPermissions } from '@/hooks/use-media-cam-permissions';
+import { useCamPermissions } from '@/hooks/use-cam-permissions';
 import { useMediaLibPermissions } from '@/hooks/use-media-lib-permissions';
+import { useMicPermissions } from '@/hooks/use-mic-permissions';
 import useToast from '@/hooks/use-toast';
 import { createVideoThumbnail } from '@/utils/file';
 import * as ImagePicker from 'expo-image-picker';
@@ -23,11 +24,13 @@ export const ImagerySheet = ({
   onClose,
   imagePickerOptions,
 }: any) => {
+  const [hasMicPermission, setHasMicPermission] = useState(false);
   const [cameraIsOpen, setCameraIsOpen] = useState(false);
   const toast = useToast();
   const limit = imagePickerOptions.selectionLimit || 9;
   const { requestMediaLibPermissions } = useMediaLibPermissions();
-  const { requestMediaCamPermissions } = useMediaCamPermissions();
+  const { requestCamPermissions } = useCamPermissions();
+  const { requestMicPermissions } = useMicPermissions();
 
   const onFail = () => {
     toast.info({ description: `最多只能选择${limit}个` });
@@ -82,27 +85,33 @@ export const ImagerySheet = ({
   };
 
   const openLibrary = async () => {
-    const hasPermission = await requestMediaLibPermissions();
-    if (hasPermission) {
+    const permission = await requestMediaLibPermissions();
+
+    if (permission) {
       await selectFromLibrary();
       onClose();
     }
   };
 
   const openCamera = async () => {
+    const camPermission = await requestCamPermissions();
+
+    if (camPermission === 'granted') {
+      const micPermission = await requestMicPermissions();
+      setHasMicPermission(micPermission === 'granted');
+      setCameraIsOpen(true);
+      onClose();
+    }
+
     if (value.length === limit) {
       onFail();
       return;
     }
-
-    const hasPermission = await requestMediaCamPermissions();
-    if (hasPermission) {
-      setCameraIsOpen(true);
-      onClose();
-    }
   };
 
-  const closeCamera = () => setCameraIsOpen(false);
+  const closeCamera = () => {
+    setCameraIsOpen(false);
+  };
 
   const handleCameraChange = (result) => {
     onChange([...value, result]);
@@ -124,7 +133,12 @@ export const ImagerySheet = ({
           </ActionsheetItem>
         </ActionsheetContent>
       </Actionsheet>
-      <ImageryCamera onChange={handleCameraChange} isOpen={cameraIsOpen} onClose={closeCamera} />
+      <ImageryCamera
+        onChange={handleCameraChange}
+        isOpen={cameraIsOpen}
+        hasMicPermission={hasMicPermission}
+        onClose={closeCamera}
+      />
     </>
   );
 };
