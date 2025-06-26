@@ -94,7 +94,7 @@ export const MessageInput: React.FC<any> = memo(function MessageInput({
   const onSubmit = useCallback(
     ({ messageType, content, voice, imageries }: MessageFormSchema) => {
       if (isBlock) {
-        toast.error({
+        onToast.current('error', {
           title: '发送失败',
           description: '该用户已被屏蔽',
         });
@@ -124,7 +124,7 @@ export const MessageInput: React.FC<any> = memo(function MessageInput({
         },
       });
     },
-    [isBlock, chatDocumentId, sender, receiver, createMessage, toast, successCb, setValue],
+    [isBlock, chatDocumentId, sender, receiver, createMessage, successCb, setValue],
   );
 
   const renderVoiceInput = useCallback(

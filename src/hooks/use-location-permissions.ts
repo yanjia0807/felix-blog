@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { check, PERMISSIONS, PermissionStatus, request, RESULTS } from 'react-native-permissions';
 import useToast from './use-toast';
 
@@ -7,16 +7,21 @@ const appName = Constants?.expoConfig?.extra?.name || '';
 
 export const useLocationPermissions = () => {
   const toast = useToast();
+  const onToast = useRef((type, message): any => {
+    toast[type](message);
+  });
+
   const [locationPermission, setLocationPermission] = useState<PermissionStatus>();
 
-  const requesLocationPermissions = async () => {
+  const requesLocationPermissions = useCallback(async () => {
     let permission = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
     setLocationPermission(permission);
 
     if (permission === RESULTS.BLOCKED) {
-      toast.info({
+      onToast.current('info', {
         description: `请在系统设置中允许 ${appName} 访问您的位置`,
       });
+
       return permission;
     }
 
@@ -25,7 +30,7 @@ export const useLocationPermissions = () => {
       setLocationPermission(permission);
 
       if (permission !== RESULTS.GRANTED) {
-        toast.info({
+        onToast.current('info', {
           description: `请在系统设置中允许 ${appName} 访问您的位置`,
         });
         return permission;
@@ -33,7 +38,7 @@ export const useLocationPermissions = () => {
     }
 
     return permission;
-  };
+  }, []);
 
   return {
     locationPermission,
