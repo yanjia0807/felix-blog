@@ -51,6 +51,8 @@ const PostForm: React.FC<any> = ({ form }) => {
     formState: { errors },
   } = form;
 
+  console.log(errors);
+
   const formData: any = watch();
 
   const onCoverPress = () => onOpen(_.concat(formData?.cover || [], formData?.imageries || []), 0);

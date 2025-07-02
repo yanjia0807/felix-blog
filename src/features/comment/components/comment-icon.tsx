@@ -10,8 +10,8 @@ export const CommentIcon: React.FC<any> = ({ postDocumentId, commentCount }) => 
   const { setCommentPostDocumentId } = useCommentActions();
 
   const onInputIconPress = () => {
-    open();
     setCommentPostDocumentId(postDocumentId);
+    setTimeout(open, 0);
   };
 
   return (

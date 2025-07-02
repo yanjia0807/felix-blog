@@ -6,7 +6,6 @@ import { uploadFiles } from './file';
 
 export const fetchPosts = async ({ pageParam }: any) => {
   const { params, pagination } = pageParam;
-
   const filters: any = {
     $and: [],
   };
@@ -572,7 +571,7 @@ export const editPost = async (formData: any) => {
     title: formData.title,
     cover: coverId,
     content: formData.content,
-    author: formData.author.documentId,
+    author: formData.author,
     poi,
     tags,
     attachments,

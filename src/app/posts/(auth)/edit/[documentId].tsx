@@ -34,6 +34,7 @@ const PostEditPage = () => {
         imageries: _.map(postQuery.data.attachments || [], (attachment: any) =>
           toAttachmetItem(attachment, postQuery.data.attachmentExtras),
         ),
+        author: postQuery.data.author.documentId,
       }
     );
   }, [postQuery.data]);
@@ -55,8 +56,8 @@ const PostEditPage = () => {
   };
 
   const onSave = () => {
-    handleSubmit(onSubmit)();
     Keyboard.dismiss();
+    handleSubmit(onSubmit)();
   };
 
   const renderHeaderLeft = () => (

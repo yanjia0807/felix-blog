@@ -210,7 +210,7 @@ const Profile: React.FC<any> = () => {
   const isPublished = publishStatus === 'published';
 
   const userPostsQuery = useFetchPosts({
-    authorDocumentId: userDocumentId,
+    author: userDocumentId,
     isPublished,
   });
 

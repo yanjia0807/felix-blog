@@ -26,10 +26,8 @@ LogBox.ignoreAllLogs(true);
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
       retry: 0,
-      staleTime: 6000,
+      staleTime: 60000,
     },
   },
 });
